@@ -23,12 +23,12 @@ const contributorGenerator = (): ContributorExtended => {
   if (packageJson.apiVersion === "3") {
     return {
       ...baseData,
-      email: "jane.doe@ardc-raid.testinator.com",
+      email: "",
     } as unknown as ContributorExtended;
   } else {
     return {
       ...baseData,
-      id: "https://orcid.org/0000-0000-0000-0001",
+      id: "",
     } as ContributorExtended;
   }
 };

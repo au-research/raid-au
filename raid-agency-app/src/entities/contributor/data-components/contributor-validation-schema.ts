@@ -1,7 +1,6 @@
 import packageJson from "@/../package.json";
 import { contributorPositionValidationSchema } from "@/entities/contributor/position/data-components/contributor-position-validation-schema";
 import { contributorRoleValidationSchema } from "@/entities/contributor/role/data-components/contributor-role-validation-schema";
-import { stat } from "fs";
 import { z } from "zod";
 
 let baseContributorSchema = z.object({});
@@ -53,11 +52,11 @@ export const singleContributorValidationSchema = z.union([
     .strict(),
   baseContributorSchema
     .extend({
-      email: z.string().email(),
+      email: z.string().optional(),
     })
     .strict(),
 ]);
 
-export const contributorValidationSchema = z.array(
-  singleContributorValidationSchema
-).min(1);
+export const contributorValidationSchema = z
+  .array(singleContributorValidationSchema)
+  .min(1);
