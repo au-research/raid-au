@@ -22,9 +22,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { MetadataDisplay } from "./components/MetadataDisplay";
 import { useKeycloak } from "@/contexts/keycloak-context";
+import { RaidUserManagement } from "./components/raid-user-management";
 
 export const RaidDisplay = () => {
-  const { isInitialized, authenticated, token } = useKeycloak();
+  const { isInitialized, authenticated, token, tokenParsed } = useKeycloak();
   const { prefix, suffix } = useParams() as { prefix: string; suffix: string };
   const handle = `${prefix}/${suffix}`;
 
@@ -93,6 +94,7 @@ export const RaidDisplay = () => {
           )}
           {displayItems.map(({ itemKey, Component, emptyValue }) => {
             const data =
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               raidData[itemKey as keyof RaidDto] || (emptyValue as any);
             return (
               <Box id={itemKey} key={itemKey} className="scroll">
@@ -105,6 +107,9 @@ export const RaidDisplay = () => {
           </Box>
           <Box id="rawData" className="scroll">
             <RawDataDisplay raidData={raidData} />
+          </Box>
+          <Box className="scroll">
+            <RaidUserManagement tokenParsed={tokenParsed} token={token} />
           </Box>
         </Stack>
       </Container>

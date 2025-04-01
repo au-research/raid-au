@@ -18,7 +18,7 @@ export function useAuthHelper() {
   // Memoize the role checking function
   const hasRole = useCallback(
     (role: RealmRole): boolean => !!user?.roles?.includes(role),
-    [tokenParsed]
+    [user?.roles]
   );
 
   // Memoize the return object to prevent unnecessary re-renders
