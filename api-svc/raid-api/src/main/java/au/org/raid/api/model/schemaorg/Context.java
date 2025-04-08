@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ContextDto {
+public class Context {
     @JsonProperty("@vocab")
     private String vocab = "https://schema.org";
     private String raid = "https://raid,org";
