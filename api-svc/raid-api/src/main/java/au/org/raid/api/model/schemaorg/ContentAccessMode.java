@@ -8,9 +8,7 @@ import lombok.Data;
 @Builder
 public class ContentAccessMode {
     @JsonProperty("@type")
-    private String type;
+    private String type = "CreativeWork";
     private String conditionsOfAccess;
     private String accessibilitySummary;
-
-
 }

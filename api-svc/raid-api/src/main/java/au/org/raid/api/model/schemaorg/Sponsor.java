@@ -8,7 +8,7 @@ import lombok.Data;
 @Builder
 public class Sponsor {
     @JsonProperty("@type")
-    private String type;
+    private String type = "Organization";
     @JsonProperty("@id")
     private String id;
     private String identifier;

@@ -72,6 +72,7 @@ public class SecurityConfig {
                                 .requestMatchers("/docs/**").permitAll()
                                 .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers("/error").permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/schemaorg", "GET")).hasRole(SERVICE_POINT_USER_ROLE)
                                 .requestMatchers(new AntPathRequestMatcher("/upgradable/all", "GET")).hasRole(RAID_UPGRADER_ROLE)
                                 .requestMatchers(new AntPathRequestMatcher("/upgrade", "POST")).hasRole(RAID_UPGRADER_ROLE)
                                 .requestMatchers(new AntPathRequestMatcher(RAID_API + "/all-public", "GET"))

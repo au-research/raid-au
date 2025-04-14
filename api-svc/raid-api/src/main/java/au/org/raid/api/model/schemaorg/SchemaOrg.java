@@ -27,7 +27,7 @@ public class SchemaOrg {
     private String endDate;
     private ContentAccessMode contentAccessMode;
     private List<Contributor> contributor;
-    private Contributor principalInvestigator;
+    private List<Contributor> principalInvestigator;
     private List<Sponsor> sponsor;
     private String license;
     private Publisher publisher;
