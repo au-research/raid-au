@@ -14,7 +14,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { Loading } from "@/pages/loading";
-import { ErrorAlertComponent } from "../error-alert-component";
+import { ErrorAlertComponent } from "../../../components/error-alert-component";
 
 export function ServicePointSwitcher() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

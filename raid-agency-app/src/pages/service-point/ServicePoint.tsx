@@ -8,7 +8,7 @@ import { ServicePointWithMembers } from "@/types";
 import { Home as HomeIcon, Hub as HubIcon } from "@mui/icons-material";
 import { Alert, Card, CardContent, CardHeader, Container, Stack } from "@mui/material";
 
-import { ServicePointUsersList } from "@/components/service-point-users/ServicePointUsersList";
+import { ServicePointUsersList } from "@/containers/header/service-point-users/ServicePointUsersList";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";

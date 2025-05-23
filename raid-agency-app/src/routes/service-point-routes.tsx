@@ -1,4 +1,4 @@
-import { ProtectedRoute } from "@/components/protected-route";
+import { ProtectedRoute } from "@/pages/protected-route";
 import { ServicePoint } from "@/pages/service-point";
 import { ServicePoints } from "@/pages/service-points";
 import { RouteObject } from "react-router-dom";

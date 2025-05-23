@@ -1,4 +1,4 @@
-import type { Breadcrumb } from "./types";
+import type { Breadcrumb } from "../../generated/raid/Breadcrumb";
 import { NavigateNext as NavigateNextIcon } from "@mui/icons-material";
 import { Breadcrumbs, Button, Card, Paper } from "@mui/material";
 import { memo } from "react";

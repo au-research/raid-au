@@ -9,9 +9,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { ServicePointSwitcher } from "../service-point-switcher";
-import { NavigationDrawer } from "./components/NavigationDrawer";
-import { UserDropdown } from "./components/UserDropdown";
+import { ServicePointSwitcher } from "../../containers/header/service-point-switcher";
+import { NavigationDrawer } from "../../containers/header/NavigationDrawer";
+import { UserDropdown } from "../../containers/header/UserDropdown";
 
 const AuthenticatedNavbarContent = () => {
   return (

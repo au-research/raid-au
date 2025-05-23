@@ -1,5 +1,5 @@
 import { AppNavBar } from "@/components/app-nav-bar";
-import { ProtectedRoute } from "@/components/protected-route";
+import { ProtectedRoute } from "@/pages/protected-route";
 import { AboutRaid } from "@/pages/about-raid";
 import { ApiKey } from "@/pages/api-key";
 import { CacheManager } from "@/pages/cache-manager";

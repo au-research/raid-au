@@ -1,5 +1,5 @@
-import { OrganisationLookupButton } from "@/components/organisation-lookup/OrganisationLookupButton";
-import { OrganisationLookupDialog } from "@/components/organisation-lookup/OrganisationLookupDialog";
+import { OrganisationLookupButton } from "@/containers/organisation-lookup/OrganisationLookupButton";
+import { OrganisationLookupDialog } from "@/containers/organisation-lookup/OrganisationLookupDialog";
 import { TextInputField } from "@/fields/TextInputField";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";

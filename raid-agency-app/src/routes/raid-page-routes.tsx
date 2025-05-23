@@ -1,4 +1,4 @@
-import { ProtectedRoute } from "@/components/protected-route";
+import { ProtectedRoute } from "@/pages/protected-route";
 import { MintRaid } from "@/pages/mint-raid";
 import { RaidDisplay } from "@/pages/raid-display";
 import { RaidEdit } from "@/pages/raid-edit";

@@ -1,5 +1,5 @@
 import { AnchorButtons } from "@/components/anchor-buttons";
-import { RaidValidationSchema } from "@/components/validation";
+import { RaidValidationSchema } from "@/entities/validation";
 import { AccessForm } from "@/entities/access/forms/access-form";
 import { AlternateIdentifiersForm } from "@/entities/alternate-identifier/forms/alternate-identifiers-form";
 import { AlternateUrlsForm } from "@/entities/alternate-url/forms/alternate-urls-form";
