@@ -12,23 +12,27 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SchemaOrg {
+public class ResearchProject {
     @JsonProperty("@context")
-    private Context context;
+    @Builder.Default
+    private String context = "https://schema.org";
 
     @JsonProperty("@type")
+    @Builder.Default
     private String type = "ResearchProject";
 
     @JsonProperty("@id")
     private String id;
-    private String identifier;
+    private List<Identifier> identifier;
     private String name;
-    private String startDate;
-    private String endDate;
-    private ContentAccessMode contentAccessMode;
-    private List<Contributor> contributor;
-    private List<Contributor> principalInvestigator;
+    private List<String> alternateName;
+    private String foundingDate;
+    private String dissolutionDate;
+    private List<Description> description;
+    private List<Member> member;
     private List<Sponsor> sponsor;
     private String license;
     private Publisher publisher;
+    private List<Keyword> keywords;
+    private List<Place> location;
 }

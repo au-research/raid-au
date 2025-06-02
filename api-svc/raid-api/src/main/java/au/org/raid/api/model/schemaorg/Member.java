@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
-public class ContentAccessMode {
+public class Member {
     @JsonProperty("@type")
-    @Builder.Default
-    private String type = "CreativeWork";
-    private String conditionsOfAccess;
-    private String accessibilitySummary;
+    private String type;
+    private String identifier;
+    private List<OrganizationRole> memberOf;
 }

@@ -8,15 +8,10 @@ import java.util.List;
 
 @Data
 @Builder
-public class Contributor {
+public class Person {
+    @Builder.Default
     @JsonProperty("@type")
     private String type = "Person";
-    @JsonProperty("@id")
-    private String id;
     private String identifier;
-    private List<String> roleName;
-    private List<OrganizationRole> hasOccupation;
-    private boolean leadOrSupervisor;
-    private boolean contactPoint;
-
+    private List<OrganizationRole> memberOf;
 }

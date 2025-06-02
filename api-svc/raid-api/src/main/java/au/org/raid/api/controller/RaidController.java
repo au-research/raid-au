@@ -3,8 +3,8 @@ package au.org.raid.api.controller;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationException;
-import au.org.raid.api.model.datacite.factory.SchemaOrgFactory;
-import au.org.raid.api.model.schemaorg.SchemaOrg;
+import au.org.raid.api.model.datacite.factory.ResearchProjectFactory;
+import au.org.raid.api.model.schemaorg.ResearchProject;
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.RaidIngestService;
 import au.org.raid.api.service.ServicePointService;
@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,7 +53,7 @@ public class RaidController implements RaidApi {
     private final RaidHistoryService raidHistoryService;
     private final ServicePointService servicePointService;
     private final ObjectMapper objectMapper;
-    private final SchemaOrgFactory schemaOrgFactory;
+    private final ResearchProjectFactory researchProjectFactory;
 
     @Override
     @SneakyThrows
@@ -122,15 +121,15 @@ public class RaidController implements RaidApi {
     }
 
     @GetMapping("/schemaorg")
-    public ResponseEntity<List<SchemaOrg>> findAllRaids() {
+    public ResponseEntity<List<ResearchProject>> findAllRaids() {
         //TODO: filter for service point owner/raid admin/raid user if embargoed
-        List<SchemaOrg> raids;
+        List<ResearchProject> raids;
 
         final var servicePointId = getServicePointId();
 
         raids = raidIngestService.findAllByServicePointIdOrHandleIn(servicePointId)
                 .stream().filter(this::isViewable)
-                .map(schemaOrgFactory::create)
+                .map(researchProjectFactory::create)
                 .toList();
 
         return ResponseEntity.ok(raids);

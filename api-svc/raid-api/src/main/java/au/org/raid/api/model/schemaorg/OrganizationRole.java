@@ -7,8 +7,10 @@ import lombok.Data;
 @Data
 @Builder
 public class OrganizationRole {
+    @Builder.Default
     @JsonProperty("@type")
-    private String type;
+    private String type = "OrganizationRole";
     private String roleName;
-    private TemporalCoverage temporalCoverage;
+    private String startDate;
+    private String endDate;
 }

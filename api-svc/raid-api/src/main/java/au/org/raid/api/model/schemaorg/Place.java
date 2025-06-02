@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ContentAccessMode {
+public class Place {
     @JsonProperty("@type")
     @Builder.Default
-    private String type = "CreativeWork";
-    private String conditionsOfAccess;
-    private String accessibilitySummary;
+    private String type = "Place";
+    private String identifier;
+    private String name;
 }
