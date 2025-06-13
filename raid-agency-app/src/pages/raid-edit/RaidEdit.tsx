@@ -16,7 +16,6 @@ import {
   Home as HomeIcon,
 } from "@mui/icons-material";
 import {Container, Stack} from "@mui/material";
-
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useEffect, useMemo} from "react";
 import {useNavigate, useParams} from "react-router-dom";
@@ -54,7 +53,7 @@ function createEditRaidPageBreadcrumbs({
 }
 
 export const RaidEdit = () => {
-  const { openErrorDialog } = useErrorDialog();
+  const { openErrorDialog} = useErrorDialog();
   const { authenticated, isInitialized, token, tokenParsed } = useKeycloak();
   const navigate = useNavigate();
 

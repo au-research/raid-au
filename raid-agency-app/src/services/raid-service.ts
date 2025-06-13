@@ -49,7 +49,7 @@ export const raidService = {
         });
 
         if (!response.ok) {
-            throw new Error(`RAiD could not be created`);
+            throw new Error(await response.text());
         }
 
         return await response.json() as RaidDto;
@@ -61,11 +61,9 @@ export const raidService = {
             method: "PUT",
             body: JSON.stringify(raidToBeUpdated),
         });
-
         if (!response.ok) {
-            throw new Error(`RAiD could not be updated`);
+            throw new Error(await response.text());
         }
-
         return await response.json() as RaidDto;
     },
 };

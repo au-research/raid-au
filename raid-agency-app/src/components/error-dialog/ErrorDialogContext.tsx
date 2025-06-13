@@ -1,7 +1,7 @@
 import { createContext } from "react";
 
 interface ErrorDialogContextInterface {
-  openErrorDialog: (content: string[], duration?: number) => void;
+  openErrorDialog: (content: { failures: string[]; title: string; }, duration?: number) => void;
   closeErrorDialog: () => void;
 }
 

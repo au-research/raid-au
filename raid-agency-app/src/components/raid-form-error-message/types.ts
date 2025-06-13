@@ -14,3 +14,13 @@ export type Failure = {
   errorType: string;
   message: string;
 };
+
+export interface ErrorMessage {
+  title: string;
+  failures: string[];
+}
+
+export interface ParsedErrorMessage {
+  title?: string;
+  failures?: Failure[];
+}
