@@ -1,12 +1,12 @@
 import { ErrorDialogContext } from "@/components/error-dialog";
-import { AlertTitle, Button, Dialog } from "@mui/material";
+import { Alert, Button } from "@mui/material";
 import React, { PropsWithChildren, useState } from "react";
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { styled } from '@mui/material/styles';
+import { BootstrapDialog } from "./ErrorDialogStyles";
 
 export interface ErrorDialogStateInterface {
   open: boolean;
@@ -60,33 +60,18 @@ export const ErrorDialogProvider: React.FC<PropsWithChildren<unknown>> = ({
     () => ({ openErrorDialog, closeErrorDialog }),
     [openErrorDialog, closeErrorDialog]
   );
-  const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2),
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1),
-  },
-}));
+
   return (
     <ErrorDialogContext.Provider value={contextValue}>
-      {/* <Dialog onClose={closeErrorDialog} open={errorDialogState.open}>
-        <Alert variant="outlined" severity="error">
-          <AlertTitle>{errorDialogState.content.title}</AlertTitle>
-          <ul>
-            {errorDialogState.content.failures.map((message, index) => (
-              <li key={index}>{message}</li>
-            ))}
-          </ul>
-        </Alert>
-      </Dialog> */}
       <BootstrapDialog
         onClose={closeErrorDialog}
         aria-labelledby="customized-dialog-title"
         open={errorDialogState.open}
       >
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          <AlertTitle>{errorDialogState.content.title}</AlertTitle>
+          <Alert severity="error" variant="filled">
+            {errorDialogState.content.title}
+          </Alert>
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -94,13 +79,15 @@ export const ErrorDialogProvider: React.FC<PropsWithChildren<unknown>> = ({
           sx={(theme) => ({
             position: 'absolute',
             right: 8,
-            top: 8,
-            color: theme.palette.grey[500],
-          })}
+            top: 4,
+            color: theme.palette.grey[100],
+            '&:hover': { color: theme.palette.grey[500], // Change color on hover
+            backgroundColor: theme.palette.grey[100], // Change background on hover
+          }})}
         >
           <CloseIcon />
         </IconButton>
-        <DialogContent dividers>
+        <DialogContent >
           <ul>
             {errorDialogState.content.failures.map((message, index) => (
               <li key={index}>{message}</li>
@@ -109,7 +96,7 @@ export const ErrorDialogProvider: React.FC<PropsWithChildren<unknown>> = ({
         </DialogContent>
         <DialogActions>
           <Button autoFocus onClick={closeErrorDialog}>
-            Ok
+            Close
           </Button>
         </DialogActions>
       </BootstrapDialog>

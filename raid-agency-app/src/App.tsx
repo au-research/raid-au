@@ -39,6 +39,18 @@ export function App() {
           background: {
             default: prefersDarkMode ? "#000" : grey[50],
           },
+          error: {
+            main: "#d32f2f",
+          },
+          warning: {
+            main: "#f57c00",
+          },
+          info: {
+            main: "#1976d2",
+          },
+          success: {
+            main: "#2e7d32",
+          },
         },
       }),
     [prefersDarkMode]
