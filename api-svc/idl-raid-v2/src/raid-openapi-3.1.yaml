@@ -1852,11 +1852,15 @@ components:
       description: ""
       properties:
         additionalProperty:
-          anyOf:
-          - $ref: "#/components/schemas/RegistrationAgencySchemaOrg"
-          - $ref: "#/components/schemas/OwnerSchemaOrg"
-          - $ref: "#/components/schemas/TraditionalKnowledgeLabelSchemaOrg"
-          - type: "null"
+          items:
+            $ref: "#/components/schemas/Any"
+            anyOf:
+            - $ref: "#/components/schemas/RegistrationAgencySchemaOrg"
+            - $ref: "#/components/schemas/OwnerSchemaOrg"
+            - $ref: "#/components/schemas/TraditionalKnowledgeLabelSchemaOrg"
+          type:
+          - "array"
+          - "null"
         alternateName:
           description: "Other than current primary title value"
           type:

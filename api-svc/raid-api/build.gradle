@@ -174,8 +174,6 @@ task buildInfo(type: WriteProperties) {
   comment = "This file built by Gradle task buildInfo"
 
   property("build.version", project.version)
-//  property("build.commitId", rootProject.gitCommitHash)
-  // we don't use it for stuff, it's for people, so format it nice
   property("build.buildDate", new Date().toString())
 }
 processResources.dependsOn buildInfo

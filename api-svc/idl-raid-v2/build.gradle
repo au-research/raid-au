@@ -36,12 +36,15 @@ tasks.register('assembleOpenAPIV2Specs', AssembleOpenAPI) {
   openAPITemplateFile = file("src/template-raid-openapi-3.1.yaml")
   generatedSchemaFiles = [file("../datamodel/generated/v2/raid-jsonschema.json"), file("../datamodel/generated/v2/researchproject.json")]
   outputFile = file("src/raid-openapi-3.1.yaml")
-}
+  dependsOn ":api-svc:datamodel:generateStrictJsonSchemaV2"
+  dependsOn ":api-svc:datamodel:generateJSONSchemaV2ResearchProject"}
 
 tasks.register('assembleOpenAPIV2InternalSpecs', AssembleOpenAPI) {
   openAPITemplateFile = file("src/template-raid-openapi-3.1.yaml")
-  generatedSchemaFiles = [file("../datamodel/generated/v2/raid-jsonschema.json"), file("../datamodel/generated/v2/researchproject.json")]
+  generatedSchemaFiles = [file("../datamodel/generated/v2/raid-strict-jsonschema.json"), file("../datamodel/generated/v2/researchproject.json")]
   outputFile = file("src/raid-openapi-strict-3.1.yaml")
+  dependsOn ":api-svc:datamodel:generateStrictJsonSchemaV2"
+  dependsOn ":api-svc:datamodel:generateJSONSchemaV2ResearchProject"
 }
 
 clean {

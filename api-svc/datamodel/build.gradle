@@ -40,32 +40,39 @@ tasks.register('buildDatamodelSite', Exec) {
 tasks.register('generateJSONSchemaV2', Exec) {
   dependsOn "pullLinkMLImage"
   commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-json-schema', 'raid-core.yaml'
+  outputs.file('generated/v2/raid-jsonschema.json')
   doFirst {
-    standardOutput new FileOutputStream("api-svc/datamodel/generated/v2/raid-jsonschema.json")
+    def outputFile = file('generated/v2/raid-jsonschema.json')
+    outputFile.parentFile.mkdirs()
+    standardOutput = new FileOutputStream(outputFile)
   }
 }
 
 tasks.register('generateJSONSchemaV2ResearchProject', Exec) {
-  dependsOn "pullLinkMLImage"
+  dependsOn "generateJSONSchemaV2"
   commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-json-schema', 'researchproject.yaml'
+  outputs.file('generated/v2/researchproject.json')
   doFirst {
-    standardOutput new FileOutputStream("api-svc/datamodel/generated/v2/researchproject.json")
-  }
+    def outputFile = file('generated/v2/researchproject.json')
+    outputFile.parentFile.mkdirs()
+    standardOutput = new FileOutputStream(outputFile)  }
 }
 
 tasks.register('generateSHACLV2', Exec) {
   dependsOn "pullLinkMLImage"
   commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-shacl', 'raid-core.yaml'
+  outputs.file("api-svc/datamodel/generated/v2/raid-shapes.ttl")
   doFirst {
-    standardOutput new FileOutputStream("api-svc/datamodel/generated/v2/raid-shapes.ttl")
+    file('api-svc/datamodel/generated/v2').mkdirs()
   }
 }
 
 tasks.register('generateJSONLDContextV2', Exec) {
   dependsOn "pullLinkMLImage"
   commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-jsonld-context', 'raid-core.yaml'
+  outputs.file("api-svc/datamodel/generated/v2/raid-context.jsonld")
   doFirst {
-    standardOutput new FileOutputStream("api-svc/datamodel/generated/v2/raid-context.jsonld")
+    file('api-svc/datamodel/generated/v2').mkdirs()
   }
 }
 
@@ -73,8 +80,9 @@ tasks.register('generateJSONLDContextV2', Exec) {
 tasks.register('generateOWLContextV2', Exec) {
   dependsOn "pullLinkMLImage"
   commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-owl', '-f', 'ttl', 'raid-core.yaml'
+  outputs.file("api-svc/datamodel/generated/v2/raid-ontology.ttl")
   doFirst {
-    standardOutput new FileOutputStream("api-svc/datamodel/generated/v2/raid-ontology.ttl")
+    file('api-svc/datamodel/generated/v2').mkdirs()
   }
 }
 
@@ -102,6 +110,9 @@ tasks.register('generateStrictJsonSchemaV2', AddStaticEnums) {
   enumInfoFiles = [file("../../buildSrc/enum2table.yaml"), file("../../buildSrc/extended-enum2table.yaml")]
   generatedSchemaFile = file("generated/v2/raid-jsonschema.json")
   outputFile = file("generated/v2/raid-strict-jsonschema.json")
+  doFirst {
+    file('api-svc/datamodel/generated/v2').mkdirs()
+  }
 }
 
 tasks.register('generateAllV2') {
@@ -112,6 +123,8 @@ tasks.register('generateAllV2') {
   dependsOn "generateSchemaDocsV2"
   dependsOn "generateDatamodelDocsV2"
   dependsOn "generateSchemaOrgDocsV2"
+}
 
-
+clean {
+  delete './generated'
 }
