@@ -1983,6 +1983,7 @@ components:
       properties:
         additionalProperty:
           items:
+            $ref: "#/components/schemas/Any"
             anyOf:
             - $ref: "#/components/schemas/RegistrationAgencySchemaOrg"
             - $ref: "#/components/schemas/OwnerSchemaOrg"
@@ -1998,6 +1999,7 @@ components:
         description:
           description: "Primary description or the only description is added as string."
           items:
+            $ref: "#/components/schemas/Any"
             anyOf:
             - type: "string"
             - $ref: "#/components/schemas/DescriptionSchemaOrg"
@@ -2014,6 +2016,7 @@ components:
           type: "string"
         identifier:
           items:
+            $ref: "#/components/schemas/Any"
             anyOf:
             - type: "string"
             - $ref: "#/components/schemas/AlternativeIdentifierSchemaOrg"
@@ -2033,6 +2036,7 @@ components:
           - type: "null"
         member:
           items:
+            $ref: "#/components/schemas/Any"
             anyOf:
             - $ref: "#/components/schemas/PersonSchemaOrg"
             - $ref: "#/components/schemas/OrganisationSchemaOrg"
@@ -2041,6 +2045,7 @@ components:
           - "null"
         member_of:
           items:
+            $ref: "#/components/schemas/Any"
             anyOf:
             - $ref: "#/components/schemas/ContributorPositionSchemaOrg"
             - $ref: "#/components/schemas/ContributorRoleSchemaOrg"

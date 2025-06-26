@@ -47,11 +47,13 @@ classes:
           - raid:id
         required: true
         multivalued: true
+        range: Any
         any_of:
           - range: string
           - range: AlternativeIdentifierSchemaOrg
       additionalProperty:
         slot_uri: schema:additionalProperty
+        range: Any
         multivalued: true
         any_of:
           - range: RegistrationAgencySchemaOrg
@@ -85,6 +87,7 @@ classes:
         slot_uri: schema:description
         exact_mappings:
           - raid:text
+        range: Any
         multivalued: true
         any_of:
           - range: string
@@ -92,12 +95,14 @@ classes:
         description: Primary description or the only description is added as string.
       member:
         slot_uri: schema:member
+        range: Any
         any_of:
           - range: PersonSchemaOrg
           - range: OrganisationSchemaOrg
         multivalued: true
       member_of:
         slot_uri: schema:member_of
+        range: Any
         any_of:
           - range: ContributorPositionSchemaOrg
           - range: ContributorRoleSchemaOrg
@@ -105,6 +110,7 @@ classes:
         multivalued: true
       isRelatedTo:
         slot_uri: schema:isRelatedTo
+        range: Any
         any_of:
           - range: RelatedObjectSchemaOrg
           - range: RelatedRaidSchemaOrg
