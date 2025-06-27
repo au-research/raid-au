@@ -34,8 +34,18 @@ slots:
     slot_uri: schema:endDate
 
 classes:
-  Any:
-    class_uri: linkml:Any
+  AdditionalProperty:
+    attributes:
+      value:
+        slot_uri: schema:value
+        exact_mappings:
+          - raid:id
+        required: true
+        range: string
+      propertyID:
+        slot_uri: schema:propertyID
+        required: true
+        range: PropertyIDEnum
   ResearchProject:
     class_uri: schema:ResearchProject
     exact_mappings:
@@ -47,18 +57,14 @@ classes:
           - raid:id
         required: true
         multivalued: true
-        range: Any
         any_of:
           - range: string
           - range: AlternativeIdentifierSchemaOrg
       additionalProperty:
         slot_uri: schema:additionalProperty
-        range: Any
         multivalued: true
         any_of:
-          - range: RegistrationAgencySchemaOrg
-          - range: OwnerSchemaOrg
-          - range: TraditionalKnowledgeLabelSchemaOrg
+          - range: AdditionalProperty
       foundingDate:
         slot_uri: schema:foundingDate
         close_mappings:
@@ -87,7 +93,6 @@ classes:
         slot_uri: schema:description
         exact_mappings:
           - raid:text
-        range: Any
         multivalued: true
         any_of:
           - range: string
@@ -95,14 +100,12 @@ classes:
         description: Primary description or the only description is added as string.
       member:
         slot_uri: schema:member
-        range: Any
         any_of:
           - range: PersonSchemaOrg
           - range: OrganisationSchemaOrg
         multivalued: true
       member_of:
         slot_uri: schema:member_of
-        range: Any
         any_of:
           - range: ContributorPositionSchemaOrg
           - range: ContributorRoleSchemaOrg
@@ -110,25 +113,30 @@ classes:
         multivalued: true
       isRelatedTo:
         slot_uri: schema:isRelatedTo
-        range: Any
+        multivalued: true
         any_of:
           - range: RelatedObjectSchemaOrg
           - range: RelatedRaidSchemaOrg
       url:
+        multivalued: true
         slot_uri: schema:url
         exact_mappings:
           - raid:url
         range: string
       keywords:
+        multivalued: true
         slot_uri: schema:keywords
         exact_mappings:
           - raidext:subject
         range: SubjectSchemaOrg
       location:
+        multivalued: true
         slot_uri: schema:location
         exact_mappings:
           - raidext:spatialCoverage
         range: SpatialCoverageSchemaOrg
+  TraditionalKnowledgeLabel:
+    class_uri: https://datamodel.raid.org/core/traditionalKnowledgeLabel
   TraditionalKnowledgeLabelSchemaOrg:
     title: TraditionalKnowledgeLabel
     narrow_mappings:
@@ -144,7 +152,7 @@ classes:
       propertyID:
         slot_uri: schema:propertyID
         required: true
-        range: TraditionalKnowledgeLabelPropertyEnum
+        range: TraditionalKnowledgeLabel
   SpatialCoverageSchemaOrg:
     title: SpatialCoverage
     close_mappings:
@@ -343,6 +351,8 @@ classes:
           - raid:language
         range: string
 
+  RegistrationAgencyPropertyID:
+    class_uri: https://datamodel.raid.org/core/registrationAgency
   RegistrationAgencySchemaOrg:
     title: RegistrationAgency
     narrow_mappings:
@@ -358,8 +368,10 @@ classes:
       propertyID:
         slot_uri: schema:propertyID
         required: true
-        range: RegistrationAgencyPropertyEnum
+        range: RegistrationAgencyPropertyID
 
+  OwnerSchemaOrgPropertyID:
+    class_uri: https://datamodel.raid.org/core/owner
   OwnerSchemaOrg:
     title: Owner
     narrow_mappings:
@@ -375,17 +387,13 @@ classes:
       propertyID:
         slot_uri: schema:propertyID
         required: true
-        range: OwnerPropertyEnum
+        range: OwnerSchemaOrgPropertyID
 enums:
-  RegistrationAgencyPropertyEnum:
-    permissible_values:
-      https://datamodel.raid.org/core/registrationAgency:
-  OwnerPropertyEnum:
-    permissible_values:
-      https://datamodel.raid.org/core/owner:
   AlternativeIdentifierPropertyEnum:
     permissible_values:
       https://datamodel.raid.org/core/alternativeIdentifier:
-  TraditionalKnowledgeLabelPropertyEnum:
+  PropertyIDEnum:
     permissible_values:
-      https://datamodel.raid.org/core/traditionalKnowledgeLabel:
+      "https://datamodel.raid.org/core/traditionalKnowledgeLabel": {}
+      "https://datamodel.raid.org/core/registrationAgency": {}
+      "https://datamodel.raid.org/core/owner": {}
