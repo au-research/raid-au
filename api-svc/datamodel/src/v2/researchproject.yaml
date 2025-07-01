@@ -46,6 +46,14 @@ classes:
         slot_uri: schema:propertyID
         required: true
         range: PropertyIDEnum
+  Member:
+    class_uri: schema:Thing  # or choose a more appropriate base URI
+    attributes:
+      identifier:
+        slot_uri: schema:identifier
+        description: Common identifier attribute for all members
+        range: string
+
   ResearchProject:
     class_uri: schema:ResearchProject
     exact_mappings:
@@ -63,8 +71,7 @@ classes:
       additionalProperty:
         slot_uri: schema:additionalProperty
         multivalued: true
-        any_of:
-          - range: AdditionalProperty
+        range: AdditionalProperty
       foundingDate:
         slot_uri: schema:foundingDate
         close_mappings:
@@ -101,8 +108,8 @@ classes:
       member:
         slot_uri: schema:member
         any_of:
-          - range: PersonSchemaOrg
           - range: OrganisationSchemaOrg
+          - range: PersonSchemaOrg
         multivalued: true
       member_of:
         slot_uri: schema:member_of
@@ -237,13 +244,7 @@ classes:
     exact_mappings:
       - raid:Organisation
     class_uri: schema:Organization
-    attributes:
-      identifier:
-        slot_uri: schema:identifier
-        exact_mappings:
-          - raid:id
-        required: true
-        range: string
+    is_a: Member
   OrganisationRoleSchemaOrg:
     title: OrganisationRole
     class_uri: schema:OrganizationRole
@@ -274,13 +275,8 @@ classes:
     exact_mappings:
       raid:Contributor
     class_uri: schema:Person
+    is_a: Member
     attributes:
-      identifier:
-        slot_uri: schema:identifier
-        exact_mappings:
-          - raid:id
-        range: string
-        multivalued: true
       email:
         slot_uri: schema:email
         exact_mappings:
