@@ -8,6 +8,7 @@ import au.org.raid.api.service.stub.*;
 import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
 import au.org.raid.api.validator.OpenStreetMapUriValidator;
+import au.org.raid.idl.raidv2.model.SpatialCoverageSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -90,15 +91,13 @@ public class ExternalPidService {
     }
 
     @Bean
-    public Map<String, BiFunction<String, String, List<ValidationFailure>>> spatialCoverageUriValidatorMap(
+    public Map<SpatialCoverageSchemaUriEnum, BiFunction<String, String, List<ValidationFailure>>> spatialCoverageUriValidatorMap(
             final GeoNamesUriValidator geoNamesUriValidator,
-            final OpenStreetMapUriValidator openStreetMapUriValidator,
-            @Value("${raid.spatial-coverage.schema-uri.geonames}") final String geoNamesSchemaUri,
-            @Value("${raid.spatial-coverage.schema-uri.openstreetmap}") final String openStreetMapSchemaUri
+            final OpenStreetMapUriValidator openStreetMapUriValidator
     ) {
         return Map.of(
-                geoNamesSchemaUri, geoNamesUriValidator::validate,
-                openStreetMapSchemaUri, openStreetMapUriValidator::validate
+                SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_, geoNamesUriValidator::validate,
+                SpatialCoverageSchemaUriEnum.HTTPS_NOMINATIM_OPENSTREETMAP_ORG_, openStreetMapUriValidator::validate
         );
     }
 }

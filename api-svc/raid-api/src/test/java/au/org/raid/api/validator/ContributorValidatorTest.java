@@ -1,7 +1,6 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.repository.ContributorRepository;
-import au.org.raid.api.util.TestConstants;
 import au.org.raid.db.jooq.tables.records.ContributorRecord;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.Disabled;
@@ -14,17 +13,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE;
-import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_TYPE;
 import static au.org.raid.api.util.TestConstants.VALID_ORCID;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.*;
 
 @Disabled
@@ -50,7 +46,7 @@ class ContributorValidatorTest {
     void missingLeadPositions() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -86,7 +82,7 @@ class ContributorValidatorTest {
     void validContributor() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -117,7 +113,7 @@ class ContributorValidatorTest {
     void multipleLeadPositionsWithYearMonthDates() {
         final var role1 = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position1 = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -136,7 +132,7 @@ class ContributorValidatorTest {
 
         final var role2 = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position2 = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -165,7 +161,7 @@ class ContributorValidatorTest {
     void overlappingPositions() {
         final var role1 = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position1 = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -206,7 +202,7 @@ class ContributorValidatorTest {
     void validOrcid() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -235,7 +231,7 @@ class ContributorValidatorTest {
     void validContributorWithEmail() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -265,7 +261,7 @@ class ContributorValidatorTest {
     void validContributorWithUuid() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -295,7 +291,7 @@ class ContributorValidatorTest {
     void UuidNotFound() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -330,7 +326,7 @@ class ContributorValidatorTest {
     void emailAndUuidPresent() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
@@ -368,7 +364,7 @@ class ContributorValidatorTest {
     void emailAndOrcidPresent() {
         final var role = new ContributorRole()
                 .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
-                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SUPERVISION_);
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
                 .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)

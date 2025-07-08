@@ -1,10 +1,10 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.repository.SubjectTypeRepository;
-import au.org.raid.api.util.SchemaValues;
-import au.org.raid.db.jooq.tables.records.SubjectTypeRecord;
+import au.org.raid.api.repository.dto.SubjectTypeWithSchema;
 import au.org.raid.idl.raidv2.model.Subject;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
+import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +25,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubjectValidatorTest {
+    private static final SubjectSchemaURIEnum SCHEMA_URI = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316;
+
     @Mock
     private SubjectTypeRepository subjectTypeRepository;
 
@@ -41,11 +43,12 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SCHEMA_URI)
                 .keyword(List.of(new SubjectKeyword()));
 
         when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
-        when(subjectTypeRepository.findById("222222")).thenReturn(Optional.of(new SubjectTypeRecord()));
+        when(subjectTypeRepository.findBySubjectTypeIdAndSchemaUri("222222", SCHEMA_URI.getValue()))
+                .thenReturn(Optional.of(new SubjectTypeWithSchema()));
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 
@@ -64,7 +67,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
 
         final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
 
@@ -84,7 +87,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 
@@ -103,9 +106,9 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+                .schemaUri(SCHEMA_URI);
 
-        when(subjectTypeRepository.findById("222222")).thenReturn(Optional.empty());
+        when(subjectTypeRepository.findBySubjectTypeIdAndSchemaUri("222222", SCHEMA_URI.getValue())).thenReturn(Optional.empty());
 
         final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
 
@@ -124,8 +127,6 @@ class SubjectValidatorTest {
         final var subject = new Subject()
                 .id(id);
 
-        when(subjectTypeRepository.findById("222222")).thenReturn(Optional.of(new SubjectTypeRecord()));
-
         final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
 
         assertThat(failures, is(List.of(
@@ -134,48 +135,8 @@ class SubjectValidatorTest {
                         .errorType("invalidValue")
                         .message("must be https://vocabs.ardc.edu.au/viewById/316.")
         )));
-    }
 
-    @Test
-    void addsFailureWithInvalidInvalidSubjectSchemeUri() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/222222";
-
-        final var subject = new Subject()
-                .id(id)
-                .schemaUri("invalid");
-
-        when(subjectTypeRepository.findById("222222")).thenReturn(Optional.of(new SubjectTypeRecord()));
-
-        final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
-
-        assertThat(validationFailures.size(), is(1));
-        assertThat(validationFailures.get(0).getMessage(), is("must be https://vocabs.ardc.edu.au/viewById/316."));
-        assertThat(validationFailures.get(0).getErrorType(), is("invalidValue"));
-        assertThat(validationFailures.get(0).getFieldId(), is("subject[0].schemaUri"));
-    }
-
-    @Test
-    void addsFailureWithInvalidInvalidSubjectAndMissingSubjectSchemeUri() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/222222";
-
-        final var subject = new Subject()
-                .id(id);
-
-        when(subjectTypeRepository.findById("222222")).thenReturn(Optional.empty());
-
-        final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
-
-        assertThat(failures, is(List.of(
-                new ValidationFailure()
-                        .fieldId("subject[0].schemaUri")
-                        .errorType("invalidValue")
-                        .message("must be https://vocabs.ardc.edu.au/viewById/316."),
-                new ValidationFailure()
-                        .fieldId("subject[0].id")
-                        .errorType("invalidValue")
-                        .message("https://linked.data.gov.au/def/anzsrc-for/2020/222222 is not a standard FoR code")
-                )
-        ));
+        verifyNoInteractions(subjectTypeRepository);
     }
 
     @Test
@@ -186,13 +147,14 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SCHEMA_URI)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var failure = new ValidationFailure();
 
         when(keywordValidator.validate(keyword,0,0)).thenReturn(List.of(failure));
-        when(subjectTypeRepository.findById("222222")).thenReturn(Optional.of(new SubjectTypeRecord()));
+        when(subjectTypeRepository.findBySubjectTypeIdAndSchemaUri("222222", SCHEMA_URI.getValue()))
+                .thenReturn(Optional.of(new SubjectTypeWithSchema()));
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 

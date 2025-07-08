@@ -14,7 +14,7 @@ class ContributorRoleFactoryTest {
     @Test
     @DisplayName("Sets all fields")
     void setsAllFields() {
-        final var id = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_CONCEPTUALIZATION_;
+        final var id = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_;
         final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
 
         final var result = factory.create(id.getValue(), schemaUri.getValue());

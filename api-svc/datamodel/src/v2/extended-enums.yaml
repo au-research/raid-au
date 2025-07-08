@@ -7,7 +7,7 @@ imports:
 enums:
   SubjectSchemaURIEnum:
     reachable_from:
-      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-cl-v1-1
+      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-c-v1-6-2
       source_nodes:
         - https://vocabulary.raid.org/subject.schemaUri/193
       relationship_types:
@@ -18,7 +18,7 @@ enums:
       
   SpatialCoverageSchemaUriEnum:
     reachable_from:
-      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-cl-v1-1
+      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-c-v1-6-2
       source_nodes:
         - https://vocabulary.raid.org/spatialCoverage.schemaUri/167
       relationship_types:
@@ -29,7 +29,7 @@ enums:
 
   TraditionalKnowledgeLabelSchemaUriEnum:
     reachable_from:
-      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-cl-v1-1
+      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-c-v1-6-2
       source_nodes:
         - https://vocabulary.raid.org/spatialCoverage.schemaUri/160
       relationship_types:

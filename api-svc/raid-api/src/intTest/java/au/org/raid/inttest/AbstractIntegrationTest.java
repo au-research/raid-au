@@ -110,7 +110,7 @@ public class AbstractIntegrationTest {
                 .description(descriptions)
 
                 .contributor(List.of(contributor(
-                        REAL_TEST_ORCID, ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307, ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SOFTWARE_, today, CONTRIBUTOR_EMAIL)))
+                        REAL_TEST_ORCID, ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307, ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SOFTWARE_, today, CONTRIBUTOR_EMAIL)))
                 .organisation(List.of(organisation(
                         REAL_TEST_ROR, OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182, today)))
                 .access(new Access()
@@ -130,11 +130,11 @@ public class AbstractIntegrationTest {
                                 .language(new Language()
                                         .id(LANGUAGE_ID)
                                         .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML))))
-                        .schemaUri(GEONAMES_SCHEMA_URI)))
+                        .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_)))
                 .subject(List.of(
                         new Subject()
                                 .id("https://linked.data.gov.au/def/anzsrc-for/2020/3702")
-                                .schemaUri("https://vocabs.ardc.edu.au/viewById/316")
+                                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                                 .keyword(List.of(new SubjectKeyword()
                                         .language(new Language()
                                                 .id("eng")

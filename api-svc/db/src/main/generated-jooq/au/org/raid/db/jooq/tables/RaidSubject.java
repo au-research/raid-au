@@ -7,15 +7,28 @@ package au.org.raid.db.jooq.tables;
 import au.org.raid.db.jooq.ApiSvc;
 import au.org.raid.db.jooq.Keys;
 import au.org.raid.db.jooq.tables.records.RaidSubjectRecord;
-import org.jooq.Record;
-import org.jooq.*;
-import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
-import org.jooq.impl.TableImpl;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+
+import org.jooq.Field;
+import org.jooq.ForeignKey;
+import org.jooq.Function3;
+import org.jooq.Identity;
+import org.jooq.Name;
+import org.jooq.Record;
+import org.jooq.Records;
+import org.jooq.Row3;
+import org.jooq.Schema;
+import org.jooq.SelectField;
+import org.jooq.Table;
+import org.jooq.TableField;
+import org.jooq.TableOptions;
+import org.jooq.UniqueKey;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
+import org.jooq.impl.TableImpl;
 
 
 /**
@@ -52,7 +65,7 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
     /**
      * The column <code>api_svc.raid_subject.subject_type_id</code>.
      */
-    public final TableField<RaidSubjectRecord, String> SUBJECT_TYPE_ID = createField(DSL.name("subject_type_id"), SQLDataType.VARCHAR.nullable(false), this, "");
+    public final TableField<RaidSubjectRecord, Integer> SUBJECT_TYPE_ID = createField(DSL.name("subject_type_id"), SQLDataType.INTEGER, this, "");
 
     private RaidSubject(Name alias, Table<RaidSubjectRecord> aliased) {
         this(alias, aliased, null);
@@ -104,7 +117,7 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
 
     @Override
     public List<ForeignKey<RaidSubjectRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.RAID_SUBJECT__RAID_SUBJECT_HANDLE_FKEY, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_ID_FKEY);
+        return Arrays.asList(Keys.RAID_SUBJECT__RAID_SUBJECT_HANDLE_FKEY, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_ID);
     }
 
     private transient Raid _raid;
@@ -126,7 +139,7 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
      */
     public SubjectType subjectType() {
         if (_subjectType == null)
-            _subjectType = new SubjectType(this, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_ID_FKEY);
+            _subjectType = new SubjectType(this, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_ID);
 
         return _subjectType;
     }
@@ -175,14 +188,14 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row3<Integer, String, String> fieldsRow() {
+    public Row3<Integer, String, Integer> fieldsRow() {
         return (Row3) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function3<? super Integer, ? super String, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function3<? super Integer, ? super String, ? super Integer, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -190,7 +203,7 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function3<? super Integer, ? super String, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function3<? super Integer, ? super String, ? super Integer, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }

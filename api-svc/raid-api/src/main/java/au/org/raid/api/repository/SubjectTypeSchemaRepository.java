@@ -19,4 +19,11 @@ public class SubjectTypeSchemaRepository {
                 .where(SUBJECT_TYPE_SCHEMA.ID.eq(id))
                 .fetchOptional();
     }
+
+    public Optional<SubjectTypeSchemaRecord> findByUri(final String uri) {
+        return dslContext.selectFrom(SUBJECT_TYPE_SCHEMA)
+                .where(SUBJECT_TYPE_SCHEMA.URI.eq(uri))
+                .fetchOptional();
+    }
+
 }

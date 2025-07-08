@@ -194,7 +194,7 @@ class RaidRdfServiceTest {
         
         var roles = new ArrayList<ContributorRole>();
         var role = new ContributorRole();
-        role.setId(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_CONCEPTUALIZATION_);
+        role.setId(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_);
         role.setSchemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_);
         roles.add(role);
         contributor.setRole(roles);
@@ -223,7 +223,7 @@ class RaidRdfServiceTest {
         var subjects = new ArrayList<Subject>();
         var subject = new Subject();
         subject.setId("https://linked.data.gov.au/def/anzsrc-for/2020/3702");
-        subject.setSchemaUri("https://vocabs.ardc.edu.au/viewById/316");
+        subject.setSchemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
         
         var keywords = new ArrayList<SubjectKeyword>();
         var keyword = new SubjectKeyword();
@@ -239,7 +239,7 @@ class RaidRdfServiceTest {
         var spatialCoverages = new ArrayList<SpatialCoverage>();
         var spatialCoverage = new SpatialCoverage();
         spatialCoverage.setId("https://www.geonames.org/2158177/melbourne.html");
-        spatialCoverage.setSchemaUri("https://www.geonames.org/");
+        spatialCoverage.setSchemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_);
         
         var places = new ArrayList<SpatialCoveragePlace>();
         var place = new SpatialCoveragePlace();

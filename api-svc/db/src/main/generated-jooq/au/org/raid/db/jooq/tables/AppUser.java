@@ -69,10 +69,10 @@ public class AppUser extends TableImpl<AppUserRecord> {
 
     /**
      * The column <code>api_svc.app_user.email</code>. should be renamed to
-     * "description" or some such.  api-keys do not and orcid 
+     * "description" or some such.  api-keys do not and orcid
      *   sign-ins might not have email address
      */
-    public final TableField<AppUserRecord, String> EMAIL = createField(DSL.name("email"), SQLDataType.VARCHAR(256).nullable(false), this, "should be renamed to \"description\" or some such.  api-keys do not and orcid \n  sign-ins might not have email address");
+    public final TableField<AppUserRecord, String> EMAIL = createField(DSL.name("email"), SQLDataType.VARCHAR(256).nullable(false), this, "should be renamed to \"description\" or some such.  api-keys do not and orcid\n  sign-ins might not have email address");
 
     /**
      * The column <code>api_svc.app_user.client_id</code>.
@@ -86,10 +86,10 @@ public class AppUser extends TableImpl<AppUserRecord> {
 
     /**
      * The column <code>api_svc.app_user.id_provider</code>. not a real identity
-     * field, its just redundant info we figure it out from 
+     * field, its just redundant info we figure it out from
      *   the clientId or issuer and store it for easy analysis
      */
-    public final TableField<AppUserRecord, IdProvider> ID_PROVIDER = createField(DSL.name("id_provider"), SQLDataType.VARCHAR.nullable(false).asEnumDataType(au.org.raid.db.jooq.enums.IdProvider.class), this, "not a real identity field, its just redundant info we figure it out from \n  the clientId or issuer and store it for easy analysis");
+    public final TableField<AppUserRecord, IdProvider> ID_PROVIDER = createField(DSL.name("id_provider"), SQLDataType.VARCHAR.nullable(false).asEnumDataType(au.org.raid.db.jooq.enums.IdProvider.class), this, "not a real identity field, its just redundant info we figure it out from\n  the clientId or issuer and store it for easy analysis");
 
     /**
      * The column <code>api_svc.app_user.role</code>.
@@ -103,10 +103,10 @@ public class AppUser extends TableImpl<AppUserRecord> {
 
     /**
      * The column <code>api_svc.app_user.token_cutoff</code>. Any endpoint call
-     * with a bearer token issued after this point will be 
+     * with a bearer token issued after this point will be
      *   rejected. Any authentication attempt after this point will be rejected.
      */
-    public final TableField<AppUserRecord, LocalDateTime> TOKEN_CUTOFF = createField(DSL.name("token_cutoff"), SQLDataType.LOCALDATETIME(6), this, "Any endpoint call with a bearer token issued after this point will be \n  rejected. Any authentication attempt after this point will be rejected.");
+    public final TableField<AppUserRecord, LocalDateTime> TOKEN_CUTOFF = createField(DSL.name("token_cutoff"), SQLDataType.LOCALDATETIME(6), this, "Any endpoint call with a bearer token issued after this point will be\n  rejected. Any authentication attempt after this point will be rejected.");
 
     /**
      * The column <code>api_svc.app_user.date_created</code>.

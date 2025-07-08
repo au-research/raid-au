@@ -1,390 +1,277 @@
-id: https://schema.org/
-name: researchproject
-version: 2
+id: https://example.org/raid-schema-org
+name: raid-schema-org
+title: RAiD to Schema.org ResearchProject Mapping
+description: LinkML schema for mapping RAiD (Research Activity Identifier) to schema.org ResearchProject
+
 prefixes:
   linkml: https://w3id.org/linkml/
-  schema: http://schema.org/
-  raid: https://datamodel.raid.org/core/
-  raidext: https://datamodel.raid.org/extended/
+  schema: https://schema.org/
+  raid: https://vocabulary.raid.org/
+  credit: https://credit.niso.org/
+  orcid: https://orcid.org/
+  ror: https://ror.org/
+
+default_prefix: raid
+
 imports:
   - linkml:types
 
-slots:
-  identifier:
-    slot_uri: schema:identifier
-  name:
-    slot_uri: schema:name
-  alternateName:
-    slot_uri: schema:alternateName
-  member:
-    slot_uri: schema:member
-  url:
-    slot_uri: schema:url
-  value:
-    slot_uri: schema:value
-  propertyID:
-    slot_uri: schema:propertyID
-  additionalType:
-    slot_uri: schema:additionalType
-  roleName:
-    slot_uri: schema:roleName
-  startDate:
-    slot_uri: schema:startDate
-  endDate:
-    slot_uri: schema:endDate
-
 classes:
-  AdditionalProperty:
-    attributes:
-      value:
-        slot_uri: schema:value
-        exact_mappings:
-          - raid:id
-        required: true
-        range: string
-      propertyID:
-        slot_uri: schema:propertyID
-        required: true
-        range: PropertyIDEnum
-  Member:
-    class_uri: schema:Thing  # or choose a more appropriate base URI
-    attributes:
-      identifier:
-        slot_uri: schema:identifier
-        description: Common identifier attribute for all members
-        range: string
-
   ResearchProject:
     class_uri: schema:ResearchProject
-    exact_mappings:
-      - raid:RaidDto
+    description: A research project with contributors and organizational relationships
     attributes:
+      context:
+        range: string
+        description: The schema.org context
+        alias: "@context"
+        annotations:
+          json_property: "@context"
+      type:
+        range: string
+        description: The schema.org type
+        ifabsent: string(ResearchProject)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: The RAiD identifier
+        alias: "@id"
+        annotations:
+          json_property: "@id"
       identifier:
         slot_uri: schema:identifier
         exact_mappings:
           - raid:id
         required: true
-        multivalued: true
-        any_of:
-          - range: string
-          - range: AlternativeIdentifierSchemaOrg
-      additionalProperty:
-        slot_uri: schema:additionalProperty
-        multivalued: true
-        range: AdditionalProperty
-      foundingDate:
-        slot_uri: schema:foundingDate
-        close_mappings:
-          - raid:startDate
-        required: true
-        range: date
-      dissolutionDate:
-        slot_uri: schema:dissolutionDate
-        close_mappings:
-          - raid:endDate
-        range: date
+        range: PropertyValue
       name:
         slot_uri: schema:name
-        exact_mappings:
-          - raid:text
-        required: true
         range: string
-        description: Latest primary title value
-      alternateName:
-        slot_uri: schema:alternateName
-        exact_mappings:
-          - raid:text
-        range: string
-        description: Other than current primary title value
+        description: The title/name of the research project
       description:
         slot_uri: schema:description
-        exact_mappings:
-          - raid:text
+        range: string
+        description: Description of the research project
+      foundingDate:
+        slot_uri: schema:foundingDate
+        range: date
+        description: When the research project was established
+      dissolutionDate:
+        slot_uri: schema:dissolutionDate
+        range: date
+        description: When the research project was completed
+      keywords:
+        slot_uri: schema:keywords
+        range: string
+        description: Keywords associated with the project
+      location:
+        slot_uri: schema:location
+        range: Place
+        inlined: true
+        description: Geographic location of the project
+      knowsAbout:
+        slot_uri: schema:knowsAbout
+        range: DefinedTerm
         multivalued: true
-        any_of:
-          - range: string
-          - range: DescriptionSchemaOrg
-        description: Primary description or the only description is added as string.
+        inlined: true
+        inlined_as_list: true
+        description: Research subjects/domains the project covers
       member:
         slot_uri: schema:member
-        any_of:
-          - range: OrganisationSchemaOrg
-          - range: PersonSchemaOrg
+        range: ResearchProjectRole
         multivalued: true
-      member_of:
-        slot_uri: schema:member_of
-        any_of:
-          - range: ContributorPositionSchemaOrg
-          - range: ContributorRoleSchemaOrg
-          - range: OrganisationRoleSchemaOrg
+        inlined: true
+        inlined_as_list: true
+        description: Roles of people and organizations in the project
+      funder:
+        slot_uri: schema:funder
+        range: ResearchProjectRole
         multivalued: true
-      isRelatedTo:
-        slot_uri: schema:isRelatedTo
-        multivalued: true
-        any_of:
-          - range: RelatedObjectSchemaOrg
-          - range: RelatedRaidSchemaOrg
-      url:
-        multivalued: true
-        slot_uri: schema:url
-        exact_mappings:
-          - raid:url
-        range: string
-      keywords:
-        multivalued: true
-        slot_uri: schema:keywords
-        exact_mappings:
-          - raidext:subject
-        range: SubjectSchemaOrg
-      location:
-        multivalued: true
-        slot_uri: schema:location
-        exact_mappings:
-          - raidext:spatialCoverage
-        range: SpatialCoverageSchemaOrg
-  TraditionalKnowledgeLabel:
-    class_uri: https://datamodel.raid.org/core/traditionalKnowledgeLabel
-  TraditionalKnowledgeLabelSchemaOrg:
-    title: TraditionalKnowledgeLabel
-    narrow_mappings:
-      - raidext:TraditionalKnowledgeLabel
-    class_uri: schema:PropertyValue
+        inlined: true
+        inlined_as_list: true
+        description: Organizations that fund the project
+      parentOrganization:
+        slot_uri: schema:parentOrganization
+        range: Organization
+        inlined: true
+        description: The RAiD identifier owner
+  Organization:
+    class_uri: schema:Organization
     attributes:
-      value:
-        slot_uri: schema:value
-        narrow_mappings:
-          - raid:id
-        required: true
+      type:
         range: string
-      propertyID:
-        slot_uri: schema:propertyID
-        required: true
-        range: TraditionalKnowledgeLabel
-  SpatialCoverageSchemaOrg:
-    title: SpatialCoverage
-    close_mappings:
-      - raidext:SpatialCoverage
-    class_uri: schema:Place
-    attributes:
-      identifier:
-        slot_uri: schema:identifier
-        exact_mappings:
-          - raid:id
-        required: true
+        description: The schema.org type
+        ifabsent: string(Organization)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
         range: string
+        description: The ROR of the organization
+        alias: "@id"
+        annotations:
+          json_property: "@id"
       name:
         slot_uri: schema:name
-        exact_mappings:
-          - raid:text
         range: string
-  SubjectSchemaOrg:
-    title: Subject
-    exact_mappings:
-      - raidext:Subject
-    class_uri: schema:DefinedTerm
-    attributes:
-      termCode:
-        slot_uri: schema:termCode
-        exact_mappings:
-          - raid:id
         required: true
-        range: string
-      inDefinedTermSet:
-        slot_uri: schema:inDefinedTermSet
-        close_mappings:
-          - raid:schemaUri
-        required: true
-        range: string
-      alternateName:
-        slot_uri: schema:alternateName
-        close_mappings:
-          raid:text
-        range: string
-        multivalued: true
-  AlternativeIdentifierSchemaOrg:
-    title: AlternativeIdentifier
-    class_uri: schema:PropertyValue
-    attributes:
-      value:
-        slot_uri: schema:value
-        narrow_mappings:
-          - raid:id
-        required: true
-        range: string
-      propertyID:
-        slot_uri: schema:propertyID
-        required: true
-        range: AlternativeIdentifierPropertyEnum
-      additionalType:
-        range: string
-  RelatedRaidSchemaOrg:
-    title: RelatedRaid
-    class_uri: schema:Thing
-    attributes:
+        description: Name of the organization
       identifier:
         slot_uri: schema:identifier
+        range: PropertyValue
         required: true
-        range: string
-      additionalType:
-        range: string
-  RelatedObjectSchemaOrg:
-    title: RelatedObject
-    class_uri: schema:Thing
+        description: Extended identifier information
+  ResearchProjectRole:
+    class_uri: schema:Role
+    description: A role held by a person or organization in the project
     attributes:
-      url:
-        slot_uri: schema:url
-        required: true
+      type:
         range: string
-      additionalType:
-        slot_uri: schema:additionalType
-        multivalued: true
-        range: string
-  OrganisationSchemaOrg:
-    title: Organisation
-    exact_mappings:
-      - raid:Organisation
-    class_uri: schema:Organization
-    is_a: Member
-  OrganisationRoleSchemaOrg:
-    title: OrganisationRole
-    class_uri: schema:OrganizationRole
-    attributes:
+        description: The schema.org type
+        ifabsent: string(Role)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: Identifier for the role (position ID or CRediT role URI)
+        alias: "@id"
+        annotations:
+          json_property: "@id"
       roleName:
         slot_uri: schema:roleName
-        exact_mappings:
-          raid:id
-        required: true
         range: string
+        required: true
+        description: Name of the role
       startDate:
         slot_uri: schema:startDate
-        exact_mappings:
-          - raid:startDate
-        required: true
         range: date
+        description: When the role started
       endDate:
         slot_uri: schema:endDate
-        exact_mappings:
-          - raid:endDate
         range: date
+        description: When the role ended (if applicable)
       member:
         slot_uri: schema:member
+        range: Member
         required: true
-        range: OrganisationSchemaOrg
-  PersonSchemaOrg:
-    title: Person
-    exact_mappings:
-      raid:Contributor
-    class_uri: schema:Person
-    is_a: Member
-    attributes:
-      email:
-        slot_uri: schema:email
-        exact_mappings:
-          - raid:email
-        range: string
-      memberOf:
-        slot_uri: schema:memberOf
-        required: true
-        range: string
-        description: Value is the ResearchProject.Identifier.id
-  ContributorPositionSchemaOrg:
-    title: ContributorPosition
-    narrow_mappings:
-      - raid:ContributorPosition
-    class_uri: schema:Role
-    attributes:
-      roleName:
-        slot_uri: schema:roleName
-        exact_mappings:
-          - raid:id
-        required: true
-        range: string
-      startDate:
-        slot_uri: schema:startDate
-        exact_mappings:
-          - raid:startDate
-        range: date
-      endDate:
-        slot_uri: schema:endDate
-        exact_mappings:
-          - raid:endDate
-        range: date
-      member:
-        slot_uri: schema:member
-        required: true
-        range: PersonSchemaOrg
-  ContributorRoleSchemaOrg:
-    title: ContributorRole
-    narrow_mappings:
-      - raid:ContributorRole
-    class_uri: schema:Role
-    attributes:
-      roleName:
-        slot_uri: schema:roleName
-        exact_mappings:
-          - raid:id
-        required: true
-        range: string
-      member:
-        slot_uri: schema:member
-        required: true
-        range: PersonSchemaOrg
+        inlined: true
+        description: The person or organization holding this role
 
-  DescriptionSchemaOrg:
-    title: Description
-    exact_mappings:
-      - raid:Description
-    class_uri: schema:TextObject
+  Member:
+    description: A person or organization involved in the research project
     attributes:
+      type:
+        range: string
+        description: The schema.org type (Person or Organization)
+        required: true
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: Identifier for the member (ORCID for persons, ROR for organizations)
+        alias: "@id"
+        annotations:
+          json_property: "@id"
+      identifier:
+        slot_uri: schema:identifier
+        range: PropertyValue
+        inlined: true
+        description: Structured identifier with type information
+  Place:
+    class_uri: schema:Place
+    description: Geographic location
+    attributes:
+      type:
+        range: string
+        description: The schema.org type
+        ifabsent: string(Place)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: GeoNames or other geographic identifier
+        alias: "@id"
+        annotations:
+          json_property: "@id"
+      name:
+        slot_uri: schema:name
+        range: string
+        description: Name of the place
       additionalType:
         slot_uri: schema:additionalType
-        narrow_mappings:
-          - raid:type
-        range: string
-      inLanguage:
-        slot_uri: schema:inLanguage
-        exact_mappings:
-          - raid:language
-        range: string
-
-  RegistrationAgencyPropertyID:
-    class_uri: https://datamodel.raid.org/core/registrationAgency
-  RegistrationAgencySchemaOrg:
-    title: RegistrationAgency
-    narrow_mappings:
-      - raid:Owner
-    class_uri: schema:PropertyValue
+        range: uriorcurie
+        description: Additional type information
+  DefinedTerm:
+    class_uri: schema:DefinedTerm
+    description: A term from a controlled vocabulary
     attributes:
+      type:
+        range: string
+        description: The schema.org type
+        ifabsent: string(DefinedTerm)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: URI identifier for the term
+        alias: "@id"
+        annotations:
+          json_property: "@id"
+      name:
+        slot_uri: schema:name
+        range: string
+        description: Human-readable name of the term
+      inDefinedTermSet:
+        slot_uri: schema:inDefinedTermSet
+        range: uriorcurie
+        description: The vocabulary/taxonomy this term belongs to
+  PropertyValue:
+    class_uri: schema:PropertyValue
+    description: A property-value pair for additional metadata
+    attributes:
+      type:
+        range: string
+        description: The schema.org type
+        ifabsent: string(PropertyValue)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      name:
+        slot_uri: schema:name
+        range: string
+        description: Property name
       value:
         slot_uri: schema:value
-        exact_mappings:
-          - raid:id
-        required: true
         range: string
+        description: Property value
       propertyID:
         slot_uri: schema:propertyID
-        required: true
-        range: RegistrationAgencyPropertyID
+        range: string
+        description: Property identifier
 
-  OwnerSchemaOrgPropertyID:
-    class_uri: https://datamodel.raid.org/core/owner
-  OwnerSchemaOrg:
-    title: Owner
-    narrow_mappings:
-      - raid:Owner
-    class_uri: schema:PropertyValue
-    attributes:
-      value:
-        slot_uri: schema:value
-        exact_mappings:
-          - raid:id
-        required: true
-        range: string
-      propertyID:
-        slot_uri: schema:propertyID
-        required: true
-        range: OwnerSchemaOrgPropertyID
 enums:
+  RoleType:
+    description: Types of roles in research projects
+    permissible_values:
+      position:
+        description: Organizational position role
+      leadership:
+        description: Leadership role
+      contact:
+        description: Contact role
+      credit:
+        description: CRediT taxonomy contribution role
   AlternativeIdentifierPropertyEnum:
     permissible_values:
       https://datamodel.raid.org/core/alternativeIdentifier:

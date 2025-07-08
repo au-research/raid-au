@@ -64,7 +64,7 @@ public class TestConstants {
     public static final ContributorRoleSchemaUriEnum CONTRIBUTOR_ROLE_SCHEMA_URI = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
 
     public static final ContributorRoleIdEnum SOFTWARE_CONTRIBUTOR_ROLE =
-            ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_SOFTWARE_;
+            ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SOFTWARE_;
     public static final String SUPERVISION_CONTRIBUTOR_ROLE =
             "https://credit.niso.org/contributor-roles/supervision/";
     public static final String WRITING_REVIEW_EDITING_CONTRIBUTOR_ROLE =

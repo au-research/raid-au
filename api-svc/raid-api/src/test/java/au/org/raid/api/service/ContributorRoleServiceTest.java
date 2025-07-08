@@ -154,7 +154,7 @@ class ContributorRoleServiceTest {
     @DisplayName("create() saves all contributor roles")
     void create() {
         final var raidContributorId = 123;
-        final var uri = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_CONCEPTUALIZATION_;
+        final var uri = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_;
         final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
         final var schemaId = 234;
         final var contributorRole = new ContributorRole()
@@ -220,7 +220,7 @@ class ContributorRoleServiceTest {
     @DisplayName("create() throws ContributorRoleNotFoundException")
     void createThrowsContributorRoleNotFoundException() {
         final var raidContributorId = 123;
-        final var uri = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLE_CONCEPTUALIZATION_;
+        final var uri = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_;
         final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
         final var schemaId = 234;
         final var contributorRole = new ContributorRole()

@@ -801,20 +801,20 @@ components:
       title: "ContributorRoleIdEnum"
       type: "string"
       enum:
-      - "https://credit.niso.org/contributor-role/conceptualization/"
-      - "https://credit.niso.org/contributor-role/data-curation/"
-      - "https://credit.niso.org/contributor-role/formal-analysis/"
-      - "https://credit.niso.org/contributor-role/funding-acquisition/"
-      - "https://credit.niso.org/contributor-role/investigation/"
-      - "https://credit.niso.org/contributor-role/methodology/"
-      - "https://credit.niso.org/contributor-role/project-administration/"
-      - "https://credit.niso.org/contributor-role/resources/"
-      - "https://credit.niso.org/contributor-role/software/"
-      - "https://credit.niso.org/contributor-role/supervision/"
-      - "https://credit.niso.org/contributor-role/validation/"
-      - "https://credit.niso.org/contributor-role/visualization/"
-      - "https://credit.niso.org/contributor-role/writing-original-draft/"
-      - "https://credit.niso.org/contributor-role/writing-review-editing/"
+      - "https://credit.niso.org/contributor-roles/conceptualization/"
+      - "https://credit.niso.org/contributor-roles/data-curation/"
+      - "https://credit.niso.org/contributor-roles/formal-analysis/"
+      - "https://credit.niso.org/contributor-roles/funding-acquisition/"
+      - "https://credit.niso.org/contributor-roles/investigation/"
+      - "https://credit.niso.org/contributor-roles/methodology/"
+      - "https://credit.niso.org/contributor-roles/project-administration/"
+      - "https://credit.niso.org/contributor-roles/resources/"
+      - "https://credit.niso.org/contributor-roles/software/"
+      - "https://credit.niso.org/contributor-roles/supervision/"
+      - "https://credit.niso.org/contributor-roles/validation/"
+      - "https://credit.niso.org/contributor-roles/visualization/"
+      - "https://credit.niso.org/contributor-roles/writing-original-draft/"
+      - "https://credit.niso.org/contributor-roles/writing-review-editing/"
     ContributorRoleSchemaUriEnum:
       description: ""
       title: "ContributorRoleSchemaUriEnum"
@@ -898,6 +898,7 @@ components:
       - "https://vocabulary.raid.org/description.type.schema/3"
       - "https://vocabulary.raid.org/description.type.schema/318"
       - "https://vocabulary.raid.org/description.type.schema/319"
+      - "https://vocabulary.raid.org/description.type.schema/392"
       - "https://vocabulary.raid.org/description.type.schema/6"
       - "https://vocabulary.raid.org/description.type.schema/7"
       - "https://vocabulary.raid.org/description.type.schema/8"
@@ -1635,6 +1636,7 @@ components:
       title: "SpatialCoverageSchemaUriEnum"
       type: "string"
       enum:
+      - "https://marineregions.org/gazetteer.php"
       - "https://nominatim.openstreetmap.org/"
       - "https://www.geonames.org/"
     Subject:
@@ -1779,342 +1781,271 @@ components:
       - "https://datamodel.raid.org/core/alternativeIdentifier"
       title: "AlternativeIdentifierPropertyEnum"
       type: "string"
-    AlternativeIdentifierSchemaOrg:
+    DefinedTerm:
       additionalProperties: false
-      description: ""
+      description: "A term from a controlled vocabulary"
       properties:
-        additionalType:
+        '@id':
+          description: "URI identifier for the term"
           type:
           - "string"
           - "null"
-        propertyID:
-          $ref: "#/components/schemas/AlternativeIdentifierPropertyEnum"
-        value:
-          type: "string"
-      required:
-      - "value"
-      - "propertyID"
-      title: "AlternativeIdentifierSchemaOrg"
-      type: "object"
-    Any:
-      additionalProperties: true
-      description: ""
-      title: "Any"
-      type:
-      - "null"
-      - "boolean"
-      - "object"
-      - "number"
-      - "string"
-    ContributorPositionSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        endDate:
-          format: "date"
+        '@type':
+          description: "The schema.org type"
           type:
           - "string"
           - "null"
-        member:
-          $ref: "#/components/schemas/PersonSchemaOrg"
-        roleName:
-          type: "string"
-        startDate:
-          format: "date"
+        inDefinedTermSet:
+          description: "The vocabulary/taxonomy this term belongs to"
+          type:
+          - "string"
+          - "null"
+        name:
+          description: "Human-readable name of the term"
           type:
           - "string"
           - "null"
       required:
-      - "roleName"
-      - "member"
-      title: "ContributorPositionSchemaOrg"
+      - "@id"
+      title: "DefinedTerm"
       type: "object"
-    ContributorRoleSchemaOrg:
+    Member:
       additionalProperties: false
-      description: ""
+      description: "A person or organization involved in the research project"
       properties:
-        member:
-          $ref: "#/components/schemas/PersonSchemaOrg"
-        roleName:
-          type: "string"
-      required:
-      - "roleName"
-      - "member"
-      title: "ContributorRoleSchemaOrg"
-      type: "object"
-    DescriptionSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        additionalType:
+        '@id':
+          description: "Identifier for the member (ORCID for persons, ROR for organizations)"
           type:
           - "string"
           - "null"
-        inLanguage:
-          type:
-          - "string"
-          - "null"
-      title: "DescriptionSchemaOrg"
-      type: "object"
-    OrganisationRoleSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        endDate:
-          format: "date"
-          type:
-          - "string"
-          - "null"
-        member:
-          $ref: "#/components/schemas/OrganisationSchemaOrg"
-        roleName:
+        '@type':
+          description: "The schema.org type (Person or Organization)"
           type: "string"
-        startDate:
-          format: "date"
-          type: "string"
-      required:
-      - "roleName"
-      - "startDate"
-      - "member"
-      title: "OrganisationRoleSchemaOrg"
-      type: "object"
-    OrganisationSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
         identifier:
+          anyOf:
+          - $ref: "#/components/schemas/PropertyValue"
+          - type: "null"
+          description: "Structured identifier with type information"
+      required:
+      - "@type"
+      - "@id"
+      title: "Member"
+      type: "object"
+    Organization:
+      additionalProperties: false
+      description: ""
+      properties:
+        '@id':
+          description: "The ROR of the organization"
+          type:
+          - "string"
+          - "null"
+        '@type':
+          description: "The schema.org type"
+          type:
+          - "string"
+          - "null"
+        identifier:
+          $ref: "#/components/schemas/PropertyValue"
+          description: "Extended identifier information"
+        name:
+          description: "Name of the organization"
           type: "string"
       required:
+      - "name"
       - "identifier"
-      title: "OrganisationSchemaOrg"
+      title: "Organization"
       type: "object"
-    OwnerPropertyEnum:
-      description: ""
-      enum:
-      - "https://datamodel.raid.org/core/owner"
-      title: "OwnerPropertyEnum"
-      type: "string"
-    OwnerSchemaOrg:
+    Place:
       additionalProperties: false
-      description: ""
+      description: "Geographic location"
       properties:
-        propertyID:
-          $ref: "#/components/schemas/OwnerPropertyEnum"
-        value:
-          type: "string"
-      required:
-      - "value"
-      - "propertyID"
-      title: "OwnerSchemaOrg"
-      type: "object"
-    PersonSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        email:
+        '@id':
+          description: "GeoNames or other geographic identifier"
           type:
           - "string"
           - "null"
-        identifier:
-          items:
-            type: "string"
+        '@type':
+          description: "The schema.org type"
           type:
-          - "array"
+          - "string"
           - "null"
-        memberOf:
-          description: "Value is the ResearchProject.Identifier.id"
-          type: "string"
+        additionalType:
+          description: "Additional type information"
+          type:
+          - "string"
+          - "null"
+        name:
+          description: "Name of the place"
+          type:
+          - "string"
+          - "null"
       required:
-      - "memberOf"
-      title: "PersonSchemaOrg"
+      - "@id"
+      title: "Place"
       type: "object"
-    RegistrationAgencyPropertyEnum:
+    PropertyIDEnum:
       description: ""
       enum:
+      - "https://datamodel.raid.org/core/traditionalKnowledgeLabel"
       - "https://datamodel.raid.org/core/registrationAgency"
-      title: "RegistrationAgencyPropertyEnum"
+      - "https://datamodel.raid.org/core/owner"
+      title: "PropertyIDEnum"
       type: "string"
-    RegistrationAgencySchemaOrg:
+    PropertyValue:
       additionalProperties: false
-      description: ""
+      description: "A property-value pair for additional metadata"
       properties:
-        propertyID:
-          $ref: "#/components/schemas/RegistrationAgencyPropertyEnum"
-        value:
-          type: "string"
-      required:
-      - "value"
-      - "propertyID"
-      title: "RegistrationAgencySchemaOrg"
-      type: "object"
-    RelatedObjectSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        additionalType:
-          items:
-            type: "string"
-          type:
-          - "array"
-          - "null"
-        url:
-          type: "string"
-      required:
-      - "url"
-      title: "RelatedObjectSchemaOrg"
-      type: "object"
-    RelatedRaidSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        additionalType:
+        '@type':
+          description: "The schema.org type"
           type:
           - "string"
           - "null"
-        identifier:
-          type: "string"
-      required:
-      - "identifier"
-      title: "RelatedRaidSchemaOrg"
+        name:
+          description: "Property name"
+          type:
+          - "string"
+          - "null"
+        propertyID:
+          description: "Property identifier"
+          type:
+          - "string"
+          - "null"
+        value:
+          description: "Property value"
+          type:
+          - "string"
+          - "null"
+      title: "PropertyValue"
       type: "object"
     ResearchProject:
       additionalProperties: false
-      description: ""
+      description: "A research project with contributors and organizational relationships"
       properties:
-        additionalProperty:
-          items:
-            $ref: "#/components/schemas/Any"
-            anyOf:
-            - $ref: "#/components/schemas/RegistrationAgencySchemaOrg"
-            - $ref: "#/components/schemas/OwnerSchemaOrg"
-            - $ref: "#/components/schemas/TraditionalKnowledgeLabelSchemaOrg"
+        '@context':
+          description: "The schema.org context"
           type:
-          - "array"
+          - "string"
           - "null"
-        alternateName:
-          description: "Other than current primary title value"
+        '@id':
+          description: "The RAiD identifier"
+          type:
+          - "string"
+          - "null"
+        '@type':
+          description: "The schema.org type"
           type:
           - "string"
           - "null"
         description:
-          description: "Primary description or the only description is added as string."
-          items:
-            $ref: "#/components/schemas/Any"
-            anyOf:
-            - type: "string"
-            - $ref: "#/components/schemas/DescriptionSchemaOrg"
+          description: "Description of the research project"
           type:
-          - "array"
+          - "string"
           - "null"
         dissolutionDate:
+          description: "When the research project was completed"
           format: "date"
           type:
           - "string"
           - "null"
         foundingDate:
+          description: "When the research project was established"
           format: "date"
-          type: "string"
-        identifier:
+          type:
+          - "string"
+          - "null"
+        funder:
+          description: "Organizations that fund the project"
           items:
-            $ref: "#/components/schemas/Any"
-            anyOf:
-            - type: "string"
-            - $ref: "#/components/schemas/AlternativeIdentifierSchemaOrg"
-          type: "array"
-        isRelatedTo:
-          anyOf:
-          - $ref: "#/components/schemas/RelatedObjectSchemaOrg"
-          - $ref: "#/components/schemas/RelatedRaidSchemaOrg"
-          - type: "null"
+            $ref: "#/components/schemas/ResearchProjectRole"
+          type:
+          - "array"
+          - "null"
+        identifier:
+          $ref: "#/components/schemas/PropertyValue"
         keywords:
-          anyOf:
-          - $ref: "#/components/schemas/SubjectSchemaOrg"
-          - type: "null"
+          description: "Keywords associated with the project"
+          type:
+          - "string"
+          - "null"
+        knowsAbout:
+          description: "Research subjects/domains the project covers"
+          items:
+            $ref: "#/components/schemas/DefinedTerm"
+          type:
+          - "array"
+          - "null"
         location:
           anyOf:
-          - $ref: "#/components/schemas/SpatialCoverageSchemaOrg"
+          - $ref: "#/components/schemas/Place"
           - type: "null"
+          description: "Geographic location of the project"
         member:
+          description: "Roles of people and organizations in the project"
           items:
-            $ref: "#/components/schemas/Any"
-            anyOf:
-            - $ref: "#/components/schemas/PersonSchemaOrg"
-            - $ref: "#/components/schemas/OrganisationSchemaOrg"
-          type:
-          - "array"
-          - "null"
-        member_of:
-          items:
-            $ref: "#/components/schemas/Any"
-            anyOf:
-            - $ref: "#/components/schemas/ContributorPositionSchemaOrg"
-            - $ref: "#/components/schemas/ContributorRoleSchemaOrg"
-            - $ref: "#/components/schemas/OrganisationRoleSchemaOrg"
+            $ref: "#/components/schemas/ResearchProjectRole"
           type:
           - "array"
           - "null"
         name:
-          description: "Latest primary title value"
-          type: "string"
-        url:
+          description: "The title/name of the research project"
           type:
           - "string"
           - "null"
+        parentOrganization:
+          anyOf:
+          - $ref: "#/components/schemas/Organization"
+          - type: "null"
+          description: "The RAiD identifier owner"
       required:
+      - "@id"
       - "identifier"
-      - "foundingDate"
-      - "name"
       title: "ResearchProject"
       type: "object"
-    SpatialCoverageSchemaOrg:
+    ResearchProjectRole:
       additionalProperties: false
-      description: ""
+      description: "A role held by a person or organization in the project"
       properties:
-        identifier:
+        '@id':
+          description: "Identifier for the role (position ID or CRediT role URI)"
+          type:
+          - "string"
+          - "null"
+        '@type':
+          description: "The schema.org type"
+          type:
+          - "string"
+          - "null"
+        endDate:
+          description: "When the role ended (if applicable)"
+          format: "date"
+          type:
+          - "string"
+          - "null"
+        member:
+          $ref: "#/components/schemas/Member"
+          description: "The person or organization holding this role"
+        roleName:
+          description: "Name of the role"
           type: "string"
-        name:
+        startDate:
+          description: "When the role started"
+          format: "date"
           type:
           - "string"
           - "null"
       required:
-      - "identifier"
-      title: "SpatialCoverageSchemaOrg"
+      - "@id"
+      - "roleName"
+      - "member"
+      title: "ResearchProjectRole"
       type: "object"
-    SubjectSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        alternateName:
-          items:
-            type: "string"
-          type:
-          - "array"
-          - "null"
-        inDefinedTermSet:
-          type: "string"
-        termCode:
-          type: "string"
-      required:
-      - "termCode"
-      - "inDefinedTermSet"
-      title: "SubjectSchemaOrg"
-      type: "object"
-    TraditionalKnowledgeLabelPropertyEnum:
-      description: ""
+    RoleType:
+      description: "Types of roles in research projects"
       enum:
-      - "https://datamodel.raid.org/core/traditionalKnowledgeLabel"
-      title: "TraditionalKnowledgeLabelPropertyEnum"
+      - "position"
+      - "leadership"
+      - "contact"
+      - "credit"
+      title: "RoleType"
       type: "string"
-    TraditionalKnowledgeLabelSchemaOrg:
-      additionalProperties: false
-      description: ""
-      properties:
-        propertyID:
-          $ref: "#/components/schemas/TraditionalKnowledgeLabelPropertyEnum"
-        value:
-          type: "string"
-      required:
-      - "value"
-      - "propertyID"
-      title: "TraditionalKnowledgeLabelSchemaOrg"
-      type: "object"

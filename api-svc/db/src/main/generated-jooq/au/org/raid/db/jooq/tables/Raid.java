@@ -72,12 +72,12 @@ public class Raid extends TableImpl<RaidRecord> {
     /**
      * The column <code>api_svc.raid.url</code>. The value that we set as the
      * `URL` property via ARDC APIDS.
-     *   Example: `https://demo.raido-infra.com/raid/123.456/789`. 
+     *   Example: `https://demo.raido-infra.com/raid/123.456/789`.
      *   The global handle regisrty url (e.g.
-     * `https://hdl.handle.net/123.456/789`) 
+     * `https://hdl.handle.net/123.456/789`)
      *   will redirect to this value.
      */
-    public final TableField<RaidRecord, String> URL = createField(DSL.name("url"), SQLDataType.VARCHAR(512), this, "The value that we set as the `URL` property via ARDC APIDS.\n  Example: `https://demo.raido-infra.com/raid/123.456/789`. \n  The global handle regisrty url (e.g. `https://hdl.handle.net/123.456/789`) \n  will redirect to this value.");
+    public final TableField<RaidRecord, String> URL = createField(DSL.name("url"), SQLDataType.VARCHAR(512), this, "The value that we set as the `URL` property via ARDC APIDS.\n  Example: `https://demo.raido-infra.com/raid/123.456/789`.\n  The global handle regisrty url (e.g. `https://hdl.handle.net/123.456/789`)\n  will redirect to this value.");
 
     /**
      * The column <code>api_svc.raid.url_index</code>. The `index` of the URL

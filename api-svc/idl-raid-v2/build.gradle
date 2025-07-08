@@ -97,7 +97,6 @@ openApiGenerate {
     Date: "au.org.raid.idl.raidv2.model.Date"
   ]
   configOptions = [
-
           /* use outputDir instead of this, so that random supporting openapi files
           are written in `generated` (and .gitignore'd) instead of in project dir. */
           sourceFolder         : "",

@@ -315,7 +315,7 @@ public class RaidRdfService {
         if (raidDto.getSubject() != null) {
             raidDto.getSubject().forEach(subject -> {
                 Resource subjectResource = model.createResource(subject.getId())
-                        .addProperty(hasSchemaUri, subject.getSchemaUri());
+                        .addProperty(hasSchemaUri, subject.getSchemaUri().getValue());
                 
                 // Add keywords
                 if (subject.getKeyword() != null) {
@@ -400,7 +400,7 @@ public class RaidRdfService {
         if (raidDto.getSpatialCoverage() != null) {
             raidDto.getSpatialCoverage().forEach(spatialCoverage -> {
                 Resource spatialResource = model.createResource(spatialCoverage.getId())
-                        .addProperty(hasSchemaUri, spatialCoverage.getSchemaUri());
+                        .addProperty(hasSchemaUri, spatialCoverage.getSchemaUri().getValue());
                 
                 // Add places
                 if (spatialCoverage.getPlace() != null) {

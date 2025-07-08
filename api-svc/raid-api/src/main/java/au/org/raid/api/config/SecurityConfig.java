@@ -212,13 +212,19 @@ public class SecurityConfig {
 
             final var handle = "%s/%s".formatted(pathParts[2], pathParts[3]);
 
-            final var raid = raidHistoryService.findByHandle(handle)
-                    .orElseThrow(() -> new ResourceNotFoundException(handle));
+            try {
+                final var raid = raidHistoryService.findByHandle(handle)
+                        .orElseThrow(() -> {
+                            log.warn("Could not find raid history for handle {}", handle);
+                            return new ResourceNotFoundException(handle);
+                        });
 
-            if (raid.getIdentifier().getOwner().getServicePoint().longValue() == servicePoint.getId()) {
-                return new AuthorizationDecision(true);
+                if (raid.getIdentifier().getOwner().getServicePoint().longValue() == servicePoint.getId()) {
+                    return new AuthorizationDecision(true);
+                }
+            } catch (Exception e) {
+                return new AuthorizationDecision(false);
             }
-
 
             return new AuthorizationDecision(false);
         };
@@ -273,26 +279,36 @@ public class SecurityConfig {
             }
 
             final var handle = "%s/%s".formatted(pathParts[2], pathParts[3]);
+            try {
 
-            final var raid = raidHistoryService.findByHandle(handle)
-                    .orElseThrow(() -> new ResourceNotFoundException(handle));
+                final var raid = raidHistoryService.findByHandle(handle)
+                        .orElseThrow(() -> {
+                            log.warn("No raid history found for handle {}", handle);
+                            return new ResourceNotFoundException(handle);
+                        });
 
-            if (raid.getAccess().getType().getId().equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)) {
+                if (raid.getAccess().getType().getId().equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)) {
+                    return new AuthorizationDecision(false);
+                }
+
+                final var groupId = (String) token.getClaims().get(SERVICE_POINT_GROUP_ID_CLAIM);
+
+                if (groupId == null) {
+                    return new AuthorizationDecision(false);
+                }
+
+                final var servicePoint = servicePointService.findByGroupId(groupId)
+                        .orElseThrow(() -> {
+                            log.warn("Service point not found for group {}", groupId);
+                            return new ServicePointNotFoundException(groupId);
+                        });
+
+
+                if (raid.getIdentifier().getOwner().getServicePoint().equals(servicePoint.getId())) {
+                    return new AuthorizationDecision(true);
+                }
+            } catch (Exception e) {
                 return new AuthorizationDecision(false);
-            }
-
-            final var groupId = (String) token.getClaims().get(SERVICE_POINT_GROUP_ID_CLAIM);
-
-            if (groupId == null) {
-                return new AuthorizationDecision(false);
-            }
-
-            final var servicePoint = servicePointService.findByGroupId(groupId)
-                    .orElseThrow(() -> new ServicePointNotFoundException(groupId));
-
-
-            if (raid.getIdentifier().getOwner().getServicePoint().equals(servicePoint.getId())) {
-                return new AuthorizationDecision(true);
             }
 
             return new AuthorizationDecision(false);

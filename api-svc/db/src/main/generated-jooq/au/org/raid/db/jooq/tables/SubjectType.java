@@ -14,11 +14,12 @@ import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function5;
+import org.jooq.Function6;
+import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Records;
-import org.jooq.Row5;
+import org.jooq.Row6;
 import org.jooq.Schema;
 import org.jooq.SelectField;
 import org.jooq.Table;
@@ -52,9 +53,9 @@ public class SubjectType extends TableImpl<SubjectTypeRecord> {
     }
 
     /**
-     * The column <code>api_svc.subject_type.id</code>.
+     * The column <code>api_svc.subject_type.subject_type_id</code>.
      */
-    public final TableField<SubjectTypeRecord, String> ID = createField(DSL.name("id"), SQLDataType.VARCHAR(6).nullable(false), this, "");
+    public final TableField<SubjectTypeRecord, String> SUBJECT_TYPE_ID = createField(DSL.name("subject_type_id"), SQLDataType.VARCHAR(6).nullable(false), this, "");
 
     /**
      * The column <code>api_svc.subject_type.name</code>.
@@ -75,6 +76,11 @@ public class SubjectType extends TableImpl<SubjectTypeRecord> {
      * The column <code>api_svc.subject_type.schema_id</code>.
      */
     public final TableField<SubjectTypeRecord, Integer> SCHEMA_ID = createField(DSL.name("schema_id"), SQLDataType.INTEGER, this, "");
+
+    /**
+     * The column <code>api_svc.subject_type.id</code>.
+     */
+    public final TableField<SubjectTypeRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
 
     private SubjectType(Name alias, Table<SubjectTypeRecord> aliased) {
         this(alias, aliased, null);
@@ -115,8 +121,13 @@ public class SubjectType extends TableImpl<SubjectTypeRecord> {
     }
 
     @Override
+    public Identity<SubjectTypeRecord, Integer> getIdentity() {
+        return (Identity<SubjectTypeRecord, Integer>) super.getIdentity();
+    }
+
+    @Override
     public UniqueKey<SubjectTypeRecord> getPrimaryKey() {
-        return Keys.SUBJECT_PKEY;
+        return Keys.SUBJECT_TYPE_PKEY;
     }
 
     @Override
@@ -177,18 +188,18 @@ public class SubjectType extends TableImpl<SubjectTypeRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row5 type methods
+    // Row6 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row5<String, String, String, String, Integer> fieldsRow() {
-        return (Row5) super.fieldsRow();
+    public Row6<String, String, String, String, Integer, Integer> fieldsRow() {
+        return (Row6) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function5<? super String, ? super String, ? super String, ? super String, ? super Integer, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function6<? super String, ? super String, ? super String, ? super String, ? super Integer, ? super Integer, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -196,7 +207,7 @@ public class SubjectType extends TableImpl<SubjectTypeRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function5<? super String, ? super String, ? super String, ? super String, ? super Integer, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function6<? super String, ? super String, ? super String, ? super String, ? super Integer, ? super Integer, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }

@@ -13,7 +13,7 @@ class RaidSubjectRecordFactoryTest {
     @DisplayName("Sets all fields")
     void setsAllFields() {
         final var handle = "_handle";
-        final var subjectTypeId = "subject-type-id";
+        final var subjectTypeId = 3;
 
         final var result = factory.create(handle, subjectTypeId);
 

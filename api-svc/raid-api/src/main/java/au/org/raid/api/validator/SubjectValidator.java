@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.repository.SubjectTypeRepository;
+import au.org.raid.api.repository.dto.SubjectTypeWithSchema;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.db.jooq.tables.records.SubjectTypeRecord;
 import au.org.raid.idl.raidv2.model.Subject;
@@ -33,15 +34,6 @@ public class SubjectValidator {
         IntStream.range(0, subjects.size()).forEach(subjectIndex -> {
             final var subject = subjects.get(subjectIndex);
 
-            if (subject.getSchemaUri() == null || !subject.getSchemaUri().equals(SchemaValues.SUBJECT_SCHEMA_URI.getUri())) {
-                final var failure = new ValidationFailure();
-                failure.setFieldId(String.format("subject[%d].schemaUri", subjectIndex));
-                failure.setMessage(String.format("must be %s.", SchemaValues.SUBJECT_SCHEMA_URI.getUri()));
-                failure.setErrorType(INVALID_VALUE_TYPE);
-
-                failures.add(failure);
-            }
-
             if (subject.getId() == null) {
                 final var failure = new ValidationFailure();
                 failure.setFieldId(String.format("subject[%d].id", subjectIndex));
@@ -60,15 +52,24 @@ public class SubjectValidator {
 
                     failures.add(failure);
                 } else {
-                    final Optional<SubjectTypeRecord> subjectTypeRecord = subjectTypeRepository.findById(subjectId);
-
-                    if (subjectTypeRecord.isEmpty()) {
+                    if (subject.getSchemaUri() == null || !subject.getSchemaUri().getValue().equals(SchemaValues.SUBJECT_SCHEMA_URI.getUri())) {
                         final var failure = new ValidationFailure();
-                        failure.setFieldId(String.format("subject[%d].id", subjectIndex));
-                        failure.setMessage(String.format("%s is not a standard FoR code", subject.getId()));
+                        failure.setFieldId(String.format("subject[%d].schemaUri", subjectIndex));
+                        failure.setMessage(String.format("must be %s.", SchemaValues.SUBJECT_SCHEMA_URI.getUri()));
                         failure.setErrorType(INVALID_VALUE_TYPE);
 
                         failures.add(failure);
+                    } else {
+                        final Optional<SubjectTypeWithSchema> subjectTypeRecord = subjectTypeRepository.findBySubjectTypeIdAndSchemaUri(subjectId, subject.getSchemaUri().getValue());
+
+                        if (subjectTypeRecord.isEmpty()) {
+                            final var failure = new ValidationFailure();
+                            failure.setFieldId(String.format("subject[%d].id", subjectIndex));
+                            failure.setMessage(String.format("%s is not a standard FoR code", subject.getId()));
+                            failure.setErrorType(INVALID_VALUE_TYPE);
+
+                            failures.add(failure);
+                        }
                     }
                 }
             }

@@ -48,7 +48,7 @@
       "role": [
         {
           "schemaUri": "https://credit.niso.org/",
-          "id": "https://credit.niso.org/contributor-role/project-administration/"
+          "id": "https://credit.niso.org/contributor-roles/project-administration/"
         }
       ]
     }
