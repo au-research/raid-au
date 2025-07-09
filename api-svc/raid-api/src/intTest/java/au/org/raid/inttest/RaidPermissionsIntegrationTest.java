@@ -154,7 +154,7 @@ public class RaidPermissionsIntegrationTest extends AbstractIntegrationTest {
             assertThat(raids, hasItem(raid2.getIdentifier().getId()));
             assertThat(raids, not(hasItem(raid1.getIdentifier().getId())));
         } finally {
-//            userService.deleteUser(raidAdminUserContext.getId());
+            userService.deleteUser(raidAdminUserContext.getId());
         }
     }
 
