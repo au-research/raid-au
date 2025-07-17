@@ -817,6 +817,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RelatedObjectCategory'
+    Citation:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The citation text
+      required:
+        - text
+    RelatedObjectWithCitation:
+      allOf:
+        - $ref: '#/components/schemas/RelatedObject'
+        - type: object
+          properties:
+            citation:
+              $ref: '#/components/schemas/Citation'
     RelatedObjectType:
       type: object
       properties:
