@@ -103,10 +103,10 @@ public class UserAuthzRequest extends TableImpl<UserAuthzRequestRecord> {
 
     /**
      * The column <code>api_svc.user_authz_request.approved_user</code>. the
-     * user that was approved, set when request is approved and the 
+     * user that was approved, set when request is approved and the
      *   user is created or updated
      */
-    public final TableField<UserAuthzRequestRecord, Long> APPROVED_USER = createField(DSL.name("approved_user"), SQLDataType.BIGINT, this, "the user that was approved, set when request is approved and the \n  user is created or updated");
+    public final TableField<UserAuthzRequestRecord, Long> APPROVED_USER = createField(DSL.name("approved_user"), SQLDataType.BIGINT, this, "the user that was approved, set when request is approved and the\n  user is created or updated");
 
     /**
      * The column <code>api_svc.user_authz_request.description</code>.

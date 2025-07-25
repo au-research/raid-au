@@ -151,7 +151,7 @@ public class UserAuthzRequestRecord extends UpdatableRecordImpl<UserAuthzRequest
 
     /**
      * Setter for <code>api_svc.user_authz_request.approved_user</code>. the
-     * user that was approved, set when request is approved and the 
+     * user that was approved, set when request is approved and the
      *   user is created or updated
      */
     public UserAuthzRequestRecord setApprovedUser(Long value) {
@@ -161,7 +161,7 @@ public class UserAuthzRequestRecord extends UpdatableRecordImpl<UserAuthzRequest
 
     /**
      * Getter for <code>api_svc.user_authz_request.approved_user</code>. the
-     * user that was approved, set when request is approved and the 
+     * user that was approved, set when request is approved and the
      *   user is created or updated
      */
     public Long getApprovedUser() {

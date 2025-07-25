@@ -72,7 +72,7 @@ public class ContributorValidator {
                         failures.add(new ValidationFailure()
                                 .fieldId("contributor[%d].schemaUri".formatted(index))
                                 .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_VALUE_MESSAGE + " - should match " + ORCID_URL_PREFIX_PATTERN)
+                                .message(INVALID_VALUE_MESSAGE + " - should be https://orcid.org/")
                         );
                     }
 

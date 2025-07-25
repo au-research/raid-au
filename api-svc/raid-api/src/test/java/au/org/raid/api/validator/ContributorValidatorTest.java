@@ -20,21 +20,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE;
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_TYPE;
 import static au.org.raid.api.util.TestConstants.VALID_ORCID;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
-@Disabled
 @ExtendWith(MockitoExtension.class)
 class ContributorValidatorTest {
-    private static final String _UUID = UUID.randomUUID().toString();
-
     @Mock
     private ContributorRoleValidator roleValidationService;
 
@@ -58,12 +53,9 @@ class ContributorValidatorTest {
         final var contributor = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role))
                 .leader(true)
                 .contact(true);
-
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -94,12 +86,9 @@ class ContributorValidatorTest {
         final var contributor = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role))
                 .position(List.of(position))
                 .contact(true);
-
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -164,13 +153,10 @@ class ContributorValidatorTest {
         final var contributor = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
                 .contact(true);
-
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -195,7 +181,6 @@ class ContributorValidatorTest {
         final var contributor = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
@@ -213,7 +198,6 @@ class ContributorValidatorTest {
 
         when(roleValidationService.validate(role, 0, 0)).thenReturn(List.of(roleError));
         when(positionValidationService.validate(position, 0, 0)).thenReturn(List.of(positionError));
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -239,7 +223,6 @@ class ContributorValidatorTest {
         final var contributor1 = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role1))
                 .position(List.of(position1))
                 .leader(true)
@@ -258,13 +241,10 @@ class ContributorValidatorTest {
         final var contributor2 = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role2))
                 .position(List.of(position2))
                 .leader(true)
                 .contact(true);
-
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor2, contributor1));
 
@@ -293,13 +273,11 @@ class ContributorValidatorTest {
         final var contributor1 = new Contributor()
                 .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role1))
                 .position(List.of(position1, position2))
                 .leader(true)
                 .contact(true);
 
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor1));
 
@@ -325,13 +303,12 @@ class ContributorValidatorTest {
 
         final var contributor = new Contributor()
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
                 .contact(true);
 
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
+//        when(contributorRepository.findByPid(VALID_ORCID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -360,14 +337,11 @@ class ContributorValidatorTest {
 
         final var contributor = new Contributor()
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .schemaUri("")
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
                 .contact(true);
-
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -397,14 +371,11 @@ class ContributorValidatorTest {
 
         final var contributor = new Contributor()
                 .id(VALID_ORCID)
-                .uuid(_UUID)
                 .schemaUri("https://example.org/")
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
                 .contact(true);
-
-        when(contributorRepository.findByPidAndUuid(VALID_ORCID, _UUID)).thenReturn(Optional.of(new ContributorRecord()));
 
         final var failures = validationService.validate(List.of(contributor));
 
@@ -462,142 +433,8 @@ class ContributorValidatorTest {
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                .email("user@example.org")
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, empty());
-
-        verify(roleValidationService).validate(role, 0, 0);
-        verify(positionValidationService).validate(position, 0, 0);
-        verifyNoInteractions(contributorRepository);
-    }
-
-    @Test
-    @DisplayName("Validation passes with valid contributor with uuid but no orcid")
-    void validContributorWithUuid() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                .uuid(_UUID)
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-        when(contributorRepository.findByUuid(_UUID)).thenReturn(Optional.of(new ContributorRecord()));
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, empty());
-
-        verify(roleValidationService).validate(role, 0, 0);
-        verify(positionValidationService).validate(position, 0, 0);
-    }
-
-    @Test
-    @DisplayName("Validation fails if uuid is not found")
-    void UuidNotFound() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                .uuid(_UUID)
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-        when(contributorRepository.findByUuid(_UUID)).thenReturn(Optional.empty());
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, contains(new ValidationFailure()
-                .fieldId("contributor[0].uuid")
-                .message("Contributor not found with UUID (%s)".formatted(_UUID))
-                .errorType("notFound")
-        ));
-
-        verify(roleValidationService).validate(role, 0, 0);
-        verify(positionValidationService).validate(position, 0, 0);
-    }
-
-    @Test
-    @DisplayName("Validation fails if both email and uuid are present")
-    void emailAndUuidPresent() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                .email("someone@example.org")
-                .uuid(_UUID)
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-        when(contributorRepository.findByUuid(_UUID)).thenReturn(Optional.of(new ContributorRecord()));
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, is(List.of(
-                new ValidationFailure()
-                        .fieldId("contributor[0]")
-                        .errorType("invalidValue")
-                        .message("email and uuid cannot be present at the same time")
-        )));
-
-        verify(roleValidationService).validate(role, 0, 0);
-        verify(positionValidationService).validate(position, 0, 0);
-//        verifyNoInteractions(contributorRepository);
-    }
-
-    @Test
-    @DisplayName("Validation fails if both email and Orcid are present")
-    void emailAndOrcidPresent() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .id(VALID_ORCID)
-                .email("someone@example.org")
+                .schemaUri(TestConstants.CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
@@ -606,16 +443,11 @@ class ContributorValidatorTest {
 
         final var failures = validationService.validate(List.of(contributor));
 
-        assertThat(failures, hasSize(1));
-        assertThat(failures, is(List.of(
-                new ValidationFailure()
-                        .fieldId("contributor[0]")
-                        .errorType("invalidValue")
-                        .message("email and id cannot be present at the same time")
-        )));
+        assertThat(failures, empty());
 
         verify(roleValidationService).validate(role, 0, 0);
         verify(positionValidationService).validate(position, 0, 0);
         verifyNoInteractions(contributorRepository);
     }
+
 }

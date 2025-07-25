@@ -57,7 +57,7 @@ public class AppUserRecord extends UpdatableRecordImpl<AppUserRecord> implements
 
     /**
      * Setter for <code>api_svc.app_user.email</code>. should be renamed to
-     * "description" or some such.  api-keys do not and orcid 
+     * "description" or some such.  api-keys do not and orcid
      *   sign-ins might not have email address
      */
     public AppUserRecord setEmail(String value) {
@@ -67,7 +67,7 @@ public class AppUserRecord extends UpdatableRecordImpl<AppUserRecord> implements
 
     /**
      * Getter for <code>api_svc.app_user.email</code>. should be renamed to
-     * "description" or some such.  api-keys do not and orcid 
+     * "description" or some such.  api-keys do not and orcid
      *   sign-ins might not have email address
      */
     public String getEmail() {
@@ -106,7 +106,7 @@ public class AppUserRecord extends UpdatableRecordImpl<AppUserRecord> implements
 
     /**
      * Setter for <code>api_svc.app_user.id_provider</code>. not a real identity
-     * field, its just redundant info we figure it out from 
+     * field, its just redundant info we figure it out from
      *   the clientId or issuer and store it for easy analysis
      */
     public AppUserRecord setIdProvider(IdProvider value) {
@@ -116,7 +116,7 @@ public class AppUserRecord extends UpdatableRecordImpl<AppUserRecord> implements
 
     /**
      * Getter for <code>api_svc.app_user.id_provider</code>. not a real identity
-     * field, its just redundant info we figure it out from 
+     * field, its just redundant info we figure it out from
      *   the clientId or issuer and store it for easy analysis
      */
     public IdProvider getIdProvider() {
@@ -155,7 +155,7 @@ public class AppUserRecord extends UpdatableRecordImpl<AppUserRecord> implements
 
     /**
      * Setter for <code>api_svc.app_user.token_cutoff</code>. Any endpoint call
-     * with a bearer token issued after this point will be 
+     * with a bearer token issued after this point will be
      *   rejected. Any authentication attempt after this point will be rejected.
      */
     public AppUserRecord setTokenCutoff(LocalDateTime value) {
@@ -165,7 +165,7 @@ public class AppUserRecord extends UpdatableRecordImpl<AppUserRecord> implements
 
     /**
      * Getter for <code>api_svc.app_user.token_cutoff</code>. Any endpoint call
-     * with a bearer token issued after this point will be 
+     * with a bearer token issued after this point will be
      *   rejected. Any authentication attempt after this point will be rejected.
      */
     public LocalDateTime getTokenCutoff() {

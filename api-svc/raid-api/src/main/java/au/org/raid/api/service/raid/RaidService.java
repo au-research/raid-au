@@ -74,8 +74,6 @@ public class RaidService {
                 servicePointRepository.findById(servicePointId).orElseThrow(() ->
                         new UnknownServicePointException(servicePointId));
 
-        contributorService.setStatusAndUuid(raid.getContributor());
-
         mintHandle(raid, servicePointRecord, 0);
 
         raidListenerService.createOrUpdate(raid.getIdentifier().getId(), raid.getContributor());
@@ -136,7 +134,7 @@ public class RaidService {
             return existing;
         }
 
-        contributorService.setStatusAndUuid(raid.getContributor());
+        contributorService.setStatus(raid.getContributor());
         mergeContributors(existing.getContributor(), raid.getContributor());
 
         raidListenerService.createOrUpdate(raid.getIdentifier().getId(), raid.getContributor());
