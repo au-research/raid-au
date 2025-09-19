@@ -7,6 +7,7 @@ import au.org.raid.iam.provider.group.dto.GroupJoinRequest;
 import au.org.raid.iam.provider.group.dto.GroupLeaveRequest;
 import au.org.raid.iam.provider.group.dto.SetActiveGroupRequest;
 import au.org.raid.iam.provider.group.dto.RemoveActiveGroupRequest;
+import au.org.raid.iam.provider.group.dto.CreateGroupRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
@@ -481,5 +482,100 @@ public class GroupController {
         return !user.getRoleMappingsStream()
                 .filter(r -> r.getName().equals(OPERATOR_ROLE_NAME))
                 .toList().isEmpty();
+    }
+
+    @OPTIONS
+    @Path("/create")
+    public Response createGroupPreflight() {
+        return buildOptionsResponse("POST", "OPTIONS");
+    }
+    @POST
+    @Path("/create")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @SneakyThrows
+    public Response createGroup(CreateGroupRequest request) {
+        log.debug("Creating new group with name: {}", request.getName());
+
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var user = auth.getSession().getUser();
+        if (user == null) {
+            throw new NotAuthorizedException("Bearer");
+        }
+
+        // Only operators and group admins can create groups
+        if (!isGroupAdmin(user) && !isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not authorized to create groups");
+        }
+
+        // Validate request
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Group name is required\"}")
+                    .build();
+        }
+
+        final var realm = session.getContext().getRealm();
+
+        // Check if group with same name already exists
+        var existingGroups = session.groups().getGroupsStream(realm)
+                .filter(g -> g.getName().equals(request.getName().trim()))
+                .toList();
+
+        if (!existingGroups.isEmpty()) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("{\"error\": \"Group with this name already exists\"}")
+                    .build();
+        }
+
+        try {
+            // Create the group
+            var newGroup = session.groups().createGroup(realm, request.getName().trim());
+
+            // Set path if provided, otherwise use default
+            String path = request.getPath() != null ? request.getPath() : "/" + request.getName().trim();
+            // Note: Keycloak groups don't have a direct "path" field, but you can store it as an attribute
+            newGroup.setAttribute("path", List.of(path));
+
+            // Add any additional attributes if provided
+            if (request.getAttributes() != null) {
+                request.getAttributes().forEach((key, values) -> {
+                    newGroup.setAttribute(key, values);
+                });
+            }
+
+            // Add the creating user to the group as a member
+            user.joinGroup(newGroup);
+
+            // Optionally make the creator a group admin
+            final var groupAdminRole = session.roles()
+                    .getRealmRolesStream(realm, null, null)
+                    .filter(r -> r.getName().equals(GROUP_ADMIN_ROLE_NAME))
+                    .findFirst();
+
+            if (groupAdminRole.isPresent()) {
+                user.grantRole(groupAdminRole.get());
+            }
+
+            // Prepare response
+            final var responseBody = new HashMap<String, Object>();
+            responseBody.put("id", newGroup.getId());
+            responseBody.put("name", newGroup.getName());
+            responseBody.put("attributes", newGroup.getAttributes());
+            responseBody.put("message", "Group created successfully");
+
+            return buildCorsResponse("POST",
+                    Response.status(Response.Status.CREATED)
+                            .entity(objectMapper.writeValueAsString(responseBody)));
+
+        } catch (Exception e) {
+            log.error("Error creating group: {}", e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Failed to create group\"}")
+                    .build();
+        }
     }
 }
