@@ -506,8 +506,8 @@ public class GroupController {
             throw new NotAuthorizedException("Bearer");
         }
 
-        // Only operators and group admins can create groups
-        if (!isGroupAdmin(user) && !isOperator(user)) {
+        // Only operators can create groups
+        if (!isOperator(user)) {
             throw new NotAuthorizedException("Permission denied - not authorized to create groups");
         }
 
@@ -550,7 +550,7 @@ public class GroupController {
             // Add the creating user to the group as a member
             user.joinGroup(newGroup);
 
-            // Optionally make the creator a group admin
+            // make the creator a group admin
             final var groupAdminRole = session.roles()
                     .getRealmRolesStream(realm, null, null)
                     .filter(r -> r.getName().equals(GROUP_ADMIN_ROLE_NAME))
