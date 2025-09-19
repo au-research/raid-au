@@ -54,4 +54,14 @@ export const messages = {
     apiBadRequest: "Bad request, please check your input",
     apiUnauthorized: "Unauthorized access, please log in",
     apiForbidden: "You do not have permission to access this resource",
+
+    // Service Point messages
+    servicePointCreated: "Service point created successfully",
+    servicePointUpdated: "Service point updated successfully",
+    servicePointDeleted: "Service point deleted successfully",
+    servicePointNotFound: "Service point not found",
+    servicePointCreationFailed: "Service point creation failed",
+    servicePointUpdateFailed: "Service point update failed",
+    servicePointDeletionFailed: "Service point deletion failed",
+    servicePointUniqueRepositoryID: "Repository ID must be unique. The provided Repository ID is already in use.",
 }

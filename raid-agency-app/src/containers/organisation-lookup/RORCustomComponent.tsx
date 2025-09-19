@@ -12,9 +12,9 @@ import Box from '@mui/material/Box';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useFormContext } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
-import { ListItemButton, Popover, Typography } from '@mui/material';
+import { FormHelperText, ListItemButton, Popover, Typography } from '@mui/material';
 import { Search, CheckCircle, AlertCircle } from 'lucide-react';
-import { ClipLoader, PulseLoader, SyncLoader } from "react-spinners";
+import { ClipLoader, PulseLoader } from "react-spinners";
 
 // Type definitions for better type safety
 interface RORLocation {
@@ -100,12 +100,16 @@ interface CustomizedInputBaseProps {
   setSelectedValue: React.Dispatch<React.SetStateAction<{ id: string; name?: string } | null>>;
   name: string;
   defaultValue?: string;
+  styles?: React.CSSProperties;
+  resetValue?: { id: string; name?: string } | null;
 }
 
 export default function CustomizedInputBase({
   setSelectedValue,
   name,
-  defaultValue
+  defaultValue,
+  styles = { width: '400px' },
+  resetValue
 }: CustomizedInputBaseProps) {
   const [searchText, clearSearchText] = React.useState(false);
   const [inputText, setInputText] = React.useState(defaultValue || '');
@@ -113,6 +117,12 @@ export default function CustomizedInputBase({
   const { watch, formState: { isDirty } } = useFormContext();
   const value = watch(`${name}`);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (resetValue === null) {
+      setInputText('');
+    }
+  }, [resetValue]);
 
   React.useEffect(() => {
     if (isDirty && value) {
@@ -202,7 +212,7 @@ export default function CustomizedInputBase({
   return (
     <Stack spacing={2}>
       <Paper
-        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400, border: 1, borderColor: getStatusColor() }}
+        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: styles?.width || '400px', border: 1, borderColor: getStatusColor() }}
         className={getStatusColor()}
       >
         {<span style={{ height: "40px", margin:"-1px", marginRight:"8px" }} ref={inputRef}></span>}{getStatusIcon()}
@@ -224,29 +234,30 @@ export default function CustomizedInputBase({
           {searchMutation.status === 'pending' ? <ClipLoader color="#36a5dd" size={25}/> : <TravelExploreIcon />}
         </IconButton>
       </Paper>
+      <FormHelperText>For e.g. "https://ror.org/123456" or "My Organization"</FormHelperText>
       <Popover
         open={dropBox}
         anchorEl={inputRef.current }
         onClose={() => setDropBox(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        sx={{ mt: 1, left:0}}
+        sx={{ mt: 1, left:0, width: styles?.width || '400px' }}
       >
         {searchMutation.data?.items?.length === 0 && (
-          <Box sx={{ padding: 2, maxWidth: '400px'}}>
+          <Box sx={{ padding: 2, maxWidth: styles?.width || '400px'}}>
             <Typography variant="body2" className="text-orange-500">
               No organizations found for "{inputText}"
             </Typography>
           </Box>
         )}
         {searchMutation.status === 'error' && (
-          <Box sx={{ padding: 2, maxWidth: '400px', color: getStatusColor() }}>
+          <Box sx={{ padding: 2, maxWidth: styles?.width || '400px', color: getStatusColor() }}>
             <Typography variant="body2" className="text-red-500">
               Failed to fetch results for "{inputText}". Please try again.
             </Typography>
           </Box>
         )}
-        <Box sx={{ maxHeight: "350px", overflow: "auto" }} display={dropBox ? 'block' : 'none'}>
+        <Box sx={{ maxHeight: "350px", overflow: "auto", width: styles?.width }} display={dropBox ? 'block' : 'none'}>
           {sortedCountries.length > 0 && (
             <List>
               {sortedCountries.map(([countryName, organizations]) => (
@@ -279,7 +290,7 @@ export default function CustomizedInputBase({
             </List>
           )}
           {searchMutation.status === 'pending' && (
-          <Box sx={{ padding: 2, minWidth: '350px' }}>
+          <Box sx={{ padding: 2, minWidth: '350px', width: styles?.width || '400px'}}>
             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: getStatusColor() }}>
               {`Searching `} <PulseLoader color="#36a5dd" size={5} />
             </Typography>

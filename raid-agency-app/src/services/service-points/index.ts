@@ -90,6 +90,8 @@ export const fetchServicePointsWithMembers = async ({
         servicePoint.groupId,
         servicePointMembers.members as ServicePointMember[]
       );
+    } else {
+      members.set(servicePoint.groupId, []);
     }
   }
 
@@ -164,6 +166,8 @@ export const fetchServicePointWithMembers = async ({
       servicePoint.groupId,
       servicePointMembers.members as ServicePointMember[]
     );
+  } else {
+    members.set(servicePoint.groupId, []);
   }
 
   // Combine service point with its members
@@ -215,16 +219,54 @@ export const createServicePoint = async ({
   data: CreateServicePointRequest;
   token: string;
 }): Promise<ServicePoint> => {
+  let groupId;
   const url = new URL(API_CONSTANTS.SERVICE_POINT.ALL);
-  const response = await authService.fetchWithAuth(url.toString(), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data.servicePointCreateRequest),
-  });
-  return await response.json();
+  const groupUrl = `${kcUrl}/realms/${kcRealm}/group/create`;
+  
+  try {
+    // First API call - Create group
+    const group = await authService.fetchWithAuth(groupUrl.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: data.servicePointCreateRequest.name,
+        path: `/groups/${data.servicePointCreateRequest.name}`
+      })
+    });
+
+    if (!group.ok) {
+      throw new Error(`Failed to create group: ${group.status} ${group.statusText}`);
+    }
+
+    const groupResult = await group.json();
+    groupId = groupResult.id;
+
+    // Update data with groupId
+    data.servicePointCreateRequest.groupId = groupId;
+
+    // Second API call - Create service point
+    const response = await authService.fetchWithAuth(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data.servicePointCreateRequest),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create service point: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error('Error in createServicePoint:', error);
+    throw error; // Re-throw to let calling code handle it
+  }
 };
 
 /**

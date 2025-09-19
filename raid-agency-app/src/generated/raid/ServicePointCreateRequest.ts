@@ -4,7 +4,7 @@
     techEmail?: string;
     identifierOwner: string;
     repositoryId?: string;
-    groupId: string;
+    groupId?: string;
     prefix?: string;
     password?: string;
     appWritesEnabled?: boolean;
