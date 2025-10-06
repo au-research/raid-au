@@ -1,4 +1,5 @@
 import { SnackbarContextInterface, useSnackbar } from "@/components/snackbar";
+import { copyToClipboardWithNotification } from "@/utils/copy-utils/copyWithNotify";
 import { downloadJson } from "@/utils/file-utils/file-utils";
 import {
   ContentCopy as ContentCopyIcon,
@@ -14,11 +15,17 @@ import {
 import { memo } from "react";
 import { useParams } from "react-router-dom";
 
-const copyJson = (data: any, snackbar: SnackbarContextInterface | null) => {
-  navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-  snackbar?.openSnackbar(`✅ Copied raw JSON data to clipboard`);
-};
-
+/**
+ * Reusable card component for displaying data sections
+ * 
+ * Provides a consistent card layout with title and utility actions (copy/download)
+ * for any content. Typically used for displaying sections of RAID data.
+ * 
+ * @param {string} labelPlural - Title to display in the card header
+ * @param {any} data - Data object represented by this card (used for copy/download)
+ * @param {React.ReactNode} children - Content to render inside the card
+ * @returns {JSX.Element} Formatted card with header actions and content
+ */
 export const DisplayCard = memo(
   ({
     labelPlural,
@@ -41,7 +48,14 @@ export const DisplayCard = memo(
               <Tooltip title="Copy raw JSON" placement="top">
                 <IconButton
                   aria-label="copy-json"
-                  onClick={() => copyJson(data, snackbar)}
+                  onClick={async () => {
+                      await copyToClipboardWithNotification(
+                        JSON.stringify(data, null, 2),
+                        "Copied raw JSON data to clipboard",
+                        snackbar as SnackbarContextInterface
+                      )
+                    }
+                  }
                 >
                   <ContentCopyIcon />
                 </IconButton>

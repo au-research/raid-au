@@ -35,8 +35,8 @@ public class DataciteCreatorFactory {
             final var response = orcidIntegrationClient.findByOrcid(contributor.getId())
                     .orElseThrow(() -> new IllegalStateException("No contributor found with id %s".formatted(contributor.getId())));
 
-            if (response.getOrcid() != null && response.getOrcid().getName() != null) {
-                creator.setName(response.getOrcid().getName());
+            if (response.getOrcid() != null && response.getName() != null) {
+                creator.setName(response.getName());
             }
 
             creator.setNameType("Personal");

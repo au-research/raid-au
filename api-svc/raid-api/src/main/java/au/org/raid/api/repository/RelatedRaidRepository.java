@@ -30,6 +30,13 @@ public class RelatedRaidRepository {
                 .fetch();
     }
 
+    public int updateAllByRelatedHandle(final String oldHandle, final String newHandle) {
+        return dslContext.update(RELATED_RAID)
+                .set(RELATED_RAID.RELATED_RAID_HANDLE, newHandle)
+                .where(RELATED_RAID.RELATED_RAID_HANDLE.eq(oldHandle))
+                .execute();
+    }
+
     public void deleteAllByHandle(final String handle) {
         dslContext.deleteFrom(RELATED_RAID)
                 .where(RELATED_RAID.HANDLE.eq(handle))

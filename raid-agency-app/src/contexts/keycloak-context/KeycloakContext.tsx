@@ -1,13 +1,7 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { keycloakInstance } from "@/keycloak";
-import { ErrorAlertComponent } from "@/components/error-alert-component";
-import { Loading } from "@/pages/loading";
+import {createContext, ReactNode, useContext, useEffect, useRef, useState,} from "react";
+import {keycloakInstance} from "@/auth/keycloak";
+import {ErrorAlertComponent} from "@/components/error-alert-component";
+import {Loading} from "@/pages/loading";
 
 interface LoginOptions {
   idpHint?: string;
@@ -36,7 +30,8 @@ interface KeycloakContextType {
   tokenParsed?: Record<string, string>;
   refreshToken?: string;
   updateToken: (minValidity: number) => Promise<boolean>;
-  error: Error | null; // Added error to the context
+  error: Error | null;
+  refreshTokenWarning: boolean;
 }
 
 const KeycloakContext = createContext<KeycloakContextType | undefined>(
@@ -48,6 +43,9 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<KeycloakUser | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [refreshTokenWarning, setRefreshTokenWarning] = useState(false);
+  const refreshIntervalRef = useRef<number | undefined>(undefined);
+
 
   const login = async (options?: LoginOptions) => {
     try {
@@ -62,25 +60,43 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value: KeycloakContextType = {
-    isInitialized,
-    isLoading,
-    user,
-    authenticated: keycloakInstance.authenticated,
-    login,
-    logout: keycloakInstance.logout,
-    token: keycloakInstance.token || "",
-    tokenParsed: keycloakInstance.tokenParsed,
-    refreshToken: keycloakInstance.refreshToken,
-    updateToken: keycloakInstance.updateToken,
-    error, // Add error to the context value
+  const refreshToken = async() => {
+    try {
+      const refreshed = await keycloakInstance.updateToken(60);
+      if (refreshed) {
+        setRefreshTokenWarning(false);
+      }
+    } catch (error) {
+      console.error("Failed to refresh token", error);
+      setRefreshTokenWarning(true);
+    }
+  }
+
+  const setupTokenRefresh = () => {
+    if (refreshIntervalRef.current) {
+      window.clearInterval(refreshIntervalRef.current);
+    }
+
+    refreshIntervalRef.current = window.setInterval(() => {
+      refreshToken();
+    }, 30000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (refreshIntervalRef.current) {
+        window.clearInterval(refreshIntervalRef.current);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const initKeycloak = async () => {
       try {
         const authenticated = await keycloakInstance.init({
           onLoad: "check-sso",
+          checkLoginIframe: false,
+          silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
         });
 
         if (authenticated) {
@@ -94,6 +110,19 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
             lastName: userProfile.lastName,
             roles,
           });
+
+          setupTokenRefresh();
+
+          keycloakInstance.onTokenExpired = () => {
+            console.log("Token expired, refreshing...");
+            refreshToken();
+          }
+
+          keycloakInstance.onAuthRefreshError = () => {
+            console.error("Auth refresh error");
+            setRefreshTokenWarning(true);
+          }
+
         }
         setIsInitialized(true);
       } catch (error) {
@@ -107,6 +136,45 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
     initKeycloak();
   }, []);
+
+  const wrappedUpdateToken = async (minValidity: number) => {
+    try {
+      return await keycloakInstance.updateToken(minValidity);
+    } catch (error) {
+      console.error("Failed to update token:", error);
+      setRefreshTokenWarning(true);
+      throw error;
+    }
+  };
+
+  const value: KeycloakContextType = {
+    isInitialized,
+    isLoading,
+    user,
+    authenticated: keycloakInstance.authenticated,
+    login,
+    logout: async () => {
+      if (refreshIntervalRef.current) {
+        window.clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = undefined;
+      }
+      return keycloakInstance.logout();
+    },
+    token: keycloakInstance.token || "",
+    tokenParsed: keycloakInstance.tokenParsed,
+    refreshToken: keycloakInstance.refreshToken,
+    updateToken: wrappedUpdateToken,
+    error, // Add error to the context value
+    refreshTokenWarning,
+  };
+
+  const RefreshTokenWarning = () => {
+    return (
+      <div className="fixed top-0 left-0 right-0 bg-red-600 text-white p-3 text-center z-50">
+        Your session is about to expire. Please save your work and refresh the page to continue.
+      </div>
+    )
+  };
 
   // Show error UI when authentication fails
   if (error) {

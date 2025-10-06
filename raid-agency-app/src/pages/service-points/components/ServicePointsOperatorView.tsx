@@ -1,5 +1,5 @@
 import { ErrorAlertComponent } from "@/components/error-alert-component";
-import { ServicePointUsersList } from "@/components/service-point-users/ServicePointUsersList";
+import { ServicePointUsersList } from "@/containers/header/service-point-users/ServicePointUsersList";
 import { ServicePointsTable } from "@/components/service-points-table";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { Loading } from "@/pages/loading";
@@ -35,12 +35,7 @@ export const ServicePointsOperatorView = () => {
 
   return (
     <Stack direction="column" gap={2}>
-      <Card>
-        <CardHeader title="Create new service point" />
-        <CardContent>
-          <ServicePointCreateForm />
-        </CardContent>
-      </Card>
+      <ServicePointCreateForm />
       <Card>
         <CardHeader title="All service points" />
         <CardContent>

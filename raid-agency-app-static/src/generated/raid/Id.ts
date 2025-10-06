@@ -1,4 +1,4 @@
-import type { Owner } from './Owner';
+﻿import type { Owner } from './Owner';
 import type { RegistrationAgency } from './RegistrationAgency';
 
 export interface Id {

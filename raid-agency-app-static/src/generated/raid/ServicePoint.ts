@@ -1,5 +1,4 @@
-
-export interface ServicePoint {
+﻿export interface ServicePoint {
     id: number;
     name: string;
     identifierOwner: string;

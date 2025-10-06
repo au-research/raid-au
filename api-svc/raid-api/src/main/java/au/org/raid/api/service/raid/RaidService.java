@@ -9,16 +9,14 @@ import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.IdFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.repository.ServicePointRepository;
-import au.org.raid.api.service.ContributorService;
-import au.org.raid.api.service.Handle;
-import au.org.raid.api.service.RaidHistoryService;
-import au.org.raid.api.service.RaidIngestService;
-import au.org.raid.api.service.RaidListenerService;
+import au.org.raid.api.service.*;
 import au.org.raid.api.service.datacite.DataciteService;
 import au.org.raid.api.service.keycloak.KeycloakService;
-import au.org.raid.api.util.SchemaValues;
+import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
 import au.org.raid.idl.raidv2.model.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +31,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static au.org.raid.api.util.TokenUtil.OPERATOR_ROLE;
 
 @Slf4j
 @Component
@@ -53,8 +52,9 @@ public class RaidService {
     private final RaidIngestService raidIngestService;
     private final HandleFactory handleFactory;
     private final ContributorService contributorService;
-    private final RaidListenerService raidListenerService;
     private final KeycloakService keycloakService;
+    private final OrcidIntegrationService orcidIntegrationService;
+    private final ObjectMapper objectMapper;
 
     private final RaidRepository raidRepository;
 
@@ -67,17 +67,16 @@ public class RaidService {
                 servicePointRepository.findById(servicePointId).orElseThrow(() ->
                         new UnknownServicePointException(servicePointId));
 
-        contributorService.setStatusAndUuid(raid.getContributor());
-
         mintHandle(raid, servicePointRecord, 0);
 
-        raidListenerService.createOrUpdate(raid.getIdentifier().getId(), raid.getContributor());
+        orcidIntegrationService.setContributorStatus(raid.getContributor());
 
         final var raidDto = raidHistoryService.save(raid);
         raidIngestService.create(raidDto);
 
         keycloakService.addHandleToAdminRaids(new Handle(raidDto.getIdentifier().getId()).toString());
 
+        orcidIntegrationService.updateOrcidRecord(raidDto);
         return raidDto;
     }
 
@@ -99,7 +98,14 @@ public class RaidService {
 
     @SneakyThrows
     @Transactional
-    public RaidDto update(final RaidUpdateRequest raid) {
+    public RaidDto update(final RaidUpdateRequest raid, final long userServicePointId) {
+        final var raidServicePointId = raid.getIdentifier().getOwner().getServicePoint().longValue();
+
+        if (!TokenUtil.hasRole(OPERATOR_ROLE) && raidServicePointId != userServicePointId) {
+            throw new IllegalAccessException("User service point id (%d) does not match raid service point id (%d)"
+                    .formatted(userServicePointId, raidServicePointId));
+        }
+
         final var servicePointRecord =
                 servicePointRepository.findById(raid.getIdentifier().getOwner().getServicePoint().longValue()).orElseThrow(() ->
                         new UnknownServicePointException(raid.getIdentifier().getOwner().getServicePoint().longValue()));
@@ -112,8 +118,10 @@ public class RaidService {
 
         final var handle = new Handle(raid.getIdentifier().getId()).toString();
 
-        final var existing = raidHistoryService.findByHandleAndVersion(handle, version)
+        final var raidString = raidHistoryService.findByHandleAndVersion(handle, version)
                 .orElseThrow(() -> new ResourceNotFoundException(handle));
+
+        final var existing = objectMapper.readValue(raidString, RaidDto.class);
 
         final var existingChecksum = checksumService.fromRaidDto(existing);
         final var updateChecksum = checksumService.fromRaidUpdateRequest(raid);
@@ -122,20 +130,21 @@ public class RaidService {
             return existing;
         }
 
-        contributorService.setStatusAndUuid(raid.getContributor());
-        mergeContributors(existing.getContributor(), raid.getContributor());
+        contributorService.setStatus(raid.getContributor());
 
-        raidListenerService.createOrUpdate(raid.getIdentifier().getId(), raid.getContributor());
+        orcidIntegrationService.setContributorStatus(raid.getContributor());
 
         final var raidDto = raidHistoryService.save(raid);
 
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
 
-        return raidIngestService.update(raidDto);
+        final var saved =  raidIngestService.update(raidDto);
+        orcidIntegrationService.updateOrcidRecord(saved);
+        return saved;
     }
 
     @Transactional
-    public RaidDto patchContributors(final String prefix, final String suffix, List<Contributor> contributors) {
+    public RaidDto patchContributors(final String prefix, final String suffix, final List<Contributor> contributors) {
         final var handle = "%s/%s".formatted(prefix, suffix);
         final var raid = raidHistoryService.findByHandle(handle)
                 .orElseThrow(() -> new ResourceNotFoundException(handle));
@@ -145,13 +154,16 @@ public class RaidService {
         final var servicePointRecord = servicePointRepository.findById(servicePointId.longValue())
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId.toString()));
 
+        orcidIntegrationService.setContributorStatus(contributors);
         raid.setContributor(contributors);
 
         raidHistoryService.save(raid);
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
 
-        return raidIngestService.update(raid);
+        final var saved = raidIngestService.update(raid);
 
+        orcidIntegrationService.updateOrcidRecord(saved);
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -240,15 +252,16 @@ public class RaidService {
         return raids;
     }
 
-    public void mergeContributors(final List<Contributor> existingContributors, final List<Contributor> newContributors) {
-        final var existingContributorMap = existingContributors.stream()
-                .collect(Collectors.toMap(Contributor::getUuid, contributor -> contributor));
+    public void postToDatacite(@Valid RaidDto raid) {
+        final var handle = new Handle(raid.getIdentifier().getId());
 
-        newContributors.forEach(contributor -> {
-            final var existingContributor = existingContributorMap.get(contributor.getUuid());
-            if (existingContributor != null) {
-                contributor.setStatus(existingContributor.getStatus());
-            }
-        });
+        //TODO: Check prefix
+
+        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValue();
+
+        final var servicePointRecord = servicePointRepository.findById(servicePointId)
+                .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
+
+        dataciteSvc.update(raid, handle.toString(), servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
     }
 }

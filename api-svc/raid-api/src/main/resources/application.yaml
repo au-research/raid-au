@@ -33,7 +33,7 @@ raid:
     landing-prefix: https://raid.org/
     global-url-prefix: https://hdl.handle.net
     registration-agency-identifier: https://ror.org/038sjwq14
-    handle-url-prefix: http://test.static.raid.org.au/
+    handle-url-prefix: https://static.test.raid.org.au/
   spatial-coverage:
     schema-uri:
       geonames: https://www.geonames.org/

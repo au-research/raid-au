@@ -24,6 +24,9 @@ public interface KeycloakApi {
     @RequestMapping(method = RequestMethod.GET, value = "/realms/raid/group")
     ResponseEntity<Group> findById(@RequestParam final String groupId);
 
+    @PostMapping(path = "/admin/realms/raid/groups")
+    ResponseEntity<Void> createGroup(@RequestBody final CreateGroupRequest groupRequest);
+
     @RequestMapping(method = RequestMethod.PUT, value = "/realms/raid/group/grant")
     ResponseEntity<String> grant(@RequestBody final Grant grant);
 

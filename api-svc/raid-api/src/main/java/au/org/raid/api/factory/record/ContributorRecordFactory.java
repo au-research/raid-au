@@ -10,7 +10,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class ContributorRecordFactory {
     public ContributorRecord create(final Contributor contributor, final int schemaId) {
         return new ContributorRecord()
-                .setUuid(contributor.getUuid())
                 .setStatus(contributor.getStatus())
                 .setPid(contributor.getId())
                 .setSchemaId(schemaId);

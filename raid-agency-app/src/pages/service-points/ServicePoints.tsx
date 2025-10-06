@@ -1,6 +1,6 @@
 import type { Breadcrumb } from "@/components/breadcrumbs-bar";
 import { BreadcrumbsBar } from "@/components/breadcrumbs-bar";
-import { useAuthHelper } from "@/keycloak";
+import { useAuthHelper } from "@/auth/keycloak";
 import { Home as HomeIcon, Hub as HubIcon } from "@mui/icons-material";
 import { Container, Stack } from "@mui/material";
 import { ServicePointsGroupAdminView, ServicePointsOperatorView } from "./";

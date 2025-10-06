@@ -1,4 +1,4 @@
-import type { ValidationFailure } from './ValidationFailure';
+﻿import type { ValidationFailure } from './ValidationFailure';
 
 export interface ValidationFailureResponse {
     failures: Array<ValidationFailure>;

@@ -1,8 +1,9 @@
 ---
 import InfoField from "@/components/info-field.astro";
-import type { RelatedRaid } from "@/generated/raid";
+import type { RaidDto, RelatedRaid } from "@/generated/raid";
 import mapping from "@/mapping/data/general-mapping.json";
 import { raids } from "@/store/raids";
+import { hyperlinkFlexibleHandles } from "@/utils/hyperlink-utils";
 
 interface Props {
   relatedRaids: RelatedRaid[];
@@ -10,7 +11,7 @@ interface Props {
 }
 
 const { relatedRaids, currentRaidId } = Astro.props as Props;
-
+const baseUrl = import.meta.env.PUBLIC_BASE_URL || 'https://static.prod.raid.org.au/raids/';
 interface RelatedRaidWithLevel extends RelatedRaid {
   level: number;
   title: string | undefined;
@@ -74,15 +75,18 @@ function findReverseRelations(
     if (!raid.identifier.id) return;
 
     const raidLastSegments = raid.identifier.id.split("/").slice(-2).join("/");
-    const matchingRelation = raid.relatedRaid?.find((related) => {
-      const relatedLastSegments = related.id?.split("/").slice(-2).join("/");
-      return relatedLastSegments === currentLastSegments;
-    });
+    const matchingRelation: any = raid.relatedRaid?.find(
+      (related: RelatedRaid) => {
+        const relatedLastSegments =
+          "id" in related ? related.id?.split("/").slice(-2).join("/") : "";
+        return relatedLastSegments === currentLastSegments;
+      }
+    );
 
-    if (matchingRelation) {
+    if (matchingRelation && "type" in matchingRelation) {
       reverseRelations.push({
         id: raid.identifier.id,
-        type: matchingRelation.type,
+        type: matchingRelation?.type,
         level: level,
         title: raid.title?.map((el) => el.text).join(" | "),
       });
@@ -128,16 +132,16 @@ const reverseRelations = findReverseRelations(currentRaidId, 0, new Set());
                 <div class="grid grid-cols-1 gap-5 text-sm">
                   <InfoField
                     label="Title"
-                    value={
+                    value={hyperlinkFlexibleHandles(
                       `${el.title} (${el.id?.split("/").slice(-2).join("/") || ""})` ||
-                      ""
-                    }
+                      "", baseUrl
+                    )}
                   />
                 </div>
                 <div class="grid grid-cols-4 gap-5 text-sm">
                   <InfoField
                     label="Relation"
-                    value={relatedRaidType?.value}
+                    value={hyperlinkFlexibleHandles(relatedRaidType?.value ?? "", baseUrl)}
                     tooltip={relatedRaidType?.definition}
                   />
                 </div>
@@ -168,16 +172,16 @@ const reverseRelations = findReverseRelations(currentRaidId, 0, new Set());
                   <div class="grid grid-cols-1 gap-5 text-sm">
                     <InfoField
                       label="Title"
-                      value={
-                        `${el.title} (${el.id?.split("/").slice(-2).join("/") || ""})` ||
-                        ""
-                      }
+                       value={hyperlinkFlexibleHandles(
+                      `${el.title} (${el.id?.split("/").slice(-2).join("/") || ""})` ||
+                      "", baseUrl
+                    )}
                     />
                   </div>
                   <div class="grid grid-cols-4 gap-5 text-sm">
                     <InfoField
                       label="Relation"
-                      value={relatedRaidType?.value}
+                      value={hyperlinkFlexibleHandles(relatedRaidType?.value ?? "", baseUrl) || ""}
                       tooltip={relatedRaidType?.definition}
                     />
                   </div>

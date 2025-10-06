@@ -1,5 +1,4 @@
-
-export interface RaidChange {
+﻿export interface RaidChange {
     handle?: string;
     version?: number;
     diff?: string;

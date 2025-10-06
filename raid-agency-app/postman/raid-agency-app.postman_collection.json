@@ -1,0 +1,1125 @@
+{
+	"info": {
+		"_postman_id": "b83928a1-b1ea-4a37-b789-fa3a74f1727b",
+		"name": "RAID Agency API",
+		"description": "Collection of API endpoints for the RAID Agency Application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "371799"
+	},
+	"item": [
+		{
+			"name": "RAID Service API",
+			"item": [
+				{
+					"name": "Fetch All RAIDs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{raid_api_url}}/raid/",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"raid",
+								""
+							]
+						},
+						"description": "Retrieves a list of all RAID records with optional field filtering"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch One RAID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{raid_api_url}}/raid/10.82841/04f8a2ed",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"raid",
+								"10.82841",
+								"04f8a2ed"
+							]
+						},
+						"description": "Retrieves a single RAID record by its handle"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch RAID History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{raid_api_url}}/raid/10.82841/04f8a2ed/history",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"raid",
+								"10.82841",
+								"04f8a2ed",
+								"history"
+							]
+						},
+						"description": "Retrieves the revision history of a RAID record"
+					},
+					"response": []
+				},
+				{
+					"name": "Create RAID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": [\n        {\n            \"text\": \"Sample RAID Title - {{$randomUUID}}\",\n            \"type\": {\n                \"id\": \"https://vocabulary.raid.org/title.type.schema/5\",\n                \"schemaUri\": \"https://vocabulary.raid.org/title.type.schema/376\"\n            },\n            \"startDate\": \"2023-01-01\"\n        }\n    ],\n    \"contributor\": [\n        {\n            \"id\": \"https://orcid.org/0009-0000-9306-3120\",\n            \"schemaUri\": \"https://orcid.org/\",\n            \"position\": [\n                {\n                    \"schemaUri\": \"https://vocabulary.raid.org/contributor.position.schema/305\",\n                    \"id\": \"https://vocabulary.raid.org/contributor.position.schema/307\",\n                    \"startDate\": \"2025-03-25\"\n                }\n            ],\n            \"role\": [\n                {\n                    \"schemaUri\": \"https://credit.niso.org/\",\n                    \"id\": \"https://credit.niso.org/contributor-roles/software/\"\n                }\n            ],\n            \"leader\": true,\n            \"contact\": true\n        }\n    ],\n    \"description\": [\n        {\n            \"text\": \"Sample RAID Description\",\n            \"type\": {\n                \"id\": \"https://vocabulary.raid.org/description.type.schema/318\",\n                \"schemaUri\": \"https://vocabulary.raid.org/description.type.schema/320\"\n            }\n        }\n    ],\n    \"date\": {\n        \"startDate\": \"2023-01-01\"\n    },\n    \"access\": {\n        \"type\": {\n            \"id\": \"https://vocabularies.coar-repositories.org/access_rights/c_abf2/\",\n            \"schemaUri\": \"https://vocabularies.coar-repositories.org/access_rights/\"\n        },\n        \"statement\": null,\n        \"embargoExpiry\": \"\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{raid_api_url}}/raid/",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"raid",
+								""
+							]
+						},
+						"description": "Creates a new RAID record"
+					},
+					"response": []
+				},
+				{
+					"name": "Update RAID",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identifier\": {\n        \"id\": \"http://localhost:8080/10.82841/04f8a2ed\",\n        \"schemaUri\": \"https://raid.org/\",\n        \"registrationAgency\": {\n            \"id\": \"https://ror.org/038sjwq14\",\n            \"schemaUri\": \"https://ror.org/\"\n        },\n        \"owner\": {\n            \"id\": \"https://ror.org/038sjwq14\",\n            \"schemaUri\": \"https://ror.org/\",\n            \"servicePoint\": 20000000\n        },\n        \"raidAgencyUrl\": \"http://test.static.raid.org.au/10.82841/04f8a2ed\",\n        \"license\": \"Creative Commons CC-0\",\n        \"version\": 4\n    },\n    \"date\": {\n        \"startDate\": \"2023-01-01\"\n    },\n    \"title\": [\n        {\n            \"text\": \"Updated RAID Title - {{$randomUUID}}\",\n            \"type\": {\n                \"id\": \"https://vocabulary.raid.org/title.type.schema/5\",\n                \"schemaUri\": \"https://vocabulary.raid.org/title.type.schema/376\"\n            },\n            \"startDate\": \"2023-01-01\"\n        }\n    ],\n    \"access\": {\n        \"type\": {\n            \"id\": \"https://vocabularies.coar-repositories.org/access_rights/c_abf2/\",\n            \"schemaUri\": \"https://vocabularies.coar-repositories.org/access_rights/\"\n        }\n    },\n    \"contributor\": [\n        {\n            \"id\": \"https://orcid.org/0009-0000-9306-3120\",\n            \"schemaUri\": \"https://orcid.org/\",\n            \"status\": \"AUTHENTICATED\",\n            \"uuid\": \"59a67c6b-8685-4854-bae5-0514b076be74\",\n            \"position\": [\n                {\n                    \"schemaUri\": \"https://vocabulary.raid.org/contributor.position.schema/305\",\n                    \"id\": \"https://vocabulary.raid.org/contributor.position.schema/307\",\n                    \"startDate\": \"2025-03-25\"\n                }\n            ],\n            \"role\": [\n                {\n                    \"schemaUri\": \"https://credit.niso.org/\",\n                    \"id\": \"https://credit.niso.org/contributor-roles/software/\"\n                }\n            ],\n            \"leader\": true,\n            \"contact\": true\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{raid_api_url}}/raid/10.82841/04f8a2ed",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"raid",
+								"10.82841",
+								"04f8a2ed"
+							]
+						},
+						"description": "Updates an existing RAID record"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing RAID records",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Invite Service API",
+			"item": [
+				{
+					"name": "Send Invite (Email)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inviteeEmail\": \"john.doe@example.com\",\n  \"handle\": \"{{handle}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://invite.{{raid_env}}.raid.org.au/invite",
+							"protocol": "https",
+							"host": [
+								"invite",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"invite"
+							]
+						},
+						"description": "Sends an invitation to collaborate on a RAID via email"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Invite (ORCID)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inviteeOrcid\": \"0000-0000-0000-0000\",\n  \"title\": \"Sample Project Title\",\n  \"handle\": \"{{handle}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://invite.{{raid_env}}.raid.org.au/invite",
+							"protocol": "https",
+							"host": [
+								"invite",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"invite"
+							]
+						},
+						"description": "Sends an invitation to collaborate on a RAID via ORCID"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Invites",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://invite.{{raid_env}}.raid.org.au/invite/fetch",
+							"protocol": "https",
+							"host": [
+								"invite",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"invite",
+								"fetch"
+							]
+						},
+						"description": "Retrieves invitations for the current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Invite",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{invite_code}}\",\n  \"handle\": \"{{handle}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://invite.{{raid_env}}.raid.org.au/invite/accept",
+							"protocol": "https",
+							"host": [
+								"invite",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"invite",
+								"accept"
+							]
+						},
+						"description": "Accepts a collaboration invitation"
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Invite",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{invite_code}}\",\n  \"handle\": \"{{handle}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://invite.{{raid_env}}.raid.org.au/invite/reject",
+							"protocol": "https",
+							"host": [
+								"invite",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"invite",
+								"reject"
+							]
+						},
+						"description": "Rejects a collaboration invitation"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing RAID collaboration invitations"
+		},
+		{
+			"name": "Contributor Service API",
+			"item": [
+				{
+					"name": "Fetch ORCID Contributors",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"handle\": \"{{handle}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://orcid.{{raid_env}}.raid.org.au/contributors",
+							"protocol": "https",
+							"host": [
+								"orcid",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"contributors"
+							]
+						},
+						"description": "Retrieves contributors associated with a RAID via ORCID"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing RAID contributors"
+		},
+		{
+			"name": "Service Points API",
+			"item": [
+				{
+					"name": "Fetch Service Points",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{raid_api_url}}/service-point/",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"service-point",
+								""
+							]
+						},
+						"description": "Retrieves all service points"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Service Point",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{raid_api_url}}/service-point/{{servicepoint_id}}",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"service-point",
+								"{{servicepoint_id}}"
+							]
+						},
+						"description": "Retrieves a specific service point by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Service Point",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Service Point\",\n  \"identifierPrefix\": \"test\",\n  \"identifierOwner\": \"https://ror.org/example\",\n  \"contactEmail\": \"contact@example.com\",\n  \"contactName\": \"Contact Person\",\n  \"repositoryId\": \"repository123\",\n  \"adminEmail\": \"admin@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{raid_api_url}}/service-point/",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"service-point",
+								""
+							]
+						},
+						"description": "Creates a new service point"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Service Point",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Service Point\",\n  \"contactEmail\": \"updated@example.com\",\n  \"contactName\": \"Updated Contact Person\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{raid_api_url}}/service-point/{{service_point_id}}",
+							"host": [
+								"{{raid_api_url}}"
+							],
+							"path": [
+								"service-point",
+								"{{service_point_id}}"
+							]
+						},
+						"description": "Updates an existing service point"
+					},
+					"response": []
+				},
+				{
+					"name": "Grant User Service Point Role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"groupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/grant",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"grant"
+							]
+						},
+						"description": "Grants a user role in a service point"
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke User Service Point Role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"groupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/revoke",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"revoke"
+							]
+						},
+						"description": "Revokes a user role in a service point"
+					},
+					"response": []
+				},
+				{
+					"name": "Add User To Group Admins",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"groupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/group-admin",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"group-admin"
+							]
+						},
+						"description": "Promotes a user to group admin for a service point"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove User From Group Admins",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"groupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/group-admin",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"group-admin"
+							]
+						},
+						"description": "Removes a user from group admins for a service point"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove User From Service Point (Clear Active Group)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/active-group",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"active-group"
+							]
+						},
+						"description": "Removes the active group attribute for a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove User From Service Point (Leave Group)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"groupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/leave",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"leave"
+							]
+						},
+						"description": "Removes a user from a service point group"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing service points"
+		},
+		{
+			"name": "Keycloak Groups API",
+			"item": [
+				{
+					"name": "Join Keycloak Group",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"groupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/join",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"join"
+							]
+						},
+						"description": "Adds the current user to a Keycloak group"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch All Keycloak Groups",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/all",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"all"
+							]
+						},
+						"description": "Retrieves all Keycloak groups"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Current User Keycloak Groups",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/user-groups",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"user-groups"
+							]
+						},
+						"description": "Retrieves groups for the current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Set Keycloak User Attribute",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activeGroupId\": \"{{group_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/group/active-group",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"group",
+								"active-group"
+							]
+						},
+						"description": "Sets the active service point for the current user"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing Keycloak groups"
+		},
+		{
+			"name": "Authentication API",
+			"item": [
+				{
+					"name": "Fetch API Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "refresh_token"
+								},
+								{
+									"key": "client_id",
+									"value": "{{kc_client_id}}"
+								},
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{kc_url}}/realms/{{kc_realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{kc_url}}"
+							],
+							"path": [
+								"realms",
+								"{{kc_realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Retrieves a new access token using a refresh token"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for authentication"
+		},
+		{
+			"name": "External APIs",
+			"item": [
+				{
+					"name": "Fetch DOI Registration Agency",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://doi.org/doiRA/{{doi_handle}}",
+							"protocol": "https",
+							"host": [
+								"doi",
+								"org"
+							],
+							"path": [
+								"doiRA",
+								"{{doi_handle}}"
+							]
+						},
+						"description": "Identifies the registration agency for a DOI"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Crossref Metadata",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.crossref.org/works/{{doi_handle}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"crossref",
+								"org"
+							],
+							"path": [
+								"works",
+								"{{doi_handle}}"
+							]
+						},
+						"description": "Retrieves metadata for DOIs registered with Crossref"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Datacite Metadata",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.datacite.org/dois/{{doi_handle}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"datacite",
+								"org"
+							],
+							"path": [
+								"dois",
+								"{{doi_handle}}"
+							]
+						},
+						"description": "Retrieves metadata for DOIs registered with Datacite"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Related RAID Metadata",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://static.{{raid_env}}.raid.org.au/raids/{{handle}}.json",
+							"protocol": "https",
+							"host": [
+								"static",
+								"{{raid_env}}",
+								"raid",
+								"org",
+								"au"
+							],
+							"path": [
+								"raids",
+								"{{handle}}.json"
+							]
+						},
+						"description": "Retrieves information about related RAID records"
+					},
+					"response": []
+				}
+			],
+			"description": "External APIs for DOI resolution and RAID lookup"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"const postRequest = {",
+					"  url: `${pm.environment.get(\"kc_url\")}/realms/${pm.environment.get(\"kc_realm\")}/protocol/openid-connect/token`,",
+					"  method: \"POST\",",
+					"  header: {",
+					"    \"Content-Type\": \"application/x-www-form-urlencoded\",",
+					"  },",
+					"  body: {",
+					"    mode: \"urlencoded\",",
+					"    urlencoded: [",
+					"      { key: \"grant_type\", value: \"client_credentials\" },",
+					"      { key: \"client_id\", value: pm.environment.get(\"kc_client_id\") },",
+					"      { key: \"client_secret\", value: pm.environment.get(\"kc_client_secret\") }",
+					"    ],",
+					"  },",
+					"};",
+					"",
+					"pm.sendRequest(postRequest, (error, response) => {",
+					"  if (error) {",
+					"    console.log(error);",
+					"  }",
+					"",
+					"  pm.environment.set(\"access_token\", null);",
+					"",
+					"  pm.test(\"response should be okay to process\", () => {",
+					"    pm.expect(error).to.equal(null);",
+					"    pm.expect(response).to.have.property(\"code\", 200);",
+					"    pm.expect(response).to.have.property(\"status\", \"OK\");",
+					"    pm.environment.set(\"access_token\", response.json().access_token);",
+					"  });",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "servicepoint_id",
+			"value": "20000000",
+			"type": "string"
+		}
+	]
+}

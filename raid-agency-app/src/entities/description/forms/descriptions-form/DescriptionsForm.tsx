@@ -11,7 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   Control,
   FieldErrors,
@@ -19,6 +19,9 @@ import {
   useFieldArray,
 } from "react-hook-form";
 import { DescriptionDetailsForm } from "@/entities/description/forms/description-details-form";
+import { MetadataContext } from "@/components/raid-form/RaidForm";
+import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export function DescriptionsForm({
   control,
@@ -43,7 +46,8 @@ export function DescriptionsForm({
     append(generator());
     trigger(key);
   };
-
+  const metadata = useContext(MetadataContext);
+  const tooltip = metadata?.[key]?.tooltip;
   return (
     <Card
       sx={{
@@ -52,7 +56,17 @@ export function DescriptionsForm({
       }}
       id={key}
     >
-      <CardHeader title={labelPlural} />
+      <Stack direction="row" alignItems="center">
+        <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+        <CustomStyledTooltip
+          title={label}
+          content={tooltip || ""}
+          variant="info"
+          placement="top"
+          tooltipIcon={<InfoOutlinedIcon />}
+        >
+        </CustomStyledTooltip>
+      </Stack>
       <CardContent>
         <Stack gap={2} className={isRowHighlighted ? "add" : ""}>
           {errorMessage && (

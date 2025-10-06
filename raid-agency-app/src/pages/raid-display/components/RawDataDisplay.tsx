@@ -1,5 +1,6 @@
 import { SnackbarContextInterface, useSnackbar } from "@/components/snackbar";
 import { RaidDto } from "@/generated/raid";
+import { copyToClipboardWithNotification } from "@/utils/copy-utils/copyWithNotify";
 import { downloadJson } from "@/utils/file-utils/file-utils";
 import {
   ContentCopy as ContentCopyIcon,
@@ -16,12 +17,8 @@ import { useParams } from "react-router-dom";
 
 export const RawDataDisplay = ({ raidData }: { raidData: RaidDto }) => {
   const snackbar = useSnackbar();
-
   const { prefix, suffix } = useParams();
-  const copyJson = (data: any, snackbar: SnackbarContextInterface) => {
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    snackbar.openSnackbar(`✅ Copied raw JSON data to clipboard`);
-  };
+
   return (
     <Card>
       {/* <CardHeader title="Raw Data" /> */}
@@ -31,7 +28,14 @@ export const RawDataDisplay = ({ raidData }: { raidData: RaidDto }) => {
             <Tooltip title="Copy raw JSON" placement="top">
               <IconButton
                 aria-label="copy-json"
-                onClick={() => copyJson(raidData, snackbar)}
+                onClick={async () => {
+                    await copyToClipboardWithNotification(
+                      JSON.stringify(raidData, null, 2),
+                      "Copied raw JSON data to clipboard",
+                      snackbar as SnackbarContextInterface
+                    )
+                  }
+                }
               >
                 <ContentCopyIcon />
               </IconButton>

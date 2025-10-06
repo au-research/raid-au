@@ -19,6 +19,7 @@ public class Api {
     public Clock clock() {
         return Clock.systemUTC();
     }
+
     public static void main(String[] args) {
         SpringApplication.run(Api.class, args);
     }

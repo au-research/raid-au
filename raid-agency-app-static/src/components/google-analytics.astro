@@ -1,0 +1,26 @@
+---
+// components/GoogleAnalytics.astro
+let gaId;
+const isProduction = import.meta.env.PROD || 
+                    Astro.url.hostname.includes('prod')
+const isDemo = Astro.url.hostname.includes('demo');
+if (isProduction) {
+  gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+} else if (isDemo) {
+  gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID_DEMO;
+} else {
+  gaId = null; // No GA in dev environment
+}
+---
+{(isProduction || isDemo) && gaId && (
+  <>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+    <script define:vars={{ gaId }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
+  </>
+)}

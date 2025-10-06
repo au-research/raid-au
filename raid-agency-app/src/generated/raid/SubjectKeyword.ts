@@ -1,4 +1,4 @@
-import type { Language } from './Language';
+﻿import type { Language } from './Language';
 
 export interface SubjectKeyword {
     text: string;

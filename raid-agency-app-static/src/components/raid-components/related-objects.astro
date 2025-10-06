@@ -1,16 +1,15 @@
 ---
 import InfoField from "@/components/info-field.astro";
-import type { RelatedObject } from "@/generated/raid";
+import type { RelatedObjectWithCitation } from "@/generated/raid";
 import mapping from "@/mapping/data/general-mapping.json";
 import { kebabToTitle } from "@/utils";
 
 interface Props {
-  relatedObjects: RelatedObject[];
+  relatedObjects: RelatedObjectWithCitation[];
 }
 
 const { relatedObjects } = Astro.props as Props;
 ---
-
 <section class="bg-gray-50 py-5">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <h3 class="text-lg font-semibold text-gray-900">RelatedObjects</h3>
@@ -29,6 +28,7 @@ const { relatedObjects } = Astro.props as Props;
           return (
             <div class="ml-5 space-y-2 py-4">
               <div class="grid grid-cols-2 gap-5 text-sm">
+                <InfoField label="Citation" value={el.citation?.text || ""} markdown={true}/>
                 <InfoField label="ID" value={el.id || ""} />
                 <InfoField label="Type" value={relatedObjectType || ""} />
               </div>

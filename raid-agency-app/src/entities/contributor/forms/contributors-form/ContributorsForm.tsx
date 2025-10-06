@@ -11,7 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Fragment, useState } from "react";
+import { Fragment, useContext, useState } from "react";
 import {
   Control,
   FieldErrors,
@@ -22,6 +22,9 @@ import {
 import { ContributorPositionsForm } from "@/entities/contributor-position/forms/contributor-positions-form";
 import { ContributorRolesForm } from "@/entities/contributor-role/forms/contributor-roles-form";
 import { ContributorDetailsForm } from "@/entities/contributor/forms/contributor-details-form";
+import { MetadataContext } from "@/components/raid-form/RaidForm";
+import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export function ContributorsForm({
   control,
@@ -49,6 +52,13 @@ export function ContributorsForm({
     trigger(key);
   };
 
+  const removeHandler = (index: number) => {
+    data.splice(index, 1); // Also remove from data array to keep in sync with form state
+    remove(index);
+  };
+
+  const metadata = useContext(MetadataContext);
+  const tooltip = metadata?.[key]?.tooltip;
   return (
     <Card
       sx={{
@@ -57,7 +67,17 @@ export function ContributorsForm({
       }}
       id={key}
     >
-      <CardHeader title={labelPlural} />
+       <Stack direction="row" alignItems="center">
+        <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+        <CustomStyledTooltip
+          title={label}
+          content={tooltip || ""}
+          variant="info"
+          placement="top"
+          tooltipIcon={<InfoOutlinedIcon />}
+        >
+        </CustomStyledTooltip>
+      </Stack>
       <CardContent>
         <Stack gap={2} className={isRowHighlighted ? "add" : ""}>
           {errorMessage && (
@@ -81,7 +101,7 @@ export function ContributorsForm({
               <Fragment key={field.id}>
                 <DetailsForm
                   key={field.id}
-                  handleRemoveItem={() => remove(index)}
+                  handleRemoveItem={() => removeHandler(index)}
                   index={index}
                   data={data}
                 />

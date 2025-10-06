@@ -1,0 +1,1 @@
+export { default as OrcidSuccess } from "./orcid-success";

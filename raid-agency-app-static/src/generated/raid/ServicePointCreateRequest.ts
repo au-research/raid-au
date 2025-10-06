@@ -1,5 +1,4 @@
-
-export interface ServicePointCreateRequest {
+﻿export interface ServicePointCreateRequest {
     name: string;
     adminEmail?: string;
     techEmail?: string;

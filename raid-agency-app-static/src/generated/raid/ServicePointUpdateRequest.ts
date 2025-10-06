@@ -1,5 +1,4 @@
-
-export interface ServicePointUpdateRequest {
+﻿export interface ServicePointUpdateRequest {
     id: number;
     name: string;
     adminEmail?: string;

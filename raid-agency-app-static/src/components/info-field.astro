@@ -1,11 +1,14 @@
 ---
+import { markdownContent } from '../utils/markdown-util'
 interface Props {
   label: string;
   value: Date | string | undefined;
   tooltip?: string | undefined;
   isLink?: boolean;
+  markdown?: boolean
 }
-const { label, value, tooltip, isLink } = Astro.props as Props;
+const { label, value, tooltip, isLink, markdown = false } = Astro.props as Props;
+
 ---
 
 <style>
@@ -48,6 +51,23 @@ const { label, value, tooltip, isLink } = Astro.props as Props;
     transform: translate(0);
     opacity: 1;
   }
+  .htags :global(h5) {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    color: currentColor;
+  }
+
+  .htags :global(h6) {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    color: currentColor;
+  }
 </style>
 
 <div>
@@ -69,7 +89,9 @@ const { label, value, tooltip, isLink } = Astro.props as Props;
             {value}
           </a>
         ) : (
-          value || "---"
+          <div set:html={markdownContent(markdown, value)} class="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 htags"/>
+           || 
+           "---"
         )
       }
     </span>
@@ -87,7 +109,12 @@ const { label, value, tooltip, isLink } = Astro.props as Props;
             <path d="M480-240q20 0 34-14t14-34q0-20-14-34t-34-14q-20 0-34 14t-14 34q0 20 14 34t34 14Zm-36-153h73q0-37 6.5-52.5T555-485q35-34 48.5-58t13.5-53q0-55-37.5-89.5T484-720q-51 0-88.5 27T343-620l65 27q9-28 28.5-43.5T482-652q28 0 46 16t18 42q0 23-15.5 41T496-518q-35 32-43.5 52.5T444-393Zm36 297q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm0-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z" />
           </svg>
           <div class="tooltip">
-            <span class="font-semibold block">{label}: {value}</span> {tooltip}</div>
+            <span class="font-semibold block">
+              {label}: 
+              <div set:html={markdownContent(markdown, value)} class="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 htags"/>
+            </span> 
+            {tooltip}
+          </div>
         </>
       )
     }

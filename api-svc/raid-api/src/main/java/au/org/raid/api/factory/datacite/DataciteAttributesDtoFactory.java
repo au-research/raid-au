@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -348,7 +349,8 @@ public class DataciteAttributesDtoFactory {
                     .toList());
         }
 
-        final var creators = addCreators(request.getContributor());
+        final var creators = (request.getContributor() != null) ?
+                addCreators(request.getContributor()) : new ArrayList<DataciteCreator>();
 
         final var relatedIdentifiers = new ArrayList<DataciteRelatedIdentifier>();
 

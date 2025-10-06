@@ -16,21 +16,18 @@ const accessTypeValidationSchema = z.object({
     accessTypeSchema.map((el) => el.uri) as [string, ...string[]]
   ),
 });
-
-const accessStatementLanguageValidationSchema = z.object({
-  id: z.string().min(1),
-  schemaUri: z.enum(
-    languageSchema.map((el) => el.uri) as [string, ...string[]]
-  ),
+const accessLanguageValidationSchema = z.object({
+  id: z.string(),
+  schemaUri: z.literal(languageSchema[0].uri),
 });
 
 const accessStatementValidationSchema = z.object({
   text: z.string().optional(),
-  language: accessStatementLanguageValidationSchema,
-});
+}).optional();
 
 export const accessValidationSchema = z.object({
   type: accessTypeValidationSchema,
   statement: accessStatementValidationSchema,
+  language: accessLanguageValidationSchema.optional(),
   embargoExpiry: yearMonthDayPatternSchema.nullish(),
 });

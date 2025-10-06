@@ -1,34 +1,21 @@
-import type { Breadcrumb } from "@/components/breadcrumbs-bar";
-import { BreadcrumbsBar } from "@/components/breadcrumbs-bar";
-import { ErrorAlertComponent } from "@/components/error-alert-component";
-import { useKeycloak } from "@/contexts/keycloak-context";
-import { Loading } from "@/pages/loading";
-import type {
-  RaidHistoryElementType,
-  RaidHistoryType,
-} from "@/pages/raid-history";
-import { fetchOneRaidHistory } from "@/services/raid";
+import type {Breadcrumb} from "@/components/breadcrumbs-bar";
+import {BreadcrumbsBar} from "@/components/breadcrumbs-bar";
+import {ErrorAlertComponent} from "@/components/error-alert-component";
+import {useKeycloak} from "@/contexts/keycloak-context";
+import {Loading} from "@/pages/loading";
+import type {RaidHistoryElementType,} from "@/pages/raid-history";
 import {
   DocumentScanner as DocumentScannerIcon,
-  HistoryEdu as HistoryEduIcon,
   History as HistoryIcon,
+  HistoryEdu as HistoryEduIcon,
   Home as HomeIcon,
   SettingsBackupRestore as SettingsBackupRestoreIcon,
 } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Container,
-  Grid,
-  Stack,
-  Typography,
-} from "@mui/material";
+import {Box, Button, Card, CardContent, CardHeader, Container, Grid, Stack, Typography,} from "@mui/material";
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import {useQuery} from "@tanstack/react-query";
+import {useParams} from "react-router-dom";
+import {raidService} from "@/services/raid-service.ts";
 
 export const RaidHistory = () => {
   const { authenticated, isInitialized, token } = useKeycloak();
@@ -36,13 +23,9 @@ export const RaidHistory = () => {
   const { prefix, suffix } = useParams() as { prefix: string; suffix: string };
   const handle = `${prefix}/${suffix}`;
 
-  const raidHistoryQuery = useQuery<RaidHistoryType[]>({
+  const raidHistoryQuery = useQuery({
     queryKey: ["raids", prefix, suffix],
-    queryFn: () =>
-      fetchOneRaidHistory({
-        handle,
-        token: token!,
-      }),
+    queryFn: () => raidService.fetchHistory(handle),
     enabled: isInitialized && authenticated,
   });
 

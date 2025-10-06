@@ -15,7 +15,7 @@ services:
     ports:
       - 8001:8080
       - 9443:8443
-      - 5005:5005
+#      - 5005:5005
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 5s
@@ -38,6 +38,6 @@ services:
       KC_DB_SCHEMA: public
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
-      DEBUG: true
-      DEBUG_PORT: '*:5005'
+#      DEBUG: true
+#      DEBUG_PORT: '*:5005'
       KC_LOG_LEVEL: info,au.org.raid.iam:debug,org.keycloak.services:debug,org.keycloak.adapters:debug

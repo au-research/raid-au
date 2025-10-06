@@ -17,7 +17,6 @@ public class ContributorRepository {
         return dslContext.insertInto(CONTRIBUTOR)
                 .set(CONTRIBUTOR.PID, contributor.getPid())
                 .set(CONTRIBUTOR.SCHEMA_ID, contributor.getSchemaId())
-                .set(CONTRIBUTOR.UUID, contributor.getUuid())
                 .set(CONTRIBUTOR.STATUS, contributor.getStatus())
                 .returning()
                 .fetchOne();
@@ -25,37 +24,17 @@ public class ContributorRepository {
 
     public ContributorRecord updateOrCreate(final ContributorRecord contributor) {
         // Look for existing UNAUTHENTICATED contributor
-        if (contributor.getPid() != null) {
-            final var result = dslContext.selectFrom(CONTRIBUTOR)
+        final var result = dslContext.selectFrom(CONTRIBUTOR)
+                .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
+                .fetchOptional();
+
+        if (result.isPresent()) {
+            return dslContext.update(CONTRIBUTOR)
+                    .set(CONTRIBUTOR.SCHEMA_ID, contributor.getSchemaId())
+                    .set(CONTRIBUTOR.STATUS, contributor.getStatus())
                     .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
-                    .fetchOptional();
-
-            if (result.isPresent()) {
-                return dslContext.update(CONTRIBUTOR)
-                        .set(CONTRIBUTOR.SCHEMA_ID, contributor.getSchemaId())
-                        .set(CONTRIBUTOR.STATUS, contributor.getStatus())
-                        .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
-                        .returning()
-                        .fetchOne();
-
-            }
-        }
-        if (contributor.getUuid() != null) {
-            final var result = dslContext.selectFrom(CONTRIBUTOR)
-                    .where(CONTRIBUTOR.UUID.eq(contributor.getUuid()))
-                    .fetchOptional();
-
-            if (result.isPresent()) {
-                return dslContext.update(CONTRIBUTOR)
-                        .set(CONTRIBUTOR.PID, contributor.getPid())
-                        .set(CONTRIBUTOR.SCHEMA_ID, contributor.getSchemaId())
-                        .set(CONTRIBUTOR.STATUS, contributor.getStatus())
-                        .where(CONTRIBUTOR.UUID.eq(contributor.getUuid()))
-                        .returning()
-                        .fetchOne();
-            } else {
-                return create(contributor);
-            }
+                    .returning()
+                    .fetchOne();
         } else {
             return create(contributor);
         }
@@ -75,22 +54,8 @@ public class ContributorRepository {
 
     public void update(final ContributorRecord contributor) {
         dslContext.update(CONTRIBUTOR)
-                .set(CONTRIBUTOR.UUID, contributor.getUuid())
                 .set(CONTRIBUTOR.STATUS, contributor.getStatus())
                 .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
                 .execute();
-    }
-
-    public Optional<ContributorRecord> findByPidAndUuid(final String pid, final String uuid) {
-        return dslContext.selectFrom(CONTRIBUTOR)
-                .where(CONTRIBUTOR.PID.eq(pid))
-                .and(CONTRIBUTOR.UUID.eq(uuid))
-                .fetchOptional();
-    }
-
-    public Optional<ContributorRecord> findByUuid(final String uuid) {
-        return dslContext.selectFrom(CONTRIBUTOR)
-                .where(CONTRIBUTOR.UUID.eq(uuid))
-                .fetchOptional();
     }
 }

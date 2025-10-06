@@ -9,9 +9,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { ServicePointSwitcher } from "../service-point-switcher";
-import { NavigationDrawer } from "./components/NavigationDrawer";
-import { UserDropdown } from "./components/UserDropdown";
+import { ServicePointSwitcher } from "../../containers/header/service-point-switcher";
+import { NavigationDrawer } from "../../containers/header/NavigationDrawer";
+import { UserDropdown } from "../../containers/header/UserDropdown";
 
 const AuthenticatedNavbarContent = () => {
   return (
@@ -29,6 +29,15 @@ const AuthenticatedNavbarContent = () => {
   );
 };
 
+/**
+ * Main application navigation bar
+ * 
+ * Provides consistent navigation across the application with authentication-aware
+ * display of user controls, service point switcher, and navigation options.
+ * 
+ * @param {boolean} authenticated - Whether a user is currently authenticated
+ * @returns {JSX.Element} Navigation bar with appropriate controls based on auth state
+ */
 export const AppNavBar = ({ authenticated }: { authenticated: boolean }) => {
   const theme = useTheme();
 

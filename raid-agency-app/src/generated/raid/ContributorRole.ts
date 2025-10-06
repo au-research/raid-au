@@ -1,5 +1,4 @@
-
-export interface ContributorRole {
+﻿export interface ContributorRole {
     schemaUri: string;
     id: string;
 }

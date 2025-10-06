@@ -9,6 +9,6 @@ export const contributorPositionDataGenerator = (): ContributorPosition => {
     schemaUri: contributorPositionSchema[0].uri,
     id: contributorPosition[0].uri,
     startDate: dayjs().format("YYYY-MM-DD"),
-    endDate: dayjs().add(1, "year").format("YYYY-MM-DD"),
+    endDate: "",
   };
 };

@@ -63,7 +63,6 @@ public class RaidV3UpgradeService {
 
                             final var contributorRecord = contributorRepository.findByPid(contributor.getId())
                                     .orElseThrow(() -> new RuntimeException("Contributor not found with orcid %s".formatted(orcid)));
-                            contributorRecord.setUuid(uuid);
                             contributorRecord.setStatus("UNAUTHENTICATED");
 
                             contributorRepository.update(contributorRecord);

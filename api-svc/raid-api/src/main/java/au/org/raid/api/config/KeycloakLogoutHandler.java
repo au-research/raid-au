@@ -33,7 +33,7 @@ public class KeycloakLogoutHandler implements LogoutHandler {
         ResponseEntity<String> logoutResponse = restTemplate.getForEntity(
                 builder.toUriString(), String.class);
         if (logoutResponse.getStatusCode().is2xxSuccessful()) {
-            log.info("Successfulley logged out from Keycloak");
+            log.info("Successfully logged out from Keycloak");
         } else {
             log.error("Could not propagate logout to Keycloak");
         }

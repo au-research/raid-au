@@ -4,9 +4,12 @@ import titleTypeSchema from "@/references/title_type_schema.json";
 import { combinedPattern } from "@/utils/date-utils/date-utils";
 import { z } from "zod";
 
-const dateStringSchema = z.string().regex(combinedPattern, {
-  message: "YYYY or YYYY-MM or YYYY-MM-DD",
-});
+const dateStringSchema = z.string()
+    .transform(val => val === '' ? undefined : val).pipe(
+        z.string().regex(combinedPattern, {
+            message: "YYYY or YYYY-MM or YYYY-MM-DD",
+        })
+    );
 
 const titleTypeValidationSchema = z.object({
   id: z.enum(titleType.map((type) => type.uri) as [string, ...string[]]),

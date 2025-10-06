@@ -1,4 +1,4 @@
-import type { OrganisationRole } from './OrganisationRole';
+﻿import type { OrganisationRole } from './OrganisationRole';
 
 export interface Organisation {
     id: string;

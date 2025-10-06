@@ -1,8 +1,11 @@
-import { TextInputField } from "@/fields/TextInputField";
+import { TextInputField } from "@/components/fields/TextInputField";
 import { RaidDto } from "@/generated/raid";
-import { Card, CardContent, CardHeader, Grid } from "@mui/material";
-import { memo } from "react";
+import { Card, CardContent, CardHeader, Grid, Stack } from "@mui/material";
+import { memo, useContext } from "react";
 import { Control, FieldErrors, UseFormTrigger } from "react-hook-form";
+import { MetadataContext } from "@/components/raid-form/RaidForm";
+import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const DateForm = memo(
   ({
@@ -13,8 +16,10 @@ const DateForm = memo(
     trigger: UseFormTrigger<RaidDto>;
   }) => {
     const key = "date";
+    const label = "Date";
     const labelPlural = "Dates";
-
+    const metadata = useContext(MetadataContext);
+    const tooltip = metadata?.[key]?.tooltip;
     return (
       <Card
         sx={{
@@ -23,7 +28,17 @@ const DateForm = memo(
         }}
         id={key}
       >
-        <CardHeader title={labelPlural} />
+        <Stack direction="row" alignItems="center">
+          <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+          <CustomStyledTooltip
+            title={label}
+            content={tooltip || ""}
+            variant="info"
+            placement="top"
+            tooltipIcon={<InfoOutlinedIcon />}
+          >
+          </CustomStyledTooltip>
+        </Stack>
         <CardContent>
           <Grid container spacing={2}>
             <TextInputField

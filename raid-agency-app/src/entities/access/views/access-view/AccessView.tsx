@@ -12,7 +12,7 @@ const AccessView = memo(({ data }: { data: Access }) => {
   const hasEmbargoedAccess = data.type.id.includes("c_f1cf");
   const accessTypeMappedValue = generalMap.get(String(data.type?.id)) ?? "";
   const languageMappedValue =
-    languageMap.get(String(data?.statement?.language?.id)) ?? "";
+    languageMap.get(String(data?.language?.id)) ?? "";
 
   return (
     <DisplayCard data={data} labelPlural="Access">

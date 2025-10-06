@@ -117,8 +117,6 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
                             .errorType("notSet")
                             .message("field must be set")
             );
-        } catch (Exception e) {
-            failOnError(e);
         }
     }
 

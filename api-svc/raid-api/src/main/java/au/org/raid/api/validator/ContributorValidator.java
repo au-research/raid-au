@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -24,7 +21,8 @@ import static au.org.raid.api.util.StringUtil.isBlank;
 @Component
 @RequiredArgsConstructor
 public class ContributorValidator {
-    private static final String ORCID_URL_PREFIX_PATTERN = "^https:\\/\\/(sandbox\\.)?orcid.org\\/.*";
+    private static final String ORCID_URL_PREFIX_PATTERN = "^https:\\/\\/orcid.org\\/.*";
+    private static final String ORCID_URL_PREFIX = "https://orcid.org/";
 
     private final ContributorPositionValidator positionValidationService;
     private final ContributorRoleValidator roleValidationService;
@@ -38,84 +36,52 @@ public class ContributorValidator {
         }
 
         var failures = new ArrayList<ValidationFailure>();
+        var seenOrcids = new HashMap<String, Boolean>();
 
         IntStream.range(0, contributors.size())
                 .forEach(index -> {
                     final var contributor = contributors.get(index);
 
-                    if (!isBlank(contributor.getEmail())) {
-                        //TODO: check email syntax is valid
-                        if (!isBlank(contributor.getUuid())) {
-                            failures.add(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[%d]".formatted(index))
-                                            .errorType(INVALID_VALUE_TYPE)
-                                            .message("email and uuid cannot be present at the same time"));
-                        }
-
-                        if (contributor.getId() != null) {
-                            failures.add(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[%d]".formatted(index))
-                                            .errorType(INVALID_VALUE_TYPE)
-                                            .message("email and id cannot be present at the same time"));
-                        }
-                    }
-
-                    if (!isBlank(contributor.getId())) {
-                        if (isBlank(contributor.getSchemaUri().getValue())) {
-                            failures.add(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[%d].schemaUri".formatted(index))
-                                            .errorType(NOT_SET_TYPE)
-                                            .message(NOT_SET_MESSAGE)
-                            );
-                        }
-                        else if (!contributor.getSchemaUri().getValue().matches(ORCID_URL_PREFIX_PATTERN)) {
-                            failures.add(new ValidationFailure()
-                                    .fieldId("contributor[%d].schemaUri".formatted(index))
-                                    .errorType(INVALID_VALUE_TYPE)
-                                    .message(INVALID_VALUE_MESSAGE + " - should match " + ORCID_URL_PREFIX_PATTERN)
-                            );
-                        }
-                    }
-
-                    if (!isBlank(contributor.getUuid())) {
-                        if (!isBlank(contributor.getId())) {
-                            final var contributorOptional = contributorRepository.findByPidAndUuid(
-                                    contributor.getId(), contributor.getUuid()
-                            );
-
-                            if (contributorOptional.isEmpty()) {
-                                failures.add(
-                                        new ValidationFailure()
-                                                .fieldId("contributor[%d]".formatted(index))
-                                                .errorType(NOT_FOUND_TYPE)
-                                                .message("Contributor not found with PID (%s) and UUID (%s)"
-                                                        .formatted(contributor.getId(), contributor.getUuid())));
-                            }
-                        } else {
-                            final var contributorOptional = contributorRepository.findByUuid(
-                                    contributor.getUuid()
-                            );
-
-                            if (contributorOptional.isEmpty()) {
-                                failures.add(
-                                        new ValidationFailure()
-                                                .fieldId("contributor[%d].uuid".formatted(index))
-                                                .errorType(NOT_FOUND_TYPE)
-                                                .message("Contributor not found with UUID (%s)"
-                                                        .formatted(contributor.getUuid())));
-                            }
-                        }
-                    }
-
-                    if (isBlank(contributor.getEmail()) && isBlank(contributor.getId()) && isBlank(contributor.getUuid())) {
+                    if (seenOrcids.containsKey(contributor.getId())) {
                         failures.add(
                                 new ValidationFailure()
-                                        .fieldId("contributor[%d]".formatted(index))
+                                        .fieldId("contributor[%d].id".formatted(index))
+                                        .errorType(DUPLICATE_TYPE)
+                                        .message(DUPLICATE_MESSAGE)
+                        );
+                    } else {
+                        seenOrcids.put(contributor.getId(), Boolean.TRUE);
+                    }
+
+                    if (isBlank(contributor.getId())) {
+                        failures.add(
+                            new ValidationFailure()
+                                    .fieldId("contributor[%d].id".formatted(index))
+                                    .errorType(NOT_SET_TYPE)
+                                    .message(NOT_SET_MESSAGE)
+                        );
+                    } else if (!contributor.getId().startsWith(ORCID_URL_PREFIX)) {
+                        failures.add(
+                                new ValidationFailure()
+                                        .fieldId("contributor[%d].id".formatted(index))
+                                        .errorType(INVALID_VALUE_TYPE)
+                                        .message("id should start with " + ORCID_URL_PREFIX_PATTERN)
+                        );
+                    }
+
+                    if (contributor.getSchemaUri() == null) {
+                        failures.add(
+                                new ValidationFailure()
+                                        .fieldId("contributor[%d].schemaUri".formatted(index))
                                         .errorType(NOT_SET_TYPE)
-                                        .message("email, uuid or id is required")
+                                        .message(NOT_SET_MESSAGE)
+                        );
+                    }
+                    else if (!contributor.getSchemaUri().getValue().matches(ORCID_URL_PREFIX_PATTERN)) {
+                        failures.add(new ValidationFailure()
+                                .fieldId("contributor[%d].schemaUri".formatted(index))
+                                .errorType(INVALID_VALUE_TYPE)
+                                .message(INVALID_VALUE_MESSAGE + " - should be https://orcid.org/")
                         );
                     }
 
@@ -178,34 +144,26 @@ public class ContributorValidator {
                     }
 
                         // uuid must be present
-                    if (!isBlank(contributor.getUuid())) {
-                        final var contributorOptional = contributorRepository.findByUuid(
-                                contributor.getUuid()
+                    if (!isBlank(contributor.getId())) {
+                        final var contributorOptional = contributorRepository.findByPid(
+                                contributor.getId()
                         );
 
                         if (contributorOptional.isEmpty()) {
                             failures.add(
                                     new ValidationFailure()
-                                            .fieldId("contributor[%d].uuid".formatted(index))
+                                            .fieldId("contributor[%d].id".formatted(index))
                                             .errorType(NOT_FOUND_TYPE)
-                                            .message("Contributor not found with UUID (%s)"
-                                                    .formatted(contributor.getUuid())));
+                                            .message("Contributor not found with id (%s)"
+                                                    .formatted(contributor.getId())));
 
                         }
                     } else {
                         failures.add(
                                 new ValidationFailure()
-                                        .fieldId("contributor[%d].uuid".formatted(index))
+                                        .fieldId("contributor[%d].id".formatted(index))
                                         .errorType(NOT_SET_TYPE)
-                                        .message("uuid is required"));
-                    }
-
-                    if (contributor.getId() == null) {
-                        failures.add(
-                            new ValidationFailure()
-                                    .fieldId("contributor[%d].id".formatted(index))
-                                    .errorType(NOT_SET_TYPE)
-                                    .message("id is required"));
+                                        .message("id is required"));
                     }
 
                     if (isBlank(contributor.getSchemaUri().getValue())) {

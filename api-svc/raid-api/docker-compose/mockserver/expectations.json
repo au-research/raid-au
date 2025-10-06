@@ -26,6 +26,31 @@
   },
   {
     "httpRequest": {
+      "method": "POST",
+      "path": "/dois",
+      "headers": {
+        "Authorization": ["Basic QVJEQ1guUkFJRC1ZR0NVSEg6ajQ1U29SaW9YNUhLNDk="],
+        "Content-Type": ["application/json"]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 201,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "data": {
+          "id": "10.1234/example.doi",
+          "type": "dois",
+          "attributes": {
+            "doi": "10.1234/example.doi"
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
       "method": "PUT",
       "path": "/dois/[0-9]+.[0-9]+/[a-z0-9]+",
       "headers": {
@@ -64,94 +89,6 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/find-contributor-by-email",
-      "body": {
-        "type": "JSON",
-        "json": {
-          "email": "authenticated@test.raid.org.au"
-        },
-        "matchType": "STRICT"
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": ["application/json"]
-      },
-      "body": {
-        "updatedAt": "2025-01-30T23:40:16.568Z",
-        "orcidStatus": "AUTHENTICATED",
-        "uuid": "04742bfa-0e91-4339-b878-a4b850724f7b",
-        "SK": "METADATA", "PK": "CONTRIBUTOR#authenticated@test.raid.org.au",
-        "orcid": {
-          "access_token": "156f7934-40bb-4f7e-93ff-1fefa33275ca",
-          "expires_in": "631138518",
-          "name": "David Smith",
-          "orcid": "0000-0002-1474-3214",
-          "refresh_token": "1b0741dd-ab12-41de-8eb2-0dec9731d3cf",
-          "scope": "/read-limited /activities/update /person/update",
-          "token_type": "bearer"
-        }
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
-      "path": "/find-contributor-by-email",
-      "body": {
-        "type": "JSON",
-        "json": {
-          "email": "awaiting-authentication@test.raid.org.au"
-        },
-        "matchType": "STRING"
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": ["application/json"]
-      },
-      "body": {
-        "updatedAt": "2025-01-30T23:40:16.568Z",
-        "orcidStatus": "AWAITING_AUTHENTICATION",
-        "uuid": "4b932e7c-f7c2-4bd6-93d0-0244f47bdbcb",
-        "SK": "METADATA",
-        "PK": "CONTRIBUTOR#awaiting-authentication@test.raid.org.au"
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
-      "path": "/find-contributor-by-email",
-      "body": {
-        "type": "JSON",
-        "json": {
-          "email": "authentication-failed@test.raid.org.au"
-        },
-        "matchType": "STRICT"
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": [
-          "application/json"
-        ]
-      },
-      "body": {
-        "updatedAt": "2025-01-30T23:40:16.568Z",
-        "orcidStatus": "AUTHENTICATION_FAILED",
-        "uuid": "de8cb78e-3cb6-424d-9537-3b6a0b15604c",
-        "SK": "METADATA",
-        "PK": "CONTRIBUTOR#authentication-failed@test.raid.org.au"
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
       "path": "/find-contributor-by-orcid",
       "body": {
         "type": "JSON",
@@ -167,20 +104,9 @@
         "Content-Type": ["application/json"]
       },
       "body": {
-        "updatedAt": "2025-01-30T23:40:16.568Z",
-        "orcidStatus": "AUTHENTICATED",
-        "uuid": "59a67c6b-8685-4854-bae5-0514b076be74",
-        "SK": "METADATA",
-        "PK": "CONTRIBUTOR#authenticated@test.raid.org.au",
-        "orcid": {
-          "access_token": "156f7934-40bb-4f7e-93ff-1fefa33275ca",
-          "expires_in": "631138518",
-          "name": "David Smith",
-          "orcid": "0000-0002-1474-3214",
-          "refresh_token": "1b0741dd-ab12-41de-8eb2-0dec9731d3cf",
-          "scope": "/read-limited /activities/update /person/update",
-          "token_type": "bearer"
-        }
+        "status": "AUTHENTICATED",
+        "name": "David Smith",
+        "orcid": "https://orcid.org/0009-0000-9306-3120"
       }
     }
   },
@@ -202,11 +128,9 @@
         "Content-Type": ["application/json"]
       },
       "body": {
-        "updatedAt": "2025-01-30T23:40:16.568Z",
-        "orcidStatus": "AWAITING_AUTHENTICATION",
-        "uuid": "4fcae477-5f40-4973-b6fe-0d4e5679b173",
-        "SK": "METADATA",
-        "PK": "CONTRIBUTOR#awaiting-authentication@test.raid.org.au"
+        "status": "AWAITING_AUTHENTICATION",
+        "orcid": "https://orcid.org/0009-0006-4129-5257"
+
       }
     }
   },
@@ -230,11 +154,8 @@
         ]
       },
       "body": {
-        "updatedAt": "2025-01-30T23:40:16.568Z",
-        "orcidStatus": "AUTHENTICATION_FAILED",
-        "uuid": "b25e60ae-317d-4745-8694-851402bdabf4",
-        "SK": "METADATA",
-        "PK": "CONTRIBUTOR#authentication-failed@test.raid.org.au"
+        "status": "AUTHENTICATION_FAILED",
+        "orcid": "https://orcid.org/0000-0002-6492-9025"
       }
     }
   }

@@ -7,3 +7,11 @@ export function kebabToTitle(str: string | undefined): string {
 
   return [firstWord, ...restWords].join(" ");
 }
+
+export function getLastTwoUrlSegments(url: string): string | null {
+  const parts = url.split("/").filter((part) => part.length > 0);
+  if (parts.length < 2) {
+    return null;
+  }
+  return parts.slice(-2).join("/");
+}

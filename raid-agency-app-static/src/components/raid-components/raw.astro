@@ -11,6 +11,6 @@ const { raid } = Astro.props as Props;
 <section class="py-5">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <h3 class="text-lg font-semibold text-gray-900">Raw Data</h3>
-    <pre>{JSON.stringify(raid, null,2)}</pre>
+    <pre class="text-wrap">{JSON.stringify(raid, null,2)}</pre>
   </div>
 </section>

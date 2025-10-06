@@ -1,5 +1,5 @@
 export function getRaidAppUrl(): string {
-  const localStaticPort = 4321;
+  const localWebAppPort = 7080;
   const raidEnv = import.meta.env.RAID_ENV;
   const environment =
     raidEnv === "test"
@@ -13,7 +13,7 @@ export function getRaidAppUrl(): string {
       : "dev";
 
   if (environment === "dev") {
-    return `http://localhost:${localStaticPort}`;
+    return `http://localhost:${localWebAppPort}`;
   }
 
   if (environment === "test" || "dev") {

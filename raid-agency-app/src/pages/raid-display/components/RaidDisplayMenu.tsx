@@ -1,5 +1,5 @@
-import { InviteButton } from "@/components/invite/InviteButton";
-import { InviteDialog } from "@/components/invite/InviteDialog";
+import { InviteButton } from "@/containers/invite/InviteButton";
+import { InviteDialog } from "@/containers/invite/InviteDialog";
 import {
   Edit as EditIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
@@ -52,7 +52,7 @@ export const RaidDisplayMenu = ({
           </Fab>
         </Tooltip>
 
-        <InviteButton setOpen={setIsInviteDialogOpen} />
+        {/* <InviteButton setOpen={setIsInviteDialogOpen} /> */}
         <InviteDialog
           title={title}
           open={isInviteDialogOpen}

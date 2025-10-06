@@ -140,7 +140,8 @@ public class AbstractIntegrationTest {
                                                 .id("eng")
                                                 .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML))
                                         .text("ENES")
-                                ))));
+                                ))))
+                ;
     }
     public Contributor contributor(
             final String orcid,
@@ -153,7 +154,6 @@ public class AbstractIntegrationTest {
                 .id(orcid)
                 .contact(true)
                 .leader(true)
-//                .email(email)
                 .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .position(List.of(new ContributorPosition()
                         .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)

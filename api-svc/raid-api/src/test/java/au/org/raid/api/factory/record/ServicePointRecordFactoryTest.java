@@ -78,4 +78,32 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
         assertThat(result.getPassword(), is(PASSWORD));
     }
+
+    @Test
+    @DisplayName("Should trim whitespace from input")
+    void trimInput() {
+        final var servicePoint = new ServicePointCreateRequest()
+                .name(NAME)
+                .identifierOwner(IDENTIFIER_OWNER)
+                .adminEmail(" " + ADMIN_EMAIL + " ")
+                .techEmail(" " + TECH_EMAIL + " ")
+                .appWritesEnabled(APP_WRITES_ENABLED)
+                .enabled(ENABLED)
+                .prefix(" " + PREFIX + " ")
+                .repositoryId(" " + REPOSITORY_ID + " ")
+                .password(PASSWORD);
+
+        final var result = factory.create(servicePoint);
+
+        assertThat(result.getName(), is(NAME));
+        assertThat(result.getIdentifierOwner(), is(IDENTIFIER_OWNER));
+        assertThat(result.getAdminEmail(), is(ADMIN_EMAIL));
+        assertThat(result.getTechEmail(), is(TECH_EMAIL));
+        assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
+        assertThat(result.getEnabled(), is(ENABLED));
+        assertThat(result.getPrefix(), is(PREFIX));
+        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
+        assertThat(result.getPassword(), is(PASSWORD));
+
+    }
 }

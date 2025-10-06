@@ -3,6 +3,7 @@ package au.org.raid.api.controller;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationException;
+import au.org.raid.api.service.Handle;
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.RaidIngestService;
 import au.org.raid.api.service.ServicePointService;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @SecurityScheme(name = "bearerAuth", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
@@ -69,11 +67,7 @@ public class RaidController implements RaidApi {
         final var handle = String.join("/", prefix, suffix);
         var raidOptional = raidHistoryService.findByHandleAndVersion(handle, version);
 
-        if (raidOptional.isPresent()) {
-            return ResponseEntity.ok(objectMapper.writeValueAsString(raidOptional.get()));
-        }
-
-        return ResponseEntity.notFound().build();
+        return raidOptional.<ResponseEntity<Object>>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override
@@ -96,12 +90,16 @@ public class RaidController implements RaidApi {
         //TODO: filter for service point owner/raid admin/raid user if embargoed
         List<RaidDto> raids;
 
-        if (contributorId != null) {
+        if (TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)) {
+            log.debug("Fetching raids for operator");
+            raids = raidIngestService.findAll()
+                    .stream()
+                .toList();
+        } else if (contributorId != null) {
+            log.debug("Fetching raids for contributor {}", contributorId);
             raids = raidIngestService.findAllByContributor(contributorId);
-
         } else if (organisationId != null) {
             raids = raidIngestService.findAllByOrganisation(organisationId);
-
         } else {
             final var servicePointId = getServicePointId();
 
@@ -127,7 +125,7 @@ public class RaidController implements RaidApi {
             throw new ValidationException(failures);
         }
 
-        return ResponseEntity.ok(raidService.update(request));
+        return ResponseEntity.ok(raidService.update(request, getServicePointId()));
     }
 
     @Override
@@ -143,6 +141,20 @@ public class RaidController implements RaidApi {
                                                           @PathVariable final String suffix) {
 
         return ResponseEntity.of(raidService.getPermissions(prefix, suffix));
+    }
+
+    @PostMapping("/raid/post-to-datacite")
+    public ResponseEntity<RaidDto> postToDatacite(@Valid @RequestBody final RaidDto raidDto) {
+        final var handle = new Handle(raidDto.getIdentifier().getId());
+
+        // return bad request if not a doi
+        if (!handle.toString().startsWith("10.")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        raidService.postToDatacite(raidDto);
+
+        return ResponseEntity.noContent().build();
     }
 
     @Override

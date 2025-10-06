@@ -1,6 +1,6 @@
 import { DisplayItem } from "@/components/display-item";
-import { CheckboxField } from "@/fields/CheckboxField";
-import { TextInputField } from "@/fields/TextInputField";
+import { CheckboxField } from "@/components/fields/CheckboxField";
+import { TextInputField } from "@/components/fields/TextInputField";
 import { Contributor } from "@/generated/raid";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
@@ -21,7 +21,7 @@ function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
       {data[index] && Object.hasOwn(data[index], "status") && (
         <DisplayItem
           label="Contributor Status"
-          value={"status" in data[index] ? String(data[index].status) : ""}
+          value={"status" in data[index] ? String((data[index] as any).status) : ""}
           width={12}
         />
       )}
@@ -84,10 +84,8 @@ export function ContributorDetailsForm({
             onClick={() => {
               if (
                 window.confirm(
-                  `Are you sure you want to delete ${label} "${getValues(
-                    `${key}.${index}.text`
-                  )}"?`
-                )
+                  `Are you sure you want to delete ${label} # ${index + 1} ?`
+                )//ShortTerm Fix: Display the title of the item and its corresponding sequence number in the confirmation dialog
               ) {
                 handleRemoveItem(index);
               }

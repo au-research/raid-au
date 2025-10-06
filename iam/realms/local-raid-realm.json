@@ -559,6 +559,28 @@
     "notBefore" : 0,
     "groups" : [ ]
   }, {
+    "id" : "8f348487-1429-4343-913c-184867330c59",
+    "username" : "c0c23a3f-d6d5-468b-aace-dd275717c92a",
+    "emailVerified" : false,
+    "attributes" : {
+      "activeGroupId" : [ "169bd3f3-dd42-4ac0-b89a-fb49648e5eff" ]
+    },
+    "createdTimestamp" : 0,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "702d786c-2d1b-4654-893a-9e965d476d4a",
+      "type" : "password",
+      "createdDate" : 1747108468649,
+      "secretData" : "{\"value\":\"w8eonDovxc3otP+TiPwzpmayPZq2rK8RNLAH5yYNND0cse89hLD8VuOyc9g2duLGNSgDpmWqRzLV/wtJtp1fgw==\",\"salt\":\"2IM+vZrQrZ7Xih+C40FYoQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "service-point-user", "default-roles-raid" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
     "id" : "6868f0b9-6301-47b0-9cc5-20ef74396d8b",
     "username" : "raid-au-group-admin",
     "emailVerified" : true,
@@ -889,9 +911,10 @@
     "protocol" : "openid-connect",
     "attributes" : {
       "oidc.ciba.grant.enabled" : "false",
-      "oauth2.device.authorization.grant.enabled" : "false",
       "client.secret.creation.time" : "1734057468",
       "backchannel.logout.session.required" : "true",
+      "post.logout.redirect.uris" : "+",
+      "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
     "authenticationFlowBindingOverrides" : { },
@@ -980,7 +1003,7 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : true,
     "nodeReRegistrationTimeout" : -1,
-    "defaultClientScopes" : [ "acr", "roles", "user_raids", "basic", "admin_raids", "service_point_group_id" ],
+    "defaultClientScopes" : [ "web-origins", "acr", "roles", "user_raids", "basic", "admin_raids", "service_point_group_id" ],
     "optionalClientScopes" : [ ]
   }, {
     "id" : "b5ded15a-4576-4fdf-b95b-f1adf9a8de9e",
@@ -1047,9 +1070,10 @@
     "protocol" : "openid-connect",
     "attributes" : {
       "oidc.ciba.grant.enabled" : "false",
-      "oauth2.device.authorization.grant.enabled" : "false",
       "client.secret.creation.time" : "1733365830",
       "backchannel.logout.session.required" : "true",
+      "post.logout.redirect.uris" : "+",
+      "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
     "authenticationFlowBindingOverrides" : { },
@@ -1130,9 +1154,10 @@
     "protocol" : "openid-connect",
     "attributes" : {
       "oidc.ciba.grant.enabled" : "false",
-      "oauth2.device.authorization.grant.enabled" : "false",
       "client.secret.creation.time" : "1734057611",
       "backchannel.logout.session.required" : "true",
+      "post.logout.redirect.uris" : "+",
+      "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
     "authenticationFlowBindingOverrides" : { },
@@ -1374,6 +1399,28 @@
       }
     } ]
   }, {
+    "id" : "40b4b8a2-4a9b-4473-b0ad-938ea09fc2cb",
+    "name" : "web-origins",
+    "description" : "",
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "include.in.token.scope" : "false",
+      "display.on.consent.screen" : "true",
+      "gui.order" : "",
+      "consent.screen.text" : ""
+    },
+    "protocolMappers" : [ {
+      "id" : "744dc615-26bb-444b-b564-23769fa12230",
+      "name" : "allowed web origins",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-allowed-origins-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "introspection.token.claim" : "true",
+        "access.token.claim" : "true"
+      }
+    } ]
+  }, {
     "id" : "75e2068d-cceb-45b3-bc44-352e56796bbe",
     "name" : "basic",
     "description" : "OpenID Connect scope for add all basic claims to the token",
@@ -1524,7 +1571,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper" ]
       }
     }, {
       "id" : "1ce6f027-c6ef-4d20-a151-2cdb10cbffbc",
@@ -1575,7 +1622,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-address-mapper" ]
       }
     } ],
     "org.keycloak.userprofile.UserProfileProvider" : [ {

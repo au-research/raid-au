@@ -1,5 +1,4 @@
-
-export interface FailureResponse {
+﻿export interface FailureResponse {
     type: string;
     title: string;
     status: number;

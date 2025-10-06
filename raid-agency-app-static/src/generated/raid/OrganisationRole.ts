@@ -1,5 +1,4 @@
-
-export interface OrganisationRole {
+﻿export interface OrganisationRole {
     schemaUri: string;
     id: string;
     startDate: string;

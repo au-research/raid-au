@@ -1,15 +1,17 @@
 package au.org.raid.inttest;
 
-import au.org.raid.idl.raidv2.model.Description;
-import au.org.raid.idl.raidv2.model.DescriptionType;
-import au.org.raid.idl.raidv2.model.Language;
-import au.org.raid.idl.raidv2.model.ValidationFailure;
+import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.inttest.factory.RaidUpdateRequestFactory;
+import au.org.raid.inttest.service.Handle;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import au.org.raid.inttest.service.TestConstants;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
+import java.util.List;
 
 import static au.org.raid.inttest.service.TestConstants.ALTERNATIVE_DESCRIPTION_TYPE;
 import static au.org.raid.inttest.service.TestConstants.DESCRIPTION_TYPE_SCHEMA_URI;
@@ -17,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class DescriptionIntegrationTest extends AbstractIntegrationTest {
+    @Autowired
+    private RaidUpdateRequestFactory updateRequestFactory;
 
     @Test
     @DisplayName("Minting a RAiD with a description with an null language schemaUri fails")
@@ -378,4 +382,181 @@ public class DescriptionIntegrationTest extends AbstractIntegrationTest {
                 );
     }
 
+    @Test
+    @DisplayName("All valid description types")
+    void happyPath() {
+        final var acknowledgements = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_392)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Acknowledgements")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        final var alternative = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_319)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Alternative")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+
+        final var primary = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Primary")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        final var brief = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Brief")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        final var methods = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_8)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Methods")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        final var objectives = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_7)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Objectives")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        final var other = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_6)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Other")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        final var significanceStatement = new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_9)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Significance Statement")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                );
+
+        createRequest.description(List.of(
+                acknowledgements,
+                alternative,
+                primary,
+                brief,
+                methods,
+                objectives,
+                other,
+                significanceStatement
+        ));
+
+        final var createResponse = raidApi.mintRaid(createRequest);
+        final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
+        final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
+        final var raidDto = readResponse.getBody();
+
+        assertThat(raidDto.getDescription()).contains(
+                acknowledgements,
+                alternative,
+                primary,
+                brief,
+                methods,
+                objectives,
+                other,
+                significanceStatement
+        );
+    }
+
+    @Test
+    @DisplayName("Description should handle multiple updates")
+    void multipleUpdates() {
+        final var mintResponse = raidApi.mintRaid(createRequest);
+
+        final var mintedRaid = mintResponse.getBody();
+
+        final var primaryDescription = mintedRaid.getDescription().get(0);
+
+        final var handle = new Handle(mintedRaid.getIdentifier().getId());
+
+        assertThat(mintedRaid.getDescription()).hasSize(1);
+
+        mintedRaid.getDescription().add(new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_392)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Acknowledgements")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                ));
+
+        final var updateResponse1 =
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequestFactory.create(mintedRaid));
+
+        final var updatedRaid1 = updateResponse1.getBody();
+
+        assertThat(updatedRaid1.getDescription()).hasSize(2);
+
+        updatedRaid1.getDescription().add(new Description()
+                .type(new DescriptionType()
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_7)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
+                )
+                .text("Objectives")
+                .language(new Language()
+                        .id("eng")
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML)
+                ));
+
+        final var updateResponse2 =
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequestFactory.create(updatedRaid1));
+
+        final var updatedRaid2 = updateResponse2.getBody();
+
+        assertThat(updatedRaid2.getDescription()).hasSize(3);
+
+        updatedRaid2.description(List.of(primaryDescription));
+
+        final var updateResponse3 =
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequestFactory.create(updatedRaid2));
+
+        final var updatedRaid3 = updateResponse3.getBody();
+        assertThat(updatedRaid2.getDescription()).hasSize(1);
+    }
 }

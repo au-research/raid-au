@@ -1,5 +1,9 @@
 ---
+import { getRaidAppUrl } from "@/utils/data-utils";
+
 const { elements } = Astro.props;
+
+const raidAppUrl = getRaidAppUrl();
 ---
 
 <nav class="flex bg-white border-b border-b-gray-300" aria-label="Breadcrumb">
@@ -47,4 +51,25 @@ const { elements } = Astro.props;
       ))
     }
   </ol>
+  <div class="flex-grow"></div>
+  {
+    elements[elements.length - 1].to.split("/").length >= 3 && (
+      <div class="flex gap-2 items-center mr-2">
+        <a
+          class="rounded-md bg-white px-2 py-2 text-xs font-medium text-gray-700 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50"
+          href={`${raidAppUrl}${elements[elements.length - 1].to}`}
+          target="_blank"
+        >
+          Show in RAiD App
+        </a>
+        <a
+          class="rounded-md bg-white px-2 py-2 text-xs font-medium text-gray-700 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50"
+          href={`${raidAppUrl}${elements[elements.length - 1].to}/edit`}
+          target="_blank"
+        >
+          Edit in RAiD App
+        </a>
+      </div>
+    )
+  }
 </nav>

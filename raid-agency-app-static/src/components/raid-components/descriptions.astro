@@ -32,7 +32,7 @@ const { descriptions } = Astro.props as Props;
           return (
             <div class="ml-5 space-y-2 py-4">
               <div class="grid grid-cols-1 gap-5 text-sm">
-                <InfoField label="Description" value={el.text} />
+                <InfoField label="Description" value={el.text} markdown={true}/>
               </div>
 
               <div class="grid grid-cols-4 gap-5 text-sm">
@@ -40,6 +40,7 @@ const { descriptions } = Astro.props as Props;
                   label="Description Type"
                   value={descriptionType?.value}
                   tooltip={descriptionType?.definition}
+                  markdown={true}
                 />
                 <InfoField label="Language" value={languageTitle} />
               </div>

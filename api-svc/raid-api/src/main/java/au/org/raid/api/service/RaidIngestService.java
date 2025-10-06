@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -189,12 +190,20 @@ public class RaidIngestService {
 
         for (final var record : records) {
             final var raid = raidHistoryService.findByHandle(record.getHandle())
-                    .orElse(cacheableRaidService.build(record))
-                    ;
+                    .orElse(cacheableRaidService.build(record));
+            raids.add(raid);
+        }
 
+        return raids;
+    }
 
-//                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle()));
+    public List<RaidDto> findAll() {
+        final var raids = new ArrayList<RaidDto>();
+        final var records = raidRepository.findAll();
 
+        for (final var record : records) {
+            final var raid = raidHistoryService.findByHandle(record.getHandle())
+                    .orElse(cacheableRaidService.build(record));
             raids.add(raid);
         }
 

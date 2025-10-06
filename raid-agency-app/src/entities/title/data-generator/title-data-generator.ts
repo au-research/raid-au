@@ -20,10 +20,18 @@ const titleLanguageGenerator = (): Language => ({
   schemaUri: languageSchema[0].uri,
 });
 
-export const titleDataGenerator = (): Title => ({
+export const dateGenerator = (fields: [Title]): string => {
+   // Get the endDate from the last item in the fields array (if it exists)
+  const lastEndDate = fields?.[fields.length - 1]?.endDate;
+  // Use the endDate if available, otherwise fallback to the current date
+  // Format the chosen date as "YYYY-MM-DD"
+  return dayjs(lastEndDate || new Date()).format("YYYY-MM-DD");
+}
+
+export const titleDataGenerator = (fields: [Title]): Title => ({
   text: "",
   type: titleTypeGenerator(),
   language: titleLanguageGenerator(),
-  startDate: dayjs(new Date()).format("YYYY-MM-DD"),
+  startDate: dateGenerator(fields),
   endDate: dayjs(new Date()).add(1, "year").format("YYYY-MM-DD"),
 });

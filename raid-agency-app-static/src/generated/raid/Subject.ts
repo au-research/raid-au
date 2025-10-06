@@ -1,4 +1,4 @@
-import type { SubjectKeyword } from './SubjectKeyword';
+﻿import type { SubjectKeyword } from './SubjectKeyword';
 
 export interface Subject {
     id: string;

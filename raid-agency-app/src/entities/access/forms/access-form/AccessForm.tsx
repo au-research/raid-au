@@ -1,16 +1,21 @@
-import LanguageSelector from "@/fields/LanguageSelector";
-import { TextInputField } from "@/fields/TextInputField";
-import { TextSelectField } from "@/fields/TextSelectField";
+import LanguageSelector from "@/components/fields/LanguageSelector";
+import { TextInputField } from "@/components/fields/TextInputField";
+import { TextSelectField } from "@/components/fields/TextSelectField";
 import { RaidDto } from "@/generated/raid";
 import generalMapping from "@/mapping/data/general-mapping.json";
-import { Card, CardContent, CardHeader, Grid } from "@mui/material";
-import { memo } from "react";
+import { Card, CardContent, CardHeader, Grid, Stack } from "@mui/material";
+import { memo, useContext, useEffect } from "react";
 import {
   Control,
   FieldErrors,
+  useFormContext,
   UseFormTrigger,
   useWatch,
 } from "react-hook-form";
+import { MetadataContext } from "@/components/raid-form/RaidForm";
+import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import languageSchema from "@/references/language_schema.json";
 
 const AccessForm = memo(
   ({
@@ -22,12 +27,23 @@ const AccessForm = memo(
     trigger: UseFormTrigger<RaidDto>;
   }) => {
     const key = "access";
+    const label = "Access";
     const labelPlural = "Access";
 
     const accessTypeId = useWatch({
       control,
       name: "access.type.id",
     });
+    const { setValue, watch } = useFormContext();
+    const schemaUriPath = `access.language.schemaUri`;
+    const currentSchemaUri = watch(schemaUriPath);
+
+    useEffect(() => {
+      const embargoed = accessTypeId?.includes("c_f1cf/");
+      if (!currentSchemaUri && embargoed && languageSchema?.[0]?.uri) {
+        setValue(schemaUriPath, languageSchema[0].uri);
+      }
+    }, [currentSchemaUri, setValue, schemaUriPath, accessTypeId]);
 
     const accessTypeOptions = generalMapping
       .filter((el) => el.field === "access.type.id")
@@ -35,7 +51,8 @@ const AccessForm = memo(
         value: el.key,
         label: el.value,
       }));
-
+    const metadata = useContext(MetadataContext);
+    const tooltip = metadata?.[key]?.tooltip;
     return (
       <Card
         sx={{
@@ -44,7 +61,17 @@ const AccessForm = memo(
         }}
         id={key}
       >
-        <CardHeader title={labelPlural} />
+        <Stack direction="row" alignItems="center">
+          <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+          <CustomStyledTooltip
+            title={label}
+            content={tooltip || ""}
+            variant="info"
+            placement="top"
+            tooltipIcon={<InfoOutlinedIcon />}
+          >
+          </CustomStyledTooltip>
+        </Stack>
         <CardContent>
           <Grid container spacing={2}>
             <TextSelectField
@@ -64,7 +91,7 @@ const AccessForm = memo(
                   width={12}
                 />
                 <LanguageSelector
-                  name={`access.statement.language.id`}
+                  name={`access.language.id`}
                   width={6}
                 />
 

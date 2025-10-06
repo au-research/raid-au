@@ -1,4 +1,3 @@
-
-export interface AlternateUrl {
+﻿export interface AlternateUrl {
     url: string;
 }

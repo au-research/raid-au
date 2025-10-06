@@ -1,5 +1,5 @@
 import { organisationRoleDataGenerator } from "@/entities/organisation-role/data-generator/organisation-role-data-generator";
-import { RaidDto } from "@/generated/raid";
+import { OrganisationRole, RaidDto } from "@/generated/raid";
 import { AddBox } from "@mui/icons-material";
 import {
   Button,
@@ -17,8 +17,10 @@ import {
   FieldErrors,
   UseFormTrigger,
   useFieldArray,
+  useFormContext,
 } from "react-hook-form";
 import { OrganisationRoleDetailsForm } from "@/entities/organisation-role/forms/organisation-role-details-form";
+import { SubSections, useEnableAddFields } from "@/shared/hooks/business-rules/useEnableAddFields";
 
 export function OrganisationRolesForm({
   control,
@@ -49,6 +51,10 @@ export function OrganisationRolesForm({
     append(generator());
     trigger(`${parentKey}.${parentIndex}.${key}`);
   };
+
+  const { formState, watch } = useFormContext<RaidDto>();
+  const orgRole = watch([`${parentKey}.${parentIndex}.${key}`]) as OrganisationRole[][]; // Adjust type to OrganisationRole[]
+  const isDirty = formState.isDirty;
 
   const hasError = errors[parentKey]?.[parentIndex]?.[key];
   return (
@@ -93,6 +99,7 @@ export function OrganisationRolesForm({
           onClick={handleAddItem}
           onMouseEnter={() => setIsRowHighlighted(true)}
           onMouseLeave={() => setIsRowHighlighted(false)}
+          disabled={useEnableAddFields(orgRole as unknown as SubSections, isDirty)}
         >
           Add {label}
         </Button>

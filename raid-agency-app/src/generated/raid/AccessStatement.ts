@@ -1,6 +1,3 @@
-import type { Language } from './Language';
-
-export interface AccessStatement {
+﻿export interface AccessStatement {
     text?: string;
-    language?: Language;
 }

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContributorLookupResponse {
-    private String uuid;
-    private String orcidStatus;
-    private OrcidData orcid;
+    private String orcid;
+    private String status;
+    private String name;
 }

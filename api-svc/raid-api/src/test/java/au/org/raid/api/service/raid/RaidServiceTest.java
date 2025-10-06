@@ -6,11 +6,7 @@ import au.org.raid.api.factory.IdFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.repository.ServicePointRepository;
-import au.org.raid.api.service.ContributorService;
-import au.org.raid.api.service.Handle;
-import au.org.raid.api.service.RaidHistoryService;
-import au.org.raid.api.service.RaidIngestService;
-import au.org.raid.api.service.RaidListenerService;
+import au.org.raid.api.service.*;
 import au.org.raid.api.service.datacite.DataciteService;
 import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.service.raid.id.IdentifierParser;
@@ -57,6 +53,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RaidServiceTest {
+    private static final String USER_ID = "user-id";
+
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
@@ -80,7 +78,7 @@ class RaidServiceTest {
     @Mock
     private DataciteService dataciteService;
     @Mock
-    private RaidListenerService raidListenerService;
+    private OrcidIntegrationService orcidIntegrationService;
     @Mock
     private HandleFactory handleFactory;
     @Mock
@@ -123,7 +121,8 @@ class RaidServiceTest {
             raidService.mint(createRaidRequest, servicePointId);
             verify(raidIngestService).create(raidDto);
             verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
-            verify(raidListenerService).createOrUpdate(handle.toString(), createRaidRequest.getContributor());
+            verify(orcidIntegrationService).setContributorStatus(createRaidRequest.getContributor());
+            verify(orcidIntegrationService).updateOrcidRecord(raidDto);
         }
     }
 
@@ -144,7 +143,50 @@ class RaidServiceTest {
 
         final var result = raidService.findByHandle(handle);
         assertThat(result.get(), Matchers.is(expected));
+    }
 
+
+    @Test
+    @DisplayName("Patching contributors saves changes and returns updated raid")
+    void patchContributors() throws JsonProcessingException {
+
+        final var prefix = "10378.1";
+        final var suffix = "1696639";
+        final var handle = "%s/%s".formatted(prefix, suffix);
+        final var raidJson = raidJson();
+        final var servicePointId = 20_000_000L;
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var servicePointGroupId = "service-point-group-id";
+
+        final var servicePointRecord = new ServicePointRecord()
+                .setRepositoryId(repositoryId)
+                .setPassword(password);
+
+        final var contributor = new Contributor()
+                .id("https://orcid.org/0009-0002-5128-5184")
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .contact(true)
+                .leader(true);
+
+        final var raidDto = objectMapper.readValue(raidJson, RaidDto.class);
+        final var expected = objectMapper.readValue(raidJson, RaidDto.class);
+
+        expected.contributor(List.of(contributor));
+
+        when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(expected));
+
+        when(raidHistoryService.save(expected)).thenReturn(expected);
+        when(raidIngestService.update(expected)).thenReturn(expected);
+
+        when(servicePointRepository.findById(servicePointId)).thenReturn(Optional.of(servicePointRecord));
+
+        final var result = raidService.patchContributors(prefix, suffix, List.of(contributor));
+        assertThat(result, Matchers.is(expected));
+
+        verify(dataciteService).update(expected, handle, repositoryId, password);
+        verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
+        verify(orcidIntegrationService).updateOrcidRecord(expected);
     }
 
     @Test
@@ -155,6 +197,7 @@ class RaidServiceTest {
         final var servicePointId = 20_000_000L;
         final var repositoryId = "repository-id";
         final var password = "_password";
+        final var servicePointGroupId = "service-point-group-id";
 
         final var servicePointRecord = new ServicePointRecord()
                 .setRepositoryId(repositoryId)
@@ -163,7 +206,9 @@ class RaidServiceTest {
         final var updateRequest = objectMapper.readValue(raidJson, RaidUpdateRequest.class);
         final var expected = objectMapper.readValue(raidJson, RaidDto.class);
 
-        when(raidHistoryService.findByHandleAndVersion(handle, 1)).thenReturn(Optional.of(expected));
+        when(raidHistoryService.findByHandleAndVersion(handle, 1)).thenReturn(Optional.of(objectMapper.writeValueAsString(expected)));
+
+        when(mapper.readValue(anyString(), eq(RaidDto.class))).thenReturn(expected);
 
         when(checksumService.fromRaidUpdateRequest(updateRequest)).thenReturn("a");
         when(checksumService.fromRaidDto(expected)).thenReturn("b");
@@ -171,13 +216,26 @@ class RaidServiceTest {
         when(raidHistoryService.save(updateRequest)).thenReturn(expected);
         when(raidIngestService.update(expected)).thenReturn(expected);
 
-        when(servicePointRepository.findById(servicePointId)).thenReturn(Optional.of(servicePointRecord));
+        try (MockedStatic<SecurityContextHolder> securityContextHolder = mockStatic(SecurityContextHolder.class)) {
+            final var securityContext = mock(SecurityContext.class);
+            final var authentication = mock(JwtAuthenticationToken.class);
+            final var token = mock(Jwt.class);
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
-        final var result = raidService.update(updateRequest);
-        assertThat(result, Matchers.is(expected));
+            securityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            when(securityContext.getAuthentication()).thenReturn(authentication);
+            when(authentication.getToken()).thenReturn(token);
+            when(token.getClaims()).thenReturn(claims);
 
-        verify(dataciteService).update(updateRequest, handle, repositoryId, password);
-        verify(raidListenerService).createOrUpdate("https://raid.org.au/"  + handle, updateRequest.getContributor());
+            when(servicePointRepository.findById(servicePointId)).thenReturn(Optional.of(servicePointRecord));
+
+            final var result = raidService.update(updateRequest, servicePointId);
+            assertThat(result, Matchers.is(expected));
+
+            verify(dataciteService).update(updateRequest, handle, repositoryId, password);
+            verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
+            verify(orcidIntegrationService).updateOrcidRecord(expected);
+        }
     }
 
     @Test
@@ -188,6 +246,7 @@ class RaidServiceTest {
         final var raidJson = raidJson();
         final var repositoryId = "repository-id";
         final var password = "_password";
+        final var servicePointGroupId = "service-point-group-id";
 
         final var servicePointRecord = new ServicePointRecord()
                 .setId(servicePointId)
@@ -206,14 +265,28 @@ class RaidServiceTest {
         when(checksumService.fromRaidDto(expected)).thenReturn("1");
         when(checksumService.fromRaidUpdateRequest(updateRequest)).thenReturn("1");
 
-        when(raidHistoryService.findByHandleAndVersion(handle, 1)).thenReturn(Optional.of(expected));
+        when(raidHistoryService.findByHandleAndVersion(handle, 1)).thenReturn(Optional.of(objectMapper.writeValueAsString(expected)));
 
-        final var result = raidService.update(updateRequest);
+        when(mapper.readValue(anyString(), eq(RaidDto.class))).thenReturn(expected);
 
-        assertThat(result, Matchers.is(expected));
+        try (MockedStatic<SecurityContextHolder> securityContextHolder = mockStatic(SecurityContextHolder.class)) {
+            final var securityContext = mock(SecurityContext.class);
+            final var authentication = mock(JwtAuthenticationToken.class);
+            final var token = mock(Jwt.class);
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
-        verifyNoInteractions(dataciteService);
-        verifyNoInteractions(raidIngestService);
+            securityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            when(securityContext.getAuthentication()).thenReturn(authentication);
+            when(authentication.getToken()).thenReturn(token);
+            when(token.getClaims()).thenReturn(claims);
+
+            final var result = raidService.update(updateRequest, servicePointId);
+
+            assertThat(result, Matchers.is(expected));
+
+            verifyNoInteractions(dataciteService);
+            verifyNoInteractions(raidIngestService);
+        }
     }
 
     @Test

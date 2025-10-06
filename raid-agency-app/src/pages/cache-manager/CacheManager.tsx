@@ -166,8 +166,8 @@ export function CacheManager() {
     },
   });
 
-  const { data: relatedObjectTitles } = useCache({
-    key: "relatedObjectTitles",
+  const { data: relatedObjectCitations } = useCache({
+    key: "relatedObjectCitations",
   });
 
   const { data: organisationNames } = useCache({
@@ -202,13 +202,13 @@ export function CacheManager() {
           <Typography variant="h5">Cache Manager</Typography>
         </Stack>
         <Card>
-          <CardHeader title="Related object titles" />
+          <CardHeader title="Related object citations" />
           <CardContent>
-            {(relatedObjectTitles?.size && (
+            {(relatedObjectCitations?.size && (
               <CachedItemsList
-                cachedMap={relatedObjectTitles}
+                cachedMap={relatedObjectCitations}
                 handleDelete={handleDelete}
-                storageKey="relatedObjectTitles"
+                storageKey="relatedObjectCitations"
               />
             )) || <Typography>No related objects in cache</Typography>}
           </CardContent>
