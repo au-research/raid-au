@@ -87,8 +87,6 @@ spring:
           keycloak:
             issuer-uri: ${raid.iam.realm-uri}
             user-name-attribute: preferred_username
-  profiles:
-    active: dev
 springdoc:
   swagger-ui:
     enabled: true
