@@ -1,5 +1,6 @@
 build-frontend:
   stage: build
+  image: node
   script:
     - cd raid-agency-app
     - npm install
@@ -10,6 +11,7 @@ build-frontend:
 
 build-api:
   stage: build
+  image: java
   script:
     - ./gradlew build
   artifacts:
