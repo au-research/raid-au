@@ -9,6 +9,17 @@ build-frontend:
     paths:
       - "raid-agency-app/dist/"
 
+test-frontend:
+  stage: test
+  image: node
+  needs:
+    - build-frontend
+  script:
+    - cd raid-agency-app
+    - npm run test
+    - npm run e2e
+
+
 build-api:
   stage: build
   image: gradle:7-jdk17-alpine
@@ -20,13 +31,8 @@ build-api:
 
 test-api:
   stage: test
+  image: gradle:7-jdk17-alpine
+  needs:
+    - build-api
   script:
     - ./gradlew test
-
-test-frontend:
-  stage: test
-  script:
-    - cd raid-agency-app
-    - npm run test
-    - npm run e2e
-
