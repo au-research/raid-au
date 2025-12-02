@@ -11,7 +11,7 @@ build-frontend:
 
 build-api:
   stage: build
-  image: 7-jdk17-alpine
+  image: gradle:7-jdk17-alpine
   script:
     - ./gradlew build
   artifacts:
