@@ -12,6 +12,7 @@ build-frontend:
   artifacts:
     paths:
       - "raid-agency-app/dist/"
+      - "raid-agency-app/node_modules/"
   cache:
     key: "$CI_PROJECT_ID"
     policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
