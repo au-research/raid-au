@@ -1,6 +1,7 @@
 default:
   tags:
     - docker
+
 build-frontend:
   stage: build
   image: node
@@ -11,7 +12,12 @@ build-frontend:
   artifacts:
     paths:
       - "raid-agency-app/dist/"
-      - "nodes_modules/"
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+    paths:
+      - raid-agency-app/node_modules/
+
 
 test-frontend:
   stage: test
@@ -22,7 +28,9 @@ test-frontend:
     - cd raid-agency-app
     - npm run test
     - npm run e2e
-
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull
 
 build-api:
   stage: build
