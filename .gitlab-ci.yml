@@ -11,7 +11,7 @@ build-frontend:
   artifacts:
     paths:
       - "raid-agency-app/dist/"
-      - "nodes_modules"
+      - "nodes_modules/"
 
 test-frontend:
   stage: test
