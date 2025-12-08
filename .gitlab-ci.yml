@@ -1,6 +1,7 @@
-#default:
-#  tags:
-#    - docker
+default:
+  tags:
+    - docker
+    - dps
 
 build-frontend:
   stage: build
