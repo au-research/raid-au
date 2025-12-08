@@ -1,6 +1,6 @@
-default:
-  tags:
-    - docker
+#default:
+#  tags:
+#    - docker
 
 build-frontend:
   stage: build
