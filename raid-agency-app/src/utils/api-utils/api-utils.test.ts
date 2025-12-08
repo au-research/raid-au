@@ -6,7 +6,7 @@ describe("getApiEndpoint", () => {
   describe("localhost handling", () => {
     it("should return localhost endpoint when hostname is 'localhost'", () => {
       const endpoint = getApiEndpoint("localhost");
-      expect(endpoint).toBe("http://localhost:8081");
+      expect(endpoint).toBe("http://localhost:8080");
     });
   });
 
