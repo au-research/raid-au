@@ -2,6 +2,10 @@ default:
   tags:
     - docker
     - dps
+stages:
+  - build
+  - test
+  - docker
 
 build-frontend:
   stage: build
@@ -42,6 +46,21 @@ build-api:
   artifacts:
     paths:
       - "api-svc/raid-api/build/libs"
+
+docker-api:
+  stage: docker
+  image: gradle:7-jdk17-alpine
+  needs:
+    - build-api
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER
+    - cd api-svc/raid-api
+    - docker build -t $IMAGE_TAG
+    - docker push $IMAGE_TAG
+
+
 
 test-api:
   stage: test
