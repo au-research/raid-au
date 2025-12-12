@@ -45,6 +45,7 @@ build-api:
   artifacts:
     paths:
       - "api-svc/raid-api/build/libs"
+      - "build/reports"
 
 docker-api:
   stage: build
@@ -68,3 +69,6 @@ test-api:
     - build-api
   script:
     - ./gradlew test
+  artifacts:
+    paths:
+      - "build/reports"
