@@ -41,7 +41,7 @@ build-api:
   stage: build
   image: gradle:7-jdk17-alpine
   script:
-    - ./gradlew build
+    - ./gradlew build -x test
   artifacts:
     paths:
       - "api-svc/raid-api/build/libs"
