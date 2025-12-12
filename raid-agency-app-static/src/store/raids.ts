@@ -1,2 +1,4 @@
 import raidData from "../raw-data/raids.json";
-export const raids = raidData;
+import type {RaidDto} from "@/generated/raid";
+
+export const raids = raidData as RaidDto[];

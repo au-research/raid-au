@@ -53,14 +53,13 @@
  */
 
 import fs from 'fs/promises';
-import path from 'path';
+import path, {dirname} from 'path';
 import https from 'https';
 import http from 'http';
-import { config as dotenvConfig } from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import { fetchCitation } from './fetch-citation.js'
-import fetchAllHandles, { extractHandles } from './fetch-handles.js';
+import {config as dotenvConfig} from 'dotenv';
+import {fileURLToPath} from 'url';
+import {fetchCitation} from './fetch-citation.js'
+import {extractHandles} from './fetch-handles.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -370,7 +369,6 @@ async function main() {
     const handlesFile = path.join(config.dataDir, 'handles.json');
     await fs.writeFile(handlesFile, JSON.stringify(handles, null, 2));
     console.log(`Unique handles saved to ${handlesFile}`);
-    await fetchAllHandles();
     // Save cache for next run
     await saveCache();
     

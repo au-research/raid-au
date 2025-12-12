@@ -17,6 +17,9 @@
  * 
  * @returns The complete API endpoint URL without trailing slashes
  */
+// @ts-expect-error: package exports map prevents TypeScript from resolving the bundled .mjs declarations
+import psl from 'psl';
+
 export function getApiEndpoint(hostname = window.location.hostname): string {
   // Special case for localhost
   if (hostname === 'localhost') {
@@ -59,4 +62,18 @@ export function getEnv() {
     : ""; // Default to empty if no other keyword found
 
   return environment;
+}
+
+// Using psl to get the root domain from a URL
+// @param {string} url - The full URL from which to extract the root domain
+// @returns {string | null} The root domain or null if the URL is invalid
+export const getRootDomain = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+    const parsed = psl.parse(urlObj.hostname);
+    return parsed.domain; // Returns the registrable domain
+  } catch (error) {
+    console.error('Invalid URL:', error);
+    return null;
+  }
 }

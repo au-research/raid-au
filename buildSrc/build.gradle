@@ -6,4 +6,5 @@ dependencies {
     implementation gradleApi()
     implementation 'org.apache.jena:jena-arq:4.7.0'
     implementation 'org.postgresql:postgresql:42.5.4'
+    implementation("org.apache.commons:commons-compress:1.26.2")
 }

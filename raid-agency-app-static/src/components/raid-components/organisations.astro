@@ -23,7 +23,7 @@ const { organisations } = Astro.props as Props;
         organisations?.map((el) => (
           <div class="ml-5 space-y-2 py-4">
             <div class="grid grid-cols-1 gap-5 text-sm">
-              <InfoField label="Organisation ID" value={el.id} />
+              <InfoField label="Organisation ID" value={el.id} isLink={true} />
             </div>
 
             <div class="grid grid-cols-1 gap-5 text-sm">

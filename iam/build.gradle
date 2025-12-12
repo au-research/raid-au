@@ -45,5 +45,5 @@ tasks.named('test') {
 }
 
 jar {
-    baseName = 'raid-iam'
+    archiveBaseName = 'raid-iam'
 }

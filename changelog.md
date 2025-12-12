@@ -1,6 +1,11 @@
 See the [Changelog audience](#changelog-audience) section for info about 
  the expected audience and content of the changelog.
 
+# 2.5.23
+## App-client UI
+* Updated the date format to follow (YYYY-MM-DD) format throughout the App(View/Edit)
+* Extracted root domain from current origin instead of hard-coding domain name
+
 # 2.5.22
 ## SSO
 * Update mappings from AAF to allow usernames to be shown in UI

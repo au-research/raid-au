@@ -1,5 +1,6 @@
 import { DisplayItem } from "@/components/display-item";
 import { Card, CardContent, Grid } from "@mui/material";
+import { formatDate } from "@/utils/date-utils/date-utils";
 
 export const MetadataDisplay = ({
   metadata,
@@ -14,11 +15,7 @@ export const MetadataDisplay = ({
             label="RAiD created on"
             value={
               metadata.created && metadata.created !== null
-                ? new Date(metadata.created * 1000).toLocaleString(undefined, {
-                    timeZone: Intl.DateTimeFormat(undefined, {
-                      timeZone: "UTC",
-                    }).resolvedOptions().timeZone,
-                  })
+                ? formatDate(metadata.created, true)
                 : "Unknown"
             }
             width={3}
@@ -27,11 +24,7 @@ export const MetadataDisplay = ({
             label="RAiD updated on"
             value={
               metadata.updated && metadata.updated !== null
-                ? new Date(metadata.updated * 1000).toLocaleString(undefined, {
-                    timeZone: Intl.DateTimeFormat(undefined, {
-                      timeZone: "UTC",
-                    }).resolvedOptions().timeZone,
-                  })
+                ? formatDate(metadata.updated, true)
                 : "Unknown"
             }
           />

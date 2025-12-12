@@ -23,8 +23,8 @@ const { contributors = [] } = Astro.props as Props;
       {
         contributors.map(({ id, leader, contact, position, role }) => (
           <div class="ml-5 space-y-2 py-4">
-            <div class="grid grid-cols-4 gap-5 text-sm">
-              <InfoField label="Contributor" value={id} />
+            <div class="grid grid-cols-3 gap-5 text-sm">
+              <InfoField label="Contributor" value={id} isLink={true} />
               <InfoField label="Leader" value={leader ? "Yes" : "No"} />
               <InfoField label="Contact" value={contact ? "Yes" : "No"} />
             </div>

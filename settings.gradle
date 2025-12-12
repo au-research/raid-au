@@ -3,7 +3,6 @@ rootProject.name = "raid-au"
 include ":api-svc:idl-raid-v2"
 include ':api-svc:raid-api'
 include ":api-svc:db"
-include ":app-client"
 include ":iam"
 
 dependencyResolutionManagement{
@@ -16,13 +15,13 @@ dependencyResolutionManagement{
       // https://github.com/OpenFeign/feign/releases
       version('feign', '12.2')
       // https://www.slf4j.org/news.html
-      version('springboot-version', '3.3.4')
-      version('spring-cloud', '4.1.3')
+      version('springboot-version', '3.5.0')
+      version('spring-cloud', '4.3.0')
 
       // https://documentation.red-gate.com/fd/release-notes-for-flyway-engine-179732572.html
 //      plugin('flyway', 'org.flywaydb.flyway').version('10.0.0')
       plugin('flyway', 'org.flywaydb.flyway').version('9.22.3')
-      plugin('jooq', 'nu.studer.jooq').version('8.1')
+      plugin('jooq', 'nu.studer.jooq').version('9.0')
       
       // https://jdbc.postgresql.org/changelogs/
       library('pgjdbc', 'org.postgresql:postgresql:42.5.4')

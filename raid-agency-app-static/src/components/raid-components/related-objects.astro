@@ -29,7 +29,7 @@ const { relatedObjects } = Astro.props as Props;
             <div class="ml-5 space-y-2 py-4">
               <div class="grid grid-cols-2 gap-5 text-sm">
                 <InfoField label="Citation" value={el.citation?.text || ""} markdown={true}/>
-                <InfoField label="ID" value={el.id || ""} />
+                <InfoField label="ID" value={el.id || ""} isLink={true}/>
                 <InfoField label="Type" value={relatedObjectType || ""} />
               </div>
 

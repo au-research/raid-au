@@ -76,7 +76,7 @@ const { label, value, tooltip, isLink, markdown = false } = Astro.props as Props
     <span class="text-gray-500">
       {
         isLink ? (
-          <a href={`${value}`} class="flex items-center gap-1">
+          <a href={`${value}`} class="flex items-center gap-1" target="_blank" rel="noopener noreferrer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="15px"
