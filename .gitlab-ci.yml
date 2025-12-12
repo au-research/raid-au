@@ -5,8 +5,6 @@ default:
   image: docker:24.0.5-cli
   services:
     - docker:24.0.5-dind
-  before_script:
-    - docker info
 stages:
   - build
   - test
