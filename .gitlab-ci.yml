@@ -4,7 +4,6 @@ default:
     - dps
 stages:
   - build
-  - docker
   - test
 
 build-frontend:
@@ -48,7 +47,7 @@ build-api:
       - "api-svc/raid-api/build/libs"
 
 docker-api:
-  stage: docker
+  stage: build
   image: gradle:7-jdk17-alpine
   needs:
     - build-api
