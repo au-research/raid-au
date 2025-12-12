@@ -55,8 +55,8 @@ if( file(configPath).exists() ){
 }
 
 dependencies{
-  runtimeOnly libs.pgjdbc
-  jooqGenerator libs.pgjdbc
+  runtimeOnly libs.postgresql
+  jooqGenerator libs.postgresql
 }
 
 compileJava {
@@ -116,7 +116,7 @@ tasks.register('cleanJooqGeneratedSrc', Delete) {
 }
 
 jooq{
-  version = '3.18.0'
+  version = libs.versions.jooq.gradle.plugin.get()
   configurations {
     main {  // name of the jOOQ configuration
       generateSchemaSourceOnCompilation = false
