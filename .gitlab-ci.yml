@@ -4,8 +4,8 @@ default:
     - dps
 stages:
   - build
-  - test
   - docker
+  - test
 
 build-frontend:
   stage: build
