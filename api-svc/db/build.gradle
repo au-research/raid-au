@@ -110,9 +110,9 @@ but that migration task hadn't run yet. */
 //  raidV1Project.tasks.flywayMigrate
 //)
 
-task cleanJooqGeneratedSrc(type: Delete){
-  group = "jooq"
-  delete jooqGeneratedSrcDir
+tasks.register('cleanJooqGeneratedSrc', Delete) {
+    group = "jooq"
+    delete jooqGeneratedSrcDir
 }
 
 jooq{
