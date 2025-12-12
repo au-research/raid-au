@@ -4,6 +4,8 @@ repositories {
 
 dependencies {
     implementation gradleApi()
-    implementation 'org.apache.jena:jena-arq:4.7.0'
-    implementation 'org.postgresql:postgresql:42.5.4'
+    implementation libs.jena.arq
+    implementation libs.postgresql
+    implementation libs.commons.compress
+    runtimeOnly( libs.jackson.databind)
 }

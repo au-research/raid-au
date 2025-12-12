@@ -55,8 +55,8 @@ if( file(configPath).exists() ){
 }
 
 dependencies{
-  runtimeOnly libs.pgjdbc
-  jooqGenerator libs.pgjdbc
+  runtimeOnly libs.postgresql
+  jooqGenerator libs.postgresql
 }
 
 compileJava {
@@ -110,13 +110,13 @@ but that migration task hadn't run yet. */
 //  raidV1Project.tasks.flywayMigrate
 //)
 
-task cleanJooqGeneratedSrc(type: Delete){
-  group = "jooq"
-  delete jooqGeneratedSrcDir
+tasks.register('cleanJooqGeneratedSrc', Delete) {
+    group = "jooq"
+    delete jooqGeneratedSrcDir
 }
 
 jooq{
-  version = '3.18.0'
+  version = libs.versions.jooq.gradle.plugin.get()
   configurations {
     main {  // name of the jOOQ configuration
       generateSchemaSourceOnCompilation = false
