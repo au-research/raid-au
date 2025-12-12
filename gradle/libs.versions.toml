@@ -8,8 +8,8 @@ flyway-core = "9.22.3"
 geonames-ws-client = "1.1.17"
 guava = "31.1-jre"
 hamcrest = "2.2"
-jackson-annotations = "2.15.2"
-jackson-databind = "2.13.4.2"
+jackson-annotations = "2.20"
+jackson = "2.20.0"
 jackson-datatype-jsr310 = "2.20.0"
 jakarta-annotation-api = "2.1.1"
 jakarta-jakartaee-web-api = "9.1.0"
@@ -36,10 +36,10 @@ postgresql = "42.5.4"
 slf4j-simple = "2.0.6"
 spring-dependency-management = "1.1.6"
 spring-security-test = "6.2.2"
-springboot = "3.3.4"
-springboot-plugin = "3.5.0"
-springcloud = "4.1.3"
-springdoc = "2.1.0"
+springboot = "3.5.8"
+springboot-plugin = "3.5.8"
+springcloud = "4.3.0"
+springdoc = "2.8.14"
 xjc = "1.8.2"
 
 [libraries]
@@ -52,8 +52,8 @@ feign-jackson = { group = 'io.github.openfeign', name = 'feign-jackson', version
 feign-slf4j = { group = 'io.github.openfeign', name = 'feign-slf4j', version.ref = 'feign' }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version.ref = "hamcrest" }
-jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson-databind" }
-jackson-dataformat-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson-annotations" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jackson-dataformat-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 jakarta-validation-api = { group = "jakarta.validation", name = "jakarta.validation-api", version.ref = "jakarta-validation-api" }
 flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway-core" }
 geonames-ws-client = { group = "org.geonames", name = "geonames-ws-client", version.ref = "geonames-ws-client" }
