@@ -22,7 +22,7 @@ build-frontend:
     policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
     paths:
       - raid-agency-app/node_modules/
-#
+
 docker-frontend:
   stage: build
   image: docker:24.0.5-cli
@@ -30,6 +30,9 @@ docker-frontend:
     - build-frontend
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE-fe:$CI_COMMIT_REF_SLUG
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull
   script:
 #    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
