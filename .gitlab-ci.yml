@@ -25,7 +25,21 @@ stages:
 #    paths:
 #      - raid-agency-app/node_modules/
 #
-#
+docker-frontend:
+  stage: build
+  image: docker:24.0.5-cli
+#  needs:
+#    - build-api
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE-fe:$CI_COMMIT_REF_SLUG
+  script:
+#    - sudo ip route add 145.100.7.224/27 via 145.90.235.1
+#    - sudo ip route add 145.100.3.224/27 via 145.90.235.1
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - cd raid-agency-app
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+
 #test-frontend:
 #  stage: test
 #  image: node
@@ -50,20 +64,20 @@ stages:
 #      - "api-svc/raid-api/build/libs"
 #      - "build/reports"
 
-docker-api:
-  stage: build
-  image: docker:24.0.5-cli
-#  needs:
-#    - build-api
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  script:
-#    - sudo ip route add 145.100.7.224/27 via 145.90.235.1
-#    - sudo ip route add 145.100.3.224/27 via 145.90.235.1
-#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd api-svc/raid-api
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
+#docker-api:
+#  stage: build
+#  image: docker:24.0.5-cli
+##  needs:
+##    - build-api
+#  variables:
+#    IMAGE_TAG: $CI_REGISTRY_IMAGE-api:$CI_COMMIT_REF_SLUG
+#  script:
+##    - sudo ip route add 145.100.7.224/27 via 145.90.235.1
+##    - sudo ip route add 145.100.3.224/27 via 145.90.235.1
+##    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd api-svc/raid-api
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
 
 
 
