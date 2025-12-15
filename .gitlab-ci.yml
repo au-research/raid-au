@@ -60,7 +60,7 @@ docker-api:
   script:
 #    - sudo ip route add 145.100.7.224/27 via 145.90.235.1
 #    - sudo ip route add 145.100.3.224/27 via 145.90.235.1
-    - #echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
     - docker build -t $IMAGE_TAG
     - docker push $IMAGE_TAG
