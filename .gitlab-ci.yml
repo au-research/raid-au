@@ -3,91 +3,83 @@ default:
     - docker
     - dps
   image: docker:24.0.5-cli
-#  services:
-#    - docker:24.0.5-dind
 stages:
   - build
   - test
 #
-#build-frontend:
-#  stage: build
-#  image: node
-#  script:
-#    - cd raid-agency-app
-#    - npm install
-#    - npm run build
-#  artifacts:
-#    paths:
-#      - "raid-agency-app/dist/"
-#  cache:
-#    key: "$CI_PROJECT_ID"
-#    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
-#    paths:
-#      - raid-agency-app/node_modules/
+build-frontend:
+  stage: build
+  image: node
+  script:
+    - cd raid-agency-app
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - "raid-agency-app/dist/"
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+    paths:
+      - raid-agency-app/node_modules/
 #
 docker-frontend:
   stage: build
   image: docker:24.0.5-cli
-#  needs:
-#    - build-api
+  needs:
+    - build-frontend
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE-fe:$CI_COMMIT_REF_SLUG
   script:
-#    - sudo ip route add 145.100.7.224/27 via 145.90.235.1
-#    - sudo ip route add 145.100.3.224/27 via 145.90.235.1
 #    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
 
-#test-frontend:
-#  stage: test
-#  image: node
-#  needs:
-#    - build-frontend
-#  script:
-#    - cd raid-agency-app
-#    - npm install
-#    - npm run test
-#    - npm run e2e
-#  cache:
-#    key: "$CI_PROJECT_ID"
-#    policy: pull
-#
-#build-api:
-#  stage: build
-#  image: gradle:9-jdk17-alpine
-#  script:
-#    - ./gradlew build -x test
-#  artifacts:
-#    paths:
-#      - "api-svc/raid-api/build/libs"
-#      - "build/reports"
+test-frontend:
+  stage: test
+  image: node
+  needs:
+    - build-frontend
+  script:
+    - cd raid-agency-app
+    - npm install
+    - npm run test
+    - npm run e2e
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull
 
-#docker-api:
-#  stage: build
-#  image: docker:24.0.5-cli
-##  needs:
-##    - build-api
-#  variables:
-#    IMAGE_TAG: $CI_REGISTRY_IMAGE-api:$CI_COMMIT_REF_SLUG
-#  script:
-##    - sudo ip route add 145.100.7.224/27 via 145.90.235.1
-##    - sudo ip route add 145.100.3.224/27 via 145.90.235.1
-##    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-#    - cd api-svc/raid-api
-#    - docker build -t $IMAGE_TAG .
-#    - docker push $IMAGE_TAG
+build-api:
+  stage: build
+  image: gradle:9-jdk17-alpine
+  script:
+    - ./gradlew build -x test
+  artifacts:
+    paths:
+      - "api-svc/raid-api/build/libs"
+      - "build/reports"
 
-
-
-#test-api:
-#  stage: test
-#  image: gradle:7-jdk17-alpine
+docker-api:
+  stage: build
+  image: docker:24.0.5-cli
 #  needs:
 #    - build-api
-#  script:
-#    - ./gradlew test
-#  artifacts:
-#    paths:
-#      - "build/reports"
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE-api:$CI_COMMIT_REF_SLUG
+  script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - cd api-svc/raid-api
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+
+test-api:
+  stage: test
+  image: gradle:7-jdk17-alpine
+  needs:
+    - build-api
+  script:
+    - ./gradlew test
+  artifacts:
+    paths:
+      - "build/reports"
