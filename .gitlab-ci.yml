@@ -3,13 +3,27 @@ default:
     - docker
     - dps
     - did
-  image: docker:24.0.5-dind
+#  image: docker:29.1.3-dind
   services:
     - name: docker:24.0.5-dind
       alias: docker
 stages:
   - build
   - test
+
+
+docker-api:
+  stage: build
+  image: docker:24.0.5-dind
+  #  needs:
+  #    - build-api
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - cd api-svc/raid-api
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
 ##
 #build-frontend:
 #  stage: build
@@ -70,18 +84,6 @@ stages:
 #      - "api-svc/raid-api/build/libs"
 #      - "build/reports"
 
-docker-api:
-  stage: build
-  image: docker:24.0.5-dind
-#  needs:
-#    - build-api
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
-  script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd api-svc/raid-api
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
 #  cache:
 #    key: "$CI_PROJECT_ID"
 #    policy: pull
