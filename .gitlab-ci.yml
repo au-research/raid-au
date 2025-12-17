@@ -73,14 +73,15 @@ docker-api:
   services:
     - name: docker:24.0.5-dind
       alias: docker
-    - gradle:9.2.1-jdk17-alpine
+    - name: gradle:9.2.1-jdk17-alpine
+      alias: gradle
 #  needs:
 #    - build-api
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - ./gradlew bootBuildImage
+    - gradle bootBuildImage
     - cd api-svc/raid-api
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
