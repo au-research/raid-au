@@ -69,7 +69,7 @@ stages:
 
 docker-api:
   stage: build
-  image: gradle:9.2.1-jdk17-alpine
+  image: docker:24.0.5-cli
   services:
     - docker:24.0.5-cli
     - gradle:9.2.1-jdk17-alpine
