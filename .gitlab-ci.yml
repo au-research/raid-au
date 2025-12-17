@@ -57,24 +57,24 @@ stages:
 #    key: "$CI_PROJECT_ID"
 #    policy: pull
 
-build-api:
-  stage: build
-  image: gradle:9.2.1-jdk17-alpine
-  services:
-    - name: docker:29.1.3-dind
-      alias: docker
-  script:
-    - ./gradlew -x test build jar
-  artifacts:
-    paths:
-      - "api-svc/raid-api/build/libs"
-      - "build/reports"
+#build-api:
+#  stage: build
+#  image: gradle:9.2.1-jdk17-alpine
+#  services:
+#    - name: docker:29.1.3-dind
+#      alias: docker
+#  script:
+#    - ./gradlew -x test build jar
+#  artifacts:
+#    paths:
+#      - "api-svc/raid-api/build/libs"
+#      - "build/reports"
 
 docker-api:
   stage: build
   image: docker:29.1.3-dind
-  needs:
-    - build-api
+#  needs:
+#    - build-api
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
   script:
@@ -82,6 +82,9 @@ docker-api:
     - cd api-svc/raid-api
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull
 
 #test-api:
 #  stage: test
