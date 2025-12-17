@@ -2,6 +2,7 @@ default:
   tags:
     - docker
     - dps
+    - did
   image: docker:24.0.5-cli
   services:
     - name: docker:24.0.5-dind
