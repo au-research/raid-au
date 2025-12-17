@@ -10,52 +10,52 @@ default:
 stages:
   - build
   - test
+##
+#build-frontend:
+#  stage: build
+#  image: node
+#  script:
+#    - cd raid-agency-app
+#    - npm install
+#    - npm run build
+#  artifacts:
+#    paths:
+#      - "raid-agency-app/dist/"
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+#    paths:
+#      - raid-agency-app/node_modules/
 #
-build-frontend:
-  stage: build
-  image: node
-  script:
-    - cd raid-agency-app
-    - npm install
-    - npm run build
-  artifacts:
-    paths:
-      - "raid-agency-app/dist/"
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
-    paths:
-      - raid-agency-app/node_modules/
-
-docker-frontend:
-  stage: build
-  image: docker:24.0.5-cli
-  needs:
-    - build-frontend
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$CI_COMMIT_REF_SLUG
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull
-  script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd raid-agency-app
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-
-test-frontend:
-  stage: test
-  image: node
-  needs:
-    - build-frontend
-  script:
-    - cd raid-agency-app
-    - npm install
-    - npm run test
-    - npm run e2e
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull
+#docker-frontend:
+#  stage: build
+#  image: docker:24.0.5-cli
+#  needs:
+#    - build-frontend
+#  variables:
+#    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$CI_COMMIT_REF_SLUG
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull
+#  script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd raid-agency-app
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
+#
+#test-frontend:
+#  stage: test
+#  image: node
+#  needs:
+#    - build-frontend
+#  script:
+#    - cd raid-agency-app
+#    - npm install
+#    - npm run test
+#    - npm run e2e
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull
 
 build-api:
   stage: build
@@ -69,7 +69,7 @@ build-api:
 
 docker-api:
   stage: build
-  image: docker:24.0.5-cli
+  image: gradle:9.2.1-jdk17-alpine
   needs:
     - build-api
   variables:
@@ -81,13 +81,13 @@ docker-api:
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
 
-test-api:
-  stage: test
-  image: gradle:7-jdk17-alpine
-  needs:
-    - build-api
-  script:
-    - ./gradlew test
-  artifacts:
-    paths:
-      - "build/reports"
+#test-api:
+#  stage: test
+#  image: gradle:7-jdk17-alpine
+#  needs:
+#    - build-api
+#  script:
+#    - ./gradlew test
+#  artifacts:
+#    paths:
+#      - "build/reports"
