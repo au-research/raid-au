@@ -33,7 +33,7 @@ docker-frontend:
   needs:
     - build-frontend
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE-fe:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   cache:
     key: "$CI_PROJECT_ID"
     policy: pull
@@ -73,7 +73,7 @@ docker-api:
   needs:
     - build-api
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE-api:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
