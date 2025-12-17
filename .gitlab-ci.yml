@@ -69,11 +69,7 @@ stages:
 
 docker-api:
   stage: build
-  services:
-    - name: docker:24.0.5-dind
-      alias: docker
-    - name: gradle:9.2.1-jdk17-alpine
-      alias: gradle
+  image: gradle:9.2.1-jdk17-alpine
 #  needs:
 #    - build-api
   variables:
