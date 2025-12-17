@@ -72,8 +72,8 @@ docker-api:
   image: gradle:9.2.1-jdk17-alpine
   services:
     - docker:24.0.5-cli
-  needs:
-    - build-api
+#  needs:
+#    - build-api
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
   script:
