@@ -69,7 +69,6 @@ stages:
 
 docker-api:
   stage: build
-  image: docker:24.0.5-cli
   services:
     - name: docker:24.0.5-dind
       alias: docker
