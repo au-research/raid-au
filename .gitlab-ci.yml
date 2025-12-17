@@ -71,7 +71,7 @@ build-api:
 
 docker-api:
   stage: build
-  image: docker:24.0.5-dind
+  image: docker:24.0.5-cli
   needs:
     - build-api
   variables:
