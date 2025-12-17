@@ -72,6 +72,7 @@ docker-api:
   image: gradle:9.2.1-jdk17-alpine
   services:
     - docker:24.0.5-cli
+    - gradle:9.2.1-jdk17-alpine
 #  needs:
 #    - build-api
   variables:
