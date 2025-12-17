@@ -57,19 +57,21 @@ stages:
 #    key: "$CI_PROJECT_ID"
 #    policy: pull
 
-build-api:
-  stage: build
-  image: gradle:9-jdk17-alpine
-  script:
-    - ./gradlew build -x test
-  artifacts:
-    paths:
-      - "api-svc/raid-api/build/libs"
-      - "build/reports"
+#build-api:
+#  stage: build
+#  image: gradle:9.2.1-jdk17-alpine
+#  script:
+#    - ./gradlew build -x test
+#  artifacts:
+#    paths:
+#      - "api-svc/raid-api/build/libs"
+#      - "build/reports"
 
 docker-api:
   stage: build
   image: gradle:9.2.1-jdk17-alpine
+  services:
+    - docker:24.0.5-cli
   needs:
     - build-api
   variables:
