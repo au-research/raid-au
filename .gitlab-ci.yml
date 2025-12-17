@@ -5,7 +5,7 @@ default:
     - did
 #  image: docker:29.1.3-dind
   services:
-    - name: docker:29.1.3-dind
+    - name: docker:24.0.5-dind
       alias: docker
 stages:
   - build
