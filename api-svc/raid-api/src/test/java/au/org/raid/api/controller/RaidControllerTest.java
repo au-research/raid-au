@@ -12,6 +12,7 @@ import au.org.raid.api.util.FileUtil;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.api.validator.ValidationService;
+import au.org.raid.fixtures.APIFixtures;
 import au.org.raid.idl.raidv2.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -95,7 +96,7 @@ class RaidControllerTest {
 
     @Test
     void mintRaid_ReturnsRedactedInternalServerErrorOnDataAccessException() throws Exception {
-        final var raid = createRaidForPost();
+        final var raid = APIFixtures.newCreateRequest();
 
         try (MockedStatic<SecurityContextHolder> securityContextHolder = Mockito.mockStatic(SecurityContextHolder.class)) {
 
@@ -131,7 +132,7 @@ class RaidControllerTest {
         final var validationFailureType = "validation failure type";
         final var validationFailureFieldId = "validation failure id";
 
-        final var raid = createRaidForPost();
+        final var raid = APIFixtures.newCreateRequest();
 
         final var validationFailure = new ValidationFailure();
         validationFailure.setFieldId(validationFailureFieldId);
@@ -187,7 +188,7 @@ class RaidControllerTest {
         final var id = new IdentifierUrl("https://raid.org.au", handle);
         final var endDate = startDate.plusMonths(6);
 
-        final var raidForPost = createRaidForPost();
+        final var raidForPost = APIFixtures.newCreateRequest();
         final var raidForGet = createRaidForGet(title, startDate);
 
         when(validationService.validateForCreate(any(RaidCreateRequest.class))).thenReturn(Collections.emptyList());
@@ -261,7 +262,7 @@ class RaidControllerTest {
         final var validationFailureType = "validation failure type";
         final var validationFailureFieldId = "validation failure id";
 
-        final var input = createRaidForPut();
+        final var input = APIFixtures.newUpdateRequest();
 
         final var validationFailure = new ValidationFailure();
         validationFailure.setFieldId(validationFailureFieldId);
@@ -301,7 +302,7 @@ class RaidControllerTest {
         final var endDate = startDate.plusMonths(6);
         final var servicePointId = 20000000L;
 
-        final var input = createRaidForPut();
+        final var input = APIFixtures.newUpdateRequest();
         final var output = createRaidForGet(title, startDate);
 
         when(validationService.validateForUpdate(String.join("/", PREFIX, SUFFIX), input))
@@ -369,7 +370,7 @@ class RaidControllerTest {
     @Test
     void updateRaid_Returns404IfNotFound() throws Exception {
         final var handle = String.join("/", PREFIX, SUFFIX);
-        final var input = createRaidForPut();
+        final var input = APIFixtures.newUpdateRequest();
         final var servicePointId = 20000000L;
 
         when(validationService.validateForUpdate(eq(handle), any(RaidUpdateRequest.class))).thenReturn(Collections.emptyList());
@@ -878,17 +879,6 @@ class RaidControllerTest {
     private RaidDto embargoedRaid() throws IOException {
         final String json = resourceContent("/fixtures/embargoed-raid.json");
         return objectMapper.readValue(json, RaidDto.class);
-    }
-
-    private RaidUpdateRequest createRaidForPut() throws IOException {
-        final String json = resourceContent("/fixtures/raid.json");
-
-        return objectMapper.readValue(json, RaidUpdateRequest.class);
-    }
-
-    private RaidCreateRequest createRaidForPost() throws IOException {
-        final String json = resourceContent("/fixtures/create-raid.json");
-        return objectMapper.readValue(json, RaidCreateRequest.class);
     }
 
     private Jwt getJwt() {

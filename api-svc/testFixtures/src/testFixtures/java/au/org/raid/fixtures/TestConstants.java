@@ -1,4 +1,4 @@
-package au.org.raid.inttest.service;
+package au.org.raid.fixtures;
 
 public class TestConstants {
     public static final String REAL_TEST_ORCID = "https://sandbox.orcid.org/0009-0002-5128-5184";

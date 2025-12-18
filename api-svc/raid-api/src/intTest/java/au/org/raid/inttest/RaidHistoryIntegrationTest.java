@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-import static au.org.raid.inttest.service.TestConstants.PRIMARY_TITLE_TYPE;
+import static au.org.raid.fixtures.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 

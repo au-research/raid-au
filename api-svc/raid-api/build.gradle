@@ -84,6 +84,8 @@ dependencies{
 
   testImplementation libs.bundles.springboot.test
 
+  testImplementation testFixtures(project(':api-svc:testFixtures'))
+
   testImplementation libs.mockito.inline
   testImplementation libs.mockito.junit.jupiter
   testImplementation libs.junit.jupiter
@@ -121,6 +123,7 @@ testing{
         implementation.bundle libs.bundles.springboot
         implementation.bundle libs.bundles.springboot.test
 
+        implementation testFixtures(project(':api-svc:testFixtures'))
         implementation.bundle libs.bundles.feign
 
         implementation libs.assertj

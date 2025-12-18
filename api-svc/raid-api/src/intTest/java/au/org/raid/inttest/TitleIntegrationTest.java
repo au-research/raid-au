@@ -1,10 +1,10 @@
 package au.org.raid.inttest;
 
+import au.org.raid.fixtures.TestConstants;
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.service.RaidApiValidationException;
-import au.org.raid.inttest.service.TestConstants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

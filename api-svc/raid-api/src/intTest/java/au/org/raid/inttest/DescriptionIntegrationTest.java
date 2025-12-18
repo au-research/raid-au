@@ -7,17 +7,13 @@ import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.factory.RaidUpdateRequestFactory;
 import au.org.raid.inttest.service.Handle;
 import au.org.raid.inttest.service.RaidApiValidationException;
-import au.org.raid.inttest.service.TestConstants;
-import org.hamcrest.MatcherAssert;
+import static au.org.raid.fixtures.TestConstants.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.List;
-
-import static au.org.raid.inttest.service.TestConstants.ALTERNATIVE_DESCRIPTION_TYPE;
-import static au.org.raid.inttest.service.TestConstants.DESCRIPTION_TYPE_SCHEMA_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -380,7 +376,7 @@ public class DescriptionIntegrationTest extends AbstractIntegrationTest {
                         .schemaUri(DESCRIPTION_TYPE_SCHEMA_URI)
                 )
                 .language(new Language()
-                        .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI)
+                        .schemaUri(LANGUAGE_SCHEMA_URI)
                         .id("eng")
                 );
     }

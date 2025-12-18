@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
-import static au.org.raid.inttest.service.TestConstants.*;
+import static au.org.raid.fixtures.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
