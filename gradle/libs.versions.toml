@@ -21,10 +21,7 @@ jooq = "9.0"
 jooq-gradle-plugin = "3.18.0"
 jsonschema2pojo = "1.2.2"
 junit-jupiter = "5.9.1"
-keycloak-core = "24.0.1"
-keycloak-server-spi = "24.0.1"
-keycloak-server-spi-private = "24.0.1"
-keycloak-services = "24.0.1"
+keycloak = "26.0.5"
 lombok = "1.18.30"
 mockito-core = "5.11.0"
 mockito-inline = "4.11.0"
@@ -66,10 +63,10 @@ jakarta-annotation-api = { group = "jakarta.annotation", name = "jakarta.annotat
 jena-arq = { group = "org.apache.jena", name = "jena-arq", version.ref = "jena-arq" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter" }
-keycloak-server-spi = { group = "org.keycloak", name = "keycloak-server-spi", version.ref = "keycloak-server-spi" }
-keycloak-server-spi-private = { group = "org.keycloak", name = "keycloak-server-spi-private", version.ref = "keycloak-server-spi-private" }
-keycloak-core = { group = "org.keycloak", name = "keycloak-core", version.ref = "keycloak-core" }
-keycloak-services = { group = "org.keycloak", name = "keycloak-services", version.ref = "keycloak-services" }
+keycloak-server-spi = { group = "org.keycloak", name = "keycloak-server-spi", version.ref = "keycloak" }
+keycloak-server-spi-private = { group = "org.keycloak", name = "keycloak-server-spi-private", version.ref = "keycloak" }
+keycloak-core = { group = "org.keycloak", name = "keycloak-core", version.ref = "keycloak" }
+keycloak-services = { group = "org.keycloak", name = "keycloak-services", version.ref = "keycloak" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito-core" }
 mockito-junit-jupiter = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito-core" }

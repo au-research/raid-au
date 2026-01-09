@@ -51,7 +51,11 @@ public class RaidPermissionsController {
                 "https://app.stage.raid.org.au",
                 "https://app3.stage.raid.org.au",
 
-                "https://app.prod.raid.org.au");
+                "https://app.prod.raid.org.au",
+
+                "https://raid.surf.nl",
+                "https://raid-dev.dpslab.surf.nl"
+        );
 
         cors.allowedMethods(allowedMethods);
         cors.auth();
@@ -64,8 +68,8 @@ public class RaidPermissionsController {
     public Response addRaidUserPreflight() {
         return Response.fromResponse(addCorsHeaders("POST", "DELETE")
                         .preflight()
-                        .builder(Response.ok())
-                        .build())
+                        .add(Response.ok())
+                )
                 .build();
     }
 
@@ -88,8 +92,7 @@ public class RaidPermissionsController {
 
         return Response.fromResponse(
                         addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
+                                .add(Response.ok())
                 )
                 .entity("{}")
                 .build();
@@ -114,8 +117,7 @@ public class RaidPermissionsController {
 
         return Response.fromResponse(
                         addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
+                                .add(Response.ok())
                 )
                 .entity("{}")
                 .build();
@@ -126,8 +128,7 @@ public class RaidPermissionsController {
     public Response addRaidAdminPreflight() {
         return Response.fromResponse(addCorsHeaders("POST", "DELETE")
                         .preflight()
-                        .builder(Response.ok())
-                        .build())
+                        .add(Response.ok()))
                 .build();
     }
 
@@ -157,8 +158,7 @@ public class RaidPermissionsController {
 
         return Response.fromResponse(
                         addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
+                                .add(Response.ok())
                 )
                 .entity("{}")
                 .build();
@@ -189,8 +189,7 @@ public class RaidPermissionsController {
 
         return Response.fromResponse(
                         addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
+                                .add(Response.ok())
                 )
                 .entity("{}")
                 .build();
@@ -203,7 +202,7 @@ public class RaidPermissionsController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addAdminRaid(AdminRaidsRequest request) {
         if (this.auth == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.METHOD_NOT_ALLOWED).build();
         }
 
         final var client = auth.getClient();
@@ -218,13 +217,12 @@ public class RaidPermissionsController {
             user.setAttribute(ADMIN_RAIDS_ATTRIBUTE, new ArrayList<>(adminRaids));
 
         } else {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         return Response.fromResponse(
                         addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
+                                .add(Response.ok())
                 )
                 .entity("{}")
                 .build();
