@@ -1,6 +1,6 @@
 package au.org.raid.api.factory;
 
-import au.org.raid.api.model.datacite.DataciteRequest;
+import au.org.raid.api.model.datacite.doi.DataciteRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

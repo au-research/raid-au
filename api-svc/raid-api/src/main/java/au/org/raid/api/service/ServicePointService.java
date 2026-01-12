@@ -1,7 +1,9 @@
 package au.org.raid.api.service;
 
+import au.org.raid.api.client.repository.DataciteRepositoryClient;
 import au.org.raid.api.factory.ServicePointFactory;
 import au.org.raid.api.factory.record.ServicePointRecordFactory;
+import au.org.raid.api.model.datacite.repository.DataciteRepositoryFactory;
 import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointCreateRequest;
@@ -22,8 +24,15 @@ public class ServicePointService {
     private final ServicePointRepository servicePointRepository;
     private final ServicePointRecordFactory servicePointRecordFactory;
     private final ServicePointFactory servicePointFactory;
+    private final DataciteRepositoryClient repositoryClient;
+    private final DataciteRepositoryFactory repositoryFactory;
 
     public ServicePoint create(final ServicePointCreateRequest servicePoint) {
+
+
+
+
+
         final var record = servicePointRecordFactory.create(servicePoint);
         return servicePointFactory.create(servicePointRepository.create(record));
     }

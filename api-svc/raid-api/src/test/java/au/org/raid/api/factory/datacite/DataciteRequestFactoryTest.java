@@ -1,6 +1,6 @@
 package au.org.raid.api.factory.datacite;
 
-import au.org.raid.api.model.datacite.DataciteDto;
+import au.org.raid.api.model.datacite.doi.DataciteDto;
 import au.org.raid.idl.raidv2.model.RaidCreateRequest;
 import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
 import org.junit.jupiter.api.DisplayName;

@@ -48,6 +48,12 @@ version = rootProject.version
 /* don't use groovy for prod code: dynamic typing, slow startup and poor
    historical upgrade compatibility */
 dependencies{
+  constraints {
+    implementation(libs.commons.lang3) {
+      because 'Force single version of commons-lang3 across all transitive dependencies'
+    }
+  }
+
   compileOnly libs.annotations
   implementation project(':api-svc:db')
   implementation project(':api-svc:idl-raid-v2')
@@ -74,6 +80,7 @@ dependencies{
 
   implementation libs.jakarta.json.api
   implementation libs.jakarta.json
+  implementation libs.commons.lang3
 
   implementation libs.jakarta.xml.bind.api
   implementation libs.jaxb.runtime
