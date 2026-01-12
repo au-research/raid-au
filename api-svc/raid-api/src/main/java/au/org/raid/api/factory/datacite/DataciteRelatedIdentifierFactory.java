@@ -1,6 +1,6 @@
 package au.org.raid.api.factory.datacite;
 
-import au.org.raid.api.model.datacite.DataciteRelatedIdentifier;
+import au.org.raid.api.model.datacite.doi.DataciteRelatedIdentifier;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.vocabularies.datacite.RelatedIdentifierType;
 import au.org.raid.api.vocabularies.datacite.RelationType;
