@@ -19,9 +19,9 @@ public class RepositoryService {
     private final DataciteRepositoryClient repositoryClient;
 
     public DataciteRepository create(final String name, final String email, final String password) {
-        final var repository = repositoryFactory.create(name, email, password);
 
         for (int attempts = 0; attempts < MAX_ATTEMPTS; attempts++) {
+            final var repository = repositoryFactory.create(name, email, password);
             try {
                 return repositoryClient.createRepository(repository);
             } catch (HttpClientErrorException e) {
