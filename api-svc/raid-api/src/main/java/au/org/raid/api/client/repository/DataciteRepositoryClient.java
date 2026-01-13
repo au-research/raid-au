@@ -16,8 +16,9 @@ public class DataciteRepositoryClient {
     private final RepositoryClientProperties properties;
     private final HttpEntityFactory httpEntityFactory;
 
-    public void createRepository(final DataciteRepository repository) {
+    public DataciteRepository createRepository(final DataciteRepository repository) {
         final var entity = httpEntityFactory.create(repository, properties.getUsername(), properties.getPassword());
-        restTemplate.exchange(properties.getUrl(), HttpMethod.POST, entity, JsonNode.class);
+        final var response = restTemplate.exchange(properties.getUrl(), HttpMethod.POST, entity, DataciteRepository.class);
+        return response.getBody();
     }
 }

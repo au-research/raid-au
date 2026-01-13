@@ -9,7 +9,8 @@ import lombok.Data;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DataciteRepositoryProviderData {
+public class DataciteRepositoryPrefixesData {
     private String id;
     private String type;
+
 }
