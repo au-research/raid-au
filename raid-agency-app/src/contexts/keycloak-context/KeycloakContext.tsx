@@ -96,6 +96,9 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         const authenticated = await keycloakInstance.init({
           onLoad: "check-sso",
           checkLoginIframe: false,
+          enableLogging: true,
+          useNonce: false,
+          checkLoginIframeInterval: 600,
           silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
         });
 
