@@ -23,6 +23,7 @@ public class DataciteRepositoryFactory {
                                 .name(name)
                                 .systemEmail(email)
                                 .passwordInput(password)
+                                .active(true)
                                 .build())
                         .relationships(DataciteRepositoryRelationships.builder()
                                 .provider(DataciteRepositoryProvider.builder()
