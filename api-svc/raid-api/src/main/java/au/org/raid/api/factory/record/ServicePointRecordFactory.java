@@ -18,9 +18,6 @@ public class ServicePointRecordFactory {
                 .setTechEmail(servicePoint.getTechEmail())
                 .setAppWritesEnabled(servicePoint.getAppWritesEnabled())
                 .setEnabled(servicePoint.getEnabled())
-                .setRepositoryId(servicePoint.getRepositoryId())
-                .setPrefix(servicePoint.getPrefix())
-                .setPassword(servicePoint.getPassword())
                 .setGroupId(servicePoint.getGroupId());
     }
 
