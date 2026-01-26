@@ -1,0 +1,50 @@
+[
+  {
+    "goal": "1",
+    "title": "No Poverty"
+  },
+  {
+    "goal": "1.1",
+    "title": "Eradicate extreme poverty"
+  },
+  {
+    "goal": "1.2",
+    "title": "Reduce poverty by half"
+  },
+  {
+    "goal": "2",
+    "title": "Zero Hunger"
+  },
+  {
+    "goal": "2.1",
+    "title": "End hunger and ensure food access"
+  },
+  {
+    "goal": "2.2",
+    "title": "End all forms of malnutrition"
+  },
+  {
+    "goal": "3",
+    "title": "Good Health and Well-being"
+  },
+  {
+    "goal": "3.1",
+    "title": "Reduce maternal mortality"
+  },
+  {
+    "goal": "4",
+    "title": "Quality Education"
+  },
+  {
+    "goal": "4.1",
+    "title": "Free primary and secondary education"
+  },
+  {
+    "goal": "13",
+    "title": "Climate Action"
+  },
+  {
+    "goal": "13.1",
+    "title": "Strengthen resilience to climate-related hazards"
+  }
+]

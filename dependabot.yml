@@ -1,0 +1,22 @@
+# Basic `dependabot.yml` file with
+# minimum configuration for three package managers
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "raid-agency-app"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "docker"
+    directory: "iam"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "api-svc/raid-api"
+    schedule:
+      interval: "weekly"

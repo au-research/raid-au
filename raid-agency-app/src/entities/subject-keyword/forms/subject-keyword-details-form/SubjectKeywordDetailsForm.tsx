@@ -6,6 +6,8 @@ import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import languageSchema from "@/references/language_schema.json";
+import { Check, Delete } from "lucide-react";
+import CustomizedDialogs from "@/components/alert-dialog/alert-dialog";
 
 function FieldGrid({
   parentIndex,
@@ -58,10 +60,10 @@ export function SubjectKeywordDetailsForm({
   const label = "Subject Keyword";
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const { getValues } = useFormContext();
-
+  
   const handleMouseEnter = () => setIsRowHighlighted(true);
   const handleMouseLeave = () => setIsRowHighlighted(false);
-
+  const [alertOpen, setAlertOpen] = useState(false);
   const currentValue = getValues(`${key}.text`);
 
   return (
@@ -86,19 +88,35 @@ export function SubjectKeywordDetailsForm({
             color="error"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Are you sure you want to delete ${label} "${currentValue}"?`
-                )
-              ) {
-                handleRemoveItem(index);
-              }
-            }}
+            onClick={() => setAlertOpen(true)}
           >
             <IndeterminateCheckBox />
           </IconButton>
         </Tooltip>
+        <CustomizedDialogs
+          modalTitle="Confirm Removal"
+          modalContent={`Are you sure you want to remove ${label} # ${index + 1}?`}
+          alertOpen={alertOpen}
+          onClose={() => setAlertOpen(false)}
+          modalAction={true}
+          modalActions={[
+            {
+              label: "Cancel",
+              onClick: () => setAlertOpen(false),
+              icon: Delete,
+              bgColor: "primary.main",
+            },
+            {
+              label: "Yes",  
+              onClick: () => {
+                handleRemoveItem(index);
+                setAlertOpen(false);
+              },
+              icon: Check,
+              bgColor: "error.main",
+            }
+          ]}
+        />
       </Stack>
     </Stack>
   );
