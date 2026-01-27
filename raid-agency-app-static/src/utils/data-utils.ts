@@ -22,3 +22,5 @@ export function getRaidAppUrl(): string {
 
   return `https://app.${environment}.raid.org.au`;
 }
+
+export const getRAIDUrl = import.meta.env.RAID_URL || 'https://raid.org/';

@@ -1,0 +1,168 @@
+---
+/**
+ * Icon Component
+ * 
+ * A flexible SVG icon component that supports multiple icon sets
+ * and custom styling.
+ * 
+ * Usage:
+ * <Icon name="orcid" class="w-5 h-5" />
+ * <Icon name="github" size={24} color="currentColor" />
+ * <Icon name="arrow-right" width={16} height={16} />
+ */
+
+interface Props {
+  name: string;
+  size?: number;
+  width?: number;
+  height?: number;
+  color?: string;
+  class?: string;
+  ariaLabel?: string;
+}
+
+const {
+  name,
+  size,
+  width = size || 24,
+  height = size || 24,
+  color = 'currentColor',
+  class: className = '',
+  ariaLabel,
+} = Astro.props;
+
+// Icon definitions
+const icons: Record<string, string> = {
+  // ORCID Icon
+  'orcid-authenticated': `
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M32 16c0 8.837-7.163 16-16 16-8.838 0-16-7.163-16-16C0 7.162 7.162 0 16 0c8.837 0 16 7.162 16 16Z" fill="#A6CE39"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M18.813 9.637h-5.45v13.9h5.474c4.555 0 7.35-3.378 7.35-6.95 0-1.635-.562-3.372-1.77-4.704-1.215-1.336-3.065-2.246-5.605-2.246ZM18.6 21.3h-2.813v-9.425H18.5c1.823 0 3.12.552 3.96 1.4.842.849 1.252 2.021 1.252 3.312 0 .784-.239 1.967-.993 2.948-.745.969-2.01 1.765-4.119 1.765Zm5.311-4.026c-.251 1.74-1.494 4.276-5.311 4.276h-3.063H18.6c3.817 0 5.06-2.536 5.311-4.276Zm1.812-2.405c-.657-2.601-2.85-4.982-6.91-4.982h-5.2 5.2c4.06 0 6.253 2.38 6.91 4.982Zm.215 1.718ZM8.363 9.675v13.887h2.425V9.675H8.363Zm2.175 13.637H8.612h1.925ZM9.575 8.65c.84 0 1.513-.689 1.513-1.513 0-.823-.673-1.512-1.513-1.512-.838 0-1.512.674-1.512 1.513 0 .823.672 1.512 1.512 1.512Z" fill="#fff"/>
+  `,
+  'orcid-unAuthenticated': `
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M29.474 16c0 7.442-6.032 13.474-13.474 13.474S2.526 23.442 2.526 16 8.558 2.526 16 2.526 29.474 8.558 29.474 16Z" fill="#fff"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M32 16c0 8.837-7.163 16-16 16S0 24.837 0 16 7.163 0 16 0s16 7.163 16 16ZM16 29.474c7.442 0 13.474-6.032 13.474-13.474S23.442 2.526 16 2.526 2.526 8.558 2.526 16 8.558 29.474 16 29.474Z" fill="#7FAA26"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M18.22 10.973h-4.547v11.6h4.569c3.8 0 6.133-2.82 6.133-5.8 0-1.365-.469-2.815-1.478-3.925-1.013-1.115-2.557-1.875-4.676-1.875Zm-.177 9.732h-2.347v-7.864h2.264c1.521 0 2.603.46 3.304 1.167.703.709 1.046 1.688 1.046 2.765 0 .654-.2 1.641-.83 2.46-.621.808-1.677 1.473-3.437 1.473Zm-.083-8.073c3.13 0 4.558 1.898 4.558 4.141 0-2.243-1.429-4.141-4.558-4.141h-2.472 2.472Zm6.205 4.017.001.124c0 2.869-2.242 5.591-5.924 5.591h-4.36V11.182v11.182h4.36c3.682 0 5.924-2.722 5.924-5.591l-.001-.124ZM9.5 11.005v11.588h2.024V11.005H9.5Zm1.815.208v11.172-11.172H9.71h1.606ZM10.512 10.15c.7 0 1.262-.575 1.262-1.263 0-.687-.561-1.262-1.262-1.262-.7 0-1.262.563-1.262 1.262 0 .688.561 1.262 1.262 1.262Zm.614-.408a1.044 1.044 0 0 0 0 0Z" fill="#7FAA26"/>
+    `,
+
+  // GitHub Icon
+  'github': `
+    <path fill="${color}" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+  `,
+  
+  // DOI Icon
+  'doi': `
+    <path fill="${color}" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2V7h2v10zm4-8c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2h-2V9h2z"/>
+  `,
+  
+  // External Link Icon
+  'external-link': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6m4-3h6m0 0v6m0-6L10 14"/>
+  `,
+  
+  // Arrow Right
+  'arrow-right': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7-7 7"/>
+  `,
+  
+  // Arrow Left
+  'arrow-left': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m7 7l-7-7 7-7"/>
+  `,
+  
+  // Check Icon
+  'check': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/>
+  `,
+  
+  // Cross/X Icon
+  'x': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"/>
+  `,
+  
+  // Info Icon
+  'info': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+  `,
+  
+  // Warning Icon
+  'warning': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+  `,
+  
+  // Download Icon
+  'download': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+  `,
+  
+  // Upload Icon
+  'upload': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+  `,
+  
+  // Search Icon
+  'search': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+  `,
+  
+  // User Icon
+  'user': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+  `,
+  
+  // Lock Icon
+  'lock': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+  `,
+  
+  // Unlock Icon
+  'unlock': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+  `,
+  
+  // Eye Icon (visibility)
+  'eye': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+  `,
+  
+  // Eye Off Icon (hidden)
+  'eye-off': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+  `,
+  
+  // Verified/Badge Icon
+  'verified': `
+    <path fill="${color}" d="M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2z"/>
+  `,
+
+  // Link Icon
+  'link': `
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+    <path fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+  `,
+};
+
+const iconPath = icons[name];
+
+if (!iconPath) {
+  console.warn(`Icon "${name}" not found`);
+}
+---
+
+{iconPath ? (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={width}
+    height={height}
+    viewBox="0 0 24 24"
+    fill="none"
+    class={className}
+    aria-label={ariaLabel || name}
+    role="img"
+    set:html={iconPath}
+  />
+) : (
+  <span class={className} role="img" aria-label={ariaLabel || 'icon not found'}>
+    ⚠️
+  </span>
+)}

@@ -60,6 +60,7 @@ import {config as dotenvConfig} from 'dotenv';
 import {fileURLToPath} from 'url';
 import {fetchCitation} from './fetch-citation.js'
 import {extractHandles} from './fetch-handles.js';
+import { addOrcidInfoToRaidData } from './fetch-orcidData.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -84,7 +85,8 @@ const config = {
   // Feature flags
   enableCaching: process.env.ENABLE_CACHING === 'true',
   cachingTime: parseInt(process.env.CACHING_TIME) || 5 * 24 * 60 * 60 * 1000, // 5 days
-  verboseLogging: process.env.VERBOSE_LOGGING === 'true'
+  verboseLogging: process.env.VERBOSE_LOGGING === 'true',
+  orcidEnv: process.env.RAID_ENV || 'prod',
 };
 
 // Simple in-memory cache for DOI citations
@@ -97,7 +99,13 @@ const stats = {
   successfulCitations: 0,
   cachedCitations: 0,
   failedCitations: 0,
-  startTime: Date.now()
+  startTime: Date.now(),
+  totalOrcidIds: 0,
+  successfulOrcidNames: 0,
+  failedOrcidNames: 0,
+  authenticatedOrcids: 0,
+  notAuthenticatedOrcids: 0,
+  authenticatedButPrivate: 0,
 };
 
 // Validate required environment variables
@@ -358,13 +366,19 @@ async function main() {
     
     // Step 3: Add citations to RAID data
     const enrichedData = await addCitationsToRaidData(raidData);
-    
-    // Step 4: Save enriched RAID data
+    // Step 4: Add ORCID info to RAID data
+    const enrichedWithOrcid = await addOrcidInfoToRaidData(
+      enrichedData, 
+      makeRequestWithRetry, 
+      config, 
+      stats
+    );
+    // Step 5: Save enriched RAID data with ORCID info
     const outputFile = path.join(config.dataDir, 'raids.json');
-    await fs.writeFile(outputFile, JSON.stringify(enrichedData, null, 2));
+    await fs.writeFile(outputFile, JSON.stringify(enrichedWithOrcid, null, 2));
     console.log(`Data successfully saved to ${outputFile}`);
     
-    // Step 5: Extract and save handles
+    // Step 6: Extract and save handles
     const handles = await extractHandles(raidData);
     const handlesFile = path.join(config.dataDir, 'handles.json');
     await fs.writeFile(handlesFile, JSON.stringify(handles, null, 2));
@@ -379,6 +393,11 @@ async function main() {
     console.log(`- Total DOIs found: ${stats.totalDois}`);
     console.log(`- Successful citations fetched: ${stats.successfulCitations}`);
     console.log(`- Failed citations: ${stats.failedCitations}`);
+    console.log(`- Total ORCID IDs found: ${stats.totalOrcidIds}`);
+    console.log(`- Authenticated & Public ORCIDs: ${stats.authenticatedOrcids}`);
+    console.log(`- Authenticated but Private: ${stats.authenticatedButPrivate}`);
+    console.log(`- Not Authenticated: ${stats.notAuthenticatedOrcids}`);
+    console.log(`- Failed ORCID lookups: ${stats.failedOrcidNames}`);
     if (config.enableCaching) {
       console.log(`- Cached citations used: ${stats.cachedCitations}`);
     }
@@ -403,4 +422,5 @@ export {
   fetchRaidData,
   addCitationsToRaidData,
   fetchCitation,
+  addOrcidInfoToRaidData
 };

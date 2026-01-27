@@ -3,6 +3,7 @@ import InfoField from "@/components/info-field.astro";
 import ContributorPositions from "@/components/raid-components/contributor-positions.astro";
 import ContributorRoles from "@/components/raid-components/contributor-roles.astro";
 import type { Contributor } from "@/generated/raid";
+import Icon from '@/components/icons.astro';
 
 interface Props {
   contributors: Contributor[];
@@ -21,10 +22,25 @@ const { contributors = [] } = Astro.props as Props;
     }
     <div class="divide-y divide-gray-200">
       {
-        contributors.map(({ id, leader, contact, position, role }) => (
+        contributors.map(({ id, leader, contact, position, role, status, orcidInfo }) => (
           <div class="ml-5 space-y-2 py-4">
             <div class="grid grid-cols-3 gap-5 text-sm">
-              <InfoField label="Contributor" value={id} isLink={true} />
+              <div>
+                <span class="block font-medium text-gray-900">Name</span>
+                <a href={orcidInfo.profileUrl} aria-label="View ORCID Name" target="_blank" rel="noopener noreferrer">
+                  <span style="text-decoration: underline">{orcidInfo.displayName}</span>
+                  <img style="display: inline" src=`/${status}.svg` alt="ORCID iD"/> 
+                </a>
+                {status === 'UNAUTHENTICATED' && <span>({status.toLowerCase()})</span>}
+              </div>
+              <div>
+                <span class="block font-medium text-gray-900">Contributor</span>
+                <a href={orcidInfo.profileUrl} aria-label="View ORCID ID" target="_blank" rel="noopener noreferrer">
+                  <img style="display: inline" src=`/${status}.svg` alt="ORCID Logo"/>{" "}
+                  <span style="text-decoration: underline">{orcidInfo.profileUrl}</span>
+                </a>
+                {status === 'UNAUTHENTICATED' && <span>({status.toLowerCase()})</span>}
+              </div>
               <InfoField label="Leader" value={leader ? "Yes" : "No"} />
               <InfoField label="Contact" value={contact ? "Yes" : "No"} />
             </div>

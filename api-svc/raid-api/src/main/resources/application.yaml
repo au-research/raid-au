@@ -27,8 +27,6 @@ raid:
     host: http://localhost:1080
     raid-listener:
       uri: ${raid.orcid-integration.host}/raid-update
-    contributor-email-lookup:
-      uri: ${raid.orcid-integration.host}/find-contributor-by-email
     contributor-id-lookup:
       uri: ${raid.orcid-integration.host}/find-contributor-by-orcid
     api-key: not-set

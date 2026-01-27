@@ -12,4 +12,10 @@ export interface Contributor {
     role: Array<ContributorRole>;
     leader?: boolean;
     contact?: boolean;
+    orcidInfo: {
+        orcidId: string;
+        authenticated: boolean;
+        displayName: string | null;
+        profileUrl: string | null;
+    };
 }
