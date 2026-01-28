@@ -1,0 +1,32 @@
+name: Build and test raid-agency-app
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/**
+      - raid-agency-app
+      - raid-agency-app-static
+  pull_request:
+    paths:
+      - .github/**
+      - raid-agency-app
+      - raid-agency-app-static
+
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: raid-agency-app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v6
+        with:
+          cache-dependency-path: raid-agency-app/package.json
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test

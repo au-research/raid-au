@@ -66,7 +66,6 @@ export const BorderedTreeItem = styled(TreeItem, {
     paddingLeft: 18,
     borderLeft: `1px solid ${alpha(theme.palette.text.primary, 0.6)}`,
   },
-
   // Theme-specific color for all nodes
   ...theme.applyStyles('light', {
     color: theme.palette.grey[800],

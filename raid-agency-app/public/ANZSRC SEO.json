@@ -1,0 +1,4244 @@
+[
+  {
+    "code": "10",
+    "name": "ANIMAL PRODUCTION AND ANIMAL PRIMARY PRODUCTS",
+    "groups": [
+      {
+        "code": "1001",
+        "name": "Environmentally sustainable animal production",
+        "objectives": [
+          {
+            "code": "100101",
+            "name": "Management of gaseous waste from animal production (excl. greenhouse gases)"
+          },
+          {
+            "code": "100102",
+            "name": "Management of liquid waste from animal production (excl. water)"
+          },
+          {
+            "code": "100103",
+            "name": "Management of solid waste from animal production"
+          },
+          {
+            "code": "100104",
+            "name": "Management of water consumption by animal production"
+          },
+          {
+            "code": "100199",
+            "name": "Environmentally sustainable animal production not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1002",
+        "name": "Fisheries - aquaculture",
+        "objectives": [
+          {
+            "code": "100201",
+            "name": "Aquaculture crustaceans (excl. rock lobster and prawns)"
+          },
+          {
+            "code": "100202",
+            "name": "Aquaculture fin fish (excl. tuna)"
+          },
+          {
+            "code": "100203",
+            "name": "Aquaculture molluscs (excl. oysters)"
+          },
+          {
+            "code": "100204",
+            "name": "Aquaculture oysters"
+          },
+          {
+            "code": "100205",
+            "name": "Aquaculture prawns"
+          },
+          {
+            "code": "100206",
+            "name": "Aquaculture rock lobster"
+          },
+          {
+            "code": "100207",
+            "name": "Aquaculture tuna"
+          },
+          {
+            "code": "100299",
+            "name": "Fisheries - aquaculture not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1003",
+        "name": "Fisheries - wild caught",
+        "objectives": [
+          {
+            "code": "100301",
+            "name": "Fisheries - recreational freshwater"
+          },
+          {
+            "code": "100302",
+            "name": "Fisheries - recreational marine "
+          },
+          {
+            "code": "100303",
+            "name": "Wild caught crustaceans (excl. rock lobster and prawns)"
+          },
+          {
+            "code": "100304",
+            "name": "Wild caught edible molluscs"
+          },
+          {
+            "code": "100305",
+            "name": "Wild caught fin fish (excl. tuna)"
+          },
+          {
+            "code": "100306",
+            "name": "Wild caught prawns"
+          },
+          {
+            "code": "100307",
+            "name": "Wild caught rock lobster"
+          },
+          {
+            "code": "100308",
+            "name": "Wild caught tuna"
+          },
+          {
+            "code": "100399",
+            "name": "Fisheries - wild caught not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1004",
+        "name": "Livestock raising",
+        "objectives": [
+          {
+            "code": "100401",
+            "name": "Beef cattle"
+          },
+          {
+            "code": "100402",
+            "name": "Dairy cattle"
+          },
+          {
+            "code": "100403",
+            "name": "Deer"
+          },
+          {
+            "code": "100404",
+            "name": "Game livestock (e.g. kangaroos, wallabies, camels, buffaloes)"
+          },
+          {
+            "code": "100405",
+            "name": "Goats"
+          },
+          {
+            "code": "100406",
+            "name": "Horses"
+          },
+          {
+            "code": "100407",
+            "name": "Insects"
+          },
+          {
+            "code": "100408",
+            "name": "Minor livestock (e.g. alpacas, ostriches, crocodiles, farmed rabbits)"
+          },
+          {
+            "code": "100409",
+            "name": "Non-cattle dairy"
+          },
+          {
+            "code": "100410",
+            "name": "Pigs"
+          },
+          {
+            "code": "100411",
+            "name": "Poultry"
+          },
+          {
+            "code": "100412",
+            "name": "Sheep for meat"
+          },
+          {
+            "code": "100413",
+            "name": "Sheep for wool"
+          },
+          {
+            "code": "100499",
+            "name": "Livestock raising not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1005",
+        "name": "Pasture, browse and fodder crops",
+        "objectives": [
+          {
+            "code": "100501",
+            "name": "Browse crops"
+          },
+          {
+            "code": "100502",
+            "name": "Lucerne"
+          },
+          {
+            "code": "100503",
+            "name": "Native and residual pastures"
+          },
+          {
+            "code": "100504",
+            "name": "Non-cereal crops (non-cereal crops for hay/silage/green feed)"
+          },
+          {
+            "code": "100505",
+            "name": "Sown pastures (excl. lucerne)"
+          },
+          {
+            "code": "100599",
+            "name": "Pasture, browse and fodder crops not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1006",
+        "name": "Primary products from animals",
+        "objectives": [
+          {
+            "code": "100601",
+            "name": "Eggs"
+          },
+          {
+            "code": "100602",
+            "name": "Honey"
+          },
+          {
+            "code": "100603",
+            "name": "Pearls"
+          },
+          {
+            "code": "100604",
+            "name": "Raw wool"
+          },
+          {
+            "code": "100605",
+            "name": "Unprocessed or minimally processed fish"
+          },
+          {
+            "code": "100606",
+            "name": "Unprocessed or minimally processed milk"
+          },
+          {
+            "code": "100699",
+            "name": "Primary products from animals not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1099",
+        "name": "Other animal production and animal primary products",
+        "objectives": [
+          {
+            "code": "109901",
+            "name": "Animal adaptation to climate change "
+          },
+          {
+            "code": "109902",
+            "name": "Animal welfare"
+          },
+          {
+            "code": "109903",
+            "name": "Fish product traceability and quality assurance"
+          },
+          {
+            "code": "109904",
+            "name": "Livestock product traceability and quality assurance"
+          },
+          {
+            "code": "109999",
+            "name": "Other animal production and animal primary products not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "11",
+    "name": "COMMERCIAL SERVICES AND TOURISM",
+    "groups": [
+      {
+        "code": "1101",
+        "name": "Environmentally sustainable commercial services and tourism",
+        "objectives": [
+          {
+            "code": "110101",
+            "name": "Management of gaseous waste from commercial services and tourism (excl. greenhouse gases)"
+          },
+          {
+            "code": "110102",
+            "name": "Management of liquid waste from commercial services and tourism (excl. water)"
+          },
+          {
+            "code": "110103",
+            "name": "Management of solid waste from commercial services and tourism"
+          },
+          {
+            "code": "110104",
+            "name": "Management of water consumption by commercial services and tourism"
+          },
+          {
+            "code": "110199",
+            "name": "Environmentally sustainable commercial services and tourism not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1102",
+        "name": "Financial services",
+        "objectives": [
+          {
+            "code": "110201",
+            "name": "Finance services"
+          },
+          {
+            "code": "110202",
+            "name": "Investment services (excl. superannuation)"
+          },
+          {
+            "code": "110203",
+            "name": "Superannuation and insurance services"
+          },
+          {
+            "code": "110299",
+            "name": "Financial services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1103",
+        "name": "Property, business support services and trade",
+        "objectives": [
+          {
+            "code": "110301",
+            "name": "Administration and business support services"
+          },
+          {
+            "code": "110302",
+            "name": "Professional, scientific and technical services"
+          },
+          {
+            "code": "110303",
+            "name": "Property services (incl. security)"
+          },
+          {
+            "code": "110304",
+            "name": "Wholesale and retail trade"
+          },
+          {
+            "code": "110399",
+            "name": "Property, business support services and trade not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1104",
+        "name": "Tourism services",
+        "objectives": [
+          {
+            "code": "110401",
+            "name": "Economic issues in tourism"
+          },
+          {
+            "code": "110402",
+            "name": "Socio-cultural issues in tourism"
+          },
+          {
+            "code": "110403",
+            "name": "Tourism infrastructure development"
+          },
+          {
+            "code": "110499",
+            "name": "Tourism services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1105",
+        "name": "Water and waste services",
+        "objectives": [
+          {
+            "code": "110501",
+            "name": "Waste management services"
+          },
+          {
+            "code": "110502",
+            "name": "Waste recycling services"
+          },
+          {
+            "code": "110503",
+            "name": "Water recycling services (incl. sewage and greywater)"
+          },
+          {
+            "code": "110504",
+            "name": "Water services and utilities"
+          },
+          {
+            "code": "110599",
+            "name": "Water and waste services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1199",
+        "name": "Other commercial services and tourism",
+        "objectives": [
+          {
+            "code": "119901",
+            "name": "Hospitality services"
+          },
+          {
+            "code": "119902",
+            "name": "Recreational services"
+          },
+          {
+            "code": "119999",
+            "name": "Other commercial services and tourism not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "12",
+    "name": "CONSTRUCTION",
+    "groups": [
+      {
+        "code": "1201",
+        "name": "Building management and services",
+        "objectives": [
+          {
+            "code": "120101",
+            "name": "Civil building management and services"
+          },
+          {
+            "code": "120102",
+            "name": "Commercial building management and services"
+          },
+          {
+            "code": "120103",
+            "name": "Industrial building management and services"
+          },
+          {
+            "code": "120104",
+            "name": "Institutional building management and services"
+          },
+          {
+            "code": "120105",
+            "name": "Residential building management and services"
+          },
+          {
+            "code": "120199",
+            "name": "Building management and services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1202",
+        "name": "Construction design",
+        "objectives": [
+          {
+            "code": "120201",
+            "name": "Civil construction design"
+          },
+          {
+            "code": "120202",
+            "name": "Commercial construction design"
+          },
+          {
+            "code": "120203",
+            "name": "Industrial construction design"
+          },
+          {
+            "code": "120204",
+            "name": "Institutional construction design"
+          },
+          {
+            "code": "120205",
+            "name": "Residential construction design"
+          },
+          {
+            "code": "120299",
+            "name": "Construction design not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1203",
+        "name": "Construction materials performance and processes",
+        "objectives": [
+          {
+            "code": "120301",
+            "name": "Cement and concrete materials"
+          },
+          {
+            "code": "120302",
+            "name": "Glass materials"
+          },
+          {
+            "code": "120303",
+            "name": "Metals "
+          },
+          {
+            "code": "120304",
+            "name": "Polymeric materials and paints"
+          },
+          {
+            "code": "120305",
+            "name": "Stone, ceramics and clay materials"
+          },
+          {
+            "code": "120306",
+            "name": "Timber materials"
+          },
+          {
+            "code": "120399",
+            "name": "Construction materials performance and processes not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1204",
+        "name": "Construction planning",
+        "objectives": [
+          {
+            "code": "120401",
+            "name": "Civil construction planning"
+          },
+          {
+            "code": "120402",
+            "name": "Commercial construction planning"
+          },
+          {
+            "code": "120403",
+            "name": "Industrial construction planning"
+          },
+          {
+            "code": "120404",
+            "name": "Regional planning"
+          },
+          {
+            "code": "120405",
+            "name": "Residential construction planning"
+          },
+          {
+            "code": "120406",
+            "name": "Urban planning"
+          },
+          {
+            "code": "120499",
+            "name": "Construction planning not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1205",
+        "name": "Construction processes",
+        "objectives": [
+          {
+            "code": "120501",
+            "name": "Civil construction processes"
+          },
+          {
+            "code": "120502",
+            "name": "Commercial construction processes"
+          },
+          {
+            "code": "120503",
+            "name": "Industrial construction processes"
+          },
+          {
+            "code": "120504",
+            "name": "Institutional construction processes"
+          },
+          {
+            "code": "120505",
+            "name": "Residential construction processes"
+          },
+          {
+            "code": "120599",
+            "name": "Construction processes not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1206",
+        "name": "Environmentally sustainable construction activities",
+        "objectives": [
+          {
+            "code": "120601",
+            "name": "Management of gaseous waste from construction activities (excl. greenhouse gases)"
+          },
+          {
+            "code": "120602",
+            "name": "Management of liquid waste from construction activities (excl. water)"
+          },
+          {
+            "code": "120603",
+            "name": "Management of solid waste from construction activities"
+          },
+          {
+            "code": "120604",
+            "name": "Management of water consumption by construction activities"
+          },
+          {
+            "code": "120699",
+            "name": "Environmentally sustainable construction activities not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1299",
+        "name": "Other construction",
+        "objectives": [
+          {
+            "code": "129901",
+            "name": "Adaptation to climate change in construction"
+          },
+          {
+            "code": "129999",
+            "name": "Other construction not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "13",
+    "name": "CULTURE AND SOCIETY",
+    "groups": [
+      {
+        "code": "1301",
+        "name": "Arts",
+        "objectives": [
+          {
+            "code": "130101",
+            "name": "Design"
+          },
+          {
+            "code": "130102",
+            "name": "Music"
+          },
+          {
+            "code": "130103",
+            "name": "The creative arts "
+          },
+          {
+            "code": "130104",
+            "name": "The performing arts "
+          },
+          {
+            "code": "130199",
+            "name": "Arts not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1302",
+        "name": "Communication",
+        "objectives": [
+          {
+            "code": "130201",
+            "name": "Communication across languages and culture"
+          },
+          {
+            "code": "130202",
+            "name": "Languages and linguistics"
+          },
+          {
+            "code": "130203",
+            "name": "Literature"
+          },
+          {
+            "code": "130204",
+            "name": "The media"
+          },
+          {
+            "code": "130205",
+            "name": "Visual communication"
+          },
+          {
+            "code": "130299",
+            "name": "Communication not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1303",
+        "name": "Ethics",
+        "objectives": [
+          {
+            "code": "130301",
+            "name": "Bioethics"
+          },
+          {
+            "code": "130302",
+            "name": "Business ethics"
+          },
+          {
+            "code": "130303",
+            "name": "Environmental ethics"
+          },
+          {
+            "code": "130304",
+            "name": "Social ethics"
+          },
+          {
+            "code": "130305",
+            "name": "Technological ethics"
+          },
+          {
+            "code": "130306",
+            "name": "Workplace and organisational ethics (excl. business ethics)"
+          },
+          {
+            "code": "130399",
+            "name": "Ethics not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1304",
+        "name": "Heritage",
+        "objectives": [
+          {
+            "code": "130401",
+            "name": "Assessment of heritage value"
+          },
+          {
+            "code": "130402",
+            "name": "Conserving collections and movable cultural heritage"
+          },
+          {
+            "code": "130403",
+            "name": "Conserving intangible cultural heritage"
+          },
+          {
+            "code": "130404",
+            "name": "Conserving natural heritage"
+          },
+          {
+            "code": "130405",
+            "name": "Conserving the historic environment"
+          },
+          {
+            "code": "130499",
+            "name": "Heritage not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1305",
+        "name": "Religion",
+        "objectives": [
+          {
+            "code": "130501",
+            "name": "Religion and society"
+          },
+          {
+            "code": "130502",
+            "name": "Religious philosophies and belief systems"
+          },
+          {
+            "code": "130503",
+            "name": "Religious rituals and traditions (excl. structures)"
+          },
+          {
+            "code": "130504",
+            "name": "Religious structures"
+          },
+          {
+            "code": "130599",
+            "name": "Religion not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1306",
+        "name": "Sport, exercise and recreation",
+        "objectives": [
+          {
+            "code": "130601",
+            "name": "Exercise"
+          },
+          {
+            "code": "130602",
+            "name": "Organised sports"
+          },
+          {
+            "code": "130603",
+            "name": "Recreation and leisure activities (excl. sport and exercise)"
+          },
+          {
+            "code": "130699",
+            "name": "Sport, exercise and recreation not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1307",
+        "name": "Understanding past societies",
+        "objectives": [
+          {
+            "code": "130701",
+            "name": "Understanding Africa’s past"
+          },
+          {
+            "code": "130702",
+            "name": "Understanding Asia’s past"
+          },
+          {
+            "code": "130703",
+            "name": "Understanding Australia’s past"
+          },
+          {
+            "code": "130704",
+            "name": "Understanding Europe’s past"
+          },
+          {
+            "code": "130705",
+            "name": "Understanding New Zealand’s past"
+          },
+          {
+            "code": "130706",
+            "name": "Understanding the past of the Americas"
+          },
+          {
+            "code": "130799",
+            "name": "Understanding past societies not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1399",
+        "name": "Other culture and society",
+        "objectives": [
+          {
+            "code": "139999",
+            "name": "Other culture and society not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "14",
+    "name": "DEFENCE",
+    "groups": [
+      {
+        "code": "1401",
+        "name": "Defence",
+        "objectives": [
+          {
+            "code": "140101",
+            "name": "Air"
+          },
+          {
+            "code": "140102",
+            "name": "Command, control and communications"
+          },
+          {
+            "code": "140103",
+            "name": "Cyber and electronic security and warfare"
+          },
+          {
+            "code": "140104",
+            "name": "Emerging defence technologies"
+          },
+          {
+            "code": "140105",
+            "name": "Intelligence, surveillance and space"
+          },
+          {
+            "code": "140106",
+            "name": "Land"
+          },
+          {
+            "code": "140107",
+            "name": "Logistics"
+          },
+          {
+            "code": "140108",
+            "name": "Maritime"
+          },
+          {
+            "code": "140109",
+            "name": "National security"
+          },
+          {
+            "code": "140110",
+            "name": "Personnel"
+          },
+          {
+            "code": "140199",
+            "name": "Defence not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "15",
+    "name": "ECONOMIC FRAMEWORK ",
+    "groups": [
+      {
+        "code": "1501",
+        "name": "International trade policy",
+        "objectives": [
+          {
+            "code": "150101",
+            "name": "International agreements on trade"
+          },
+          {
+            "code": "150102",
+            "name": "Trade assistance and protection"
+          },
+          {
+            "code": "150103",
+            "name": "Trade policy"
+          },
+          {
+            "code": "150199",
+            "name": "International trade policy not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1502",
+        "name": "Macroeconomics",
+        "objectives": [
+          {
+            "code": "150201",
+            "name": "Balance of payments"
+          },
+          {
+            "code": "150202",
+            "name": "Demography"
+          },
+          {
+            "code": "150203",
+            "name": "Economic growth"
+          },
+          {
+            "code": "150204",
+            "name": "Exchange rates"
+          },
+          {
+            "code": "150205",
+            "name": "Fiscal policy"
+          },
+          {
+            "code": "150206",
+            "name": "Income distribution"
+          },
+          {
+            "code": "150207",
+            "name": "Macro labour market issues"
+          },
+          {
+            "code": "150208",
+            "name": "Monetary policy"
+          },
+          {
+            "code": "150209",
+            "name": "Savings and investments"
+          },
+          {
+            "code": "150210",
+            "name": "Taxation"
+          },
+          {
+            "code": "150299",
+            "name": "Macroeconomics not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1503",
+        "name": "Management and productivity ",
+        "objectives": [
+          {
+            "code": "150301",
+            "name": "Industrial relations"
+          },
+          {
+            "code": "150302",
+            "name": "Management"
+          },
+          {
+            "code": "150303",
+            "name": "Marketing"
+          },
+          {
+            "code": "150304",
+            "name": "Productivity (excl. public sector)"
+          },
+          {
+            "code": "150305",
+            "name": "Public sector productivity"
+          },
+          {
+            "code": "150306",
+            "name": "Technological and organisational innovation"
+          },
+          {
+            "code": "150399",
+            "name": "Management and productivity not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1504",
+        "name": "Measurement standards and calibration services",
+        "objectives": [
+          {
+            "code": "150401",
+            "name": "Agricultural and environmental standards and calibrations"
+          },
+          {
+            "code": "150402",
+            "name": "Defence standards and calibrations"
+          },
+          {
+            "code": "150403",
+            "name": "Manufacturing standards and calibrations"
+          },
+          {
+            "code": "150404",
+            "name": "Service industries standards and calibrations"
+          },
+          {
+            "code": "150499",
+            "name": "Measurement standards and calibration services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1505",
+        "name": "Microeconomics",
+        "objectives": [
+          {
+            "code": "150501",
+            "name": "Consumption"
+          },
+          {
+            "code": "150502",
+            "name": "Human capital issues"
+          },
+          {
+            "code": "150503",
+            "name": "Industrial organisations"
+          },
+          {
+            "code": "150504",
+            "name": "Industry costs and structure"
+          },
+          {
+            "code": "150505",
+            "name": "Industry policy"
+          },
+          {
+            "code": "150506",
+            "name": "Market-based mechanisms"
+          },
+          {
+            "code": "150507",
+            "name": "Micro labour market issues"
+          },
+          {
+            "code": "150508",
+            "name": "Microeconomic effects of taxation"
+          },
+          {
+            "code": "150509",
+            "name": "Preference, behaviour and welfare"
+          },
+          {
+            "code": "150510",
+            "name": "Production"
+          },
+          {
+            "code": "150511",
+            "name": "Supply and demand"
+          },
+          {
+            "code": "150599",
+            "name": "Microeconomics not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1599",
+        "name": "Other economic framework",
+        "objectives": [
+          {
+            "code": "159901",
+            "name": "Carbon and emissions trading"
+          },
+          {
+            "code": "159902",
+            "name": "Ecological economics"
+          },
+          {
+            "code": "159999",
+            "name": "Other economic framework not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "16",
+    "name": "EDUCATION AND TRAINING",
+    "groups": [
+      {
+        "code": "1601",
+        "name": "Learner and learning",
+        "objectives": [
+          {
+            "code": "160101",
+            "name": "Early childhood education"
+          },
+          {
+            "code": "160102",
+            "name": "Higher education"
+          },
+          {
+            "code": "160103",
+            "name": "Primary education"
+          },
+          {
+            "code": "160104",
+            "name": "Professional development and adult education"
+          },
+          {
+            "code": "160105",
+            "name": "Secondary education"
+          },
+          {
+            "code": "160199",
+            "name": "Learner and learning not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1602",
+        "name": "Schools and learning environments",
+        "objectives": [
+          {
+            "code": "160201",
+            "name": "Equity and access to education"
+          },
+          {
+            "code": "160202",
+            "name": "Gender aspects in education"
+          },
+          {
+            "code": "160203",
+            "name": "Inclusive education"
+          },
+          {
+            "code": "160204",
+            "name": "Management, resources and leadership"
+          },
+          {
+            "code": "160205",
+            "name": "Policies and development"
+          },
+          {
+            "code": "160206",
+            "name": "Workforce transition and employment"
+          },
+          {
+            "code": "160299",
+            "name": "Schools and learning environments not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1603",
+        "name": "Teaching and curriculum",
+        "objectives": [
+          {
+            "code": "160301",
+            "name": "Assessment, development and evaluation of curriculum"
+          },
+          {
+            "code": "160302",
+            "name": "Pedagogy"
+          },
+          {
+            "code": "160303",
+            "name": "Teacher and instructor development"
+          },
+          {
+            "code": "160304",
+            "name": "Teaching and instruction technologies"
+          },
+          {
+            "code": "160399",
+            "name": "Teaching and curriculum not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1699",
+        "name": "Other education and training",
+        "objectives": [
+          {
+            "code": "169999",
+            "name": "Other education and training not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "17",
+    "name": "ENERGY",
+    "groups": [
+      {
+        "code": "1701",
+        "name": "Energy efficiency",
+        "objectives": [
+          {
+            "code": "170101",
+            "name": "Commercial energy efficiency"
+          },
+          {
+            "code": "170102",
+            "name": "Industrial energy efficiency"
+          },
+          {
+            "code": "170103",
+            "name": "Residential energy efficiency"
+          },
+          {
+            "code": "170104",
+            "name": "Transport energy efficiency"
+          },
+          {
+            "code": "170199",
+            "name": "Energy efficiency not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1702",
+        "name": "Energy exploration",
+        "objectives": [
+          {
+            "code": "170201",
+            "name": "Coal exploration"
+          },
+          {
+            "code": "170202",
+            "name": "Geothermal exploration"
+          },
+          {
+            "code": "170203",
+            "name": "Oil and gas exploration"
+          },
+          {
+            "code": "170204",
+            "name": "Oil shale and tar sands exploration"
+          },
+          {
+            "code": "170205",
+            "name": "Uranium exploration"
+          },
+          {
+            "code": "170299",
+            "name": "Energy exploration not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1703",
+        "name": "Energy storage, distribution and supply",
+        "objectives": [
+          {
+            "code": "170301",
+            "name": "Battery storage"
+          },
+          {
+            "code": "170302",
+            "name": "Carbon capture and storage"
+          },
+          {
+            "code": "170303",
+            "name": "Energy services and utilities"
+          },
+          {
+            "code": "170304",
+            "name": "Energy storage (excl. hydrogen and batteries)"
+          },
+          {
+            "code": "170305",
+            "name": "Energy systems and analysis"
+          },
+          {
+            "code": "170306",
+            "name": "Energy transmission and distribution (excl. hydrogen)"
+          },
+          {
+            "code": "170307",
+            "name": "Hydrogen distribution"
+          },
+          {
+            "code": "170308",
+            "name": "Hydrogen storage"
+          },
+          {
+            "code": "170309",
+            "name": "Smart grids"
+          },
+          {
+            "code": "170399",
+            "name": "Energy storage, distribution and supply not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1704",
+        "name": "Energy transformation",
+        "objectives": [
+          {
+            "code": "170401",
+            "name": "Fuel cells (excl. solid oxide)"
+          },
+          {
+            "code": "170402",
+            "name": "Hydrogen-based energy systems"
+          },
+          {
+            "code": "170403",
+            "name": "Nuclear energy"
+          },
+          {
+            "code": "170404",
+            "name": "Solid oxide fuel cells"
+          },
+          {
+            "code": "170405",
+            "name": "Transformation of coal into electricity"
+          },
+          {
+            "code": "170406",
+            "name": "Transformation of coal into fuels"
+          },
+          {
+            "code": "170407",
+            "name": "Transformation of electricity and material feedstocks into fuels"
+          },
+          {
+            "code": "170408",
+            "name": "Transformation of gas into electricity"
+          },
+          {
+            "code": "170409",
+            "name": "Transformation of gas into fuels"
+          },
+          {
+            "code": "170499",
+            "name": "Energy transformation not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1705",
+        "name": "Environmentally sustainable energy activities",
+        "objectives": [
+          {
+            "code": "170501",
+            "name": "Management of gaseous waste from energy activities (excl. greenhouse gases)"
+          },
+          {
+            "code": "170502",
+            "name": "Management of liquid waste from energy activities (excl. water)"
+          },
+          {
+            "code": "170503",
+            "name": "Management of solid waste from energy activities"
+          },
+          {
+            "code": "170504",
+            "name": "Management of water consumption by energy activities"
+          },
+          {
+            "code": "170599",
+            "name": "Environmentally sustainable energy activities not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1706",
+        "name": "Mining and extraction of energy resources",
+        "objectives": [
+          {
+            "code": "170601",
+            "name": "Coal mining and extraction"
+          },
+          {
+            "code": "170602",
+            "name": "Geothermal energy extraction"
+          },
+          {
+            "code": "170603",
+            "name": "Oil and gas extraction"
+          },
+          {
+            "code": "170604",
+            "name": "Oil shale and tar sands mining and extraction"
+          },
+          {
+            "code": "170605",
+            "name": "Uranium mining and extraction"
+          },
+          {
+            "code": "170699",
+            "name": "Mining and extraction of energy resources not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1707",
+        "name": "Processing of energy sources",
+        "objectives": [
+          {
+            "code": "170701",
+            "name": "Biomass processing"
+          },
+          {
+            "code": "170702",
+            "name": "Hydrogen production from fossil fuels"
+          },
+          {
+            "code": "170703",
+            "name": "Hydrogen production from nuclear energy"
+          },
+          {
+            "code": "170704",
+            "name": "Hydrogen production from renewable energy"
+          },
+          {
+            "code": "170705",
+            "name": "Oil and gas processing"
+          },
+          {
+            "code": "170706",
+            "name": "Preparation of black coal"
+          },
+          {
+            "code": "170707",
+            "name": "Preparation of brown coal (lignite)"
+          },
+          {
+            "code": "170708",
+            "name": "Preparation of oil shale and tar sands"
+          },
+          {
+            "code": "170709",
+            "name": "Preparation of uranium"
+          },
+          {
+            "code": "170799",
+            "name": "Processing of energy sources not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1708",
+        "name": "Renewable energy",
+        "objectives": [
+          {
+            "code": "170801",
+            "name": "Biofuel energy"
+          },
+          {
+            "code": "170802",
+            "name": "Geothermal energy"
+          },
+          {
+            "code": "170803",
+            "name": "Hydro-electric energy"
+          },
+          {
+            "code": "170804",
+            "name": "Solar-photovoltaic energy"
+          },
+          {
+            "code": "170805",
+            "name": "Solar-thermal energy"
+          },
+          {
+            "code": "170806",
+            "name": "Tidal energy"
+          },
+          {
+            "code": "170807",
+            "name": "Wave energy"
+          },
+          {
+            "code": "170808",
+            "name": "Wind energy"
+          },
+          {
+            "code": "170899",
+            "name": "Renewable energy not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1799",
+        "name": "Other energy",
+        "objectives": [
+          {
+            "code": "179999",
+            "name": "Other energy not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "18",
+    "name": "ENVIRONMENTAL MANAGEMENT",
+    "groups": [
+      {
+        "code": "1801",
+        "name": "Air quality, atmosphere and weather",
+        "objectives": [
+          {
+            "code": "180101",
+            "name": "Air quality"
+          },
+          {
+            "code": "180102",
+            "name": "Atmospheric composition (incl. greenhouse gas inventory)"
+          },
+          {
+            "code": "180103",
+            "name": "Atmospheric processes and dynamics"
+          },
+          {
+            "code": "180104",
+            "name": "Weather"
+          },
+          {
+            "code": "180199",
+            "name": "Air quality, atmosphere and weather not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1802",
+        "name": "Coastal and estuarine systems and management",
+        "objectives": [
+          {
+            "code": "180201",
+            "name": "Assessment and management of coastal and estuarine ecosystems"
+          },
+          {
+            "code": "180202",
+            "name": "Coastal erosion"
+          },
+          {
+            "code": "180203",
+            "name": "Coastal or estuarine biodiversity"
+          },
+          {
+            "code": "180204",
+            "name": "Control of pests, diseases and exotic species in coastal and estuarine environments "
+          },
+          {
+            "code": "180205",
+            "name": "Measurement and assessment of estuarine water quality "
+          },
+          {
+            "code": "180206",
+            "name": "Rehabilitation or conservation of coastal or estuarine environments"
+          },
+          {
+            "code": "180299",
+            "name": "Coastal and estuarine systems and management not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1803",
+        "name": "Fresh, ground and surface water systems and management",
+        "objectives": [
+          {
+            "code": "180301",
+            "name": "Assessment and management of freshwater ecosystems"
+          },
+          {
+            "code": "180302",
+            "name": "Control of pests, diseases and exotic species in fresh, ground and surface water "
+          },
+          {
+            "code": "180303",
+            "name": "Fresh, ground and surface water biodiversity"
+          },
+          {
+            "code": "180304",
+            "name": "Freshwater assimilative capacity"
+          },
+          {
+            "code": "180305",
+            "name": "Ground water quantification, allocation and impact of depletion "
+          },
+          {
+            "code": "180306",
+            "name": "Measurement and assessment of freshwater quality (incl. physical and chemical conditions of water) "
+          },
+          {
+            "code": "180307",
+            "name": "Rehabilitation or conservation of fresh, ground and surface water environments"
+          },
+          {
+            "code": "180308",
+            "name": "Surface water quantification, allocation and impact of depletion"
+          },
+          {
+            "code": "180399",
+            "name": "Fresh, ground and surface water systems and management not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1804",
+        "name": "Management of Antarctic and Southern Ocean environments",
+        "objectives": [
+          {
+            "code": "180401",
+            "name": "Antarctic and Southern Ocean ice dynamics"
+          },
+          {
+            "code": "180402",
+            "name": "Antarctic and Southern Ocean oceanic processes"
+          },
+          {
+            "code": "180403",
+            "name": "Assessment and management of Antarctic and Southern Ocean ecosystems"
+          },
+          {
+            "code": "180404",
+            "name": "Biodiversity in Antarctic and Southern Ocean environments"
+          },
+          {
+            "code": "180405",
+            "name": "Control of pests, diseases and exotic species in Antarctic and Southern Ocean environments"
+          },
+          {
+            "code": "180406",
+            "name": "Protection and conservation of Antarctic and Southern Ocean environments"
+          },
+          {
+            "code": "180407",
+            "name": "Water quality in Antarctic and Southern Ocean environments"
+          },
+          {
+            "code": "180499",
+            "name": "Management of Antarctic and Southern Ocean environments not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1805",
+        "name": "Marine systems and management",
+        "objectives": [
+          {
+            "code": "180501",
+            "name": "Assessment and management of benthic marine ecosystems"
+          },
+          {
+            "code": "180502",
+            "name": "Assessment and management of pelagic marine ecosystems"
+          },
+          {
+            "code": "180503",
+            "name": "Control of pests, diseases and exotic species in marine environments "
+          },
+          {
+            "code": "180504",
+            "name": "Marine biodiversity"
+          },
+          {
+            "code": "180505",
+            "name": "Measurement and assessment of marine water quality and condition"
+          },
+          {
+            "code": "180506",
+            "name": "Oceanic processes (excl. in the Antarctic and Southern Ocean)"
+          },
+          {
+            "code": "180507",
+            "name": "Rehabilitation or conservation of marine environments"
+          },
+          {
+            "code": "180599",
+            "name": "Marine systems and management not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1806",
+        "name": "Terrestrial systems and management",
+        "objectives": [
+          {
+            "code": "180601",
+            "name": "Assessment and management of terrestrial ecosystems"
+          },
+          {
+            "code": "180602",
+            "name": "Control of pests, diseases and exotic species in terrestrial environments "
+          },
+          {
+            "code": "180603",
+            "name": "Evaluation, allocation, and impacts of land use "
+          },
+          {
+            "code": "180604",
+            "name": "Rehabilitation or conservation of terrestrial environments"
+          },
+          {
+            "code": "180605",
+            "name": "Soils"
+          },
+          {
+            "code": "180606",
+            "name": "Terrestrial biodiversity"
+          },
+          {
+            "code": "180607",
+            "name": "Terrestrial erosion "
+          },
+          {
+            "code": "180699",
+            "name": "Terrestrial systems and management not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1899",
+        "name": "Other environmental management ",
+        "objectives": [
+          {
+            "code": "189999",
+            "name": "Other environmental management not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "19",
+    "name": "ENVIRONMENTAL POLICY, CLIMATE CHANGE AND NATURAL HAZARDS",
+    "groups": [
+      {
+        "code": "1901",
+        "name": "Adaptation to climate change",
+        "objectives": [
+          {
+            "code": "190101",
+            "name": "Climate change adaptation measures (excl. ecosystem)"
+          },
+          {
+            "code": "190102",
+            "name": "Ecosystem adaptation to climate change"
+          },
+          {
+            "code": "190103",
+            "name": "Social impacts of climate change and variability "
+          },
+          {
+            "code": "190199",
+            "name": "Adaptation to climate change not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1902",
+        "name": "Environmental policy, legislation and standards",
+        "objectives": [
+          {
+            "code": "190201",
+            "name": "Consumption patterns, population issues and the environment"
+          },
+          {
+            "code": "190202",
+            "name": "Eco-verification (excl. environmental lifecycle assessment)"
+          },
+          {
+            "code": "190203",
+            "name": "Environmental education and awareness"
+          },
+          {
+            "code": "190204",
+            "name": "Environmental lifecycle assessment"
+          },
+          {
+            "code": "190205",
+            "name": "Environmental protection frameworks (incl. economic incentives)"
+          },
+          {
+            "code": "190206",
+            "name": "Institutional arrangements"
+          },
+          {
+            "code": "190207",
+            "name": "Land policy"
+          },
+          {
+            "code": "190208",
+            "name": "Rights to environmental and natural resources (excl. water allocation)"
+          },
+          {
+            "code": "190209",
+            "name": "Sustainability indicators"
+          },
+          {
+            "code": "190210",
+            "name": "Trade and environment "
+          },
+          {
+            "code": "190211",
+            "name": "Water policy (incl. water allocation)"
+          },
+          {
+            "code": "190299",
+            "name": "Environmental policy, legislation and standards not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1903",
+        "name": "Mitigation of climate change",
+        "objectives": [
+          {
+            "code": "190301",
+            "name": "Climate change mitigation strategies"
+          },
+          {
+            "code": "190302",
+            "name": "Management of greenhouse gas emissions from animal production"
+          },
+          {
+            "code": "190303",
+            "name": "Management of greenhouse gas emissions from commercial services and tourism"
+          },
+          {
+            "code": "190304",
+            "name": "Management of greenhouse gas emissions from construction activities"
+          },
+          {
+            "code": "190305",
+            "name": "Management of greenhouse gas emissions from electricity generation"
+          },
+          {
+            "code": "190306",
+            "name": "Management of greenhouse gas emissions from energy activities"
+          },
+          {
+            "code": "190307",
+            "name": "Management of greenhouse gas emissions from information and communication services"
+          },
+          {
+            "code": "190308",
+            "name": "Management of greenhouse gas emissions from manufacturing activities"
+          },
+          {
+            "code": "190309",
+            "name": "Management of greenhouse gas emissions from mineral resources activities"
+          },
+          {
+            "code": "190310",
+            "name": "Management of greenhouse gas emissions from plant production"
+          },
+          {
+            "code": "190311",
+            "name": "Management of greenhouse gas emissions from transport activities"
+          },
+          {
+            "code": "190399",
+            "name": "Mitigation of climate change not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1904",
+        "name": "Natural hazards",
+        "objectives": [
+          {
+            "code": "190401",
+            "name": "Climatological hazards (e.g. extreme temperatures, drought and wildfires)"
+          },
+          {
+            "code": "190402",
+            "name": "Extraterrestrial hazards (e.g. meteorites)"
+          },
+          {
+            "code": "190403",
+            "name": "Geological hazards (e.g. earthquakes, landslides and volcanic activity)"
+          },
+          {
+            "code": "190404",
+            "name": "Hydrological hazards (e.g. avalanches and floods)"
+          },
+          {
+            "code": "190405",
+            "name": "Meteorological hazards (e.g. cyclones and storms)"
+          },
+          {
+            "code": "190499",
+            "name": "Natural hazards not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1905",
+        "name": "Understanding climate change",
+        "objectives": [
+          {
+            "code": "190501",
+            "name": "Climate change models"
+          },
+          {
+            "code": "190502",
+            "name": "Climate variability (excl. social impacts)"
+          },
+          {
+            "code": "190503",
+            "name": "Effects of climate change on Antarctic and sub-Antarctic environments (excl. social impacts)"
+          },
+          {
+            "code": "190504",
+            "name": "Effects of climate change on Australia (excl. social impacts)"
+          },
+          {
+            "code": "190505",
+            "name": "Effects of climate change on New Zealand (excl. social impacts) "
+          },
+          {
+            "code": "190506",
+            "name": "Effects of climate change on the South Pacific (excl. Australia and New Zealand) (excl. social impacts)"
+          },
+          {
+            "code": "190507",
+            "name": "Global effects of climate change (excl. Australia, New Zealand, Antarctica and the South Pacific) (excl. social impacts)"
+          },
+          {
+            "code": "190508",
+            "name": "Understanding the impact of natural hazards caused by climate change"
+          },
+          {
+            "code": "190599",
+            "name": "Understanding climate change not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "1999",
+        "name": "Other environmental policy, climate change and natural hazards",
+        "objectives": [
+          {
+            "code": "199999",
+            "name": "Other environmental policy, climate change and natural hazards not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "20",
+    "name": "HEALTH",
+    "groups": [
+      {
+        "code": "2001",
+        "name": "Clinical health",
+        "objectives": [
+          {
+            "code": "200101",
+            "name": "Diagnosis of human diseases and conditions"
+          },
+          {
+            "code": "200102",
+            "name": "Efficacy of medications"
+          },
+          {
+            "code": "200103",
+            "name": "Human pain management"
+          },
+          {
+            "code": "200104",
+            "name": "Prevention of human diseases and conditions"
+          },
+          {
+            "code": "200105",
+            "name": "Treatment of human diseases and conditions"
+          },
+          {
+            "code": "200199",
+            "name": "Clinical health not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2002",
+        "name": "Evaluation of health and support services",
+        "objectives": [
+          {
+            "code": "200201",
+            "name": "Determinants of health"
+          },
+          {
+            "code": "200202",
+            "name": "Evaluation of health outcomes"
+          },
+          {
+            "code": "200203",
+            "name": "Health education and promotion"
+          },
+          {
+            "code": "200204",
+            "name": "Health inequalities"
+          },
+          {
+            "code": "200205",
+            "name": "Health policy evaluation"
+          },
+          {
+            "code": "200206",
+            "name": "Health system performance (incl. effectiveness of programs)"
+          },
+          {
+            "code": "200207",
+            "name": "Social structure and health"
+          },
+          {
+            "code": "200208",
+            "name": "Telehealth"
+          },
+          {
+            "code": "200299",
+            "name": "Evaluation of health and support services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2003",
+        "name": "Provision of health and support services",
+        "objectives": [
+          {
+            "code": "200301",
+            "name": "Allied health therapies (excl. mental health services)"
+          },
+          {
+            "code": "200302",
+            "name": "Community health care"
+          },
+          {
+            "code": "200303",
+            "name": "Health surveillance"
+          },
+          {
+            "code": "200304",
+            "name": "Inpatient hospital care"
+          },
+          {
+            "code": "200305",
+            "name": "Mental health services"
+          },
+          {
+            "code": "200306",
+            "name": "Midwifery"
+          },
+          {
+            "code": "200307",
+            "name": "Nursing"
+          },
+          {
+            "code": "200308",
+            "name": "Outpatient care"
+          },
+          {
+            "code": "200309",
+            "name": "Palliative care"
+          },
+          {
+            "code": "200310",
+            "name": "Primary care"
+          },
+          {
+            "code": "200311",
+            "name": "Urgent and critical care, and emergency medicine"
+          },
+          {
+            "code": "200399",
+            "name": "Provision of health and support services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2004",
+        "name": "Public health (excl. specific population health)",
+        "objectives": [
+          {
+            "code": "200401",
+            "name": "Behaviour and health"
+          },
+          {
+            "code": "200402",
+            "name": "Dental health"
+          },
+          {
+            "code": "200403",
+            "name": "Disability and functional capacity"
+          },
+          {
+            "code": "200404",
+            "name": "Disease distribution and transmission (incl. surveillance and response)"
+          },
+          {
+            "code": "200405",
+            "name": "Food safety"
+          },
+          {
+            "code": "200406",
+            "name": "Health protection and disaster response"
+          },
+          {
+            "code": "200407",
+            "name": "Health status (incl. wellbeing)"
+          },
+          {
+            "code": "200408",
+            "name": "Injury prevention and control"
+          },
+          {
+            "code": "200409",
+            "name": "Mental health"
+          },
+          {
+            "code": "200410",
+            "name": "Nutrition"
+          },
+          {
+            "code": "200411",
+            "name": "Overweight and obesity"
+          },
+          {
+            "code": "200412",
+            "name": "Preventive medicine "
+          },
+          {
+            "code": "200413",
+            "name": "Substance abuse"
+          },
+          {
+            "code": "200499",
+            "name": "Public health (excl. specific population health) not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2005",
+        "name": "Specific population health (excl. Indigenous health)",
+        "objectives": [
+          {
+            "code": "200501",
+            "name": "Adolescent health"
+          },
+          {
+            "code": "200502",
+            "name": "Health related to ageing"
+          },
+          {
+            "code": "200503",
+            "name": "Health related to specific ethnic groups"
+          },
+          {
+            "code": "200504",
+            "name": "Men's health"
+          },
+          {
+            "code": "200505",
+            "name": "Migrant health"
+          },
+          {
+            "code": "200506",
+            "name": "Neonatal and child health"
+          },
+          {
+            "code": "200507",
+            "name": "Occupational health"
+          },
+          {
+            "code": "200508",
+            "name": "Rural and remote area health"
+          },
+          {
+            "code": "200509",
+            "name": "Women's and maternal health"
+          },
+          {
+            "code": "200599",
+            "name": "Specific population health (excl. Indigenous health) not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2099",
+        "name": "Other health",
+        "objectives": [
+          {
+            "code": "209999",
+            "name": "Other health not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "21",
+    "name": "INDIGENOUS",
+    "groups": [
+      {
+        "code": "2101",
+        "name": "Aboriginal and Torres Strait Islander community services",
+        "objectives": [
+          {
+            "code": "210101",
+            "name": "Aboriginal and Torres Strait Islander community service programs"
+          },
+          {
+            "code": "210102",
+            "name": "Aboriginal and Torres Strait Islander development and wellbeing"
+          },
+          {
+            "code": "210199",
+            "name": "Aboriginal and Torres Strait Islander community services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2102",
+        "name": "Aboriginal and Torres Strait Islander education",
+        "objectives": [
+          {
+            "code": "210201",
+            "name": "Aboriginal and Torres Strait Islander education engagement and attendance outcomes"
+          },
+          {
+            "code": "210202",
+            "name": "Aboriginal and Torres Strait Islander education system performance"
+          },
+          {
+            "code": "210203",
+            "name": "Aboriginal and Torres Strait Islander literacy and numeracy outcomes"
+          },
+          {
+            "code": "210299",
+            "name": "Aboriginal and Torres Strait Islander education not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2103",
+        "name": "Aboriginal and Torres Strait Islander health",
+        "objectives": [
+          {
+            "code": "210301",
+            "name": "Aboriginal and Torres Strait Islander determinants of health"
+          },
+          {
+            "code": "210302",
+            "name": "Aboriginal and Torres Strait Islander health status and outcomes"
+          },
+          {
+            "code": "210303",
+            "name": "Aboriginal and Torres Strait Islander health system performance"
+          },
+          {
+            "code": "210399",
+            "name": "Aboriginal and Torres Strait Islander health not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2104",
+        "name": "Aboriginal and Torres Strait Islander heritage and culture",
+        "objectives": [
+          {
+            "code": "210401",
+            "name": "Aboriginal and Torres Strait Islander artefacts"
+          },
+          {
+            "code": "210402",
+            "name": "Aboriginal and Torres Strait Islander connection to land and environment"
+          },
+          {
+            "code": "210403",
+            "name": "Aboriginal and Torres Strait Islander customary practices"
+          },
+          {
+            "code": "210404",
+            "name": "Aboriginal and Torres Strait Islander knowledge"
+          },
+          {
+            "code": "210405",
+            "name": "Aboriginal and Torres Strait Islander places of significance"
+          },
+          {
+            "code": "210406",
+            "name": "Aboriginal and Torres Strait Islander tradition"
+          },
+          {
+            "code": "210407",
+            "name": "Conserving Aboriginal and Torres Strait Islander heritage and culture"
+          },
+          {
+            "code": "210499",
+            "name": "Aboriginal and Torres Strait Islander heritage and culture not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2105",
+        "name": "Ngā ratonga hapori Māori (Māori community services)",
+        "objectives": [
+          {
+            "code": "210501",
+            "name": "Ngā hōtaka ratonga hapori Māori (Māori community service programs)"
+          },
+          {
+            "code": "210502",
+            "name": "Te whanaketanga me te oranga o te Māori (Māori development and wellbeing)"
+          },
+          {
+            "code": "210599",
+            "name": "Ngā ratonga hapori o te Māori kāore anō kia whakarōpūtia i wāhi kē (Māori community services not elsewhere classified)"
+          }
+        ]
+      },
+      {
+        "code": "2106",
+        "name": "Mātauranga Māori (Māori education)",
+        "objectives": [
+          {
+            "code": "210601",
+            "name": "Te whai wāhi o te Māori ki te mātauranga me te taetae atu ki te kura (Māori education engagement and attendance outcomes)"
+          },
+          {
+            "code": "210602",
+            "name": "Te whakatutukitanga o te pūnaha mātauranga Māori (Māori education system performance)"
+          },
+          {
+            "code": "210603",
+            "name": "Ngā putanga reo matatini me te pāngarau o te Māori (Māori literacy and numeracy outcomes)"
+          },
+          {
+            "code": "210699",
+            "name": "Te mātauranga Māori kāore kāore anō kia whakarōpūtia i wāhi kē (Māori education not elsewhere classified)"
+          }
+        ]
+      },
+      {
+        "code": "2107",
+        "name": "Te hauora (hauora Māori) (Māori health) ",
+        "objectives": [
+          {
+            "code": "210701",
+            "name": "Ngā tokoingoa hauora (determinants of Māori health)"
+          },
+          {
+            "code": "210702",
+            "name": "Te tūnga me ngā putanga hauora (Māori health status and outcomes)"
+          },
+          {
+            "code": "210703",
+            "name": "Te whakatutukinga o te pūnaha hauora (Māori health system performance)"
+          },
+          {
+            "code": "210799",
+            "name": "Te hauora kāore anō kia whakarōpūtia i wāhi kē (Māori health not elsewhere classified)"
+          }
+        ]
+      },
+      {
+        "code": "2108",
+        "name": "Te tuku ihotanga me te ahurea Māori (Māori heritage and culture)",
+        "objectives": [
+          {
+            "code": "210801",
+            "name": "Āhuatanga Māori (te tuku ihotanga Māori) (Māori tradition)"
+          },
+          {
+            "code": "210802",
+            "name": "Te whāomoomo i te tuku ihotanga me te ahurea Māori (conserving Māori heritage and culture)"
+          },
+          {
+            "code": "210803",
+            "name": "Mōhiotanga Māori (Māori knowledge)"
+          },
+          {
+            "code": "210804",
+            "name": "Ngā taonga (Māori artefacts)"
+          },
+          {
+            "code": "210805",
+            "name": "Ngā tikanga Māori (Māori customary practices) "
+          },
+          {
+            "code": "210806",
+            "name": "Ngā wāhi taonga (Māori places of significance)"
+          },
+          {
+            "code": "210899",
+            "name": "Te tuku ihotanga me te ahurea Māori kāore anō kia whakarōpūhia i wāhi kē (Māori heritage and culture not elsewhere classified)"
+          }
+        ]
+      },
+      {
+        "code": "2109",
+        "name": "Pacific Peoples community services",
+        "objectives": [
+          {
+            "code": "210901",
+            "name": "Pacific Peoples community service programs"
+          },
+          {
+            "code": "210902",
+            "name": "Pacific Peoples development and wellbeing"
+          },
+          {
+            "code": "210999",
+            "name": "Pacific Peoples community services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2110",
+        "name": "Pacific Peoples education",
+        "objectives": [
+          {
+            "code": "211001",
+            "name": "Pacific Peoples education engagement and attendance"
+          },
+          {
+            "code": "211002",
+            "name": "Pacific Peoples education system performance"
+          },
+          {
+            "code": "211003",
+            "name": "Pacific Peoples literacy and numeracy outcomes"
+          },
+          {
+            "code": "211099",
+            "name": "Pacific Peoples education not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2111",
+        "name": "Pacific Peoples health",
+        "objectives": [
+          {
+            "code": "211101",
+            "name": "Pacific Peoples determinants of health"
+          },
+          {
+            "code": "211102",
+            "name": "Pacific Peoples health status and outcomes"
+          },
+          {
+            "code": "211103",
+            "name": "Pacific Peoples health system performance"
+          },
+          {
+            "code": "211199",
+            "name": "Pacific Peoples health not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2112",
+        "name": "Pacific Peoples heritage and culture",
+        "objectives": [
+          {
+            "code": "211201",
+            "name": "Conserving Pacific Peoples heritage and culture"
+          },
+          {
+            "code": "211202",
+            "name": "Pacific Peoples connection to land and environment"
+          },
+          {
+            "code": "211299",
+            "name": "Pacific Peoples heritage and culture not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2199",
+        "name": "Other Indigenous",
+        "objectives": [
+          {
+            "code": "219999",
+            "name": "Other Indigenous not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "22",
+    "name": "INFORMATION AND COMMUNICATION SERVICES",
+    "groups": [
+      {
+        "code": "2201",
+        "name": "Communication technologies, systems and services",
+        "objectives": [
+          {
+            "code": "220101",
+            "name": "E-infrastructures"
+          },
+          {
+            "code": "220102",
+            "name": "Internet protocols (ip)"
+          },
+          {
+            "code": "220103",
+            "name": "Mobile technologies and communications"
+          },
+          {
+            "code": "220104",
+            "name": "Network security"
+          },
+          {
+            "code": "220105",
+            "name": "Network systems and services"
+          },
+          {
+            "code": "220106",
+            "name": "Satellite technologies, networks and services"
+          },
+          {
+            "code": "220107",
+            "name": "Wireless technologies, networks and services"
+          },
+          {
+            "code": "220199",
+            "name": "Communication technologies, systems and services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2202",
+        "name": "Environmentally sustainable information and communication services",
+        "objectives": [
+          {
+            "code": "220201",
+            "name": "Management of solid waste from information and communication services"
+          },
+          {
+            "code": "220202",
+            "name": "Management of water consumption by information and communication services"
+          },
+          {
+            "code": "220299",
+            "name": "Environmentally sustainable information and communication services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2203",
+        "name": "Information services",
+        "objectives": [
+          {
+            "code": "220301",
+            "name": "Digital humanities"
+          },
+          {
+            "code": "220302",
+            "name": "Electronic information storage and retrieval services"
+          },
+          {
+            "code": "220303",
+            "name": "Library and archival services"
+          },
+          {
+            "code": "220304",
+            "name": "Museum and gallery collections"
+          },
+          {
+            "code": "220305",
+            "name": "News collection services"
+          },
+          {
+            "code": "220306",
+            "name": "Open access"
+          },
+          {
+            "code": "220399",
+            "name": "Information services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2204",
+        "name": "Information systems, technologies and services",
+        "objectives": [
+          {
+            "code": "220401",
+            "name": "Application software packages"
+          },
+          {
+            "code": "220402",
+            "name": "Applied computing"
+          },
+          {
+            "code": "220403",
+            "name": "Artificial intelligence"
+          },
+          {
+            "code": "220404",
+            "name": "Computer systems"
+          },
+          {
+            "code": "220405",
+            "name": "Cybersecurity"
+          },
+          {
+            "code": "220406",
+            "name": "Graphics"
+          },
+          {
+            "code": "220407",
+            "name": "Human-computer interaction"
+          },
+          {
+            "code": "220408",
+            "name": "Information systems"
+          },
+          {
+            "code": "220499",
+            "name": "Information systems, technologies and services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2205",
+        "name": "Media services",
+        "objectives": [
+          {
+            "code": "220501",
+            "name": "Animation, video games and computer generated imagery services"
+          },
+          {
+            "code": "220502",
+            "name": "Internet, digital and social media"
+          },
+          {
+            "code": "220503",
+            "name": "Publishing and print services"
+          },
+          {
+            "code": "220504",
+            "name": "Radio, television, film and video services"
+          },
+          {
+            "code": "220599",
+            "name": "Media services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2299",
+        "name": "Other information and communication services",
+        "objectives": [
+          {
+            "code": "229999",
+            "name": "Other information and communication services not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "23",
+    "name": "LAW, POLITICS AND COMMUNITY SERVICES",
+    "groups": [
+      {
+        "code": "2301",
+        "name": "Community services",
+        "objectives": [
+          {
+            "code": "230101",
+            "name": "Ability and disability"
+          },
+          {
+            "code": "230102",
+            "name": "Ageing and older people"
+          },
+          {
+            "code": "230103",
+            "name": "Carers' support"
+          },
+          {
+            "code": "230104",
+            "name": "Children's services and childcare"
+          },
+          {
+            "code": "230105",
+            "name": "Citizenship and national identity"
+          },
+          {
+            "code": "230106",
+            "name": "Employment services"
+          },
+          {
+            "code": "230107",
+            "name": "Families and family services"
+          },
+          {
+            "code": "230108",
+            "name": "Gender and sexualities"
+          },
+          {
+            "code": "230109",
+            "name": "Homelessness and housing services"
+          },
+          {
+            "code": "230110",
+            "name": "Migrant and refugee settlement services"
+          },
+          {
+            "code": "230111",
+            "name": "Multicultural services"
+          },
+          {
+            "code": "230112",
+            "name": "Social class and inequalities"
+          },
+          {
+            "code": "230113",
+            "name": "Structure, delivery and resourcing"
+          },
+          {
+            "code": "230114",
+            "name": "Violence and abuse services"
+          },
+          {
+            "code": "230115",
+            "name": "Youth services"
+          },
+          {
+            "code": "230199",
+            "name": "Community services not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2302",
+        "name": "Government and politics",
+        "objectives": [
+          {
+            "code": "230201",
+            "name": "Civics and citizenship"
+          },
+          {
+            "code": "230202",
+            "name": "Electoral systems"
+          },
+          {
+            "code": "230203",
+            "name": "Political systems"
+          },
+          {
+            "code": "230204",
+            "name": "Public services policy advice and analysis"
+          },
+          {
+            "code": "230299",
+            "name": "Government and politics not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2303",
+        "name": "International relations",
+        "objectives": [
+          {
+            "code": "230301",
+            "name": "Defence and security policy"
+          },
+          {
+            "code": "230302",
+            "name": "International aid and development"
+          },
+          {
+            "code": "230303",
+            "name": "International organisations"
+          },
+          {
+            "code": "230304",
+            "name": "International political economy (excl. international trade)"
+          },
+          {
+            "code": "230305",
+            "name": "Peace and conflict"
+          },
+          {
+            "code": "230399",
+            "name": "International relations not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2304",
+        "name": "Justice and the law",
+        "objectives": [
+          {
+            "code": "230401",
+            "name": "Civil justice"
+          },
+          {
+            "code": "230402",
+            "name": "Crime prevention"
+          },
+          {
+            "code": "230403",
+            "name": "Criminal justice"
+          },
+          {
+            "code": "230404",
+            "name": "Law enforcement"
+          },
+          {
+            "code": "230405",
+            "name": "Law reform"
+          },
+          {
+            "code": "230406",
+            "name": "Legal processes"
+          },
+          {
+            "code": "230407",
+            "name": "Legislation, civil and criminal codes"
+          },
+          {
+            "code": "230408",
+            "name": "Rehabilitation and correctional services"
+          },
+          {
+            "code": "230499",
+            "name": "Justice and the law not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2305",
+        "name": "Work and labour market",
+        "objectives": [
+          {
+            "code": "230501",
+            "name": "Employment patterns and change"
+          },
+          {
+            "code": "230502",
+            "name": "Professions and professionalisation"
+          },
+          {
+            "code": "230503",
+            "name": "Remuneration"
+          },
+          {
+            "code": "230504",
+            "name": "Unpaid work and volunteering"
+          },
+          {
+            "code": "230505",
+            "name": "Work and family responsibilities"
+          },
+          {
+            "code": "230506",
+            "name": "Workplace safety"
+          },
+          {
+            "code": "230599",
+            "name": "Work and labour market not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2399",
+        "name": "Other law, politics and community services",
+        "objectives": [
+          {
+            "code": "239999",
+            "name": "Other law, politics and community services not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "24",
+    "name": "MANUFACTURING",
+    "groups": [
+      {
+        "code": "2401",
+        "name": "Agricultural chemicals",
+        "objectives": [
+          {
+            "code": "240101",
+            "name": "Animal protection chemicals"
+          },
+          {
+            "code": "240102",
+            "name": "Chemical fertilisers"
+          },
+          {
+            "code": "240103",
+            "name": "Crop and pasture protection chemicals"
+          },
+          {
+            "code": "240199",
+            "name": "Agricultural chemicals not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2402",
+        "name": "Basic metal products",
+        "objectives": [
+          {
+            "code": "240201",
+            "name": "Basic aluminium products"
+          },
+          {
+            "code": "240202",
+            "name": "Basic copper products"
+          },
+          {
+            "code": "240203",
+            "name": "Basic iron and steel products"
+          },
+          {
+            "code": "240204",
+            "name": "Basic precious metal products"
+          },
+          {
+            "code": "240205",
+            "name": "Basic zinc products"
+          },
+          {
+            "code": "240299",
+            "name": "Basic metal products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2403",
+        "name": "Ceramics, glass and industrial mineral products",
+        "objectives": [
+          {
+            "code": "240301",
+            "name": "Cement products and concrete materials"
+          },
+          {
+            "code": "240302",
+            "name": "Ceramics"
+          },
+          {
+            "code": "240303",
+            "name": "Clay products"
+          },
+          {
+            "code": "240304",
+            "name": "Composite materials"
+          },
+          {
+            "code": "240305",
+            "name": "Plaster and plaster products"
+          },
+          {
+            "code": "240306",
+            "name": "Structural glass and glass products"
+          },
+          {
+            "code": "240399",
+            "name": "Ceramics, glass and industrial mineral products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2404",
+        "name": "Computer, electronic and communication equipment",
+        "objectives": [
+          {
+            "code": "240401",
+            "name": "Computer and electronic office equipment (excl. communication equipment)"
+          },
+          {
+            "code": "240402",
+            "name": "Consumer electronic equipment (excl. communication equipment)"
+          },
+          {
+            "code": "240403",
+            "name": "Integrated circuits and devices"
+          },
+          {
+            "code": "240404",
+            "name": "Integrated systems"
+          },
+          {
+            "code": "240405",
+            "name": "Network infrastructure equipment"
+          },
+          {
+            "code": "240406",
+            "name": "Processor modules"
+          },
+          {
+            "code": "240407",
+            "name": "Robotics"
+          },
+          {
+            "code": "240408",
+            "name": "Satellite navigation equipment"
+          },
+          {
+            "code": "240409",
+            "name": "Telemetry equipment"
+          },
+          {
+            "code": "240410",
+            "name": "Voice and data equipment"
+          },
+          {
+            "code": "240499",
+            "name": "Computer, electronic and communication equipment not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2405",
+        "name": "Dairy products",
+        "objectives": [
+          {
+            "code": "240501",
+            "name": "Butter and milk-derived fats and oils (excl. cream)"
+          },
+          {
+            "code": "240502",
+            "name": "Casein"
+          },
+          {
+            "code": "240503",
+            "name": "Cheese"
+          },
+          {
+            "code": "240504",
+            "name": "Processed milk and cream (incl. powder, evaporated and condensed)"
+          },
+          {
+            "code": "240505",
+            "name": "Whey"
+          },
+          {
+            "code": "240599",
+            "name": "Dairy products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2406",
+        "name": "Environmentally sustainable manufacturing activities",
+        "objectives": [
+          {
+            "code": "240601",
+            "name": "Development of recyclable or biodegradable componentry, packaging or materials "
+          },
+          {
+            "code": "240602",
+            "name": "Management of gaseous waste from manufacturing activities (excl. greenhouse gases)"
+          },
+          {
+            "code": "240603",
+            "name": "Management of liquid waste from manufacturing activities (excl. water)"
+          },
+          {
+            "code": "240604",
+            "name": "Management of solid waste from manufacturing activities"
+          },
+          {
+            "code": "240605",
+            "name": "Management of water consumption by manufacturing activities"
+          },
+          {
+            "code": "240699",
+            "name": "Environmentally sustainable manufacturing activities not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2407",
+        "name": "Fabricated metal products",
+        "objectives": [
+          {
+            "code": "240701",
+            "name": "Coated metal and metal-coated products"
+          },
+          {
+            "code": "240702",
+            "name": "Machined metal products"
+          },
+          {
+            "code": "240703",
+            "name": "Metal castings"
+          },
+          {
+            "code": "240704",
+            "name": "Semi-finished metal products"
+          },
+          {
+            "code": "240705",
+            "name": "Sheet metal products"
+          },
+          {
+            "code": "240706",
+            "name": "Structural metal products"
+          },
+          {
+            "code": "240799",
+            "name": "Fabricated metal products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2408",
+        "name": "Human pharmaceutical products",
+        "objectives": [
+          {
+            "code": "240801",
+            "name": "Human biological preventatives "
+          },
+          {
+            "code": "240802",
+            "name": "Human diagnostics"
+          },
+          {
+            "code": "240803",
+            "name": "Human pharmaceutical treatments "
+          },
+          {
+            "code": "240899",
+            "name": "Human pharmaceutical products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2409",
+        "name": "Industrial chemicals and related products",
+        "objectives": [
+          {
+            "code": "240901",
+            "name": "Antimicrobials, antifungals and biocides"
+          },
+          {
+            "code": "240902",
+            "name": "Bioplastics"
+          },
+          {
+            "code": "240903",
+            "name": "Cosmetics"
+          },
+          {
+            "code": "240904",
+            "name": "Fine chemicals"
+          },
+          {
+            "code": "240905",
+            "name": "Industrial gases"
+          },
+          {
+            "code": "240906",
+            "name": "Inorganic industrial chemicals"
+          },
+          {
+            "code": "240907",
+            "name": "Lubricants"
+          },
+          {
+            "code": "240908",
+            "name": "Organic industrial chemicals (excl. resins, rubber and plastics)"
+          },
+          {
+            "code": "240909",
+            "name": "Paints"
+          },
+          {
+            "code": "240910",
+            "name": "Plastics"
+          },
+          {
+            "code": "240911",
+            "name": "Resins"
+          },
+          {
+            "code": "240912",
+            "name": "Rubber"
+          },
+          {
+            "code": "240913",
+            "name": "Soaps"
+          },
+          {
+            "code": "240999",
+            "name": "Industrial chemicals and related products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2410",
+        "name": "Instrumentation",
+        "objectives": [
+          {
+            "code": "241001",
+            "name": "Industrial instruments"
+          },
+          {
+            "code": "241002",
+            "name": "Medical instruments"
+          },
+          {
+            "code": "241003",
+            "name": "Scientific instruments"
+          },
+          {
+            "code": "241099",
+            "name": "Instrumentation not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2411",
+        "name": "Leather products, fibre processing and textiles",
+        "objectives": [
+          {
+            "code": "241101",
+            "name": "Clothing"
+          },
+          {
+            "code": "241102",
+            "name": "Cotton ginning"
+          },
+          {
+            "code": "241103",
+            "name": "Natural fibres, yarns and fabrics"
+          },
+          {
+            "code": "241104",
+            "name": "Non-fabric textiles (e.g. felt)"
+          },
+          {
+            "code": "241105",
+            "name": "Skins, leather and leather products"
+          },
+          {
+            "code": "241106",
+            "name": "Synthetic fibres, yarns and fabrics"
+          },
+          {
+            "code": "241107",
+            "name": "Wool scouring and top making"
+          },
+          {
+            "code": "241199",
+            "name": "Leather products, fibre processing and textiles not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2412",
+        "name": "Machinery and equipment",
+        "objectives": [
+          {
+            "code": "241201",
+            "name": "3D printers and printing"
+          },
+          {
+            "code": "241202",
+            "name": "Autonomous and robotic systems"
+          },
+          {
+            "code": "241203",
+            "name": "Electrical machinery and equipment (incl. appliances)"
+          },
+          {
+            "code": "241204",
+            "name": "Industrial machinery and equipment"
+          },
+          {
+            "code": "241205",
+            "name": "Medical machinery and equipment "
+          },
+          {
+            "code": "241299",
+            "name": "Machinery and equipment not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2413",
+        "name": "Processed food products and beverages (excl. dairy products)",
+        "objectives": [
+          {
+            "code": "241301",
+            "name": "Alcoholic beverages"
+          },
+          {
+            "code": "241302",
+            "name": "Bakery products"
+          },
+          {
+            "code": "241303",
+            "name": "Carcass meat (incl. fish and seafood)"
+          },
+          {
+            "code": "241304",
+            "name": "Flour mill and cereal food"
+          },
+          {
+            "code": "241305",
+            "name": "Insects"
+          },
+          {
+            "code": "241306",
+            "name": "Non-alcoholic beverages (excl. fruit juices and non-dairy milk)"
+          },
+          {
+            "code": "241307",
+            "name": "Non-dairy milk"
+          },
+          {
+            "code": "241308",
+            "name": "Nutraceuticals and functional foods"
+          },
+          {
+            "code": "241309",
+            "name": "Oils and fats (incl. margarines)"
+          },
+          {
+            "code": "241310",
+            "name": "Processed fish and seafood products"
+          },
+          {
+            "code": "241311",
+            "name": "Processed fruit and vegetable products (incl. juices)"
+          },
+          {
+            "code": "241312",
+            "name": "Processed meat products"
+          },
+          {
+            "code": "241313",
+            "name": "Sugar, sweeteners and confectionery products"
+          },
+          {
+            "code": "241399",
+            "name": "Processed food products and beverages (excl. dairy products) not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2414",
+        "name": "Processed non-food agriculture products (excl. wood, paper and fibre)",
+        "objectives": [
+          {
+            "code": "241401",
+            "name": "Essential oils "
+          },
+          {
+            "code": "241402",
+            "name": "Organic fertilisers"
+          },
+          {
+            "code": "241403",
+            "name": "Plant extracts "
+          },
+          {
+            "code": "241404",
+            "name": "Prepared animal feed"
+          },
+          {
+            "code": "241499",
+            "name": "Processed non-food agricultural products (excl. wood, paper and fibre) not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2415",
+        "name": "Transport equipment",
+        "objectives": [
+          {
+            "code": "241501",
+            "name": "Aerospace equipment"
+          },
+          {
+            "code": "241502",
+            "name": "Automotive equipment"
+          },
+          {
+            "code": "241503",
+            "name": "Nautical equipment"
+          },
+          {
+            "code": "241504",
+            "name": "Rail equipment"
+          },
+          {
+            "code": "241599",
+            "name": "Transport equipment not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2416",
+        "name": "Veterinary pharmaceutical products",
+        "objectives": [
+          {
+            "code": "241601",
+            "name": "Veterinary biological preventatives "
+          },
+          {
+            "code": "241602",
+            "name": "Veterinary diagnostics"
+          },
+          {
+            "code": "241603",
+            "name": "Veterinary pharmaceutical treatments "
+          },
+          {
+            "code": "241699",
+            "name": "Veterinary pharmaceutical products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2417",
+        "name": "Wood, wood products and paper ",
+        "objectives": [
+          {
+            "code": "241701",
+            "name": "Paper products and pulp "
+          },
+          {
+            "code": "241702",
+            "name": "Printing and publishing processes"
+          },
+          {
+            "code": "241703",
+            "name": "Reconstituted timber products "
+          },
+          {
+            "code": "241704",
+            "name": "Wood products "
+          },
+          {
+            "code": "241705",
+            "name": "Wood sawing and veneer"
+          },
+          {
+            "code": "241799",
+            "name": "Wood, wood products and paper not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2499",
+        "name": "Other manufacturing",
+        "objectives": [
+          {
+            "code": "249999",
+            "name": "Other manufacturing not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "25",
+    "name": "MINERAL RESOURCES (EXCL. ENERGY RESOURCES) ",
+    "groups": [
+      {
+        "code": "2501",
+        "name": "Environmentally sustainable mineral resource activities",
+        "objectives": [
+          {
+            "code": "250101",
+            "name": "Management of gaseous waste from mineral resource activities (excl. greenhouse gases)"
+          },
+          {
+            "code": "250102",
+            "name": "Management of liquid waste from mineral resource activities (excl. water)"
+          },
+          {
+            "code": "250103",
+            "name": "Management of solid waste from mineral resource activities"
+          },
+          {
+            "code": "250104",
+            "name": "Management of water consumption by mineral resource activities"
+          },
+          {
+            "code": "250199",
+            "name": "Environmentally sustainable mineral resource activities not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2502",
+        "name": "First stage treatment of minerals",
+        "objectives": [
+          {
+            "code": "250201",
+            "name": "Alumina production"
+          },
+          {
+            "code": "250202",
+            "name": "Beneficiation of bauxite and aluminium ores (excl. alumina production)"
+          },
+          {
+            "code": "250203",
+            "name": "Beneficiation or dressing of iron ores"
+          },
+          {
+            "code": "250204",
+            "name": "Beneficiation or dressing of non-metallic minerals (incl. diamonds)"
+          },
+          {
+            "code": "250205",
+            "name": "Concentrating processes of base metal ores (excl. aluminium and iron ores)"
+          },
+          {
+            "code": "250206",
+            "name": "Production of unrefined precious metal ingots and concentrates"
+          },
+          {
+            "code": "250299",
+            "name": "First stage treatment of minerals not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2503",
+        "name": "Mineral exploration",
+        "objectives": [
+          {
+            "code": "250301",
+            "name": "Aluminium ore exploration"
+          },
+          {
+            "code": "250302",
+            "name": "Copper ore exploration"
+          },
+          {
+            "code": "250303",
+            "name": "Diamond exploration"
+          },
+          {
+            "code": "250304",
+            "name": "Iron ore exploration"
+          },
+          {
+            "code": "250305",
+            "name": "Precious (noble) metal ore exploration"
+          },
+          {
+            "code": "250306",
+            "name": "Stone and clay exploration"
+          },
+          {
+            "code": "250307",
+            "name": "Titanium minerals, zircon, and rare earth metal ore (e.g. monazite) exploration"
+          },
+          {
+            "code": "250308",
+            "name": "Zinc ore exploration"
+          },
+          {
+            "code": "250399",
+            "name": "Mineral exploration not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2504",
+        "name": "Primary mining and extraction of minerals",
+        "objectives": [
+          {
+            "code": "250401",
+            "name": "Mining and extraction of aluminium ores"
+          },
+          {
+            "code": "250402",
+            "name": "Mining and extraction of copper ores"
+          },
+          {
+            "code": "250403",
+            "name": "Mining and extraction of diamonds"
+          },
+          {
+            "code": "250404",
+            "name": "Mining and extraction of iron ores"
+          },
+          {
+            "code": "250405",
+            "name": "Mining and extraction of precious (noble) metal ores"
+          },
+          {
+            "code": "250406",
+            "name": "Mining and extraction of stone and clay"
+          },
+          {
+            "code": "250407",
+            "name": "Mining and extraction of titanium minerals, zircon, and rare earth metal ores (e.g. monazite)"
+          },
+          {
+            "code": "250408",
+            "name": "Mining and extraction of zinc ores"
+          },
+          {
+            "code": "250499",
+            "name": "Primary mining and extraction of minerals not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2599",
+        "name": "Other mineral resources (excl. energy resources)",
+        "objectives": [
+          {
+            "code": "259999",
+            "name": "Other mineral resources (excl. energy resources) not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "26",
+    "name": "PLANT PRODUCTION AND PLANT PRIMARY PRODUCTS",
+    "groups": [
+      {
+        "code": "2601",
+        "name": "Environmentally sustainable plant production",
+        "objectives": [
+          {
+            "code": "260101",
+            "name": "Management of gaseous waste from plant production (excl. greenhouse gases)"
+          },
+          {
+            "code": "260102",
+            "name": "Management of liquid waste from plant production (excl. water)"
+          },
+          {
+            "code": "260103",
+            "name": "Management of solid waste from plant production"
+          },
+          {
+            "code": "260104",
+            "name": "Management of water consumption by plant production"
+          },
+          {
+            "code": "260199",
+            "name": "Environmentally sustainable plant production not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2602",
+        "name": "Forestry",
+        "objectives": [
+          {
+            "code": "260201",
+            "name": "Hardwood plantations"
+          },
+          {
+            "code": "260202",
+            "name": "Harvesting and transport of forest products"
+          },
+          {
+            "code": "260203",
+            "name": "Integration of farm and forestry"
+          },
+          {
+            "code": "260204",
+            "name": "Native forests"
+          },
+          {
+            "code": "260205",
+            "name": "Softwood plantations"
+          },
+          {
+            "code": "260299",
+            "name": "Forestry not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2603",
+        "name": "Grains and seeds",
+        "objectives": [
+          {
+            "code": "260301",
+            "name": "Barley"
+          },
+          {
+            "code": "260302",
+            "name": "Canola"
+          },
+          {
+            "code": "260303",
+            "name": "Grain legumes"
+          },
+          {
+            "code": "260304",
+            "name": "Linseed"
+          },
+          {
+            "code": "260305",
+            "name": "Lupins"
+          },
+          {
+            "code": "260306",
+            "name": "Maize"
+          },
+          {
+            "code": "260307",
+            "name": "Oats"
+          },
+          {
+            "code": "260308",
+            "name": "Rice"
+          },
+          {
+            "code": "260309",
+            "name": "Safflower seed"
+          },
+          {
+            "code": "260310",
+            "name": "Sorghum"
+          },
+          {
+            "code": "260311",
+            "name": "Soybeans"
+          },
+          {
+            "code": "260312",
+            "name": "Wheat"
+          },
+          {
+            "code": "260399",
+            "name": "Grains and seeds not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2604",
+        "name": "Harvesting and packaging of plant products",
+        "objectives": [
+          {
+            "code": "260401",
+            "name": "Cotton lint and cotton seed"
+          },
+          {
+            "code": "260402",
+            "name": "Fresh fruits and vegetables (post harvest)"
+          },
+          {
+            "code": "260403",
+            "name": "Sugar cane (cut for crushing)"
+          },
+          {
+            "code": "260404",
+            "name": "Unprocessed grains"
+          },
+          {
+            "code": "260405",
+            "name": "Unprocessed industrial crops (excl. sugar and cotton)"
+          },
+          {
+            "code": "260406",
+            "name": "Unprocessed seeds"
+          },
+          {
+            "code": "260499",
+            "name": "Harvesting and packaging of plant products not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2605",
+        "name": "Horticultural crops",
+        "objectives": [
+          {
+            "code": "260501",
+            "name": "Almonds"
+          },
+          {
+            "code": "260502",
+            "name": "Avocado"
+          },
+          {
+            "code": "260503",
+            "name": "Berry fruit (excl. kiwifruit)"
+          },
+          {
+            "code": "260504",
+            "name": "Citrus fruit"
+          },
+          {
+            "code": "260505",
+            "name": "Field grown vegetable crops"
+          },
+          {
+            "code": "260506",
+            "name": "Kiwifruit"
+          },
+          {
+            "code": "260507",
+            "name": "Macadamias"
+          },
+          {
+            "code": "260508",
+            "name": "Mushrooms and truffles"
+          },
+          {
+            "code": "260509",
+            "name": "Olives"
+          },
+          {
+            "code": "260510",
+            "name": "Ornamentals, natives, flowers and nursery plants"
+          },
+          {
+            "code": "260511",
+            "name": "Pome fruit, pip fruit"
+          },
+          {
+            "code": "260512",
+            "name": "Protected vegetable crops"
+          },
+          {
+            "code": "260513",
+            "name": "Stone fruit (excl. avocado)"
+          },
+          {
+            "code": "260514",
+            "name": "Table grapes"
+          },
+          {
+            "code": "260515",
+            "name": "Tree nuts (excl. almonds and macadamias)"
+          },
+          {
+            "code": "260516",
+            "name": "Tropical fruit"
+          },
+          {
+            "code": "260599",
+            "name": "Horticultural crops not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2606",
+        "name": "Industrial crops",
+        "objectives": [
+          {
+            "code": "260601",
+            "name": "Cannabis"
+          },
+          {
+            "code": "260602",
+            "name": "Cotton"
+          },
+          {
+            "code": "260603",
+            "name": "Essential oil crops"
+          },
+          {
+            "code": "260604",
+            "name": "Hemp"
+          },
+          {
+            "code": "260605",
+            "name": "Hops"
+          },
+          {
+            "code": "260606",
+            "name": "Plant extract crops"
+          },
+          {
+            "code": "260607",
+            "name": "Sugar"
+          },
+          {
+            "code": "260608",
+            "name": "Wine grapes"
+          },
+          {
+            "code": "260699",
+            "name": "Industrial crops not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2699",
+        "name": "Other plant production and plant primary products",
+        "objectives": [
+          {
+            "code": "269901",
+            "name": "Climate adaptive plants"
+          },
+          {
+            "code": "269902",
+            "name": "Forest product traceability and quality assurance"
+          },
+          {
+            "code": "269903",
+            "name": "Plant product traceability and quality assurance (excl. forest products)"
+          },
+          {
+            "code": "269999",
+            "name": "Other plant production and plant primary products not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "27",
+    "name": "TRANSPORT",
+    "groups": [
+      {
+        "code": "2701",
+        "name": "Aerospace transport",
+        "objectives": [
+          {
+            "code": "270101",
+            "name": "Air freight"
+          },
+          {
+            "code": "270102",
+            "name": "Air passenger transport"
+          },
+          {
+            "code": "270103",
+            "name": "Air safety and traffic management"
+          },
+          {
+            "code": "270104",
+            "name": "Air terminal infrastructure and management"
+          },
+          {
+            "code": "270105",
+            "name": "Autonomous air vehicles "
+          },
+          {
+            "code": "270106",
+            "name": "Space transport"
+          },
+          {
+            "code": "270199",
+            "name": "Aerospace transport not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2702",
+        "name": "Environmentally sustainable transport activities",
+        "objectives": [
+          {
+            "code": "270201",
+            "name": "Management of gaseous waste from transport activities (excl. greenhouse gases)"
+          },
+          {
+            "code": "270202",
+            "name": "Management of liquid waste from transport activities (excl. water)"
+          },
+          {
+            "code": "270203",
+            "name": "Management of noise and vibration from transport activities"
+          },
+          {
+            "code": "270204",
+            "name": "Management of solid waste from transport activities"
+          },
+          {
+            "code": "270205",
+            "name": "Management of water consumption by transport activities"
+          },
+          {
+            "code": "270299",
+            "name": "Environmentally sustainable transport activities not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2703",
+        "name": "Ground transport",
+        "objectives": [
+          {
+            "code": "270301",
+            "name": "Active ground transport "
+          },
+          {
+            "code": "270302",
+            "name": "Autonomous road vehicles"
+          },
+          {
+            "code": "270303",
+            "name": "Heavy rail infrastructure and networks"
+          },
+          {
+            "code": "270304",
+            "name": "Rail freight"
+          },
+          {
+            "code": "270305",
+            "name": "Rail passenger movements"
+          },
+          {
+            "code": "270306",
+            "name": "Rail safety"
+          },
+          {
+            "code": "270307",
+            "name": "Road freight"
+          },
+          {
+            "code": "270308",
+            "name": "Road infrastructure and networks"
+          },
+          {
+            "code": "270309",
+            "name": "Road passenger movements (excl. public transport)"
+          },
+          {
+            "code": "270310",
+            "name": "Road public transport"
+          },
+          {
+            "code": "270311",
+            "name": "Road safety"
+          },
+          {
+            "code": "270312",
+            "name": "Urban rail infrastructure and networks (incl. light and metro rail)"
+          },
+          {
+            "code": "270399",
+            "name": "Ground transport not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2704",
+        "name": "Water transport",
+        "objectives": [
+          {
+            "code": "270401",
+            "name": "Autonomous water vehicles"
+          },
+          {
+            "code": "270402",
+            "name": "Coastal sea freight transport"
+          },
+          {
+            "code": "270403",
+            "name": "Domestic passenger water transport (e.g. ferries)"
+          },
+          {
+            "code": "270404",
+            "name": "International passenger water transport (e.g. passenger ships)"
+          },
+          {
+            "code": "270405",
+            "name": "International sea freight transport (excl. live animals, food products and liquefied gas)"
+          },
+          {
+            "code": "270406",
+            "name": "International sea transport of food products"
+          },
+          {
+            "code": "270407",
+            "name": "International sea transport of liquefied gas"
+          },
+          {
+            "code": "270408",
+            "name": "International sea transport of live animals"
+          },
+          {
+            "code": "270409",
+            "name": "Port infrastructure and management"
+          },
+          {
+            "code": "270410",
+            "name": "Water safety"
+          },
+          {
+            "code": "270499",
+            "name": "Water transport not elsewhere classified"
+          }
+        ]
+      },
+      {
+        "code": "2799",
+        "name": "Other transport",
+        "objectives": [
+          {
+            "code": "279901",
+            "name": "Intermodal materials handling"
+          },
+          {
+            "code": "279902",
+            "name": "Multimodal transport"
+          },
+          {
+            "code": "279903",
+            "name": "Pipeline transport"
+          },
+          {
+            "code": "279904",
+            "name": "Postal and package services (incl. courier services)"
+          },
+          {
+            "code": "279999",
+            "name": "Other transport not elsewhere classified"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "28",
+    "name": "EXPANDING KNOWLEDGE",
+    "groups": [
+      {
+        "code": "2801",
+        "name": "Expanding knowledge",
+        "objectives": [
+          {
+            "code": "280101",
+            "name": "Expanding knowledge in the agricultural, food and veterinary sciences"
+          },
+          {
+            "code": "280102",
+            "name": "Expanding knowledge in the biological sciences"
+          },
+          {
+            "code": "280103",
+            "name": "Expanding knowledge in the biomedical and clinical sciences"
+          },
+          {
+            "code": "280104",
+            "name": "Expanding knowledge in built environment and design"
+          },
+          {
+            "code": "280105",
+            "name": "Expanding knowledge in the chemical sciences"
+          },
+          {
+            "code": "280106",
+            "name": "Expanding knowledge in commerce, management, tourism and services"
+          },
+          {
+            "code": "280107",
+            "name": "Expanding knowledge in the earth sciences"
+          },
+          {
+            "code": "280108",
+            "name": "Expanding knowledge in economics"
+          },
+          {
+            "code": "280109",
+            "name": "Expanding knowledge in education"
+          },
+          {
+            "code": "280110",
+            "name": "Expanding knowledge in engineering"
+          },
+          {
+            "code": "280111",
+            "name": "Expanding knowledge in the environmental sciences"
+          },
+          {
+            "code": "280112",
+            "name": "Expanding knowledge in the health sciences"
+          },
+          {
+            "code": "280113",
+            "name": "Expanding knowledge in history, heritage and archaeology"
+          },
+          {
+            "code": "280114",
+            "name": "Expanding knowledge in Indigenous studies"
+          },
+          {
+            "code": "280115",
+            "name": "Expanding knowledge in the information and computing sciences"
+          },
+          {
+            "code": "280116",
+            "name": "Expanding knowledge in language, communication and culture"
+          },
+          {
+            "code": "280117",
+            "name": "Expanding knowledge in law and legal studies"
+          },
+          {
+            "code": "280118",
+            "name": "Expanding knowledge in the mathematical sciences"
+          },
+          {
+            "code": "280119",
+            "name": "Expanding knowledge in philosophy and religious studies"
+          },
+          {
+            "code": "280120",
+            "name": "Expanding knowledge in the physical sciences"
+          },
+          {
+            "code": "280121",
+            "name": "Expanding knowledge in psychology"
+          },
+          {
+            "code": "280122",
+            "name": "Expanding knowledge in creative arts and writing studies"
+          },
+          {
+            "code": "280123",
+            "name": "Expanding knowledge in human society"
+          }
+        ]
+      }
+    ]
+  }
+]

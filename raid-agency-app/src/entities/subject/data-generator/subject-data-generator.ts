@@ -2,11 +2,11 @@ import { subjectKeywordDataGenerator } from "@/entities/subject-keyword/data-gen
 import { Subject } from "@/generated/raid";
 import subjectType from "@/references/subject_type.json";
 
-export const subjectDataGenerator = (): Subject => {
-  const randomIndex = Math.floor(Math.random() * subjectType.length);
+export const subjectDataGenerator = (url: string): Subject => {
+  const schemaUri = url.includes("for") ? `https://vocabs.ardc.edu.au/viewById/316` : `https://vocabs.ardc.edu.au/viewById/317`;
   return {
-    id: `https://linked.data.gov.au/def/anzsrc-for/2020/${subjectType[randomIndex].id}`,
-    schemaUri: `https://vocabs.ardc.edu.au/viewById/316`,
+    id: url,
+    schemaUri: schemaUri,
     keyword: [subjectKeywordDataGenerator()],
   };
 };

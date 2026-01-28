@@ -17,7 +17,7 @@ interface ContributorWithStatus extends Contributor {
 const ContributorsView = memo(
   ({ data }: { data: ContributorWithStatus[] }) => {
     const { prefix, suffix } = useParams<{ prefix: string; suffix: string }>();
-    const orcidDataQuery = useQuery({
+    /* const orcidDataQuery = useQuery({
       queryFn: () => fetchOrcidContributors({ handle: `${prefix}/${suffix}` }),
       queryKey: ["orcid-contributors"],
     });
@@ -28,10 +28,9 @@ const ContributorsView = memo(
 
     if (orcidDataQuery.isError) {
       return <ErrorAlertComponent error="Error loading contributor details" />;
-    }
+    } */
 
-    const orcidData = orcidDataQuery.data;
-
+    const orcidData: any[] = [];
     const fetchCurrentOrcidData = (contributor: ContributorWithStatus) => {
       return "uuid" in contributor
         ? orcidData?.find(

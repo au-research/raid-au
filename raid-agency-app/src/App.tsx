@@ -16,6 +16,7 @@ import { ErrorDialogProvider } from "./components/error-dialog";
 import { KeycloakProvider } from "./contexts/keycloak-context";
 import { useGoogleAnalytics } from "./shared/hooks/google-analytics/useGoogleAnalytics";
 import { NotificationProvider } from "./components/alert-notifications/notification-context/NotificationsProvider";
+import { CodesProvider } from "./components/tree-view/context/CodesProvider";
 
 export function App() {
   useGoogleAnalytics();
@@ -68,19 +69,21 @@ export function App() {
   });
 
   return (
-      <KeycloakProvider>
-        <NotificationProvider>
-          <StrictMode>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <ErrorDialogProvider>
-                <MappingProvider>
-                  <SnackbarProvider>
-                    <QueryClientProvider client={queryClient}>
+    <KeycloakProvider>
+      <NotificationProvider>
+        <StrictMode>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <ErrorDialogProvider>
+              <MappingProvider>
+                <SnackbarProvider>
+                  <QueryClientProvider client={queryClient}>
                       <ReactErrorBoundary>
                         <Box sx={{ pt: 7.4 }}></Box>
-                      <Outlet />
-                    </ReactErrorBoundary>
+                        <CodesProvider>
+                          <Outlet />
+                        </CodesProvider>
+                      </ReactErrorBoundary>
                   </QueryClientProvider>
                 </SnackbarProvider>
               </MappingProvider>

@@ -55,7 +55,7 @@ Follow the spring [readme](/api-svc/spring/readme.md) section "Configuring
 
 ## Run the api-svc
 
-Follow the spring [readme](/api-svc/spring/readme.md) sections 
+Follow the spring [readme](/api-svc/spring/readme.md) sections
 "Running `Api.main()` from IDE" or "Running `Api.main()` from command line".
 
 ## Run the development Node.js web server
