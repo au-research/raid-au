@@ -15,9 +15,6 @@ class ServicePointRecordFactoryTest {
     private static final String TECH_EMAIL = "tech-email";
     private static final boolean APP_WRITES_ENABLED = true;
     private static final boolean ENABLED = true;
-    private static final String PREFIX = "_prefix";
-    private static final String REPOSITORY_ID = "repository-id";
-    private static final String PASSWORD = "_password";
     private final ServicePointRecordFactory factory = new ServicePointRecordFactory();
 
     @Test
@@ -32,10 +29,7 @@ class ServicePointRecordFactoryTest {
                 .adminEmail(ADMIN_EMAIL)
                 .techEmail(TECH_EMAIL)
                 .appWritesEnabled(APP_WRITES_ENABLED)
-                .enabled(ENABLED)
-                .prefix(PREFIX)
-                .repositoryId(REPOSITORY_ID)
-                .password(PASSWORD);
+                .enabled(ENABLED);
 
         final var result = factory.create(servicePoint);
 
@@ -46,9 +40,6 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getTechEmail(), is(TECH_EMAIL));
         assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
         assertThat(result.getEnabled(), is(ENABLED));
-        assertThat(result.getPrefix(), is(PREFIX));
-        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
-        assertThat(result.getPassword(), is(PASSWORD));
     }
 
 
@@ -61,10 +52,7 @@ class ServicePointRecordFactoryTest {
                 .adminEmail(ADMIN_EMAIL)
                 .techEmail(TECH_EMAIL)
                 .appWritesEnabled(APP_WRITES_ENABLED)
-                .enabled(ENABLED)
-                .prefix(PREFIX)
-                .repositoryId(REPOSITORY_ID)
-                .password(PASSWORD);
+                .enabled(ENABLED);
 
         final var result = factory.create(servicePoint);
 
@@ -74,9 +62,6 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getTechEmail(), is(TECH_EMAIL));
         assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
         assertThat(result.getEnabled(), is(ENABLED));
-        assertThat(result.getPrefix(), is(PREFIX));
-        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
-        assertThat(result.getPassword(), is(PASSWORD));
     }
 
     @Test
@@ -88,10 +73,7 @@ class ServicePointRecordFactoryTest {
                 .adminEmail(" " + ADMIN_EMAIL + " ")
                 .techEmail(" " + TECH_EMAIL + " ")
                 .appWritesEnabled(APP_WRITES_ENABLED)
-                .enabled(ENABLED)
-                .prefix(" " + PREFIX + " ")
-                .repositoryId(" " + REPOSITORY_ID + " ")
-                .password(PASSWORD);
+                .enabled(ENABLED);
 
         final var result = factory.create(servicePoint);
 
@@ -101,9 +83,6 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getTechEmail(), is(TECH_EMAIL));
         assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
         assertThat(result.getEnabled(), is(ENABLED));
-        assertThat(result.getPrefix(), is(PREFIX));
-        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
-        assertThat(result.getPassword(), is(PASSWORD));
 
     }
 }

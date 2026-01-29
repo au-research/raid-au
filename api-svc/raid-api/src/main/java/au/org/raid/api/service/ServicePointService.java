@@ -1,9 +1,7 @@
 package au.org.raid.api.service;
 
-import au.org.raid.api.client.repository.DataciteRepositoryClient;
 import au.org.raid.api.factory.ServicePointFactory;
 import au.org.raid.api.factory.record.ServicePointRecordFactory;
-import au.org.raid.api.model.datacite.repository.DataciteRepositoryFactory;
 import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointCreateRequest;
@@ -30,7 +28,7 @@ public class ServicePointService {
     public ServicePoint create(final ServicePointCreateRequest servicePoint) {
         final var password = RandomStringUtils.insecure().nextAlphanumeric(20);
 
-        final var repository = repositoryService.create(servicePoint.getName(), servicePoint.getAdminEmail(), password);
+        final var repository = repositoryService.create(servicePoint.getName(), password);
 
         servicePoint.setPassword(password);
         servicePoint.setPrefix(repository.getData().getRelationships().getPrefixes().getData().get(0).getId());

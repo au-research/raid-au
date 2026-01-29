@@ -12,4 +12,5 @@ public class RepositoryClientProperties {
     private String password;
     private String url;
     private String organisationId;
+    private String email;
 }

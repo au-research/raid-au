@@ -69,7 +69,7 @@ class ServicePointServiceTest {
                 .build();
 
         final var passwordCaptor = ArgumentCaptor.forClass(String.class);
-        when(repositoryService.create(eq(name), eq(email), passwordCaptor.capture())).thenReturn(dataciteRepository);
+        when(repositoryService.create(eq(name), passwordCaptor.capture())).thenReturn(dataciteRepository);
         when(servicePointRecordFactory.create(request)).thenReturn(record);
         when(servicePointRepository.create(record)).thenReturn(saved);
         when(servicePointFactory.create(saved)).thenReturn(servicePoint);

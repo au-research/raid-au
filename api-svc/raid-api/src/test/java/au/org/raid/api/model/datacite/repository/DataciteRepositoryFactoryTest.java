@@ -25,7 +25,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create("name", "email@test.com", "password");
+        final var result = factory.create("name", "password");
 
         assertThat(result.getData().getType(), is("repositories"));
     }
@@ -37,7 +37,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create(name, "email@test.com", "password");
+        final var result = factory.create(name, "password");
 
         assertThat(result.getData().getAttributes().getName(), is(name));
     }
@@ -48,8 +48,9 @@ class DataciteRepositoryFactoryTest {
         final var email = "admin@example.com";
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
+        when(properties.getEmail()).thenReturn(email);
 
-        final var result = factory.create("name", email, "password");
+        final var result = factory.create("name", "password");
 
         assertThat(result.getData().getAttributes().getSystemEmail(), is(email));
     }
@@ -61,7 +62,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create("name", "email@test.com", password);
+        final var result = factory.create("name", password);
 
         assertThat(result.getData().getAttributes().getPasswordInput(), is(password));
     }
@@ -72,7 +73,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create("name", "email@test.com", "password");
+        final var result = factory.create("name", "password");
 
         assertThat(result.getData().getAttributes().getClientType(), is("repository"));
     }
@@ -83,7 +84,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create("name", "email@test.com", "password");
+        final var result = factory.create("name", "password");
 
         final var symbol = result.getData().getAttributes().getSymbol();
         assertThat(symbol, startsWith(organisationId + "."));
@@ -97,8 +98,8 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result1 = factory.create("name", "email@test.com", "password");
-        final var result2 = factory.create("name", "email@test.com", "password");
+        final var result1 = factory.create("name", "password");
+        final var result2 = factory.create("name", "password");
 
         final var symbol1 = result1.getData().getAttributes().getSymbol();
         final var symbol2 = result2.getData().getAttributes().getSymbol();
@@ -113,7 +114,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create("name", "email@test.com", "password");
+        final var result = factory.create("name", "password");
 
         assertThat(result.getData().getRelationships().getProvider().getData().getType(), is("providers"));
     }
@@ -124,7 +125,7 @@ class DataciteRepositoryFactoryTest {
         final var organisationId = "TEST.ORG";
         when(properties.getOrganisationId()).thenReturn(organisationId);
 
-        final var result = factory.create("name", "email@test.com", "password");
+        final var result = factory.create("name", "password");
 
         assertThat(result.getData().getRelationships().getProvider().getData().getId(), is(organisationId));
     }
