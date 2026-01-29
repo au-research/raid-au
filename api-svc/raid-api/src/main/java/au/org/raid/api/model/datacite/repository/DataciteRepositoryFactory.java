@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class DataciteRepositoryFactory {
     private final RepositoryClientProperties properties;
 
-    public DataciteRepository create(final String name, final String email, final String password) {
+    public DataciteRepository create(final String name, final String password) {
 
         final var suffix = RandomStringUtils.insecure().nextAlphanumeric(7).toUpperCase();
 
@@ -21,7 +21,7 @@ public class DataciteRepositoryFactory {
                                 .symbol("%s.%s".formatted(properties.getOrganisationId(), suffix))
                                 .clientType("repository")
                                 .name(name)
-                                .systemEmail(email)
+                                .systemEmail(properties.getEmail())
                                 .passwordInput(password)
                                 .active(true)
                                 .build())

@@ -30,15 +30,14 @@ class RepositoryServiceTest {
     @DisplayName("create() returns repository on first attempt")
     void create_ReturnsRepositoryOnFirstAttempt() {
         final var name = "test-name";
-        final var email = "test@example.com";
         final var password = "test-password";
         final var repository = DataciteRepository.builder().build();
         final var createdRepository = DataciteRepository.builder().build();
 
-        when(repositoryFactory.create(name, email, password)).thenReturn(repository);
+        when(repositoryFactory.create(name, password)).thenReturn(repository);
         when(repositoryClient.createRepository(repository)).thenReturn(createdRepository);
 
-        final var result = repositoryService.create(name, email, password);
+        final var result = repositoryService.create(name, password);
 
         assertThat(result, is(createdRepository));
         verify(repositoryClient, times(1)).createRepository(repository);
@@ -48,18 +47,17 @@ class RepositoryServiceTest {
     @DisplayName("create() retries on 422 and succeeds")
     void create_RetriesOn422AndSucceeds() {
         final var name = "test-name";
-        final var email = "test@example.com";
         final var password = "test-password";
         final var repository = DataciteRepository.builder().build();
         final var createdRepository = DataciteRepository.builder().build();
 
-        when(repositoryFactory.create(name, email, password)).thenReturn(repository);
+        when(repositoryFactory.create(name, password)).thenReturn(repository);
         when(repositoryClient.createRepository(repository))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(422)))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(422)))
                 .thenReturn(createdRepository);
 
-        final var result = repositoryService.create(name, email, password);
+        final var result = repositoryService.create(name, password);
 
         assertThat(result, is(createdRepository));
         verify(repositoryClient, times(3)).createRepository(repository);
@@ -69,16 +67,15 @@ class RepositoryServiceTest {
     @DisplayName("create() throws exception after max attempts with 422 errors")
     void create_ThrowsExceptionAfterMaxAttempts() {
         final var name = "test-name";
-        final var email = "test@example.com";
         final var password = "test-password";
         final var repository = DataciteRepository.builder().build();
 
-        when(repositoryFactory.create(name, email, password)).thenReturn(repository);
+        when(repositoryFactory.create(name, password)).thenReturn(repository);
         when(repositoryClient.createRepository(repository))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(422)));
 
         final var exception = assertThrows(RuntimeException.class,
-                () -> repositoryService.create(name, email, password));
+                () -> repositoryService.create(name, password));
 
         assertThat(exception.getMessage(), is("Too many attempts. Unable to create Datacite repository"));
         verify(repositoryClient, times(5)).createRepository(repository);
@@ -88,16 +85,15 @@ class RepositoryServiceTest {
     @DisplayName("create() throws non-422 exception immediately")
     void create_ThrowsNon422ExceptionImmediately() {
         final var name = "test-name";
-        final var email = "test@example.com";
         final var password = "test-password";
         final var repository = DataciteRepository.builder().build();
 
-        when(repositoryFactory.create(name, email, password)).thenReturn(repository);
+        when(repositoryFactory.create(name, password)).thenReturn(repository);
         when(repositoryClient.createRepository(repository))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(400)));
 
         assertThrows(HttpClientErrorException.class,
-                () -> repositoryService.create(name, email, password));
+                () -> repositoryService.create(name, password));
 
         verify(repositoryClient, times(1)).createRepository(repository);
     }
@@ -106,16 +102,15 @@ class RepositoryServiceTest {
     @DisplayName("create() throws 500 error immediately without retry")
     void create_Throws500ErrorImmediately() {
         final var name = "test-name";
-        final var email = "test@example.com";
         final var password = "test-password";
         final var repository = DataciteRepository.builder().build();
 
-        when(repositoryFactory.create(name, email, password)).thenReturn(repository);
+        when(repositoryFactory.create(name, password)).thenReturn(repository);
         when(repositoryClient.createRepository(repository))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(500)));
 
         assertThrows(HttpClientErrorException.class,
-                () -> repositoryService.create(name, email, password));
+                () -> repositoryService.create(name, password));
 
         verify(repositoryClient, times(1)).createRepository(repository);
     }
@@ -129,22 +124,21 @@ class RepositoryServiceTest {
         // a new random symbol for each retry attempt.
 
         final var name = "test-name";
-        final var email = "test@example.com";
         final var password = "test-password";
         final var repository = DataciteRepository.builder().build();
         final var createdRepository = DataciteRepository.builder().build();
 
-        when(repositoryFactory.create(name, email, password)).thenReturn(repository);
+        when(repositoryFactory.create(name, password)).thenReturn(repository);
         when(repositoryClient.createRepository(repository))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(422)))
                 .thenReturn(createdRepository);
 
-        repositoryService.create(name, email, password);
+        repositoryService.create(name, password);
 
         // BUG: Currently the factory is only called once, so if a 422 is due to duplicate symbol,
         // all retries will fail with the same symbol.
         // The factory SHOULD be called on each retry to generate a new random symbol.
         // This assertion will FAIL because the factory is only called once.
-        verify(repositoryFactory, times(2)).create(name, email, password);
+        verify(repositoryFactory, times(2)).create(name, password);
     }
 }

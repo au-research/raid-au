@@ -18,10 +18,10 @@ public class RepositoryService {
     private final DataciteRepositoryFactory repositoryFactory;
     private final DataciteRepositoryClient repositoryClient;
 
-    public DataciteRepository create(final String name, final String email, final String password) {
+    public DataciteRepository create(final String name, final String password) {
 
         for (int attempts = 0; attempts < MAX_ATTEMPTS; attempts++) {
-            final var repository = repositoryFactory.create(name, email, password);
+            final var repository = repositoryFactory.create(name, password);
             try {
                 return repositoryClient.createRepository(repository);
             } catch (HttpClientErrorException e) {
