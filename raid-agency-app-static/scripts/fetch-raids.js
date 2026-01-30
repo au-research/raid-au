@@ -61,6 +61,7 @@ import {fileURLToPath} from 'url';
 import {fetchCitation} from './fetch-citation.js'
 import {extractHandles} from './fetch-handles.js';
 import { addOrcidInfoToRaidData } from './fetch-orcidData.js';
+import { addRorDetailsToRaidData } from './fetch-ror.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -87,6 +88,8 @@ const config = {
   cachingTime: parseInt(process.env.CACHING_TIME) || 5 * 24 * 60 * 60 * 1000, // 5 days
   verboseLogging: process.env.VERBOSE_LOGGING === 'true',
   orcidEnv: process.env.RAID_ENV || 'prod',
+  concurrentRorRequests: parseInt(process.env.CONCURRENT_ROR_REQUESTS) || 5,
+  rorRequestDelay: parseInt(process.env.ROR_REQUEST_DELAY) || 100,
 };
 
 // Simple in-memory cache for DOI citations
@@ -106,6 +109,9 @@ const stats = {
   authenticatedOrcids: 0,
   notAuthenticatedOrcids: 0,
   authenticatedButPrivate: 0,
+  totalRorIds: 0,
+  successfulRorFetches: 0,
+  failedRorFetches: 0,
 };
 
 // Validate required environment variables
@@ -373,12 +379,21 @@ async function main() {
       config, 
       stats
     );
-    // Step 5: Save enriched RAID data with ORCID info
+
+    // Step 5: Add ROR details to RAID data (NEW)
+    const enrichedWithRor = await addRorDetailsToRaidData(
+      enrichedWithOrcid,
+      makeRequestWithRetry,
+      config,
+      stats
+    );
+
+    // Step 6: Save enriched RAID data with ORCID info
     const outputFile = path.join(config.dataDir, 'raids.json');
-    await fs.writeFile(outputFile, JSON.stringify(enrichedWithOrcid, null, 2));
+    await fs.writeFile(outputFile, JSON.stringify(enrichedWithRor, null, 2));
     console.log(`Data successfully saved to ${outputFile}`);
     
-    // Step 6: Extract and save handles
+    // Step 7: Extract and save handles
     const handles = await extractHandles(raidData);
     const handlesFile = path.join(config.dataDir, 'handles.json');
     await fs.writeFile(handlesFile, JSON.stringify(handles, null, 2));
