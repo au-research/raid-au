@@ -22,8 +22,8 @@ class DataciteRepositoryFactoryTest {
     @Test
     @DisplayName("create() sets data type to 'repositories'")
     void create_SetsDataType() {
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", "password");
 
@@ -34,8 +34,8 @@ class DataciteRepositoryFactoryTest {
     @DisplayName("create() sets name from input parameter")
     void create_SetsName() {
         final var name = "Test Repository Name";
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create(name, "password");
 
@@ -46,8 +46,8 @@ class DataciteRepositoryFactoryTest {
     @DisplayName("create() sets systemEmail from input parameter")
     void create_SetsSystemEmail() {
         final var email = "admin@example.com";
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
         when(properties.getEmail()).thenReturn(email);
 
         final var result = factory.create("name", "password");
@@ -59,8 +59,8 @@ class DataciteRepositoryFactoryTest {
     @DisplayName("create() sets passwordInput from input parameter")
     void create_SetsPasswordInput() {
         final var password = "securePassword123";
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", password);
 
@@ -70,8 +70,8 @@ class DataciteRepositoryFactoryTest {
     @Test
     @DisplayName("create() sets clientType to 'repository'")
     void create_SetsClientType() {
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", "password");
 
@@ -81,22 +81,22 @@ class DataciteRepositoryFactoryTest {
     @Test
     @DisplayName("create() sets symbol with organisation ID prefix and 7-character suffix")
     void create_SetsSymbolWithCorrectFormat() {
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", "password");
 
         final var symbol = result.getData().getAttributes().getSymbol();
-        assertThat(symbol, startsWith(organisationId + "."));
-        // Symbol should be organisationId + "." + 7 alphanumeric uppercase characters
+        assertThat(symbol, startsWith(username + "."));
+        // Symbol should be username + "." + 7 alphanumeric uppercase characters
         assertThat(symbol, matchesPattern("TEST\\.ORG\\.[A-Z0-9]{7}"));
     }
 
     @Test
     @DisplayName("create() generates unique symbols on each invocation")
     void create_GeneratesUniqueSymbols() {
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result1 = factory.create("name", "password");
         final var result2 = factory.create("name", "password");
@@ -111,8 +111,8 @@ class DataciteRepositoryFactoryTest {
     @Test
     @DisplayName("create() sets provider data type to 'providers'")
     void create_SetsProviderDataType() {
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", "password");
 
@@ -122,11 +122,11 @@ class DataciteRepositoryFactoryTest {
     @Test
     @DisplayName("create() sets provider data id to organisation ID")
     void create_SetsProviderDataId() {
-        final var organisationId = "TEST.ORG";
-        when(properties.getOrganisationId()).thenReturn(organisationId);
+        final var username = "TEST.ORG";
+        when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", "password");
 
-        assertThat(result.getData().getRelationships().getProvider().getData().getId(), is(organisationId));
+        assertThat(result.getData().getRelationships().getProvider().getData().getId(), is(username));
     }
 }
