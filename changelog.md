@@ -4,6 +4,7 @@ See the [Changelog audience](#changelog-audience) section for info about
 # 2.6.0
 ## API
 * Add endpoint to return all embargoed raids
+* Add validation to prevent organisations from having simultaneous roles
 
 # 2.5.31
 ## API
