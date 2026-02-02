@@ -150,9 +150,7 @@ export async function addRorDetailsToRaidData(raidData, makeRequestWithRetry, co
         const simplifiedInfo = getSimplifiedRorInfo(rorDetails);
         
         // Add to appropriate field
-        if (!raidData[raidIndex].organisation[orgIndex].rorDetails) {
         raidData[raidIndex].organisation[orgIndex].rorDetails = simplifiedInfo;
-        }
       }
     });
 
