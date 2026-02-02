@@ -69,7 +69,6 @@ export const RaidForm = memo(
     const { openErrorDialog } = useErrorDialog();
     const {
       setSelectedCodes,
-      codesData,
       setSelectedCodesData,
       getCodeById,
       globalData,
@@ -121,7 +120,7 @@ export const RaidForm = memo(
     }, [formState.errors, formState.isSubmitted, openErrorDialog]);
 
     useEffect(() => {
-      if (!hasLoadedInitialData.current && Array.isArray(raidData?.subject) && raidData.subject.length > 0 && codesData) {
+      if (!hasLoadedInitialData.current && Array.isArray(raidData?.subject) && raidData.subject.length > 0 && globalData) {
         const selectedSubjects = Array.isArray(raidData.subject)
           ? raidData.subject
           : [];
@@ -131,10 +130,12 @@ export const RaidForm = memo(
         );
 
         if(selectedIds.length === 0) return;
+
         setSelectedCodes(selectedIds);
         const codesArray = selectedIds
-          .map(codeId => getCodeById(codeId, codesData))
+          .map(codeId => getCodeById(codeId, globalData))
           .filter((item): item is CodeItem => item !== undefined);
+
         if (codesArray.length > 0) {
           setSelectedCodesData(codesArray);
           setSearchQueryState('')
@@ -147,7 +148,7 @@ export const RaidForm = memo(
         clearErrors('subject');
         setSearchQueryState('');
       }
-    }, [raidData.subject, codesData, getCodeById, globalData]);
+    }, [raidData.subject, getCodeById, globalData]);
 
     return (
       <MetadataContext.Provider value={metadata}>
