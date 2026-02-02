@@ -3,6 +3,7 @@ package au.org.raid.api.validator;
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.Organisation;
+import au.org.raid.idl.raidv2.model.OrganisationRole;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -74,9 +76,19 @@ public class OrganisationValidator {
                 );
             } else if (!organisation.getSchemaUri().equals(ROR_SCHEMA_URI)) {
                 failures.add(new ValidationFailure()
-                        .fieldId("organisation[%d].schemaUri")
+                        .fieldId("organisation[%d].schemaUri".formatted(i))
                         .errorType(INVALID_VALUE_TYPE)
                         .message(INVALID_VALUE_MESSAGE)
+                );
+            }
+
+            if(DateRangeValidator.hasOverlaps(organisation.getRole(),
+                    OrganisationRole::getStartDate,
+                    OrganisationRole::getEndDate)) {
+                failures.add(new ValidationFailure()
+                        .fieldId("organisation[%d].role".formatted(i))
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message("This contributor has simultaneous roles.")
                 );
             }
 
