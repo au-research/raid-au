@@ -4,7 +4,6 @@ raid:
     username: not-set
     password: not-set
     url: https://api.test.datacite.org/repositories
-    organisation-id: not-set
     email: not-set
   iam:
     realm-uri: https://iam.${raid.environment}.raid.org.au/realms/raid
