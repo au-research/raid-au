@@ -24,7 +24,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 import { StyledPaper as Item } from "./StyledComponent";
 import { useSnackbar } from "@/components/snackbar";
 import { messages } from "@/constants/messages";
-import { Building2, Settings, RefreshCcw } from "lucide-react";
+import { Building2, Settings, RefreshCcw, Database } from "lucide-react";
 import CustomizedInputBase from "@/containers/organisation-lookup/RORCustomComponent";
 import { useErrorDialog } from "@/components/error-dialog";
 import { transformErrorMessage } from "@/components/raid-form-error-message/ErrorContentUtils";
@@ -101,7 +101,18 @@ export const ServicePointUpdateForm = ({
       if (selectedValue) {
         item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
       }
-
+      // Check for duplicate repository ID
+      const apiData = queryClient.getQueryData<ServicePoint[]>(["servicePoints"]);
+      const isDuplicateRepositoryID = apiData?.some(
+        (sp) => sp.repositoryId === item.servicePointUpdateRequest.repositoryId && sp.id !== item.id
+      );
+      if (isDuplicateRepositoryID) {
+        form.setError("servicePointUpdateRequest.repositoryId", {
+          type: "manual",
+          message: messages.servicePointUniqueRepositoryID
+        });
+        return;
+      }
      // Proceed with mutation
     setAppState({ ...appState, loading: true });
     updateServicePointMutation.mutate(item);
@@ -144,13 +155,13 @@ export const ServicePointUpdateForm = ({
                     />
                 </Box>
                 <Stack
-                    direction={{xs: 'row', sm: 'row', md: 'row'}}
+                    direction={{xs: 'column', sm: 'row', md: 'row'}}
                     spacing={2}
                     sx={{
                         justifyContent: "flex-start",
                         alignItems: "flex-start",
                         mb: 3,
-                        width: { xs: '100%', sm: '100%', md: '50%' }
+                        width: '100%'
                     }}
                     divider={<Divider orientation="vertical" flexItem/>}
                 >
@@ -229,6 +240,80 @@ export const ServicePointUpdateForm = ({
                                                 }
                                                 helperText={
                                                     form.formState.errors?.servicePointUpdateRequest?.techEmail
+                                                        ?.message
+                                                }
+                                            />
+                                        )}
+                                    />
+                                </div>
+                            </Stack>
+                        </Box>
+                    </Item>
+                    <Item>
+                        <Tabs
+                            value={"two"}
+                            textColor="primary"
+                            indicatorColor="primary"
+                            aria-label="secondary tabs example"
+                        >
+                            <Tab
+                                value="two"
+                                label={<Typography variant="body2">DataCite repository</Typography>}
+                                iconPosition="start"
+                                icon={<Database fontSize="small"/>}
+                                sx={{minHeight: "40px"}}
+                            />
+                        </Tabs>
+                        <Box>
+                            <Stack
+                                spacing={{xs: 1, sm: 1, md: 2}}
+                                direction="column"
+                                useFlexGap
+                                sx={{mt: 2}}
+                            >
+                                <div>
+                                    <Controller
+                                        name="servicePointUpdateRequest.repositoryId"
+                                        control={form.control}
+                                        render={({field}) => (
+                                            <TextField
+                                                disabled={true}
+                                                label="Repository ID *"
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                {...field}
+                                                value={field.value}
+                                                error={
+                                                    !!form.formState.errors?.servicePointUpdateRequest
+                                                        ?.repositoryId
+                                                }
+                                                helperText={
+                                                    form.formState.errors?.servicePointUpdateRequest?.repositoryId
+                                                        ?.message
+                                                }
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div>
+                                    <Controller
+                                        name="servicePointUpdateRequest.prefix"
+                                        control={form.control}
+                                        render={({field}) => (
+                                            <TextField
+                                                disabled={true}
+                                                label="Prefix *"
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                {...field}
+                                                value={field.value}
+                                                error={
+                                                    !!form.formState.errors?.servicePointUpdateRequest?.prefix
+                                                }
+                                                helperText={
+                                                    form.formState.errors?.servicePointUpdateRequest?.prefix
                                                         ?.message
                                                 }
                                             />
