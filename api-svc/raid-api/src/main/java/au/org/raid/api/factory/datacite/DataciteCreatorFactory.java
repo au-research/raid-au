@@ -2,8 +2,8 @@ package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.client.contributor.isni.IsniClient;
 import au.org.raid.api.client.contributor.orcid.OrcidClient;
-import au.org.raid.api.model.datacite.DataciteCreator;
-import au.org.raid.api.model.datacite.NameIdentifier;
+import au.org.raid.api.model.datacite.doi.DataciteCreator;
+import au.org.raid.api.model.datacite.doi.NameIdentifier;
 import au.org.raid.idl.raidv2.model.Contributor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

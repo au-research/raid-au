@@ -2,6 +2,7 @@ package au.org.raid.api.service;
 
 import au.org.raid.api.factory.ServicePointFactory;
 import au.org.raid.api.factory.record.ServicePointRecordFactory;
+import au.org.raid.api.model.datacite.repository.*;
 import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
 import au.org.raid.idl.raidv2.model.ServicePoint;
@@ -10,6 +11,7 @@ import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,8 +22,8 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasLength;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServicePointServiceTest {
@@ -31,24 +33,54 @@ class ServicePointServiceTest {
     private ServicePointRecordFactory servicePointRecordFactory;
     @Mock
     private ServicePointFactory servicePointFactory;
+    @Mock
+    private RepositoryService repositoryService;
     @InjectMocks
     private ServicePointService servicePointService;
 
     @Test
-    @DisplayName("create() saves new service point")
+    @DisplayName("create() saves new service point with datacite repository")
     void createSavesNewServicePoint() {
+        final var name = "Test Service Point";
+        final var email = "admin@test.com";
+        final var prefix = "10.12345";
+        final var repositorySymbol = "TEST.REPO123";
 
-        final var request = new ServicePointCreateRequest();
+        final var request = new ServicePointCreateRequest()
+                .name(name)
+                .adminEmail(email);
         final var record = new ServicePointRecord();
-        final var saved = new ServicePointRecord()
-                .setId(123L);
+        final var saved = new ServicePointRecord().setId(123L);
         final var servicePoint = new ServicePoint();
 
+        final var dataciteRepository = DataciteRepository.builder()
+                .data(DataciteRepositoryData.builder()
+                        .attributes(DataciteRepositoryAttributes.builder()
+                                .symbol(repositorySymbol)
+                                .build())
+                        .relationships(DataciteRepositoryRelationships.builder()
+                                .prefixes(DataciteRepositoryPrefixes.builder()
+                                        .data(List.of(DataciteRepositoryPrefixesData.builder()
+                                                .id(prefix)
+                                                .build()))
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final var passwordCaptor = ArgumentCaptor.forClass(String.class);
+        when(repositoryService.create(eq(name), passwordCaptor.capture())).thenReturn(dataciteRepository);
         when(servicePointRecordFactory.create(request)).thenReturn(record);
         when(servicePointRepository.create(record)).thenReturn(saved);
         when(servicePointFactory.create(saved)).thenReturn(servicePoint);
 
-        assertThat(servicePointService.create(request), is(servicePoint));
+        final var result = servicePointService.create(request);
+
+        assertThat(result, is(servicePoint));
+        assertThat(passwordCaptor.getValue(), hasLength(20));
+        assertThat(request.getPassword(), is(passwordCaptor.getValue()));
+        assertThat(request.getPrefix(), is(prefix));
+        assertThat(request.getRepositoryId(), is(repositorySymbol));
     }
 
     @Test

@@ -27,12 +27,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { useSnackbar } from "@/components/snackbar";
 import { messages } from "@/constants/messages";
-import { Building2, Settings, SquarePen, Database } from "lucide-react";
+import { Building2, Settings, SquarePen } from "lucide-react";
 import CustomizedInputBase from "@/containers/organisation-lookup/RORCustomComponent";
 import { useErrorDialog } from "@/components/error-dialog";
 import { transformErrorMessage } from "@/components/raid-form-error-message/ErrorContentUtils";
 import { ErrorItem } from '@/components/raid-form-error-message/types';
-import { ServicePoint } from "@/generated/raid";
 import { createServicePointRequestValidationSchema } from "@/pages/service-point/validation/Rules";
 import { StyledPaper as Item } from "./StyledComponent";
 
@@ -55,9 +54,6 @@ export const ServicePointCreateForm = () => {
       adminEmail: "",
       techEmail: "",
       enabled: false,
-      password: "",
-      prefix: "",
-      repositoryId: "",
       appWritesEnabled: false,
     },
   };
@@ -105,20 +101,6 @@ const onSubmit = (item: CreateServicePointRequest) => {
   // Set identifier owner if selected
   if (selectedValue) {
     item.servicePointCreateRequest.identifierOwner = selectedValue.id;
-  }
-
-  // Check for duplicate repository ID
-  const apiData = queryClient.getQueryData<ServicePoint[]>(["servicePoints"]);
-  const isDuplicateRepositoryID = apiData?.some(
-    (sp) => sp.repositoryId === item.servicePointCreateRequest.repositoryId
-  );
-
-  if (isDuplicateRepositoryID) {
-    form.setError("servicePointCreateRequest.repositoryId", {
-      type: "manual",
-      message: messages.servicePointUniqueRepositoryID
-    });
-    return;
   }
 
   // Proceed with mutation
@@ -176,13 +158,13 @@ const onSubmit = (item: CreateServicePointRequest) => {
                 />
               </Box>
               <Stack
-                direction={{ xs: 'column', sm: 'row', md: 'row' }}
+                direction={{ xs: 'row', sm: 'row', md: 'row' }}
                 spacing={2}
                 sx={{
                   justifyContent: "flex-start",
                   alignItems: "flex-start",
                   mb: 3,
-                  width: '100%'
+                  width: { xs: '100%', sm: '100%', md: '50%' }
                 }}
                 divider={<Divider orientation="vertical" flexItem />}
               >
@@ -269,103 +251,6 @@ const onSubmit = (item: CreateServicePointRequest) => {
                         />
                       </div>
                     </Stack>
-                  </Box>
-                </Item>
-                <Item>
-                  <Tabs
-                    value={"two"}
-                    textColor="primary"
-                    indicatorColor="primary"
-                    aria-label="secondary tabs example"
-                  >
-                    <Tab
-                      value="two"
-                      label={<Typography variant="body2">DataCite repository</Typography>}
-                      iconPosition="start"
-                      icon={<Database fontSize="small" />}
-                      sx={{ minHeight: "40px" }}
-                    />
-                  </Tabs>
-                  <Box>
-                  <Stack
-                    spacing={{ xs: 1, sm: 1, md: 2 }}
-                    direction="column"
-                    useFlexGap
-                    sx={{ mt: 2 }}
-                  >
-                    <div>
-                      <Controller
-                        name="servicePointCreateRequest.repositoryId"
-                        control={form.control}
-                        render={({ field }) => (
-                          <TextField
-                            label="Repository ID *"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            {...field}
-                            value={field.value}
-                            error={
-                              !!form.formState.errors?.servicePointCreateRequest
-                                ?.repositoryId
-                            }
-                            helperText={
-                              form.formState.errors?.servicePointCreateRequest?.repositoryId
-                                ?.message
-                            }
-                          />
-                        )}
-                      />
-                    </div>
-                    <div >
-                      <Controller
-                        name="servicePointCreateRequest.prefix"
-                        control={form.control}
-                        render={({ field }) => (
-                          <TextField
-                            label="Prefix *"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            {...field}
-                            value={field.value}
-                            error={
-                              !!form.formState.errors?.servicePointCreateRequest?.prefix
-                            }
-                            helperText={
-                              form.formState.errors?.servicePointCreateRequest?.prefix
-                                ?.message
-                            }
-                          />
-                        )}
-                      />
-                    </div>
-                    <div >
-                      <Controller
-                        name="servicePointCreateRequest.password"
-                        control={form.control}
-                        render={({ field }) => (
-                          <TextField
-                            label="Password *"
-                            type="password"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            {...field}
-                            value={field.value}
-                            error={
-                              !!form.formState.errors?.servicePointCreateRequest
-                                ?.password
-                            }
-                            helperText={
-                              form.formState.errors?.servicePointCreateRequest?.password
-                                ?.message
-                            }
-                          />
-                        )}
-                      />
-                    </div>
-                  </Stack>
                   </Box>
                 </Item>
               </Stack>

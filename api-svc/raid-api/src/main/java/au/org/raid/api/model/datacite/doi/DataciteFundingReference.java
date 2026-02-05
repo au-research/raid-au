@@ -1,4 +1,4 @@
-package au.org.raid.api.model.datacite;
+package au.org.raid.api.model.datacite.doi;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.config.properties.IdentifierProperties;
-import au.org.raid.api.model.datacite.*;
+import au.org.raid.api.model.datacite.doi.*;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
@@ -14,9 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

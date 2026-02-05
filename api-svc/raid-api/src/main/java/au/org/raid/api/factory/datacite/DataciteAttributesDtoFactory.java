@@ -1,7 +1,7 @@
 package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.config.properties.IdentifierProperties;
-import au.org.raid.api.model.datacite.*;
+import au.org.raid.api.model.datacite.doi.*;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,6 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 

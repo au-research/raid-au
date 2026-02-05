@@ -2,6 +2,7 @@
 annotations = "13.0"
 assertj = "3.24.2"
 commons-compress = "1.26.2"
+commons-lang3 = "3.18.0"
 commons-math3 = "3.6.1"
 feign = "12.2"
 flyway-core = "9.22.3"
@@ -44,6 +45,7 @@ annotations = { group = "org.jetbrains", name = "annotations", version.ref = "an
 assertj = { group = 'org.assertj', name = "assertj-core", version.ref = "assertj" }
 commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "commons-compress" }
 commons-math3 = { group = "org.apache.commons", name = "commons-math3", version.ref = "commons-math3" }
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 feign-okhttp = { group = 'io.github.openfeign', name = 'feign-okhttp', version.ref = 'feign' }
 feign-jackson = { group = 'io.github.openfeign', name = 'feign-jackson', version.ref = 'feign' }
 feign-slf4j = { group = 'io.github.openfeign', name = 'feign-slf4j', version.ref = 'feign' }
