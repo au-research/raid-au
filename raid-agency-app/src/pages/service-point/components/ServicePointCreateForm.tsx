@@ -27,12 +27,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { useSnackbar } from "@/components/snackbar";
 import { messages } from "@/constants/messages";
-import { Building2, Settings, SquarePen, Database } from "lucide-react";
+import { Building2, Settings, SquarePen } from "lucide-react";
 import CustomizedInputBase from "@/containers/organisation-lookup/RORCustomComponent";
 import { useErrorDialog } from "@/components/error-dialog";
 import { transformErrorMessage } from "@/components/raid-form-error-message/ErrorContentUtils";
 import { ErrorItem } from '@/components/raid-form-error-message/types';
-import { ServicePoint } from "@/generated/raid";
 import { createServicePointRequestValidationSchema } from "@/pages/service-point/validation/Rules";
 import { StyledPaper as Item } from "./StyledComponent";
 
@@ -104,20 +103,6 @@ const onSubmit = (item: CreateServicePointRequest) => {
     item.servicePointCreateRequest.identifierOwner = selectedValue.id;
   }
 
-  // Check for duplicate repository ID
-  // const apiData = queryClient.getQueryData<ServicePoint[]>(["servicePoints"]);
-  // const isDuplicateRepositoryID = apiData?.some(
-  //   (sp) => sp.repositoryId === item.servicePointCreateRequest.repositoryId
-  // );
-
-  // if (isDuplicateRepositoryID) {
-  //   form.setError("servicePointCreateRequest.repositoryId", {
-  //     type: "manual",
-  //     message: messages.servicePointUniqueRepositoryID
-  //   });
-  //   return;
-  // }
-
   // Proceed with mutation
   createServicePointMutation.mutate(item);
   setAppState({ ...appState, loading: true });
@@ -173,13 +158,13 @@ const onSubmit = (item: CreateServicePointRequest) => {
                 />
               </Box>
               <Stack
-                direction={{ xs: 'column', sm: 'row', md: 'row' }}
+                direction={{ xs: 'row', sm: 'row', md: 'row' }}
                 spacing={2}
                 sx={{
                   justifyContent: "flex-start",
                   alignItems: "flex-start",
                   mb: 3,
-                  width: '100%'
+                  width: { xs: '100%', sm: '100%', md: '50%' }
                 }}
                 divider={<Divider orientation="vertical" flexItem />}
               >
