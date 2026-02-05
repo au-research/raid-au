@@ -32,15 +32,6 @@ const router = createBrowserRouter([
       },
     ],
   },
-  {
-    path: ROUTES.ORCID_SUCCESS,
-    element: (
-      <>
-        <AppNavBar />
-        <OrcidSuccess />
-      </>
-    ),
-  }
 ]);
 
 root.render(<RouterProvider router={router} />);
