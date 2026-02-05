@@ -12,6 +12,7 @@ import { UsageTerms } from "@/pages/usage-terms";
 import { Box } from "@mui/material";
 import { RouteObject } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import OrcidSuccess from "@/pages/orcid-success/orcid-success";
 
 export const otherRoutes: RouteObject[] = [
   {
@@ -61,6 +62,16 @@ export const otherRoutes: RouteObject[] = [
       <>
         <AppNavBar />
         <AboutRaid />
+      </>
+    ),
+  },
+   {
+    path: ROUTES.ORCID_SUCCESS,
+    // No need for ProtectedRoute here since this is a public page
+    element: (
+      <>
+        <AppNavBar />
+        <OrcidSuccess />
       </>
     ),
   },
