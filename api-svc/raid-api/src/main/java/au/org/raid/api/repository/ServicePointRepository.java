@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.time.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,6 +52,7 @@ public class ServicePointRepository {
                 .set(SERVICE_POINT.IDENTIFIER_OWNER, record.getIdentifierOwner())
                 .set(SERVICE_POINT.SEARCH_CONTENT, record.getSearchContent())
                 .set(SERVICE_POINT.GROUP_ID, record.getGroupId())
+                .set(SERVICE_POINT.UPDATED, OffsetDateTime.now(ZoneOffset.UTC))
                 .where(SERVICE_POINT.ID.eq(record.getId()))
                 .returning()
                 .fetchOne();

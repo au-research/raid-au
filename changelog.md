@@ -5,6 +5,7 @@ See the [Changelog audience](#changelog-audience) section for info about
 ## API
 * Add endpoint to return all embargoed raids
 * Add validation to prevent organisations from having simultaneous roles
+* Add created and updated columns to service point db table
 
 # 2.5.31
 ## API
