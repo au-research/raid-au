@@ -17,8 +17,8 @@ const accessTypeValidationSchema = z.object({
   ),
 });
 const accessLanguageValidationSchema = z.object({
-  id: z.string(),
-  schemaUri: z.literal(languageSchema[0].uri),
+  id: z.string().optional(),
+  schemaUri: z.literal(languageSchema[0].uri).optional(),
 });
 
 const accessStatementValidationSchema = z.object({
