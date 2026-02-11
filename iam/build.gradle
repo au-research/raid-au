@@ -29,7 +29,10 @@ dependencies {
 
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.jboss.resteasy:resteasy-core:6.2.7.Final'
     testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
     testImplementation libs.hamcrest
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
