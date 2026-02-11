@@ -3,7 +3,7 @@ package au.org.raid.iam.provider.raid;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.keycloak.broker.provider.util.SimpleHttp;
+import org.keycloak.http.simple.SimpleHttp;
 import org.keycloak.crypto.AsymmetricSignatureSignerContext;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.jose.jws.JWSBuilder;
@@ -30,7 +30,7 @@ public class RaidClient {
         var hostname = System.getenv("KC_HOSTNAME");
         var url = URL_FORMAT.formatted(HOSTNAME_MAP.get(hostname), handle);
 
-        final var http = SimpleHttp.doGet(url, session);
+        final var http = SimpleHttp.create(session).doGet(url);
 
         String jwt = new JWSBuilder()
                 .type("JWT")
