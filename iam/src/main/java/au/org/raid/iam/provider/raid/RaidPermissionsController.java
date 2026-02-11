@@ -62,11 +62,9 @@ public class RaidPermissionsController {
     @OPTIONS
     @Path("/raid-user")
     public Response addRaidUserPreflight() {
-        return Response.fromResponse(addCorsHeaders("POST", "DELETE")
-                        .preflight()
-                        .builder(Response.ok())
-                        .build())
-                .build();
+        return addCorsHeaders("POST", "DELETE")
+                .preflight()
+                .add(Response.ok());
     }
 
     @POST
@@ -86,13 +84,8 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     @DELETE
@@ -112,23 +105,16 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     @OPTIONS
     @Path("/raid-admin")
     public Response addRaidAdminPreflight() {
-        return Response.fromResponse(addCorsHeaders("POST", "DELETE")
-                        .preflight()
-                        .builder(Response.ok())
-                        .build())
-                .build();
+        return addCorsHeaders("POST", "DELETE")
+                .preflight()
+                .add(Response.ok());
     }
 
 
@@ -155,13 +141,8 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     @DELETE
@@ -187,13 +168,8 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
 
@@ -221,13 +197,8 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     private void addUserToRaid(final String userId, final String handle) {

@@ -43,8 +43,8 @@ class RaidPermissionsControllerTest {
         when(keycloakCors.allowedMethods(ArgumentMatchers.<String>any())).thenReturn(keycloakCors);
         when(keycloakCors.auth()).thenReturn(keycloakCors);
         when(keycloakCors.preflight()).thenReturn(keycloakCors);
-        when(keycloakCors.builder(any())).thenReturn(keycloakCors);
-        when(keycloakCors.build()).thenReturn(Response.ok().build());
+        when(keycloakCors.add(any(Response.ResponseBuilder.class)))
+                .thenAnswer(inv -> ((Response.ResponseBuilder) inv.getArgument(0)).build());
     }
 
     private RaidPermissionsController createController(AuthenticationManager.AuthResult auth) {
