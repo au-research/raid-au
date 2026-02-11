@@ -3,11 +3,11 @@ package au.org.raid.iam.provider.raid;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.http.impl.client.HttpClients;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.crypto.AsymmetricSignatureSignerContext;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.jose.jws.JWSBuilder;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.AccessToken;
 
 import java.util.Map;
@@ -16,6 +16,7 @@ import java.util.Map;
 public class RaidClient {
     private static final String URL_FORMAT = "http://%s/raid/%s/permissions";
     private final ObjectMapper objectMapper;
+    private final KeycloakSession session;
     private static final Map<String, String> HOSTNAME_MAP = Map.of(
             "localhost", "host.docker.internal:8080",
             "iam.test.raid.org.au", "api.test.raid.org.au",
@@ -26,21 +27,19 @@ public class RaidClient {
 
     @SneakyThrows
     public RaidPermissionsDto getPermissions(final String handle, final AccessToken token, final KeyWrapper key) {
-        try (final var httpClient = HttpClients.createDefault()) {
-            var hostname = System.getenv("KC_HOSTNAME");
-            var url = URL_FORMAT.formatted(HOSTNAME_MAP.get(hostname), handle);
+        var hostname = System.getenv("KC_HOSTNAME");
+        var url = URL_FORMAT.formatted(HOSTNAME_MAP.get(hostname), handle);
 
-            final var http = SimpleHttp.doGet(url, httpClient);
+        final var http = SimpleHttp.doGet(url, session);
 
-            String jwt = new JWSBuilder()
-                    .type("JWT")
-                    .jsonContent(token)
-                    .sign(new AsymmetricSignatureSignerContext(key));
+        String jwt = new JWSBuilder()
+                .type("JWT")
+                .jsonContent(token)
+                .sign(new AsymmetricSignatureSignerContext(key));
 
-            http.auth(jwt);
-            try (final var response = http.asResponse()) {
-                return objectMapper.readValue(response.asString(), RaidPermissionsDto.class);
-            }
+        http.auth(jwt);
+        try (final var response = http.asResponse()) {
+            return objectMapper.readValue(response.asString(), RaidPermissionsDto.class);
         }
     }
 }
