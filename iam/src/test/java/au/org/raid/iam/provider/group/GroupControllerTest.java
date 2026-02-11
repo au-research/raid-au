@@ -67,7 +67,7 @@ class GroupControllerTest {
     }
 
     private GroupController createAuthenticatedController() {
-        when(authResult.getSession()).thenReturn(userSession);
+        when(authResult.session()).thenReturn(userSession);
         when(userSession.getUser()).thenReturn(user);
         return createController(authResult);
     }

@@ -76,7 +76,7 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var client = auth.getClient();
+        final var client = auth.client();
 
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
                 addUserToRaid(request.getUserId(), request.getHandle());
@@ -97,7 +97,7 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var client = auth.getClient();
+        final var client = auth.client();
 
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
             removeUserFromRaid(request.getUserId(), request.getHandle());
@@ -127,14 +127,14 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var currentUser = auth.getSession().getUser();
+        final var currentUser = auth.session().getUser();
 
         if (currentUser.getRoleMappingsStream().anyMatch(role -> role.getName().equals("service-point-user"))) {
-            final var role = auth.getSession().getRealm().getRole("raid-admin");
+            final var role = auth.session().getRealm().getRole("raid-admin");
             if (role == null) {
                 throw new IllegalStateException("'raid-admin' role not found");
             }
-            final var user = session.users().getUserByUsername(auth.getSession().getRealm(), request.getUserId());
+            final var user = session.users().getUserByUsername(auth.session().getRealm(), request.getUserId());
 
             user.grantRole(role);
         } else {
@@ -154,14 +154,14 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var currentUser = auth.getSession().getUser();
+        final var currentUser = auth.session().getUser();
 
         if (currentUser.getRoleMappingsStream().anyMatch(role -> role.getName().equals("service-point-user"))) {
-            final var role = auth.getSession().getRealm().getRole("raid-admin");
+            final var role = auth.session().getRealm().getRole("raid-admin");
             if (role == null) {
                 throw new IllegalStateException("'raid-admin' role not found");
             }
-            final var user = session.users().getUserByUsername(auth.getSession().getRealm(), request.getUserId());
+            final var user = session.users().getUserByUsername(auth.session().getRealm(), request.getUserId());
 
             user.deleteRoleMapping(role);
         } else {
@@ -182,7 +182,7 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var client = auth.getClient();
+        final var client = auth.client();
 
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
             final var user = session.users().getUserById(session.getContext().getRealm(), request.getUserId());

@@ -56,10 +56,10 @@ class RaidPermissionsControllerTest {
     }
 
     private RaidPermissionsController createAuthenticatedController() {
-        when(authResult.getSession()).thenReturn(userSession);
+        when(authResult.session()).thenReturn(userSession);
         when(userSession.getUser()).thenReturn(currentUser);
         when(userSession.getRealm()).thenReturn(realm);
-        when(authResult.getClient()).thenReturn(client);
+        when(authResult.client()).thenReturn(client);
         return createController(authResult);
     }
 
