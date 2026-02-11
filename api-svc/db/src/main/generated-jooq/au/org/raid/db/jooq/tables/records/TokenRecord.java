@@ -8,11 +8,8 @@ import au.org.raid.db.jooq.tables.Token;
 
 import java.time.LocalDateTime;
 
-import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record3;
-import org.jooq.Record5;
-import org.jooq.Row5;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -21,7 +18,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * arn:aws:dynamodb:ap-southeast-2:005299621378:table/RAiD-TokenTable-1P6MFZ0WFEETH
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class TokenRecord extends UpdatableRecordImpl<TokenRecord> implements Record5<String, String, LocalDateTime, String, JSONB> {
+public class TokenRecord extends UpdatableRecordImpl<TokenRecord> {
 
     private static final long serialVersionUID = 1L;
 
@@ -107,135 +104,6 @@ public class TokenRecord extends UpdatableRecordImpl<TokenRecord> implements Rec
     @Override
     public Record3<String, String, LocalDateTime> key() {
         return (Record3) super.key();
-    }
-
-    // -------------------------------------------------------------------------
-    // Record5 type implementation
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row5<String, String, LocalDateTime, String, JSONB> fieldsRow() {
-        return (Row5) super.fieldsRow();
-    }
-
-    @Override
-    public Row5<String, String, LocalDateTime, String, JSONB> valuesRow() {
-        return (Row5) super.valuesRow();
-    }
-
-    @Override
-    public Field<String> field1() {
-        return Token.TOKEN.NAME;
-    }
-
-    @Override
-    public Field<String> field2() {
-        return Token.TOKEN.ENVIRONMENT;
-    }
-
-    @Override
-    public Field<LocalDateTime> field3() {
-        return Token.TOKEN.DATE_CREATED;
-    }
-
-    @Override
-    public Field<String> field4() {
-        return Token.TOKEN.TOKEN_;
-    }
-
-    @Override
-    public Field<JSONB> field5() {
-        return Token.TOKEN.S3_EXPORT;
-    }
-
-    @Override
-    public String component1() {
-        return getName();
-    }
-
-    @Override
-    public String component2() {
-        return getEnvironment();
-    }
-
-    @Override
-    public LocalDateTime component3() {
-        return getDateCreated();
-    }
-
-    @Override
-    public String component4() {
-        return getToken();
-    }
-
-    @Override
-    public JSONB component5() {
-        return getS3Export();
-    }
-
-    @Override
-    public String value1() {
-        return getName();
-    }
-
-    @Override
-    public String value2() {
-        return getEnvironment();
-    }
-
-    @Override
-    public LocalDateTime value3() {
-        return getDateCreated();
-    }
-
-    @Override
-    public String value4() {
-        return getToken();
-    }
-
-    @Override
-    public JSONB value5() {
-        return getS3Export();
-    }
-
-    @Override
-    public TokenRecord value1(String value) {
-        setName(value);
-        return this;
-    }
-
-    @Override
-    public TokenRecord value2(String value) {
-        setEnvironment(value);
-        return this;
-    }
-
-    @Override
-    public TokenRecord value3(LocalDateTime value) {
-        setDateCreated(value);
-        return this;
-    }
-
-    @Override
-    public TokenRecord value4(String value) {
-        setToken(value);
-        return this;
-    }
-
-    @Override
-    public TokenRecord value5(JSONB value) {
-        setS3Export(value);
-        return this;
-    }
-
-    @Override
-    public TokenRecord values(String value1, String value2, LocalDateTime value3, String value4, JSONB value5) {
-        value1(value1);
-        value2(value2);
-        value3(value3);
-        value4(value4);
-        value5(value5);
-        return this;
     }
 
     // -------------------------------------------------------------------------
