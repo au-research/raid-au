@@ -72,7 +72,7 @@ export const RaidForm = memo(
       setSelectedCodesData,
       getCodeById,
       globalData,
-      setSearchQueryState
+      setSearchQueryState,
     } = useCodesContext();
 
     const formConfig = formConfigService();
@@ -92,7 +92,7 @@ export const RaidForm = memo(
       reValidateMode: "onChange",
     });
 
-    const { control, trigger, formState, setValue, clearErrors } = formMethods;
+    const { control, trigger, formState, setValue, clearErrors, reset } = formMethods;
 
     const handleSubmit = useCallback(
       (data: RaidDto) => {
@@ -148,7 +148,13 @@ export const RaidForm = memo(
         clearErrors('subject');
         setSearchQueryState('');
       }
-    }, [raidData.subject, getCodeById, globalData]);
+    }, [raidData, getCodeById, globalData]);
+
+    useEffect(() => {
+      if (raidData) {
+        reset(raidData); // Updates form with new values when raidData changes
+      }
+    }, [raidData, reset]);
 
     return (
       <MetadataContext.Provider value={metadata}>
