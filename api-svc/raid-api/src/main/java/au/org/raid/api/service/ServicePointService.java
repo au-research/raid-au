@@ -30,11 +30,10 @@ public class ServicePointService {
 
         final var repository = repositoryService.create(servicePoint.getName(), password);
 
-        servicePoint.setPassword(password);
-        servicePoint.setPrefix(repository.getData().getRelationships().getPrefixes().getData().get(0).getId());
-        servicePoint.setRepositoryId(repository.getData().getAttributes().getSymbol());
+        final var repositoryId = repository.getData().getAttributes().getSymbol();
+        final var prefix = repository.getData().getRelationships().getPrefixes().getData().get(0).getId();
 
-        final var record = servicePointRecordFactory.create(servicePoint);
+        final var record = servicePointRecordFactory.create(servicePoint, repositoryId, prefix, password);
         return servicePointFactory.create(servicePointRepository.create(record));
     }
 
