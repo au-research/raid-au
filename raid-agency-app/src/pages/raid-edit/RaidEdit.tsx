@@ -68,7 +68,7 @@ export const RaidEdit = () => {
 
   const query = useQuery({
     queryKey: useMemo(() => ["editRaid", prefix, suffix], []),
-    queryFn: async () => await raidService.fetch(`${prefix}/${suffix}`),
+    queryFn: () => raidService.fetch(`${prefix}/${suffix}`),
     enabled: isInitialized && authenticated,
   });
 
