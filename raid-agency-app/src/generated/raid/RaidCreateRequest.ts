@@ -1,4 +1,4 @@
-﻿import type { RelatedObject } from './RelatedObject';
+import type { RelatedObject } from './RelatedObject';
 import type { Description } from './Description';
 import type { Organisation } from './Organisation';
 import type { ModelDate } from './ModelDate';
@@ -11,11 +11,9 @@ import type { AlternateIdentifier } from './AlternateIdentifier';
 import type { Subject } from './Subject';
 import type { Id } from './Id';
 import type { AlternateUrl } from './AlternateUrl';
-import type { TraditionalKnowledgeLabel } from './TraditionalKnowledgeLabel';
 import type { SpatialCoverage } from './SpatialCoverage';
 
 export interface RaidCreateRequest {
-    traditionalKnowledgeLabel?: Array<TraditionalKnowledgeLabel>;
     metadata?: Metadata;
     identifier?: Id;
     title?: Array<Title>;

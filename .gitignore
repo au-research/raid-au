@@ -5,7 +5,7 @@
 # gradle build artifacts
 build/
 
-generated/
+api-svc/**/generated/
 
 # Default location for us to put files for input/output purposes.  
 # Avoids polluting the root of the repo, but not under the /build dir so
