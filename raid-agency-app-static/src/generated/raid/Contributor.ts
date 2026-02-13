@@ -1,4 +1,4 @@
-﻿import type { ContributorPosition } from './ContributorPosition';
+import type { ContributorPosition } from './ContributorPosition';
 import type { ContributorRole } from './ContributorRole';
 
 export interface Contributor {
@@ -12,12 +12,4 @@ export interface Contributor {
     role: Array<ContributorRole>;
     leader?: boolean;
     contact?: boolean;
-    orcidInfo: {
-        orcidId: string;
-        authenticated: boolean;
-        displayName: string | null;
-        profileUrl: string | null;
-        visibility: 'public' | 'limited' | 'private';
-        style: string;
-    };
 }

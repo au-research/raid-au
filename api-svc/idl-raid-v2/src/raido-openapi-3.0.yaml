@@ -949,21 +949,10 @@ components:
           type: string
           description: The PID of the institution that will own the RAiDs (currently only RORs are supported).
           example: https://ror.org/038sjwq14
-        repositoryId:
-          type: string
-          description: The Datacite repository id. This needs to be created in Fabrica.
-          example: VBGR.QJYTRX
         groupId:
           type: string
           description: The Keycloak group id (UUID) associated with the service point.
           example: ba0b01a6-726f-464f-b501-454a10096826
-        prefix:
-          type: string
-          description: The prefix used in the handle when minting RAiDs. Assigned when the repository is created.
-          example: 10.82481
-        password:
-          type: string
-          description: The password of the repository in Datacite.
         appWritesEnabled:
           type: boolean
           description: Whether users are able to edit RAiDs in the in the app. This can cause conflicts when also creating/updating RAiDs through the API.

@@ -1,4 +1,5 @@
-﻿export interface DescriptionType {
+
+export interface DescriptionType {
     id: string;
     schemaUri: string;
 }

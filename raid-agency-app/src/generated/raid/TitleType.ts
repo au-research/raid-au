@@ -1,4 +1,5 @@
-﻿export interface TitleType {
+
+export interface TitleType {
     id?: string;
     schemaUri?: string;
 }
