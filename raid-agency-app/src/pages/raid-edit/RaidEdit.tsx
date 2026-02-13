@@ -171,7 +171,7 @@ export const RaidEdit = () => {
             suffix,
           })}
         />
-        {query.isFetching && query.isPending ?
+        {query.isFetching ?
         (<Loading />)
         : (<RaidForm
           prefix={prefix}
