@@ -36,11 +36,10 @@ const makeServicePoint = (overrides: Partial<ServicePoint> = {}): ServicePoint =
   ...overrides,
 });
 
-const renderForm = (servicePoint: ServicePoint, servicePoints: ServicePoint[] = []) => {
+const renderForm = (servicePoint: ServicePoint) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  queryClient.setQueryData(["servicePoints"], servicePoints);
 
   return render(
     <QueryClientProvider client={queryClient}>
@@ -55,36 +54,42 @@ describe("ServicePointUpdateForm", () => {
     mockUpdateServicePoint.mockResolvedValue(makeServicePoint());
   });
 
-  it("submits successfully when repositoryId is undefined", async () => {
-    const sp = makeServicePoint({ repositoryId: undefined });
-    renderForm(sp, [sp, makeServicePoint({ id: 2, repositoryId: undefined })]);
+  it("displays repositoryId and prefix as read-only fields", () => {
+    const sp = makeServicePoint({ repositoryId: "ARDC.TEST", prefix: "10.99999" });
+    renderForm(sp);
 
-    fireEvent.click(screen.getByRole("button", { name: /update/i }));
+    const repoField = screen.getByLabelText("Repository ID");
+    const prefixField = screen.getByLabelText("Prefix");
 
-    await waitFor(() => {
-      expect(mockUpdateServicePoint).toHaveBeenCalled();
-    });
+    expect(repoField).toBeDisabled();
+    expect(repoField).toHaveValue("ARDC.TEST");
+    expect(prefixField).toBeDisabled();
+    expect(prefixField).toHaveValue("10.99999");
   });
 
-  it("submits successfully when repositoryId is null", async () => {
-    const sp = makeServicePoint({ repositoryId: null as unknown as string });
-    renderForm(sp, [sp, makeServicePoint({ id: 2, repositoryId: null as unknown as string })]);
+  it("displays empty strings when repositoryId and prefix are undefined", () => {
+    const sp = makeServicePoint({ repositoryId: undefined, prefix: undefined });
+    renderForm(sp);
 
-    fireEvent.click(screen.getByRole("button", { name: /update/i }));
+    const repoField = screen.getByLabelText("Repository ID");
+    const prefixField = screen.getByLabelText("Prefix");
 
-    await waitFor(() => {
-      expect(mockUpdateServicePoint).toHaveBeenCalled();
-    });
+    expect(repoField).toHaveValue("");
+    expect(prefixField).toHaveValue("");
   });
 
-  it("submits successfully when repositoryId has a value", async () => {
-    const sp = makeServicePoint({ repositoryId: "ARDC.TEST" });
-    renderForm(sp, [sp, makeServicePoint({ id: 2, repositoryId: "ARDC.OTHER" })]);
+  it("submits successfully without repositoryId or prefix in payload", async () => {
+    const sp = makeServicePoint({ repositoryId: "ARDC.TEST", prefix: "10.99999" });
+    renderForm(sp);
 
     fireEvent.click(screen.getByRole("button", { name: /update/i }));
 
     await waitFor(() => {
       expect(mockUpdateServicePoint).toHaveBeenCalled();
     });
+
+    const callArgs = mockUpdateServicePoint.mock.calls[0][0];
+    expect(callArgs.data.servicePointUpdateRequest).not.toHaveProperty("repositoryId");
+    expect(callArgs.data.servicePointUpdateRequest).not.toHaveProperty("prefix");
   });
 });
