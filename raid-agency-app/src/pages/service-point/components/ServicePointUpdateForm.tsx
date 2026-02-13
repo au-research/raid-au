@@ -97,23 +97,9 @@ export const ServicePointUpdateForm = ({
   });
 
   const onSubmit = (item: UpdateServicePointRequest) => {
-    // Set identifier owner if selected
-      if (selectedValue) {
-        item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
-      }
-      // Check for duplicate repository ID
-      const apiData = queryClient.getQueryData<ServicePoint[]>(["servicePoints"]);
-      const isDuplicateRepositoryID = apiData?.some(
-        (sp) => sp.repositoryId === item.servicePointUpdateRequest.repositoryId && sp.id !== item.id
-      );
-      if (isDuplicateRepositoryID) {
-        form.setError("servicePointUpdateRequest.repositoryId", {
-          type: "manual",
-          message: messages.servicePointUniqueRepositoryID
-        });
-        return;
-      }
-     // Proceed with mutation
+    if (selectedValue) {
+      item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
+    }
     setAppState({ ...appState, loading: true });
     updateServicePointMutation.mutate(item);
   };
