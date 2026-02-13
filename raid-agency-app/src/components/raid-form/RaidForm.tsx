@@ -27,6 +27,7 @@ import { formConfigService, transformFormData } from "@/services/form-service";
 import { createContext } from "react";
 import { useCodesContext } from "@/components/tree-view/context/CodesContext";
 import { CodeItem } from "../tree-view/context/CodesProvider";
+import { Loading } from "@/pages/loading";
 
 // Define JSON types locally since '@/types/json-types' is missing
 type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
@@ -77,9 +78,13 @@ export const RaidForm = memo(
 
     const formConfig = formConfigService();
     const [formSchema, setFormSchema] = useState<JSONObject | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      formConfig.getFormConfig().then((schema: JSONObject) => setFormSchema(schema));
+      formConfig.getFormConfig().then((schema: JSONObject) => {
+        setFormSchema(schema);
+        setLoading(false);
+      });
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -121,6 +126,7 @@ export const RaidForm = memo(
 
     useEffect(() => {
       if (!hasLoadedInitialData.current && Array.isArray(raidData?.subject) && raidData.subject.length > 0 && globalData) {
+        setLoading(true);
         const selectedSubjects = Array.isArray(raidData.subject)
           ? raidData.subject
           : [];
@@ -140,6 +146,7 @@ export const RaidForm = memo(
           setSelectedCodesData(codesArray);
           setSearchQueryState('')
           hasLoadedInitialData.current = true; // Mark as loaded
+          setLoading(false);
         }
       } else if ((!raidData?.subject || raidData.subject.length === 0) && isInitialLoad) {
         setSelectedCodes([]);
@@ -147,17 +154,24 @@ export const RaidForm = memo(
         setValue('subject', [])
         clearErrors('subject');
         setSearchQueryState('');
+        setLoading(false);
       }
-    }, [raidData, getCodeById, globalData]);
+    }, [raidData.subject, getCodeById, globalData, hasLoadedInitialData.current]);
 
     useEffect(() => {
       if (raidData) {
         reset(raidData); // Updates form with new values when raidData changes
+        setSelectedCodes([]);
+        setSelectedCodesData([]);
+        hasLoadedInitialData.current = false; // Reset loaded flag when raidData changes
       }
     }, [raidData, reset]);
 
     return (
-      <MetadataContext.Provider value={metadata}>
+      loading ? (
+        <Loading />
+      ) : (
+        <MetadataContext.Provider value={metadata}>
         <FormProvider {...formMethods}>
           <form
             onSubmit={formMethods.handleSubmit(handleSubmit)}
@@ -298,6 +312,7 @@ export const RaidForm = memo(
           </form>
         </FormProvider>
       </MetadataContext.Provider>
+      )
     );
   }
 );

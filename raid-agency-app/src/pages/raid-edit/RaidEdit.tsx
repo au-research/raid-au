@@ -126,8 +126,6 @@ export const RaidEdit = () => {
     updateMutation.mutate(raidRequest(data));
   };
 
-  console.log("RaidEdit render with query data:", {query});
-
   if (query.isPending) {
     return <Loading />;
   }
@@ -173,7 +171,7 @@ export const RaidEdit = () => {
             suffix,
           })}
         />
-        {query.isFetching ?
+        {query.isFetching && query.isPending ?
         (<Loading />)
         : (<RaidForm
           prefix={prefix}
