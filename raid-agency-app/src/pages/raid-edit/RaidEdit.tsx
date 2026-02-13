@@ -67,7 +67,7 @@ export const RaidEdit = () => {
   }
 
   const query = useQuery({
-    queryKey: useMemo(() => ["raids", prefix, suffix], []),
+    queryKey: useMemo(() => ["editRaid", prefix, suffix], []),
     queryFn: () => raidService.fetch(`${prefix}/${suffix}`),
     enabled: isInitialized && authenticated,
   });
@@ -85,6 +85,7 @@ export const RaidEdit = () => {
     if (
       !servicePointsQuery.isLoading &&
       servicePointsQuery.data &&
+      !query.isLoading &&
       query.data
     ) {
       const disabledServicePoints = servicePointsQuery.data
@@ -170,13 +171,16 @@ export const RaidEdit = () => {
             suffix,
           })}
         />
-        <RaidForm
+        {query.isFetching ?
+        (<Loading />)
+        : (<RaidForm
           prefix={prefix}
           suffix={suffix}
           raidData={raidData}
           onSubmit={handleSubmit}
           isSubmitting={updateMutation.isPending}
-        />
+        />)
+      }
       </Stack>
     </Container>
   );

@@ -9,13 +9,13 @@ import {
   History as HistoryIcon,
   HistoryEdu as HistoryEduIcon,
   Home as HomeIcon,
-  SettingsBackupRestore as SettingsBackupRestoreIcon,
 } from "@mui/icons-material";
 import {Box, Button, Card, CardContent, CardHeader, Container, Grid, Stack, Typography,} from "@mui/material";
 
 import {useQuery} from "@tanstack/react-query";
-import {Navigate, useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {raidService} from "@/services/raid-service.ts";
+import { Eye } from 'lucide-react';
 
 export const RaidHistory = () => {
   const { authenticated, isInitialized, token } = useKeycloak();
@@ -25,7 +25,7 @@ export const RaidHistory = () => {
   const handle = `${prefix}/${suffix}`;
 
   const raidHistoryQuery = useQuery({
-    queryKey: ["raids", prefix, suffix],
+    queryKey: ["raidHistory", prefix, suffix],
     queryFn: () => raidService.fetchHistory(handle),
     enabled: isInitialized && authenticated,
   });
@@ -83,8 +83,8 @@ export const RaidHistory = () => {
                           navigate(`/raids/${prefix}/${suffix}/${el.version}`);
                         }}
                       >
-                        <SettingsBackupRestoreIcon sx={{ mr: 1 }} />
-                        Restore
+                        <Eye style={{ marginRight: 8 }} />
+                        View
                       </Button>
                     }
                   />
