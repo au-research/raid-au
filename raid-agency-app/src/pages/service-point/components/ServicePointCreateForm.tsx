@@ -55,6 +55,7 @@ export const ServicePointCreateForm = () => {
       techEmail: "",
       enabled: false,
       appWritesEnabled: false,
+      groupId: "",
     },
   };
 
