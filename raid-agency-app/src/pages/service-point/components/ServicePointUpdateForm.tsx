@@ -51,7 +51,12 @@ export const ServicePointUpdateForm = ({
   const initalServicePointValues: UpdateServicePointRequest = {
     id: servicePoint.id,
     servicePointUpdateRequest: {
-      ...servicePoint,
+      id: servicePoint.id,
+      name: servicePoint.name,
+      adminEmail: servicePoint.adminEmail,
+      techEmail: servicePoint.techEmail,
+      enabled: servicePoint.enabled,
+      appWritesEnabled: servicePoint.appWritesEnabled,
       groupId: servicePoint.groupId || "",
       identifierOwner: servicePoint.identifierOwner || "",
     },
@@ -97,23 +102,9 @@ export const ServicePointUpdateForm = ({
   });
 
   const onSubmit = (item: UpdateServicePointRequest) => {
-    // Set identifier owner if selected
-      if (selectedValue) {
-        item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
-      }
-      // Check for duplicate repository ID
-      const apiData = queryClient.getQueryData<ServicePoint[]>(["servicePoints"]);
-      const isDuplicateRepositoryID = apiData?.some(
-        (sp) => sp.repositoryId === item.servicePointUpdateRequest.repositoryId && sp.id !== item.id
-      );
-      if (isDuplicateRepositoryID) {
-        form.setError("servicePointUpdateRequest.repositoryId", {
-          type: "manual",
-          message: messages.servicePointUniqueRepositoryID
-        });
-        return;
-      }
-     // Proceed with mutation
+    if (selectedValue) {
+      item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
+    }
     setAppState({ ...appState, loading: true });
     updateServicePointMutation.mutate(item);
   };
@@ -272,52 +263,23 @@ export const ServicePointUpdateForm = ({
                                 sx={{mt: 2}}
                             >
                                 <div>
-                                    <Controller
-                                        name="servicePointUpdateRequest.repositoryId"
-                                        control={form.control}
-                                        render={({field}) => (
-                                            <TextField
-                                                disabled={true}
-                                                label="Repository ID *"
-                                                variant="outlined"
-                                                size="small"
-                                                fullWidth
-                                                {...field}
-                                                value={field.value}
-                                                error={
-                                                    !!form.formState.errors?.servicePointUpdateRequest
-                                                        ?.repositoryId
-                                                }
-                                                helperText={
-                                                    form.formState.errors?.servicePointUpdateRequest?.repositoryId
-                                                        ?.message
-                                                }
-                                            />
-                                        )}
+                                    <TextField
+                                        disabled
+                                        label="Repository ID"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        value={servicePoint.repositoryId ?? ""}
                                     />
                                 </div>
                                 <div>
-                                    <Controller
-                                        name="servicePointUpdateRequest.prefix"
-                                        control={form.control}
-                                        render={({field}) => (
-                                            <TextField
-                                                disabled={true}
-                                                label="Prefix *"
-                                                variant="outlined"
-                                                size="small"
-                                                fullWidth
-                                                {...field}
-                                                value={field.value}
-                                                error={
-                                                    !!form.formState.errors?.servicePointUpdateRequest?.prefix
-                                                }
-                                                helperText={
-                                                    form.formState.errors?.servicePointUpdateRequest?.prefix
-                                                        ?.message
-                                                }
-                                            />
-                                        )}
+                                    <TextField
+                                        disabled
+                                        label="Prefix"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        value={servicePoint.prefix ?? ""}
                                     />
                                 </div>
                             </Stack>

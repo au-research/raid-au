@@ -9,10 +9,12 @@ export function accessDataGenerator(): Access {
       id: accessType[0].uri,
       schemaUri: accessTypeSchema[0].uri,
     },
-    statement: undefined,
-    language: {
-      id: "eng",
-      schemaUri: languageSchema[0].uri,
+    statement: {
+      text: "",
+      language: {
+        id: "eng",
+        schemaUri: languageSchema[0].uri,
+    },
     },
     embargoExpiry: undefined,
   };
