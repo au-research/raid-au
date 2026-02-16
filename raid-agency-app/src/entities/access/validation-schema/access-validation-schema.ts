@@ -23,11 +23,11 @@ const accessLanguageValidationSchema = z.object({
 
 const accessStatementValidationSchema = z.object({
   text: z.string().optional(),
+  language: accessLanguageValidationSchema.optional(),
 }).optional();
 
 export const accessValidationSchema = z.object({
   type: accessTypeValidationSchema,
   statement: accessStatementValidationSchema,
-  language: accessLanguageValidationSchema.optional(),
   embargoExpiry: yearMonthDayPatternSchema.nullish(),
 });
