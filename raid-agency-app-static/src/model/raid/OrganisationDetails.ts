@@ -1,6 +1,6 @@
 import type { Organisation } from "@/generated/raid";
 
-export interface RORDetails extends Organisation {
+export interface OrganisationDetails extends Organisation {
     rorDetails: {
         rorId: string;
         name: string;
