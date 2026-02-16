@@ -456,6 +456,9 @@ components:
         spatialCoverage:
           type: array
           items: { $ref: '#/components/schemas/SpatialCoverage' }
+        traditionalKnowledgeLabel:
+          type: array
+          items: { $ref: '#/components/schemas/TraditionalKnowledgeLabel' }
     RaidUpdateRequest:
       type: object
       required:
@@ -500,6 +503,9 @@ components:
         spatialCoverage:
           type: array
           items: { $ref: '#/components/schemas/SpatialCoverage' }
+        traditionalKnowledgeLabel:
+            type: array
+            items: { $ref: '#/components/schemas/TraditionalKnowledgeLabel' }
     RaidPatchRequest:
       type: object
       properties:

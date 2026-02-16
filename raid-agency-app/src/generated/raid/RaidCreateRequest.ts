@@ -12,6 +12,7 @@ import type { Subject } from './Subject';
 import type { Id } from './Id';
 import type { AlternateUrl } from './AlternateUrl';
 import type { SpatialCoverage } from './SpatialCoverage';
+import { TraditionalKnowledgeLabel } from './TraditionalKnowledgeLabel';
 
 export interface RaidCreateRequest {
     metadata?: Metadata;
@@ -28,4 +29,5 @@ export interface RaidCreateRequest {
     relatedObject?: Array<RelatedObject>;
     alternateIdentifier?: Array<AlternateIdentifier>;
     spatialCoverage?: Array<SpatialCoverage>;
+    traditionalKnowledgeLabel?: Array<TraditionalKnowledgeLabel>;
 }
