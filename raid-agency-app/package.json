@@ -33,7 +33,7 @@
     "@vitest/coverage-v8": "2.0.5",
     "dayjs": "1.11.10",
     "dotenv": "16.4.5",
-    "keycloak-js": "^23.0.7",
+    "keycloak-js": "26.2.3",
     "lucide-react": "^0.541.0",
     "npm": "10.5.0",
     "psl": "^1.15.0",
