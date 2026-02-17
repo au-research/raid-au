@@ -91,7 +91,7 @@ const AccessForm = memo(
                   width={12}
                 />
                 <LanguageSelector
-                  name={`access.language.id`}
+                  name={`access.statement.language.id`}
                   width={6}
                 />
 

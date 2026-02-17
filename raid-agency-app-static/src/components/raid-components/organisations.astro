@@ -1,10 +1,10 @@
 ---
 import InfoField from "@/components/info-field.astro";
-import type { Organisation } from "@/generated/raid";
+import type { OrganisationDetails } from "@/model/raid";
 import OrganisationRoles from "./organisation-roles.astro";
 
 interface Props {
-  organisations: Organisation[];
+  organisations: OrganisationDetails[];
 }
 
 const { organisations } = Astro.props as Props;

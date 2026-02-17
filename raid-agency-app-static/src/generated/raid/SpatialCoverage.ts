@@ -1,4 +1,4 @@
-﻿import type { SpatialCoveragePlace } from './SpatialCoveragePlace';
+import type { SpatialCoveragePlace } from './SpatialCoveragePlace';
 
 export interface SpatialCoverage {
     id?: string;

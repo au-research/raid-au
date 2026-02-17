@@ -70,6 +70,7 @@ export const RaidDisplay = () => {
             prefix={prefix}
             suffix={suffix}
             title={raidData?.title?.map((el) => el.text).join("; ") || ""}
+            version={version}
         />
         <Container>
           <Stack direction="column" spacing={2}>

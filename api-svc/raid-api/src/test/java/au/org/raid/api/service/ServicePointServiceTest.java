@@ -70,7 +70,7 @@ class ServicePointServiceTest {
 
         final var passwordCaptor = ArgumentCaptor.forClass(String.class);
         when(repositoryService.create(eq(name), passwordCaptor.capture())).thenReturn(dataciteRepository);
-        when(servicePointRecordFactory.create(request)).thenReturn(record);
+        when(servicePointRecordFactory.create(eq(request), eq(repositorySymbol), eq(prefix), any(String.class))).thenReturn(record);
         when(servicePointRepository.create(record)).thenReturn(saved);
         when(servicePointFactory.create(saved)).thenReturn(servicePoint);
 
@@ -78,9 +78,7 @@ class ServicePointServiceTest {
 
         assertThat(result, is(servicePoint));
         assertThat(passwordCaptor.getValue(), hasLength(20));
-        assertThat(request.getPassword(), is(passwordCaptor.getValue()));
-        assertThat(request.getPrefix(), is(prefix));
-        assertThat(request.getRepositoryId(), is(repositorySymbol));
+        verify(servicePointRecordFactory).create(request, repositorySymbol, prefix, passwordCaptor.getValue());
     }
 
     @Test

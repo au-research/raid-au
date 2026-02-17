@@ -54,7 +54,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -91,7 +91,7 @@ public class GroupController {
         if (this.auth == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -157,7 +157,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -199,7 +199,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -241,7 +241,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -277,7 +277,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -319,7 +319,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         user.joinGroup(session.groups().getGroupById(session.getContext().getRealm(), request.getGroupId()));
 
         return cors.buildCorsResponse("PUT",
@@ -362,7 +362,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         user.setAttribute("activeGroupId", List.of(request.getActiveGroupId()));
 
         return cors.buildCorsResponse("PUT",
@@ -400,7 +400,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         final var userGroups = user.getGroupsStream()
                 .map(g -> new GroupDetails(g.getId(), g.getName()))
                 .toList();
@@ -446,7 +446,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.session().getUser();
+        final var user = auth.getSession().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }

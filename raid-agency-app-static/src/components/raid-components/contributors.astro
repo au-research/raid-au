@@ -2,11 +2,11 @@
 import InfoField from "@/components/info-field.astro";
 import ContributorPositions from "@/components/raid-components/contributor-positions.astro";
 import ContributorRoles from "@/components/raid-components/contributor-roles.astro";
-import type { Contributor } from "@/generated/raid";
+import type { ContributorDetails } from "@/model/raid";
 import Icon from '@/components/icons.astro';
 
 interface Props {
-  contributors: Contributor[];
+  contributors: ContributorDetails[];
 }
 
 const { contributors = [] } = Astro.props as Props;
