@@ -35,12 +35,13 @@ const AccessForm = memo(
       name: "access.type.id",
     });
     const { setValue, watch } = useFormContext();
-    const schemaUriPath = `access.language.schemaUri`;
-    const currentSchemaUri = watch(schemaUriPath);
+    const languageId = `access.statement.language.id`;
+    const schemaUriPath = `access.statement.language.schemaUri`;
+    const currentSchemaUri = watch(languageId);
 
     useEffect(() => {
       const embargoed = accessTypeId?.includes("c_f1cf/");
-      if (!currentSchemaUri && embargoed && languageSchema?.[0]?.uri) {
+      if (embargoed && languageSchema?.[0]?.uri) {
         setValue(schemaUriPath, languageSchema[0].uri);
       }
     }, [currentSchemaUri, setValue, schemaUriPath, accessTypeId]);
