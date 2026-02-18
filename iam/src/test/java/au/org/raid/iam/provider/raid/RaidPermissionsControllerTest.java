@@ -46,16 +46,16 @@ class RaidPermissionsControllerTest {
         lenient().when(keycloakCors.allowedMethods(any(String[].class))).thenReturn(keycloakCors);
         lenient().when(keycloakCors.auth()).thenReturn(keycloakCors);
         lenient().when(keycloakCors.preflight()).thenReturn(keycloakCors);
-        lenient().when(keycloakCors.builder(any())).thenReturn(keycloakCors);
-        lenient().when(keycloakCors.build()).thenReturn(Response.ok().build());
+        lenient().when(keycloakCors.add(any(Response.ResponseBuilder.class)))
+                .thenAnswer(inv -> ((Response.ResponseBuilder) inv.getArgument(0)).build());
     }
 
     private RaidPermissionsController createAuthenticatedController() {
         try (MockedConstruction<AppAuthManager.BearerTokenAuthenticator> ignored =
                      mockConstruction(AppAuthManager.BearerTokenAuthenticator.class,
                              (mock, ctx) -> when(mock.authenticate()).thenReturn(authResult))) {
-            when(authResult.getSession()).thenReturn(userSession);
-            when(authResult.getClient()).thenReturn(client);
+            when(authResult.session()).thenReturn(userSession);
+            when(authResult.client()).thenReturn(client);
             return new RaidPermissionsController(session);
         }
     }
