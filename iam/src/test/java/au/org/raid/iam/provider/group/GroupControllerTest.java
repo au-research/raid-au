@@ -63,7 +63,7 @@ class GroupControllerTest {
         try (MockedConstruction<AppAuthManager.BearerTokenAuthenticator> ignored =
                      mockConstruction(AppAuthManager.BearerTokenAuthenticator.class,
                              (mock, ctx) -> when(mock.authenticate()).thenReturn(authResult))) {
-            when(authResult.getSession()).thenReturn(userSession);
+            when(authResult.session()).thenReturn(userSession);
             when(userSession.getUser()).thenReturn(user);
             return new GroupController(session);
         }

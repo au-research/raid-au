@@ -62,11 +62,9 @@ public class RaidPermissionsController {
     @OPTIONS
     @Path("/raid-user")
     public Response addRaidUserPreflight() {
-        return Response.fromResponse(addCorsHeaders("POST", "DELETE")
-                        .preflight()
-                        .builder(Response.ok())
-                        .build())
-                .build();
+        return addCorsHeaders("POST", "DELETE")
+                .preflight()
+                .add(Response.ok());
     }
 
     @POST
@@ -78,7 +76,7 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var client = auth.getClient();
+        final var client = auth.client();
 
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
                 addUserToRaid(request.getUserId(), request.getHandle());
@@ -86,13 +84,8 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     @DELETE
@@ -104,7 +97,7 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var client = auth.getClient();
+        final var client = auth.client();
 
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
             removeUserFromRaid(request.getUserId(), request.getHandle());
@@ -112,23 +105,16 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     @OPTIONS
     @Path("/raid-admin")
     public Response addRaidAdminPreflight() {
-        return Response.fromResponse(addCorsHeaders("POST", "DELETE")
-                        .preflight()
-                        .builder(Response.ok())
-                        .build())
-                .build();
+        return addCorsHeaders("POST", "DELETE")
+                .preflight()
+                .add(Response.ok());
     }
 
 
@@ -141,27 +127,22 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var currentUser = auth.getSession().getUser();
+        final var currentUser = auth.session().getUser();
 
         if (currentUser.getRoleMappingsStream().anyMatch(role -> role.getName().equals("service-point-user"))) {
-            final var role = auth.getSession().getRealm().getRole("raid-admin");
+            final var role = auth.session().getRealm().getRole("raid-admin");
             if (role == null) {
                 throw new IllegalStateException("'raid-admin' role not found");
             }
-            final var user = session.users().getUserByUsername(auth.getSession().getRealm(), request.getUserId());
+            final var user = session.users().getUserByUsername(auth.session().getRealm(), request.getUserId());
 
             user.grantRole(role);
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     @DELETE
@@ -173,27 +154,22 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var currentUser = auth.getSession().getUser();
+        final var currentUser = auth.session().getUser();
 
         if (currentUser.getRoleMappingsStream().anyMatch(role -> role.getName().equals("service-point-user"))) {
-            final var role = auth.getSession().getRealm().getRole("raid-admin");
+            final var role = auth.session().getRealm().getRole("raid-admin");
             if (role == null) {
                 throw new IllegalStateException("'raid-admin' role not found");
             }
-            final var user = session.users().getUserByUsername(auth.getSession().getRealm(), request.getUserId());
+            final var user = session.users().getUserByUsername(auth.session().getRealm(), request.getUserId());
 
             user.deleteRoleMapping(role);
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
 
@@ -206,7 +182,7 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var client = auth.getClient();
+        final var client = auth.client();
 
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
             final var user = session.users().getUserById(session.getContext().getRealm(), request.getUserId());
@@ -221,13 +197,8 @@ public class RaidPermissionsController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return Response.fromResponse(
-                        addCorsHeaders("POST")
-                                .builder(Response.ok())
-                                .build()
-                )
-                .entity("{}")
-                .build();
+        return addCorsHeaders("POST")
+                .add(Response.ok().entity("{}"));
     }
 
     private void addUserToRaid(final String userId, final String handle) {
