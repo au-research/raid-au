@@ -1,9 +1,11 @@
 /**
- * ROR (Research Organization Registry) Details Fetching Service
+ * ROR (Research Organization Registry) Details Fetching Service with Caching
  * 
  * Fetches organization information from ROR API and adds it to RAID data.
  * ROR provides standardized information about research organizations worldwide.
  */
+
+import { rorCache } from './apiCache.js';
 
 // ROR API configuration
 const ROR_API_BASE = 'https://api.ror.org/organizations';
@@ -33,6 +35,15 @@ export async function fetchRorDetails(rorId, makeRequestWithRetry, config) {
     return null;
   }
 
+  // Check cache first if enabled
+  if (config.enableCaching) {
+    const cacheKey = rorCache.generateKey('details', cleanRorId);
+    const cached = rorCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const url = `${ROR_API_BASE}/${cleanRorId}`;
 
   try {
@@ -44,17 +55,32 @@ export async function fetchRorDetails(rorId, makeRequestWithRetry, config) {
     });
 
     const data = JSON.parse(response.data);
-    return {
+    const result = {
       rorId: cleanRorId,
       name: data.names.find(name => 
-      name.types.includes("ror_display")
-    )?.value || data.name,
+        name.types.includes("ror_display")
+      )?.value || data.name,
       rorUrl: `https://ror.org/${cleanRorId}`
     };
+
+    // Cache the result if caching is enabled
+    if (config.enableCaching) {
+      const cacheKey = rorCache.generateKey('details', cleanRorId);
+      rorCache.set(cacheKey, result);
+    }
+
+    return result;
   } catch (error) {
     if (config.verboseLogging) {
       console.warn(`Failed to fetch ROR data for ${cleanRorId}:`, error.message);
     }
+
+    // Cache null result to avoid repeated failed requests
+    if (config.enableCaching) {
+      const cacheKey = rorCache.generateKey('details', cleanRorId);
+      rorCache.set(cacheKey, null);
+    }
+
     return null;
   }
 }
@@ -99,7 +125,7 @@ export async function processBatchRorDetails(rorIds, makeRequestWithRetry, confi
  * Searches for ROR IDs in various fields (organizations, contributors, etc.)
  */
 export async function addRorDetailsToRaidData(raidData, makeRequestWithRetry, config, stats) {
-  console.log('Fetching ROR organization details...', config);
+  console.log('Fetching ROR organization details...');
 
   if (!Array.isArray(raidData)) {
     console.error('Error: RAID data is not an array');
@@ -125,7 +151,11 @@ export async function addRorDetailsToRaidData(raidData, makeRequestWithRetry, co
       });
     }
   });
+  
   console.log(`Found ${stats.totalRorIds} ROR IDs to process`);
+  if (config.enableCaching) {
+    console.log('ROR caching: ENABLED');
+  }
 
   if (allRorIds.length === 0) {
     console.log('No ROR IDs found in RAID data');
@@ -167,6 +197,11 @@ export async function addRorDetailsToRaidData(raidData, makeRequestWithRetry, co
   }
 
   console.log('\n'); // New line after progress indicator
+
+  // Print cache statistics if caching is enabled
+  if (config.enableCaching) {
+    rorCache.printStats('ROR');
+  }
 
   return raidData;
 }
