@@ -1,9 +1,11 @@
 /**
- * ORCID Name Fetching Service with Authentication Status
+ * ORCID Name Fetching Service with Authentication Status and Caching
  * 
  * Fetches display names from ORCID, checks visibility settings,
- * and verifies authentication/account status.
+ * verifies authentication/account status, and caches responses.
  */
+
+import { orcidCache } from './apiCache.js';
 
 // ORCID API configuration
 const getOrcidConfig = (env) => {
@@ -43,8 +45,17 @@ export async function checkOrcidAuthStatus(orcidId, makeRequestWithRetry, config
       error: 'Invalid ORCID ID format'
     };
   }
+
+  // Check cache first if enabled
+  if (config.enableCaching) {
+    const cacheKey = orcidCache.generateKey('auth', cleanOrcidId);
+    const cached = orcidCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const orcidAPIUrl = orcidId.includes('sandbox') ? 'https://pub.sandbox.orcid.org/v3.0' : 'https://pub.orcid.org/v3.0';
-  //const orcidConfig = getOrcidConfig(config.orcidEnv || 'production');
   const url = `${orcidAPIUrl}/${cleanOrcidId}/record`;
 
   try {
@@ -58,7 +69,7 @@ export async function checkOrcidAuthStatus(orcidId, makeRequestWithRetry, config
     const data = JSON.parse(response.data);
     const history = data.history;
 
-    return {
+    const result = {
       exists: true,
       authenticated: true,
       statusCode: response.statusCode,
@@ -69,16 +80,25 @@ export async function checkOrcidAuthStatus(orcidId, makeRequestWithRetry, config
       lastModified: history?.['last-modified-date']?.value,
       source: history?.source,
     };
+
+    // Cache the result if caching is enabled
+    if (config.enableCaching) {
+      const cacheKey = orcidCache.generateKey('auth', cleanOrcidId);
+      orcidCache.set(cacheKey, result);
+    }
+
+    return result;
   } catch (error) {
     // Handle different error statuses
+    let result;
     if (error.message.includes('HTTP 404')) {
-      return {
+      result = {
         exists: false,
         authenticated: false,
         error: 'ORCID record not found'
       };
     } else if (error.message.includes('HTTP 409')) {
-      return {
+      result = {
         exists: true,
         authenticated: false,
         deactivated: true,
@@ -88,12 +108,20 @@ export async function checkOrcidAuthStatus(orcidId, makeRequestWithRetry, config
       if (config.verboseLogging) {
         console.warn(`Error checking ORCID status for ${cleanOrcidId}:`, error.message);
       }
-      return {
+      result = {
         exists: false,
         authenticated: false,
         error: error.message
       };
     }
+
+    // Cache error results too to avoid repeated failed requests
+    if (config.enableCaching) {
+      const cacheKey = orcidCache.generateKey('auth', cleanOrcidId);
+      orcidCache.set(cacheKey, result);
+    }
+
+    return result;
   }
 }
 
@@ -108,6 +136,15 @@ export async function fetchOrcidPerson(orcidId, makeRequestWithRetry, config) {
     return null;
   }
 
+  // Check cache first if enabled
+  if (config.enableCaching) {
+    const cacheKey = orcidCache.generateKey('person', cleanOrcidId);
+    const cached = orcidCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const orcidConfig = getOrcidConfig(config.orcidEnv || 'production');
   const url = `${orcidConfig.publicApiUrl}/${cleanOrcidId}/person`;
 
@@ -119,11 +156,26 @@ export async function fetchOrcidPerson(orcidId, makeRequestWithRetry, config) {
       }
     });
 
-    return JSON.parse(response.data);
+    const data = JSON.parse(response.data);
+
+    // Cache the result if caching is enabled
+    if (config.enableCaching) {
+      const cacheKey = orcidCache.generateKey('person', cleanOrcidId);
+      orcidCache.set(cacheKey, data);
+    }
+
+    return data;
   } catch (error) {
     if (config.verboseLogging) {
       console.warn(`Failed to fetch ORCID data for ${cleanOrcidId}:`, error.message);
     }
+    
+    // Cache null result to avoid repeated failed requests
+    if (config.enableCaching) {
+      const cacheKey = orcidCache.generateKey('person', cleanOrcidId);
+      orcidCache.set(cacheKey, null);
+    }
+
     return null;
   }
 }
@@ -193,12 +245,21 @@ export async function fetchOrcidInfo(orcidId, makeRequestWithRetry, config) {
     return null;
   }
 
+  // Check cache first if enabled (complete info)
+  if (config.enableCaching) {
+    const cacheKey = orcidCache.generateKey('info', cleanOrcidId);
+    const cached = orcidCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   // Check authentication status first
   const authStatus = await checkOrcidAuthStatus(orcidId, makeRequestWithRetry, config);
   
   // If account doesn't exist, is deactivated, or not authenticated, return early
   if (!authStatus.exists || authStatus.deactivated) {
-    return {
+    const result = {
       orcidId: cleanOrcidId,
       authenticated: false,
       authStatus,
@@ -207,13 +268,21 @@ export async function fetchOrcidInfo(orcidId, makeRequestWithRetry, config) {
       reason: authStatus.deactivated ? 'deactivated' : 'not_found',
       visibility: 'private'
     };
+
+    // Cache the result
+    if (config.enableCaching) {
+      const cacheKey = orcidCache.generateKey('info', cleanOrcidId);
+      orcidCache.set(cacheKey, result);
+    }
+
+    return result;
   }
 
   // Fetch person data
   const personData = await fetchOrcidPerson(orcidId, makeRequestWithRetry, config);
 
   if (!personData) {
-    return {
+    const result = {
       orcidId: cleanOrcidId,
       authenticated: authStatus.authenticated,
       authStatus,
@@ -222,13 +291,22 @@ export async function fetchOrcidInfo(orcidId, makeRequestWithRetry, config) {
       reason: 'fetch_failed',
       visibility: 'private'
     };
+
+    // Cache the result
+    if (config.enableCaching) {
+      const cacheKey = orcidCache.generateKey('info', cleanOrcidId);
+      orcidCache.set(cacheKey, result);
+    }
+
+    return result;
   }
 
   const nameInfo = getPublicDisplayName(personData);
 
   // Only return full info if name is public AND account is authenticated
+  let result;
   if (nameInfo && nameInfo.isPublic && authStatus.authenticated) {
-    return {
+    result = {
       orcidId: cleanOrcidId,
       authenticated: true,
       authStatus,
@@ -239,20 +317,28 @@ export async function fetchOrcidInfo(orcidId, makeRequestWithRetry, config) {
       profileUrl: `${orcidId}`,
       isPublic: true
     };
+  } else {
+    // Account is authenticated but name is not public
+    result = {
+      orcidId: cleanOrcidId,
+      authenticated: authStatus.authenticated,
+      authStatus,
+      displayName: null,
+      visibility: nameInfo?.visibility || 'private',
+      visibilityDetails: nameInfo?.visibilityDetails,
+      profileUrl: `${orcidId}`,
+      isPublic: false,
+      reason: 'name_not_public'
+    };
   }
 
-  // Account is authenticated but name is not public
-  return {
-    orcidId: cleanOrcidId,
-    authenticated: authStatus.authenticated,
-    authStatus,
-    displayName: null,
-    visibility: nameInfo?.visibility || 'private',
-    visibilityDetails: nameInfo?.visibilityDetails,
-    profileUrl: `${orcidId}`,
-    isPublic: false,
-    reason: 'name_not_public'
-  };
+  // Cache the complete result
+  if (config.enableCaching) {
+    const cacheKey = orcidCache.generateKey('info', cleanOrcidId);
+    orcidCache.set(cacheKey, result);
+  }
+
+  return result;
 }
 
 /**
@@ -314,6 +400,9 @@ export async function addOrcidInfoToRaidData(raidData, makeRequestWithRetry, con
   });
 
   console.log(`Found ${stats.totalOrcidIds} ORCID IDs to process`);
+  if (config.enableCaching) {
+    console.log('ORCID caching: ENABLED');
+  }
 
   if (allOrcidIds.length === 0) {
     console.log('No ORCID IDs found in RAID data');
@@ -377,6 +466,11 @@ export async function addOrcidInfoToRaidData(raidData, makeRequestWithRetry, con
   }
 
   console.log('\n'); // New line after progress indicator
+
+  // Print cache statistics if caching is enabled
+  if (config.enableCaching) {
+    orcidCache.printStats('ORCID');
+  }
 
   return raidData;
 }
