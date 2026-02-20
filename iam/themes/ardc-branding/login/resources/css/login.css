@@ -1,0 +1,341 @@
+/* ============================================
+   RAiD Custom Login Theme
+   ============================================ */
+/* Import Figtree font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* Reset and Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Figtree', sans-serif;
+    background: rgb(128 128 128 / 20%) !important;
+    font-weight: 400;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+/* Top Navigation Bar */
+.top-navbar {
+    background: white;
+    border-bottom: 1px solid #8E489B;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 52px;
+    border-top: solid #8E489B;
+}
+
+.nav-container {
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    height: 37px;
+}
+
+.logo-bracket {
+    color: #3b82f6;
+}
+
+/* Page Container */
+.page-container {
+    padding-top: 80px;
+    padding-bottom: 2rem;
+    min-height: 100vh;
+}
+
+.content-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+/* RAiD Info Card */
+.raid-info-card {
+    background: white;
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.raid-title {
+    margin: 0px;
+    font-family: Figtree, sans-serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1.334;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.pb-0 {
+    padding-bottom: 0;
+}
+
+.pb-1 {
+    padding-bottom: 1.2rem;
+}
+
+.pt-1 {
+    padding-top: 1.2rem;
+}
+
+.demo-badge {
+    display: inline-block;
+    background: #dc2626;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 16px;
+}
+
+.raid-description {
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.43;
+    margin-bottom: 0.75rem;
+    font-family: Figtree, sans-serif;
+}
+
+.raid-link {
+    color: #8E489B;
+    text-decoration: none;
+}
+
+.raid-link:hover {
+    text-decoration: underline;
+}
+
+.raid-links {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0;
+    padding-top: 0;
+    font-size: 0.8125rem;
+}
+
+.raid-footer-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.raid-footer-link:hover {
+    text-decoration: underline;
+}
+
+/* Login Card */
+.login-card {
+    background: white;
+    border-radius: 4px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.help-icon-wrapper {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+}
+
+.help-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.help-icon:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.login-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-bottom: 2rem;
+}
+
+/* Identity Provider Buttons */
+.idp-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    a:hover {
+        color: #fff;
+        text-decoration: none
+    }
+}
+
+.idp-button {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    font-family: Figtree, sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    text-transform: uppercase;
+    min-width: 64px;
+    color: rgb(255, 255, 255);
+    background-color: #8E489B;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+    outline: 0px;
+    border-width: 0px;
+    border-style: initial;
+    border-color: initial;
+    border-image: initial;
+    margin: 0px;
+    text-decoration: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1), color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.idp-button:hover {
+    background: rgb(99, 50, 108);
+}
+
+.idp-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.idp-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: #fff;
+}
+
+.idp-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Specific Provider Colors */
+
+.idp-google:hover, .idp-aaf:hover, .idp-oidc:hover, .idp-orcid:hover, .idp-aaf-saml:hover {
+    text-decoration: none;
+    background-color: rgb(99, 50, 108);
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
+}
+
+.idp-aaf, .idp-orcid, .idp-oidc, .idp-google, .idp-aaf-saml {
+    background: #8E489B;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.alert-warning {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .raid-info-card,
+    .login-card {
+        padding: 1.5rem;
+    }
+
+    .raid-title {
+        font-size: 1.25rem;
+    }
+
+    .idp-buttons {
+        flex-direction: column;
+    }
+
+    .idp-button {
+        max-width: 100%;
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 1rem 1.5rem;
+    }
+
+    .raid-links {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}

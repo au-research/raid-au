@@ -35,8 +35,8 @@
   },
   "theme": {
     "palette": {
-      "primary": { "main": "#9c27b0" },
-      "secondary": { "main": "#9c27b0" },
+      "primary": { "main": "#8E489B" },
+      "secondary": { "main": "#808080" },
       "background": { "default": "#f5f5f5", "paper": "#ffffff" }
     },
     "typography": {
