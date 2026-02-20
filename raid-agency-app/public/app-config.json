@@ -1,0 +1,49 @@
+{
+  "header": {
+    "logo": {
+      "src": "/logo.png",
+      "alt": "App Logo",
+      "height": 40
+    },
+    "title": "RAiD",
+    "subtitle": "Research Activity Identifier",
+    "navLinks": [
+      { "label": "Home", "path": "/" },
+      { "label": "Dashboard", "path": "/dashboard" },
+      { "label": "Documentation", "path": "/docs" }
+    ],
+    "showSearch": true
+  },
+  "footer": {
+    "copyright": "© 2025 ARDC. All rights reserved.",
+    "links": [
+      { "label": "Privacy Policy", "path": "/privacy" },
+      { "label": "Terms of Service", "path": "/terms" },
+      { "label": "Contact", "path": "/contact" }
+    ],
+    "showSocialLinks": true,
+    "socialLinks": [
+      { "platform": "github", "url": "https://github.com/au-research" }
+    ]
+  },
+  "content": {
+    "landingPage": {
+      "heroTitle": "Welcome to RAiD",
+      "heroSubtitle": "Manage your Research Activity Identifiers",
+      "showHero": true
+    }
+  },
+  "theme": {
+    "palette": {
+      "primary": { "main": "#9c27b0" },
+      "secondary": { "main": "#9c27b0" },
+      "background": { "default": "#f5f5f5", "paper": "#ffffff" }
+    },
+    "typography": {
+      "fontFamily": "'Roboto', 'Helvetica', 'Arial', sans-serif",
+      "fontSize": 14
+    },
+    "shape": { "borderRadius": 8 },
+    "mode": "light"
+  }
+}

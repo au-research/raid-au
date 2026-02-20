@@ -71,7 +71,7 @@ function AppContent() {
   return (
     <NotificationProvider>
       <StrictMode>
-        <ThemeProvider theme={theme}>
+       {/*  <ThemeProvider theme={theme}> */}
           <CssBaseline />
           <ErrorDialogProvider>
             <MappingProvider>
@@ -87,7 +87,7 @@ function AppContent() {
               </SnackbarProvider>
             </MappingProvider>
           </ErrorDialogProvider>
-        </ThemeProvider>
+       {/*  </ThemeProvider> */}
       </StrictMode>
     </NotificationProvider>
   );
