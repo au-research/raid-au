@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static au.org.raid.db.jooq.tables.Contributor.CONTRIBUTOR;
@@ -219,5 +220,30 @@ public class RaidRepository {
                 .from(RAID)
                 .where(condition)
                 .fetchOne(0, int.class);
+    }
+
+    public Map<String, Integer> countByOwnerOrganisation(final Long servicePointId,
+                                                          final LocalDateTime startDate,
+                                                          final LocalDateTime endDate) {
+        var condition = DSL.noCondition();
+
+        if (servicePointId != null) {
+            condition = condition.and(RAID.SERVICE_POINT_ID.eq(servicePointId));
+        }
+        if (startDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.greaterOrEqual(startDate));
+        }
+        if (endDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.lessThan(endDate));
+        }
+
+        condition = condition.and(RAID.OWNER_ORGANISATION_ID.isNotNull());
+
+        return dslContext.select(ORGANISATION.PID, DSL.count())
+                .from(RAID)
+                .join(ORGANISATION).on(RAID.OWNER_ORGANISATION_ID.eq(ORGANISATION.ID))
+                .where(condition)
+                .groupBy(ORGANISATION.PID)
+                .fetchMap(ORGANISATION.PID, DSL.count());
     }
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -12,6 +13,8 @@ import java.time.LocalDate;
 public class RaidCountDto {
     private long count;
     private Long servicePointId;
+    private String servicePointName;
     private LocalDate startDate;
     private LocalDate endDate;
+    private List<OrganisationCountDto> organisations;
 }

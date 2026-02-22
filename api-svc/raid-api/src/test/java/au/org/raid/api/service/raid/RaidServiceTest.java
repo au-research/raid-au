@@ -1,5 +1,7 @@
 package au.org.raid.api.service.raid;
 
+import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.dto.OrganisationCountDto;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.IdFactory;
@@ -84,6 +86,8 @@ class RaidServiceTest {
     private ContributorService contributorService;
     @Mock
     private KeycloakService keycloakService;
+    @Mock
+    private RorClient rorClient;
     @InjectMocks
     private RaidService raidService;
 
@@ -670,34 +674,83 @@ class RaidServiceTest {
     @DisplayName("countRaids returns total count with no filters")
     void countRaids_noFilters() {
         when(raidRepository.countByFilters(null, null, null)).thenReturn(42);
+        when(raidRepository.countByOwnerOrganisation(null, null, null))
+                .thenReturn(Map.of("https://ror.org/038sjwq14", 42));
+        when(rorClient.getOrganisationName("https://ror.org/038sjwq14")).thenReturn("ARDC");
 
         final var result = raidService.countRaids(null, null, null);
 
         assertThat(result.getCount(), is(42L));
         assertNull(result.getServicePointId());
+        assertNull(result.getServicePointName());
         assertNull(result.getStartDate());
         assertNull(result.getEndDate());
+        assertThat(result.getOrganisations().size(), is(1));
+        assertThat(result.getOrganisations().get(0).getId(), is("https://ror.org/038sjwq14"));
+        assertThat(result.getOrganisations().get(0).getName(), is("ARDC"));
+        assertThat(result.getOrganisations().get(0).getCount(), is(42L));
+        verify(servicePointRepository, never()).findById(anyLong());
     }
 
     @Test
-    @DisplayName("countRaids converts LocalDate to LocalDateTime boundaries correctly")
+    @DisplayName("countRaids converts LocalDate to LocalDateTime boundaries and resolves service point name")
     void countRaids_convertsDateBoundaries() {
         final var startDate = java.time.LocalDate.of(2025, 1, 1);
         final var endDate = java.time.LocalDate.of(2025, 6, 30);
         final var servicePointId = 20000001L;
+        final var startDateTime = startDate.atStartOfDay();
+        final var endDateTime = endDate.plusDays(1).atStartOfDay();
 
-        when(raidRepository.countByFilters(
-                eq(servicePointId),
-                eq(startDate.atStartOfDay()),
-                eq(endDate.plusDays(1).atStartOfDay())
-        )).thenReturn(10);
+        when(raidRepository.countByFilters(eq(servicePointId), eq(startDateTime), eq(endDateTime)))
+                .thenReturn(10);
+        when(servicePointRepository.findById(servicePointId))
+                .thenReturn(Optional.of(new au.org.raid.db.jooq.tables.records.ServicePointRecord().setName("Test SP")));
+        when(raidRepository.countByOwnerOrganisation(eq(servicePointId), eq(startDateTime), eq(endDateTime)))
+                .thenReturn(Collections.emptyMap());
 
         final var result = raidService.countRaids(servicePointId, startDate, endDate);
 
         assertThat(result.getCount(), is(10L));
         assertThat(result.getServicePointId(), is(servicePointId));
+        assertThat(result.getServicePointName(), is("Test SP"));
         assertThat(result.getStartDate(), is(startDate));
         assertThat(result.getEndDate(), is(endDate));
+        assertThat(result.getOrganisations().size(), is(0));
+    }
+
+    @Test
+    @DisplayName("countRaids degrades gracefully when ROR API fails")
+    void countRaids_rorApiFailureDegradeGracefully() {
+        when(raidRepository.countByFilters(null, null, null)).thenReturn(5);
+        when(raidRepository.countByOwnerOrganisation(null, null, null))
+                .thenReturn(Map.of("https://ror.org/038sjwq14", 5));
+        when(rorClient.getOrganisationName("https://ror.org/038sjwq14"))
+                .thenThrow(new RuntimeException("ROR API unavailable"));
+
+        final var result = raidService.countRaids(null, null, null);
+
+        assertThat(result.getCount(), is(5L));
+        assertThat(result.getOrganisations().size(), is(1));
+        assertThat(result.getOrganisations().get(0).getId(), is("https://ror.org/038sjwq14"));
+        assertNull(result.getOrganisations().get(0).getName());
+        assertThat(result.getOrganisations().get(0).getCount(), is(5L));
+    }
+
+    @Test
+    @DisplayName("countRaids returns null service point name when service point not found")
+    void countRaids_servicePointNotFound() {
+        final var servicePointId = 99999L;
+
+        when(raidRepository.countByFilters(eq(servicePointId), isNull(), isNull())).thenReturn(0);
+        when(servicePointRepository.findById(servicePointId)).thenReturn(Optional.empty());
+        when(raidRepository.countByOwnerOrganisation(eq(servicePointId), isNull(), isNull()))
+                .thenReturn(Collections.emptyMap());
+
+        final var result = raidService.countRaids(servicePointId, null, null);
+
+        assertThat(result.getCount(), is(0L));
+        assertThat(result.getServicePointId(), is(servicePointId));
+        assertNull(result.getServicePointName());
     }
 
     private String raidJson() {

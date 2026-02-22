@@ -1,5 +1,7 @@
 package au.org.raid.api.service.raid;
 
+import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.dto.OrganisationCountDto;
 import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.exception.InvalidVersionException;
@@ -64,6 +66,7 @@ public class RaidService {
     private final ObjectMapper objectMapper;
 
     private final RaidRepository raidRepository;
+    private final RorClient rorClient;
 
     @Transactional
     public RaidDto mint(
@@ -285,11 +288,39 @@ public class RaidService {
 
         final int count = raidRepository.countByFilters(servicePointId, startDateTime, endDateTime);
 
+        String servicePointName = null;
+        if (servicePointId != null) {
+            servicePointName = servicePointRepository.findById(servicePointId)
+                    .map(ServicePointRecord::getName)
+                    .orElse(null);
+        }
+
+        final var orgCounts = raidRepository.countByOwnerOrganisation(
+                servicePointId, startDateTime, endDateTime);
+
+        final var organisations = orgCounts.entrySet().stream()
+                .map(entry -> {
+                    String name = null;
+                    try {
+                        name = rorClient.getOrganisationName(entry.getKey());
+                    } catch (Exception e) {
+                        log.warn("Failed to resolve organisation name for {}", entry.getKey(), e);
+                    }
+                    return OrganisationCountDto.builder()
+                            .id(entry.getKey())
+                            .name(name)
+                            .count(entry.getValue())
+                            .build();
+                })
+                .toList();
+
         return RaidCountDto.builder()
                 .count(count)
                 .servicePointId(servicePointId)
+                .servicePointName(servicePointName)
                 .startDate(startDate)
                 .endDate(endDate)
+                .organisations(organisations)
                 .build();
     }
 
