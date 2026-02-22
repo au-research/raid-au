@@ -1,5 +1,6 @@
 package au.org.raid.api.controller;
 
+import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationException;
@@ -14,6 +15,7 @@ import au.org.raid.api.validator.ValidationService;
 import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.idl.raidv2.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.format.annotation.DateTimeFormat;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
@@ -28,6 +30,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -179,6 +182,16 @@ public class RaidController implements RaidApi {
     @GetMapping(value="/raid/non-legacy")
     public ResponseEntity<List<RaidDto>> findAllNonLegacy() {
         return ResponseEntity.ok(raidService.findAllNonLegacy());
+    }
+
+    @GetMapping("/raid/count")
+    public ResponseEntity<RaidCountDto> countRaids(
+            @RequestParam(required = false) final Long servicePointId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate) {
+        return ResponseEntity.ok(raidService.countRaids(servicePointId, startDate, endDate));
     }
 
     private long getServicePointId() {

@@ -666,6 +666,40 @@ class RaidServiceTest {
     }
 
 
+    @Test
+    @DisplayName("countRaids returns total count with no filters")
+    void countRaids_noFilters() {
+        when(raidRepository.countByFilters(null, null, null)).thenReturn(42);
+
+        final var result = raidService.countRaids(null, null, null);
+
+        assertThat(result.getCount(), is(42L));
+        assertNull(result.getServicePointId());
+        assertNull(result.getStartDate());
+        assertNull(result.getEndDate());
+    }
+
+    @Test
+    @DisplayName("countRaids converts LocalDate to LocalDateTime boundaries correctly")
+    void countRaids_convertsDateBoundaries() {
+        final var startDate = java.time.LocalDate.of(2025, 1, 1);
+        final var endDate = java.time.LocalDate.of(2025, 6, 30);
+        final var servicePointId = 20000001L;
+
+        when(raidRepository.countByFilters(
+                eq(servicePointId),
+                eq(startDate.atStartOfDay()),
+                eq(endDate.plusDays(1).atStartOfDay())
+        )).thenReturn(10);
+
+        final var result = raidService.countRaids(servicePointId, startDate, endDate);
+
+        assertThat(result.getCount(), is(10L));
+        assertThat(result.getServicePointId(), is(servicePointId));
+        assertThat(result.getStartDate(), is(startDate));
+        assertThat(result.getEndDate(), is(endDate));
+    }
+
     private String raidJson() {
         return FileUtil.resourceContent("/fixtures/raid.json");
     }

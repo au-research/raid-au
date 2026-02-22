@@ -1,5 +1,6 @@
 package au.org.raid.api.controller;
 
+import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.endpoint.raidv2.RaidExceptionHandler;
 import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.service.RaidHistoryService;
@@ -845,6 +846,97 @@ class RaidControllerTest {
         }
     }
 
+
+    @Test
+    @DisplayName("Count endpoint returns total count with no filters")
+    void countRaids_ReturnsCountWithNoFilters() throws Exception {
+        final var expectedCount = RaidCountDto.builder()
+                .count(42)
+                .build();
+
+        when(raidService.countRaids(null, null, null)).thenReturn(expectedCount);
+
+        mockMvc.perform(get("/raid/count")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", Matchers.is(42)));
+    }
+
+    @Test
+    @DisplayName("Count endpoint returns count filtered by service point")
+    void countRaids_ReturnsCountFilteredByServicePoint() throws Exception {
+        final var servicePointId = 20000001L;
+        final var expectedCount = RaidCountDto.builder()
+                .count(15)
+                .servicePointId(servicePointId)
+                .build();
+
+        when(raidService.countRaids(eq(servicePointId), isNull(), isNull()))
+                .thenReturn(expectedCount);
+
+        mockMvc.perform(get("/raid/count")
+                        .param("servicePointId", String.valueOf(servicePointId))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", Matchers.is(15)))
+                .andExpect(jsonPath("$.servicePointId", Matchers.is(20000001)));
+    }
+
+    @Test
+    @DisplayName("Count endpoint returns count filtered by date range")
+    void countRaids_ReturnsCountFilteredByDateRange() throws Exception {
+        final var startDate = LocalDate.of(2025, 1, 1);
+        final var endDate = LocalDate.of(2025, 6, 30);
+        final var expectedCount = RaidCountDto.builder()
+                .count(25)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+
+        when(raidService.countRaids(isNull(), eq(startDate), eq(endDate)))
+                .thenReturn(expectedCount);
+
+        mockMvc.perform(get("/raid/count")
+                        .param("startDate", "2025-01-01")
+                        .param("endDate", "2025-06-30")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", Matchers.is(25)))
+                .andExpect(jsonPath("$.startDate", Matchers.is("2025-01-01")))
+                .andExpect(jsonPath("$.endDate", Matchers.is("2025-06-30")));
+    }
+
+    @Test
+    @DisplayName("Count endpoint returns count with all filters applied")
+    void countRaids_ReturnsCountWithAllFilters() throws Exception {
+        final var servicePointId = 20000001L;
+        final var startDate = LocalDate.of(2025, 1, 1);
+        final var endDate = LocalDate.of(2025, 6, 30);
+        final var expectedCount = RaidCountDto.builder()
+                .count(10)
+                .servicePointId(servicePointId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+
+        when(raidService.countRaids(eq(servicePointId), eq(startDate), eq(endDate)))
+                .thenReturn(expectedCount);
+
+        mockMvc.perform(get("/raid/count")
+                        .param("servicePointId", String.valueOf(servicePointId))
+                        .param("startDate", "2025-01-01")
+                        .param("endDate", "2025-06-30")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", Matchers.is(10)))
+                .andExpect(jsonPath("$.servicePointId", Matchers.is(20000001)))
+                .andExpect(jsonPath("$.startDate", Matchers.is("2025-01-01")))
+                .andExpect(jsonPath("$.endDate", Matchers.is("2025-06-30")));
+    }
 
     private RaidDto createRaidForGet(final String title, final LocalDate startDate) throws IOException {
         final String json = FileUtil.resourceContent("/fixtures/raid.json");

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -197,5 +198,26 @@ public class RaidRepository {
                 .where(RAID.SERVICE_POINT_ID.eq(servicePointId))
                 .and(RAID.ACCESS_TYPE_ID.in(accessTypeIds))
                 .fetchInto(RaidRecord.class);
+    }
+
+    public int countByFilters(final Long servicePointId,
+                              final LocalDateTime startDate,
+                              final LocalDateTime endDate) {
+        var condition = DSL.noCondition();
+
+        if (servicePointId != null) {
+            condition = condition.and(RAID.SERVICE_POINT_ID.eq(servicePointId));
+        }
+        if (startDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.greaterOrEqual(startDate));
+        }
+        if (endDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.lessThan(endDate));
+        }
+
+        return dslContext.selectCount()
+                .from(RAID)
+                .where(condition)
+                .fetchOne(0, int.class);
     }
 }

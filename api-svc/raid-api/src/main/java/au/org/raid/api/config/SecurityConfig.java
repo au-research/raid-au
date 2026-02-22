@@ -93,6 +93,7 @@ public class SecurityConfig {
                 // RAID API endpoints
                 .requestMatchers(GET, RAID_API + "/non-legacy").hasAnyRole(RAID_UPGRADER_ROLE)
                 .requestMatchers(GET, RAID_API + "/all-public").hasAnyRole(RAID_DUMPER_ROLE, RAID_UPGRADER_ROLE)
+                .requestMatchers(GET, RAID_API + "/count").hasRole(OPERATOR_ROLE)
                 .requestMatchers(GET, RAID_API + "/**").access(raidAuthorizationService.createReadAccessManager())
                 .requestMatchers(POST, RAID_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, RAID_ADMIN_ROLE)
                 .requestMatchers(PUT, RAID_API + "/**").access(raidAuthorizationService.createWriteAccessManager())

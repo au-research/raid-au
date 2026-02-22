@@ -1,5 +1,6 @@
 package au.org.raid.api.service.raid;
 
+import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.exception.InvalidVersionException;
 import au.org.raid.api.exception.ResourceNotFoundException;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -268,6 +270,27 @@ public class RaidService {
         }
 
         return raids;
+    }
+
+    @Transactional(readOnly = true)
+    public RaidCountDto countRaids(final Long servicePointId,
+                                   final LocalDate startDate,
+                                   final LocalDate endDate) {
+        final var startDateTime = startDate != null
+                ? startDate.atStartOfDay()
+                : null;
+        final var endDateTime = endDate != null
+                ? endDate.plusDays(1).atStartOfDay()
+                : null;
+
+        final int count = raidRepository.countByFilters(servicePointId, startDateTime, endDateTime);
+
+        return RaidCountDto.builder()
+                .count(count)
+                .servicePointId(servicePointId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
     }
 
     public void postToDatacite(@Valid RaidDto raid) {
