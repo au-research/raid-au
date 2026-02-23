@@ -36,7 +36,7 @@ export const defaultConfig: AppConfig = {
   theme: {
     palette: {
       primary: {
-        main: "#1976d2",
+        main: "rgb(65, 131, 206)",
         contrastText: "#ffffff",
       },
       secondary: {
@@ -44,12 +44,12 @@ export const defaultConfig: AppConfig = {
         contrastText: "#ffffff",
       },
       background: {
-        default: "#f5f5f5",
+        default: "#c6d9f0",
         paper: "#ffffff",
       },
     },
     typography: {
-      fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+      fontFamily: "Figtree, sans-serif",
       fontSize: 14,
     },
     shape: {

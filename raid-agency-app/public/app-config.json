@@ -35,15 +35,31 @@
   },
   "theme": {
     "palette": {
+      "mode":  "dark",
       "primary": { "main": "#8E489B" },
       "secondary": { "main": "#808080" },
-      "background": { "default": "#f5f5f5", "paper": "#ffffff" }
+      "background": { "default": "#f5f5f5", "paper": "#ffffff" },
+       "error": {
+        "main": "#E51875"
+      },
+      "warning": {
+        "main": "#f6861f"
+      },
+      "info": {
+        "main": "#00A2C4"
+      },
+      "success": {
+        "main": "#39833e"
+      }
     },
     "typography": {
-      "fontFamily": "'Roboto', 'Helvetica', 'Arial', sans-serif",
-      "fontSize": 14
+      "fontFamily": "Figtree, sans-serif",
+      "fontSize": 14,
+      "fontWeightLight": 300,
+      "fontWeightRegular": 400,
+      "fontWeightMedium": 500
     },
-    "shape": { "borderRadius": 8 },
+    "shape": { "borderRadius": 4 },
     "mode": "light"
   }
 }
