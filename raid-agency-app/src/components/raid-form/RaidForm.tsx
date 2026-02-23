@@ -27,6 +27,7 @@ import { formConfigService, transformFormData } from "@/services/form-service";
 import { createContext } from "react";
 import { useCodesContext } from "@/components/tree-view/context/CodesContext";
 import { CodeItem } from "../tree-view/context/CodesProvider";
+import { Loading } from "@/pages/loading";
 
 // Define JSON types locally since '@/types/json-types' is missing
 type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
@@ -69,16 +70,21 @@ export const RaidForm = memo(
     const { openErrorDialog } = useErrorDialog();
     const {
       setSelectedCodes,
-      codesData,
       setSelectedCodesData,
       getCodeById,
+      globalData,
+      setSearchQueryState,
     } = useCodesContext();
 
     const formConfig = formConfigService();
     const [formSchema, setFormSchema] = useState<JSONObject | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      formConfig.getFormConfig().then((schema: JSONObject) => setFormSchema(schema));
+      formConfig.getFormConfig().then((schema: JSONObject) => {
+        setFormSchema(schema);
+        setLoading(false);
+      });
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -91,7 +97,7 @@ export const RaidForm = memo(
       reValidateMode: "onChange",
     });
 
-    const { control, trigger, formState, setValue } = formMethods;
+    const { control, trigger, formState, setValue, clearErrors, reset } = formMethods;
 
     const handleSubmit = useCallback(
       (data: RaidDto) => {
@@ -118,8 +124,9 @@ export const RaidForm = memo(
       // and opens an error dialog with the transformed error message
     }, [formState.errors, formState.isSubmitted, openErrorDialog]);
 
-        useEffect(() => {
-      if (!hasLoadedInitialData.current && Array.isArray(raidData?.subject) && raidData.subject.length > 0 && codesData) {
+    useEffect(() => {
+      if (!hasLoadedInitialData.current && Array.isArray(raidData?.subject) && raidData.subject.length > 0 && globalData) {
+        setLoading(true);
         const selectedSubjects = Array.isArray(raidData.subject)
           ? raidData.subject
           : [];
@@ -129,63 +136,82 @@ export const RaidForm = memo(
         );
 
         if(selectedIds.length === 0) return;
+
         setSelectedCodes(selectedIds);
         const codesArray = selectedIds
-          .map(codeId => getCodeById(codeId))
+          .map(codeId => getCodeById(codeId, globalData))
           .filter((item): item is CodeItem => item !== undefined);
+
         if (codesArray.length > 0) {
           setSelectedCodesData(codesArray);
+          setSearchQueryState('')
           hasLoadedInitialData.current = true; // Mark as loaded
+          setLoading(false);
         }
       } else if ((!raidData?.subject || raidData.subject.length === 0) && isInitialLoad) {
         setSelectedCodes([]);
         setSelectedCodesData([]);
         setValue('subject', [])
+        clearErrors('subject');
+        setSearchQueryState('');
+        setLoading(false);
       }
-    }, [raidData.subject, codesData]);
+    }, [raidData.subject, getCodeById, globalData, hasLoadedInitialData.current]);
+
+    useEffect(() => {
+      if (raidData) {
+        reset(raidData); // Updates form with new values when raidData changes
+        setSelectedCodes([]);
+        setSelectedCodesData([]);
+        hasLoadedInitialData.current = false; // Reset loaded flag when raidData changes
+      }
+    }, [raidData, reset]);
 
     return (
-      <MetadataContext.Provider value={metadata}>
+      loading ? (
+        <Loading />
+      ) : (
+        <MetadataContext.Provider value={metadata}>
         <FormProvider {...formMethods}>
           <form
-              onSubmit={formMethods.handleSubmit(handleSubmit)}
-              autoComplete="off"
-              noValidate
+            onSubmit={formMethods.handleSubmit(handleSubmit)}
+            autoComplete="off"
+            noValidate
           >
             <Stack
-                gap={2}
-                sx={{
-                  position: "fixed",
-                  bottom: "16px",
-                  right: "16px",
-                  zIndex: 1000,
-                }}
-                alignItems="end"
+              gap={2}
+              sx={{
+                position: "fixed",
+                bottom: "16px",
+                right: "16px",
+                zIndex: 1000,
+              }}
+              alignItems="end"
             >
               <Tooltip title="Cancel" placement="left">
                 <Fab
-                    component={Link}
-                    color="primary"
-                    size="small"
-                    to={
-                      raidData?.identifier?.id ? `/raids/${prefix}/${suffix}` : "/"
-                    }
+                  component={Link}
+                  color="primary"
+                  size="small"
+                  to={
+                    raidData?.identifier?.id ? `/raids/${prefix}/${suffix}` : "/"
+                  }
                 >
                   <CloseIcon/>
                 </Fab>
               </Tooltip>
               <Tooltip title="Save changes" placement="left">
-                    <Fab
-                        variant="extended"
-                        color="primary"
-                        component="button"
-                        type="submit"
-                        disabled={isSubmitting} //Removed isFormValid check to allow submission even with errors to avoid deadlock
-                        data-testid="save-raid-button"
-                    >
-                      <SaveIcon sx={{mr: 1}}/>
-                      {isSubmitting ? "Saving..." : "Save"}
-                    </Fab>
+                <Fab
+                  variant="extended"
+                  color="primary"
+                  component="button"
+                  type="submit"
+                  disabled={isSubmitting} //Removed isFormValid check to allow submission even with errors to avoid deadlock
+                  data-testid="save-raid-button"
+                >
+                  <SaveIcon sx={{mr: 1}}/>
+                  {isSubmitting ? "Saving..." : "Save"}
+                </Fab>
               </Tooltip>
             </Stack>
 
@@ -194,82 +220,82 @@ export const RaidForm = memo(
               <Stack spacing={2}>
 
                   {isOperator && raidData.identifier?.id && (
-                        <ServicePointForm
-                            errors={formState.errors}
-                        />
+                    <ServicePointForm
+                        errors={formState.errors}
+                    />
                   )}
 
                 <DateForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <TitlesForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <DescriptionsForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <ContributorsForm
-                    control={control}
-                    data={raidData.contributor ?? []}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  data={raidData.contributor ?? []}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <OrganisationsForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <RelatedObjectsForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <AlternateIdentifiersForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <AlternateUrlsForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <RelatedRaidsForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <AccessForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <SubjectsForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
 
                 <SpatialCoveragesForm
-                    control={control}
-                    errors={formState.errors}
-                    trigger={trigger}
+                  control={control}
+                  errors={formState.errors}
+                  trigger={trigger}
                 />
               </Stack>
             </Stack>
@@ -286,6 +312,7 @@ export const RaidForm = memo(
           </form>
         </FormProvider>
       </MetadataContext.Provider>
+      )
     );
   }
 );

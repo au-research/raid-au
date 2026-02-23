@@ -51,7 +51,12 @@ export const ServicePointUpdateForm = ({
   const initalServicePointValues: UpdateServicePointRequest = {
     id: servicePoint.id,
     servicePointUpdateRequest: {
-      ...servicePoint,
+      id: servicePoint.id,
+      name: servicePoint.name,
+      adminEmail: servicePoint.adminEmail,
+      techEmail: servicePoint.techEmail,
+      enabled: servicePoint.enabled,
+      appWritesEnabled: servicePoint.appWritesEnabled,
       groupId: servicePoint.groupId || "",
       identifierOwner: servicePoint.identifierOwner || "",
     },
@@ -97,23 +102,9 @@ export const ServicePointUpdateForm = ({
   });
 
   const onSubmit = (item: UpdateServicePointRequest) => {
-    // Set identifier owner if selected
-      if (selectedValue) {
-        item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
-      }
-      // Check for duplicate repository ID
-      const apiData = queryClient.getQueryData<ServicePoint[]>(["servicePoints"]);
-      const isDuplicateRepositoryID = apiData?.some(
-        (sp) => sp.repositoryId === item.servicePointUpdateRequest.repositoryId && sp.id !== item.id
-      );
-      if (isDuplicateRepositoryID) {
-        form.setError("servicePointUpdateRequest.repositoryId", {
-          type: "manual",
-          message: messages.servicePointUniqueRepositoryID
-        });
-        return;
-      }
-     // Proceed with mutation
+    if (selectedValue) {
+      item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
+    }
     setAppState({ ...appState, loading: true });
     updateServicePointMutation.mutate(item);
   };
@@ -128,301 +119,249 @@ export const ServicePointUpdateForm = ({
     // and opens an error dialog with the transformed error message
   }, [formState.errors, formState.isSubmitted, openErrorDialog]);
 
-  return (
-    <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-        <Box sx={{ mb: 2, pb: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Controller
-            name="servicePointUpdateRequest.name"
-            control={form.control}
-            render={({ field }) => (
-              <TextField
-                error={
-                  !!form.formState.errors?.servicePointUpdateRequest?.name
-                }
-                helperText={
-                  form.formState.errors?.servicePointUpdateRequest?.name
-                    ?.message
-                }
-                label="Service point name *"
-                variant="outlined"
-                size="small"
-                fullWidth
-                {...field}
-                value={field.value}
-              />
-            )}
-          />
-        </Box>
-        <Stack
-          direction={{ xs: 'column', sm: 'row', md: 'row' }}
-          spacing={2}
-          sx={{
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            mb: 3,
-            width: '100%'
-          }}
-          divider={<Divider orientation="vertical" flexItem />}
-        >
-          <Item>
-            <Tabs
-              value={"one"}
-              textColor="primary"
-              indicatorColor="primary"
-              aria-label="secondary tabs example"
-            >
-              <Tab
-                value="one"
-                label={<Typography variant="body2">Service Point Owner</Typography>}
-                iconPosition="start"
-                icon={<Building2 fontSize="small" />}
-                sx={{ minHeight: "40px" }}
-              />
-            </Tabs>
-              <Box>
-              <Stack
-                spacing={{ xs: 1, sm: 1, md: 2 }}
-                direction="column"
-                useFlexGap
-                sx={{ mt: 2 }}
-              >
-                <div>
-                  <CustomizedInputBase
-                    setSelectedValue={setSelectedValue}
-                    name={`servicePointUpdateRequest.identifierOwner`}
-                    defaultValue={form.getValues("servicePointUpdateRequest.identifierOwner")}
-                    styles={{ width: '100%' }}
-                  />
-                  <FormHelperText error>
-                    {form.formState.errors?.servicePointUpdateRequest?.identifierOwner?.message}
-                  </FormHelperText>
-                </div>
-                <div >
-                  <Controller
-                    name="servicePointUpdateRequest.adminEmail"
-                    control={form.control}
-                    render={({ field }) => (
-                      <TextField
-                        label="Admin email *"
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        {...field}
-                        value={field.value}
-                        error={
-                          !!form.formState.errors?.servicePointUpdateRequest
-                            ?.adminEmail
-                        }
-                        helperText={
-                          form.formState.errors?.servicePointUpdateRequest?.adminEmail
-                            ?.message
-                        }
-                      />
-                    )}
-                  />
-                </div>
-                <div >
-                  <Controller
-                    name="servicePointUpdateRequest.techEmail"
-                    control={form.control}
-                    render={({ field }) => (
-                      <TextField
-                        label="Tech email *"
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        {...field}
-                        value={field.value}
-                        error={
-                          !!form.formState.errors?.servicePointUpdateRequest
-                            ?.techEmail
-                        }
-                        helperText={
-                          form.formState.errors?.servicePointUpdateRequest?.techEmail
-                            ?.message
-                        }
-                      />
-                    )}
-                  />
-                </div>
-              </Stack>
-            </Box>
-          </Item>
-          <Item>
-            <Tabs
-              value={"two"}
-              textColor="primary"
-              indicatorColor="primary"
-              aria-label="secondary tabs example"
-            >
-              <Tab
-                value="two"
-                label={<Typography variant="body2">DataCite repository</Typography>}
-                iconPosition="start"
-                icon={<Database fontSize="small" />}
-                sx={{ minHeight: "40px" }}
-              />
-            </Tabs>
-            <Box>
-            <Stack
-              spacing={{ xs: 1, sm: 1, md: 2 }}
-              direction="column"
-              useFlexGap
-              sx={{ mt: 2 }}
-            >
-              <div>
-                <Controller
-                  name="servicePointUpdateRequest.repositoryId"
-                  control={form.control}
-                  render={({ field }) => (
-                    <TextField
-                      label="Repository ID *"
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      {...field}
-                      value={field.value}
-                      error={
-                        !!form.formState.errors?.servicePointUpdateRequest
-                          ?.repositoryId
-                      }
-                      helperText={
-                        form.formState.errors?.servicePointUpdateRequest?.repositoryId
-                          ?.message
-                      }
+    return (
+        <FormProvider {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+                <Box sx={{mb: 2, pb: 2, borderBottom: 1, borderColor: 'divider'}}>
+                    <Controller
+                        name="servicePointUpdateRequest.name"
+                        control={form.control}
+                        render={({field}) => (
+                            <TextField
+                                error={
+                                    !!form.formState.errors?.servicePointUpdateRequest?.name
+                                }
+                                helperText={
+                                    form.formState.errors?.servicePointUpdateRequest?.name
+                                        ?.message
+                                }
+                                label="Service point name *"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                {...field}
+                                value={field.value}
+                            />
+                        )}
                     />
-                  )}
-                />
-              </div>
-              <div >
-                <Controller
-                  name="servicePointUpdateRequest.prefix"
-                  control={form.control}
-                  render={({ field }) => (
-                    <TextField
-                      label="Prefix *"
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      {...field}
-                      value={field.value}
-                      error={
-                        !!form.formState.errors?.servicePointUpdateRequest?.prefix
-                      }
-                      helperText={
-                        form.formState.errors?.servicePointUpdateRequest?.prefix
-                          ?.message
-                      }
-                    />
-                  )}
-                />
-              </div>
-              <div >
-                <Controller
-                  name="servicePointUpdateRequest.password"
-                  control={form.control}
-                  render={({ field }) => (
-                    <TextField
-                      label="Password *"
-                      type="password"
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      {...field}
-                      value={field.value}
-                      error={
-                        !!form.formState.errors?.servicePointUpdateRequest
-                          ?.password
-                      }
-                      helperText={
-                        form.formState.errors?.servicePointUpdateRequest?.password
-                          ?.message
-                      }
-                    />
-                  )}
-                />
-              </div>
-            </Stack>
-            </Box>
-          </Item>
-        </Stack>
-        <Item>
-          <Tabs
-            value={"three"}
-            textColor="primary"
-            indicatorColor="primary"
-            aria-label="secondary tabs example"
-          >
-            <Tab
-              value="three"
-              label={<Typography variant="body2">Settings</Typography>}
-              iconPosition="start"
-              icon={<Settings fontSize="small" />}
-              sx={{ minHeight: "40px" }}
-            />
-          </Tabs>
-          <Stack
-            direction="column"
-          >
-            <Item>
-              <Controller
-                name="servicePointUpdateRequest.enabled"
-                control={form.control}
-                render={({ field }) => (
-                  <FormGroup sx={{ display: 'inline-flex' }}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          {...field}
-                          checked={Boolean(field.value)}
+                </Box>
+                <Stack
+                    direction={{xs: 'column', sm: 'row', md: 'row'}}
+                    spacing={2}
+                    sx={{
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                        mb: 3,
+                        width: '100%'
+                    }}
+                    divider={<Divider orientation="vertical" flexItem/>}
+                >
+                    <Item>
+                        <Tabs
+                            value={"one"}
+                            textColor="primary"
+                            indicatorColor="primary"
+                            aria-label="secondary tabs example"
+                        >
+                            <Tab
+                                value="one"
+                                label={<Typography variant="body2">Service Point Owner</Typography>}
+                                iconPosition="start"
+                                icon={<Building2 fontSize="small"/>}
+                                sx={{minHeight: "40px"}}
+                            />
+                        </Tabs>
+                        <Box>
+                            <Stack
+                                spacing={{xs: 1, sm: 1, md: 2}}
+                                direction="column"
+                                useFlexGap
+                                sx={{mt: 2}}
+                            >
+                                <div>
+                                    <CustomizedInputBase
+                                        setSelectedValue={setSelectedValue}
+                                        name={`servicePointUpdateRequest.identifierOwner`}
+                                        defaultValue={form.getValues("servicePointUpdateRequest.identifierOwner")}
+                                        styles={{width: '100%'}}
+                                    />
+                                    <FormHelperText error>
+                                        {form.formState.errors?.servicePointUpdateRequest?.identifierOwner?.message}
+                                    </FormHelperText>
+                                </div>
+                                <div>
+                                    <Controller
+                                        name="servicePointUpdateRequest.adminEmail"
+                                        control={form.control}
+                                        render={({field}) => (
+                                            <TextField
+                                                label="Admin email *"
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                {...field}
+                                                value={field.value}
+                                                error={
+                                                    !!form.formState.errors?.servicePointUpdateRequest
+                                                        ?.adminEmail
+                                                }
+                                                helperText={
+                                                    form.formState.errors?.servicePointUpdateRequest?.adminEmail
+                                                        ?.message
+                                                }
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div>
+                                    <Controller
+                                        name="servicePointUpdateRequest.techEmail"
+                                        control={form.control}
+                                        render={({field}) => (
+                                            <TextField
+                                                label="Tech email *"
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                {...field}
+                                                value={field.value}
+                                                error={
+                                                    !!form.formState.errors?.servicePointUpdateRequest
+                                                        ?.techEmail
+                                                }
+                                                helperText={
+                                                    form.formState.errors?.servicePointUpdateRequest?.techEmail
+                                                        ?.message
+                                                }
+                                            />
+                                        )}
+                                    />
+                                </div>
+                            </Stack>
+                        </Box>
+                    </Item>
+                    <Item>
+                        <Tabs
+                            value={"two"}
+                            textColor="primary"
+                            indicatorColor="primary"
+                            aria-label="secondary tabs example"
+                        >
+                            <Tab
+                                value="two"
+                                label={<Typography variant="body2">DataCite repository</Typography>}
+                                iconPosition="start"
+                                icon={<Database fontSize="small"/>}
+                                sx={{minHeight: "40px"}}
+                            />
+                        </Tabs>
+                        <Box>
+                            <Stack
+                                spacing={{xs: 1, sm: 1, md: 2}}
+                                direction="column"
+                                useFlexGap
+                                sx={{mt: 2}}
+                            >
+                                <div>
+                                    <TextField
+                                        disabled
+                                        label="Repository ID"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        value={servicePoint.repositoryId ?? ""}
+                                    />
+                                </div>
+                                <div>
+                                    <TextField
+                                        disabled
+                                        label="Prefix"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        value={servicePoint.prefix ?? ""}
+                                    />
+                                </div>
+                            </Stack>
+                        </Box>
+                    </Item>
+                </Stack>
+                <Item>
+                    <Tabs
+                        value={"three"}
+                        textColor="primary"
+                        indicatorColor="primary"
+                        aria-label="secondary tabs example"
+                    >
+                        <Tab
+                            value="three"
+                            label={<Typography variant="body2">Settings</Typography>}
+                            iconPosition="start"
+                            icon={<Settings fontSize="small"/>}
+                            sx={{minHeight: "40px"}}
                         />
-                      }
-                      label="Enable service point?"
-                    />
-                  </FormGroup>
-                )}
-              />
-            </Item>
-            <Item>
-              <Controller
-                name="servicePointUpdateRequest.appWritesEnabled"
-                control={form.control}
-                render={({ field }) => (
-                  <FormGroup sx={{ display: 'inline-flex' }}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          {...field}
-                          checked={Boolean(field.value)}
-                        />
-                      }
-                      label="Enable minting and editing RAiDs using web app?"
-                    />
-                  </FormGroup>
-                )}
-              />
-            </Item>
-          </Stack>
-        </Item>
-        <Button
-          variant="outlined"
-          type="submit"
-          sx={{ mt: 3, width: 120 }}
-          disabled={appState.loading}
-        >
-          {appState.loading ? (
-            <CircularProgress size={24} />
-          ) : (
-            <>
-              <Box component="span" sx={{ mr: 1, display: "inline-flex", verticalAlign: "middle" }}>
-                <RefreshCcw />
-              </Box>
-              Update
-            </>
-          )}
-        </Button>
-      </form>
-    </FormProvider>
-  );
+                    </Tabs>
+                    <Stack
+                        direction="column"
+                    >
+                        <Item>
+                            <Controller
+                                name="servicePointUpdateRequest.enabled"
+                                control={form.control}
+                                render={({field}) => (
+                                    <FormGroup sx={{display: 'inline-flex'}}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    {...field}
+                                                    checked={Boolean(field.value)}
+                                                />
+                                            }
+                                            label="Enable service point?"
+                                        />
+                                    </FormGroup>
+                                )}
+                            />
+                        </Item>
+                        <Item>
+                            <Controller
+                                name="servicePointUpdateRequest.appWritesEnabled"
+                                control={form.control}
+                                render={({field}) => (
+                                    <FormGroup sx={{display: 'inline-flex'}}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    {...field}
+                                                    checked={Boolean(field.value)}
+                                                />
+                                            }
+                                            label="Enable minting and editing RAiDs using web app?"
+                                        />
+                                    </FormGroup>
+                                )}
+                            />
+                        </Item>
+                    </Stack>
+                </Item>
+                <Button
+                    variant="outlined"
+                    type="submit"
+                    sx={{mt: 3, width: 120}}
+                    disabled={appState.loading}
+                >
+                    {appState.loading ? (
+                        <CircularProgress size={24}/>
+                    ) : (
+                        <>
+                            <Box component="span" sx={{mr: 1, display: "inline-flex", verticalAlign: "middle"}}>
+                                <RefreshCcw/>
+                            </Box>
+                            Update
+                        </>
+                    )}
+                </Button>
+            </form>
+        </FormProvider>
+    );
 };

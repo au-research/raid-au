@@ -15,15 +15,15 @@ services:
     ports:
       - 8001:8080
       - 9443:8443
-#      - 5005:5005
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 5s
+      test: ["CMD", "curl", "-fk", "https://localhost:9000/health"]
+      interval: 10s
       timeout: 5s
       retries: 50
     command: [ 'start-dev', '--import-realm', '--debug' ]
     volumes:
       - './realms:/opt/keycloak/data/import'
+      - './themes/raid-custom:/opt/keycloak/themes/raid-custom'
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -38,6 +38,4 @@ services:
       KC_DB_SCHEMA: public
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
-#      DEBUG: true
-#      DEBUG_PORT: '*:5005'
       KC_LOG_LEVEL: info,au.org.raid.iam:debug,org.keycloak.services:debug,org.keycloak.adapters:debug

@@ -1,4 +1,5 @@
-﻿export interface RelatedRaidType {
+
+export interface RelatedRaidType {
     id: string;
     schemaUri: string;
 }

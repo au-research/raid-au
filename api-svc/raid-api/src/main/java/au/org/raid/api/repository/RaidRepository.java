@@ -182,6 +182,16 @@ public class RaidRepository {
                 .fetchInto(RaidRecord.class);
     }
 
+    public List<RaidRecord> findAllEmbargoed() {
+        return dslContext.select()
+                .distinctOn(RAID.HANDLE)
+                .from(RAID)
+                .join(RAID_HISTORY).on(RAID_HISTORY.HANDLE.eq(RAID.HANDLE))
+                .where(RAID.ACCESS_TYPE_ID.eq(5)
+                )
+                .fetchInto(RaidRecord.class);
+    }
+
     public List<RaidRecord> findAllNonLegacyRaids() {
         return dslContext.select()
                 .distinctOn(RAID.HANDLE)

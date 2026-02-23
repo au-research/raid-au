@@ -1,5 +1,20 @@
 See the [Changelog audience](#changelog-audience) section for info about 
  the expected audience and content of the changelog.
+# 2.6.1
+## App-client UI
+* Bug fixes for Subject picker. Currently, supports ANZSRC-FOR and ANZSRC-SEO codes
+* Login page customization now configurable via Keycloak User Interface
+* Removed DataCite repository fields from Create Service Point page; fields remain available to view on Update Service Point page
+
+# 2.6.0
+## API
+* Add endpoint to return all embargoed raids
+* Add validation to prevent organisations from having simultaneous roles
+* Add created and updated columns to service point db table
+
+# 2.5.31
+## API
+* Support requests with or without trailing slashes in the URL
 
 # 2.5.30
 ## App-client UI
@@ -15,7 +30,7 @@ See the [Changelog audience](#changelog-audience) section for info about
 
 # 2.5.27
 ## API
-* Add SEO codes as subject types
+* Add SEO codes as subject types  
 
 # 2.5.26
 ## API

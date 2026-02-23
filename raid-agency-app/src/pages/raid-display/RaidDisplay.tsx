@@ -24,12 +24,12 @@ import {ServicePointView} from "@/entities/service-point/views/service-point-vie
 export const RaidDisplay = () => {
   const { isOperator } = useAuthHelper();
   const { isInitialized, authenticated, token } = useKeycloak();
-  const { prefix, suffix } = useParams() as { prefix: string; suffix: string };
+  const { prefix, suffix, version } = useParams() as { prefix: string; suffix: string; version?: string };
   const handle = `${prefix}/${suffix}`;
 
   const readQuery = useQuery({
-    queryKey: ["raids", prefix, suffix],
-    queryFn: () => raidService.fetch(handle),
+    queryKey: ["raids", prefix, suffix, version],
+    queryFn: () => version ? raidService.fetchVersion(handle, version) : raidService.fetch(handle),
     enabled: isInitialized && authenticated,
   });
 
@@ -70,6 +70,7 @@ export const RaidDisplay = () => {
             prefix={prefix}
             suffix={suffix}
             title={raidData?.title?.map((el) => el.text).join("; ") || ""}
+            version={version}
         />
         <Container>
           <Stack direction="column" spacing={2}>

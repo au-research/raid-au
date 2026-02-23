@@ -1,7 +1,7 @@
 ---
 import CopyToClipboard from "@/components/copy-to-clipboard.astro";
+import { getRAIDUrl } from "@/utils/data-utils"
 const { id, label } = Astro.props;
-const path = Astro.url;
 ---
 
 <header class="relative isolate bg-white">
@@ -25,7 +25,7 @@ const path = Astro.url;
       <div class="flex items-center gap-x-6">
         <h1>
           <div class="text-sm leading-6 text-gray-500">
-            RAiD <span class="text-gray-700">{id}</span><CopyToClipboard text={`${path}`} />
+            RAiD <span class="text-gray-700">{id}</span><CopyToClipboard text={`${getRAIDUrl}${id}`} />
           </div>
           <div class="mt-1 text-xl font-semibold leading-6 text-gray-900">
             {label}

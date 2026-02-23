@@ -8,21 +8,17 @@ import au.org.raid.db.jooq.ApiSvc;
 import au.org.raid.db.jooq.Keys;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jooq.Check;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function13;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row13;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -119,6 +115,16 @@ public class ServicePoint extends TableImpl<ServicePointRecord> {
      * The column <code>api_svc.service_point.group_id</code>.
      */
     public final TableField<ServicePointRecord, String> GROUP_ID = createField(DSL.name("group_id"), SQLDataType.CHAR(36), this, "");
+
+    /**
+     * The column <code>api_svc.service_point.created</code>.
+     */
+    public final TableField<ServicePointRecord, OffsetDateTime> CREATED = createField(DSL.name("created"), SQLDataType.TIMESTAMPWITHTIMEZONE(6).defaultValue(DSL.field(DSL.raw("CURRENT_TIMESTAMP"), SQLDataType.TIMESTAMPWITHTIMEZONE)), this, "");
+
+    /**
+     * The column <code>api_svc.service_point.updated</code>.
+     */
+    public final TableField<ServicePointRecord, OffsetDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.TIMESTAMPWITHTIMEZONE(6).defaultValue(DSL.field(DSL.raw("CURRENT_TIMESTAMP"), SQLDataType.TIMESTAMPWITHTIMEZONE)), this, "");
 
     private ServicePoint(Name alias, Table<ServicePointRecord> aliased) {
         this(alias, aliased, null);
@@ -217,29 +223,5 @@ public class ServicePoint extends TableImpl<ServicePointRecord> {
     @Override
     public ServicePoint rename(Table<?> name) {
         return new ServicePoint(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row13 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row13<Long, String, String, String, String, Boolean, String, String, Boolean, String, String, String, String> fieldsRow() {
-        return (Row13) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function13<? super Long, ? super String, ? super String, ? super String, ? super String, ? super Boolean, ? super String, ? super String, ? super Boolean, ? super String, ? super String, ? super String, ? super String, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function13<? super Long, ? super String, ? super String, ? super String, ? super String, ? super Boolean, ? super String, ? super String, ? super Boolean, ? super String, ? super String, ? super String, ? super String, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

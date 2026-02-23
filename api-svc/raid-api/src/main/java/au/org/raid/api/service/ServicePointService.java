@@ -8,6 +8,7 @@ import au.org.raid.idl.raidv2.model.ServicePointCreateRequest;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +23,17 @@ public class ServicePointService {
     private final ServicePointRepository servicePointRepository;
     private final ServicePointRecordFactory servicePointRecordFactory;
     private final ServicePointFactory servicePointFactory;
+    private final RepositoryService repositoryService;
 
     public ServicePoint create(final ServicePointCreateRequest servicePoint) {
-        final var record = servicePointRecordFactory.create(servicePoint);
+        final var password = RandomStringUtils.insecure().nextAlphanumeric(20);
+
+        final var repository = repositoryService.create(servicePoint.getName(), password);
+
+        final var repositoryId = repository.getData().getAttributes().getSymbol();
+        final var prefix = repository.getData().getRelationships().getPrefixes().getData().get(0).getId();
+
+        final var record = servicePointRecordFactory.create(servicePoint, repositoryId, prefix, password);
         return servicePointFactory.create(servicePointRepository.create(record));
     }
 

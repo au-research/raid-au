@@ -9,22 +9,23 @@ import {
   History as HistoryIcon,
   HistoryEdu as HistoryEduIcon,
   Home as HomeIcon,
-  SettingsBackupRestore as SettingsBackupRestoreIcon,
 } from "@mui/icons-material";
 import {Box, Button, Card, CardContent, CardHeader, Container, Grid, Stack, Typography,} from "@mui/material";
 
 import {useQuery} from "@tanstack/react-query";
-import {useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {raidService} from "@/services/raid-service.ts";
+import { Eye } from 'lucide-react';
 
 export const RaidHistory = () => {
   const { authenticated, isInitialized, token } = useKeycloak();
+  const navigate = useNavigate();
 
   const { prefix, suffix } = useParams() as { prefix: string; suffix: string };
   const handle = `${prefix}/${suffix}`;
 
   const raidHistoryQuery = useQuery({
-    queryKey: ["raids", prefix, suffix],
+    queryKey: ["raidHistory", prefix, suffix],
     queryFn: () => raidService.fetchHistory(handle),
     enabled: isInitialized && authenticated,
   });
@@ -79,11 +80,11 @@ export const RaidHistory = () => {
                         variant="outlined"
                         size="small"
                         onClick={() => {
-                          alert("Feature not supported yet.");
+                          navigate(`/raids/${prefix}/${suffix}/${el.version}`);
                         }}
                       >
-                        <SettingsBackupRestoreIcon sx={{ mr: 1 }} />
-                        Restore
+                        <Eye style={{ marginRight: 8 }} />
+                        View
                       </Button>
                     }
                   />
@@ -128,6 +129,13 @@ export const RaidHistory = () => {
                               <Grid item xs={12} sm={6} md={9}>
                                 <Box sx={{ overflow: "auto" }}>
                                   <Typography variant="body2">Value</Typography>
+                                  <Typography
+                                    color="text.secondary"
+                                    variant="body1"
+                                    data-testid="start-date-value"
+                                  >
+                                    {JSON.stringify(el.value)}
+                                  </Typography>
                                 </Box>
                               </Grid>
                             </Grid>

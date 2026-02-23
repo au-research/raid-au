@@ -179,6 +179,11 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllPublic());
     }
 
+    @Override
+    public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids() {
+        return ResponseEntity.ok(raidService.findAllEmbargoed());
+    }
+
     @GetMapping(value="/raid/non-legacy")
     public ResponseEntity<List<RaidDto>> findAllNonLegacy() {
         return ResponseEntity.ok(raidService.findAllNonLegacy());

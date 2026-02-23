@@ -5,6 +5,7 @@ import au.org.raid.api.dto.OrganisationCountDto;
 import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.dto.ServicePointCountDto;
+import au.org.raid.api.dto.legacy.RaidDtoFactory;
 import au.org.raid.api.exception.InvalidVersionException;
 import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
@@ -66,6 +67,7 @@ public class RaidService {
 
     private final RaidRepository raidRepository;
     private final RorClient rorClient;
+    private final RaidDtoFactory raidDtoFactory;
 
     @Transactional
     public RaidDto mint(
@@ -358,5 +360,19 @@ public class RaidService {
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
 
         dataciteSvc.update(raid, handle.toString(), servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
+    }
+
+    public List<RaidDto> findAllEmbargoed() {
+        final var raidRecords = raidRepository.findAllEmbargoed();
+
+        final var raids = new ArrayList<RaidDto>();
+
+        for (final var record : raidRecords) {
+            final var raidDto = raidHistoryService.findByHandle(record.getHandle())
+                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle()));
+            raids.add(raidDto);
+        }
+
+        return raids;
     }
 }

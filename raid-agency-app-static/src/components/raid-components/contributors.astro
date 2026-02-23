@@ -2,10 +2,11 @@
 import InfoField from "@/components/info-field.astro";
 import ContributorPositions from "@/components/raid-components/contributor-positions.astro";
 import ContributorRoles from "@/components/raid-components/contributor-roles.astro";
-import type { Contributor } from "@/generated/raid";
+import type { ContributorDetails } from "@/model/raid";
+import Icon from '@/components/icons.astro';
 
 interface Props {
-  contributors: Contributor[];
+  contributors: ContributorDetails[];
 }
 
 const { contributors = [] } = Astro.props as Props;
@@ -21,10 +22,33 @@ const { contributors = [] } = Astro.props as Props;
     }
     <div class="divide-y divide-gray-200">
       {
-        contributors.map(({ id, leader, contact, position, role }) => (
+        contributors.map(({ id, leader, contact, position, role, status, orcidInfo }) => {
+        const activeStatus = status !== 'AUTHENTICATED' ? 'UNAUTHENTICATED' : 'AUTHENTICATED';
+        return (
           <div class="ml-5 space-y-2 py-4">
-            <div class="grid grid-cols-3 gap-5 text-sm">
-              <InfoField label="Contributor" value={id} isLink={true} />
+            <div class="grid grid-cols-2 gap-5 text-sm">
+              <div>
+                <span class="block font-medium text-gray-900">Name</span>
+                <a href={orcidInfo?.profileUrl} aria-label="View ORCID Name" target="_blank" rel="noopener noreferrer">
+                  <span style={{ textDecoration: orcidInfo?.style }}>{orcidInfo?.displayName}</span>
+                  {orcidInfo?.visibility === 'public' && (
+                    <img 
+                      style="display: inline; height: 24px; width: 24px" 
+                      src={`/${activeStatus}.svg`} 
+                      alt="ORCID Logo"
+                    />
+                  )}
+                </a>
+                {(status !== 'AUTHENTICATED') && orcidInfo?.visibility === 'public' && <span>(unauthenticated)</span>}
+              </div>
+              <div>
+                <span class="block font-medium text-gray-900">Contributor ID</span>
+                <a href={orcidInfo?.profileUrl} aria-label="View ORCID ID" target="_blank" rel="noopener noreferrer">
+                  <img style="display: inline; height: 24px; width: 24px" src=`/${status}.svg` alt="ORCID Logo"/>{" "}
+                  <span style="text-decoration: underline">{orcidInfo?.profileUrl}</span>
+                </a>
+                {(status !== 'AUTHENTICATED') && <span>(unauthenticated)</span>}
+              </div>
               <InfoField label="Leader" value={leader ? "Yes" : "No"} />
               <InfoField label="Contact" value={contact ? "Yes" : "No"} />
             </div>
@@ -45,7 +69,7 @@ const { contributors = [] } = Astro.props as Props;
               <ContributorRoles contributorRoles={role} />
             </div>
           </div>
-        ))
+        )})
       }
     </div>
   </div>

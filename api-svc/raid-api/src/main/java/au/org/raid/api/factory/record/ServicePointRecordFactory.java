@@ -18,13 +18,15 @@ public class ServicePointRecordFactory {
                 .setTechEmail(servicePoint.getTechEmail())
                 .setAppWritesEnabled(servicePoint.getAppWritesEnabled())
                 .setEnabled(servicePoint.getEnabled())
-                .setRepositoryId(servicePoint.getRepositoryId())
-                .setPrefix(servicePoint.getPrefix())
-                .setPassword(servicePoint.getPassword())
                 .setGroupId(servicePoint.getGroupId());
     }
 
-    public ServicePointRecord create(final ServicePointCreateRequest servicePoint) {
+    public ServicePointRecord create(
+            final ServicePointCreateRequest servicePoint,
+            final String repositoryId,
+            final String prefix,
+            final String password
+    ) {
         return new ServicePointRecord()
                 .setName(servicePoint.getName())
                 .setIdentifierOwner(trim(servicePoint.getIdentifierOwner()))
@@ -32,9 +34,9 @@ public class ServicePointRecordFactory {
                 .setTechEmail(trim(servicePoint.getTechEmail()))
                 .setAppWritesEnabled(servicePoint.getAppWritesEnabled())
                 .setEnabled(servicePoint.getEnabled())
-                .setRepositoryId(trim(servicePoint.getRepositoryId()))
-                .setPrefix(trim(servicePoint.getPrefix()))
-                .setPassword(servicePoint.getPassword())
+                .setRepositoryId(trim(repositoryId))
+                .setPrefix(trim(prefix))
+                .setPassword(password)
                 .setGroupId(trim(servicePoint.getGroupId()));
     }
 

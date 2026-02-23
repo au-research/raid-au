@@ -1,10 +1,10 @@
 ---
 import InfoField from "@/components/info-field.astro";
-import type { Organisation } from "@/generated/raid";
+import type { OrganisationDetails } from "@/model/raid";
 import OrganisationRoles from "./organisation-roles.astro";
 
 interface Props {
-  organisations: Organisation[];
+  organisations: OrganisationDetails[];
 }
 
 const { organisations } = Astro.props as Props;
@@ -22,10 +22,19 @@ const { organisations } = Astro.props as Props;
       {
         organisations?.map((el) => (
           <div class="ml-5 space-y-2 py-4">
-            <div class="grid grid-cols-1 gap-5 text-sm">
-              <InfoField label="Organisation ID" value={el.id} isLink={true} />
+            <div class="grid grid-cols-2 gap-5 text-sm">
+              <div>
+              <InfoField label="Name" value={el?.rorDetails?.name}/>
+              </div>
+              <div>
+              <span class="block font-medium text-gray-900">Organisation ID</span>
+              <a href={el.id} target="_blank">
+               <img style="display: inline; margin-right: 2px" src="/ror-icon.png" alt="ror-icon" height="24" />
+               <span style="text-decoration: underline">{el.id}</span>
+               </a>
+               </div>
             </div>
-
+            <br/>
             <div class="grid grid-cols-1 gap-5 text-sm">
               <div>
                 <span class="block font-medium text-gray-900">Roles</span>

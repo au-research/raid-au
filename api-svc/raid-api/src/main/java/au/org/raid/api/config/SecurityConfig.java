@@ -53,6 +53,7 @@ public class SecurityConfig {
         public static final String OPERATOR_ROLE = "operator";
         public static final String CONTRIBUTOR_WRITER_ROLE = "contributor-writer";
         public static final String RAID_UPGRADER_ROLE = "raid-upgrader";
+        public static final String RAID_ACCESS_HANDLER_ROLE = "raid-access-handler";
 
         // API paths
         public static final String RAID_API = "/raid";
@@ -94,6 +95,7 @@ public class SecurityConfig {
                 .requestMatchers(GET, RAID_API + "/non-legacy").hasAnyRole(RAID_UPGRADER_ROLE)
                 .requestMatchers(GET, RAID_API + "/all-public").hasAnyRole(RAID_DUMPER_ROLE, RAID_UPGRADER_ROLE)
                 .requestMatchers(GET, RAID_API + "/count").hasRole(OPERATOR_ROLE)
+                .requestMatchers(GET, RAID_API + "/all-embargoed").hasAnyRole(RAID_ACCESS_HANDLER_ROLE)
                 .requestMatchers(GET, RAID_API + "/**").access(raidAuthorizationService.createReadAccessManager())
                 .requestMatchers(POST, RAID_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, RAID_ADMIN_ROLE)
                 .requestMatchers(PUT, RAID_API + "/**").access(raidAuthorizationService.createWriteAccessManager())

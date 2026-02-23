@@ -1,0 +1,10 @@
+package au.org.raid.api.model.datacite.doi;
+
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
+public class DataciteRequest {
+    private DataciteDto data;
+}

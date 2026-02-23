@@ -1,5 +1,10 @@
 raid:
   environment: not-set
+  repository-client:
+    username: not-set
+    password: not-set
+    url: https://api.test.datacite.org/repositories
+    email: not-set
   iam:
     realm-uri: https://iam.${raid.environment}.raid.org.au/realms/raid
   db:
@@ -27,8 +32,6 @@ raid:
     host: http://localhost:1080
     raid-listener:
       uri: ${raid.orcid-integration.host}/raid-update
-    contributor-email-lookup:
-      uri: ${raid.orcid-integration.host}/find-contributor-by-email
     contributor-id-lookup:
       uri: ${raid.orcid-integration.host}/find-contributor-by-orcid
     api-key: not-set

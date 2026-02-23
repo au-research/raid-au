@@ -19,6 +19,8 @@ export const API_CONSTANTS = {
     GET_ENV_FOR_HANDLE: `https://static.prod.${getRootDomain(domain)}/api/all-handles.json`,
     RELATED_RAID_TITLE:(handle: string, environment: string) =>
       `https://static.${environment}.${getRootDomain(domain)}/raids/${handle}.json`,
+    HISTORY_DETAIL: (handle: string, version: string) =>
+      `${BASE_URL}/raid/${handle}/${version}`,
   },
   ORCID: {
     CONTRIBUTORS: (subDomain: string, environment: string) =>
