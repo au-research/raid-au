@@ -2,6 +2,7 @@ package au.org.raid.api.controller;
 
 import au.org.raid.api.dto.OrganisationCountDto;
 import au.org.raid.api.dto.RaidCountDto;
+import au.org.raid.api.dto.ServicePointCountDto;
 import au.org.raid.api.endpoint.raidv2.RaidExceptionHandler;
 import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.service.RaidHistoryService;
@@ -851,10 +852,16 @@ class RaidControllerTest {
     @Test
     @DisplayName("Count endpoint returns total count with no filters")
     void countRaids_ReturnsCountWithNoFilters() throws Exception {
+        final var sp = ServicePointCountDto.builder()
+                .id(20000001L)
+                .name("ARDC SP")
+                .count(42)
+                .build();
         final var org = OrganisationCountDto.builder()
                 .id("https://ror.org/038sjwq14")
                 .name("Australian Research Data Commons")
                 .count(42)
+                .servicePoints(List.of(sp))
                 .build();
 
         final var expectedCount = RaidCountDto.builder()
@@ -871,17 +878,26 @@ class RaidControllerTest {
                 .andExpect(jsonPath("$.count", Matchers.is(42)))
                 .andExpect(jsonPath("$.organisations[0].id", Matchers.is("https://ror.org/038sjwq14")))
                 .andExpect(jsonPath("$.organisations[0].name", Matchers.is("Australian Research Data Commons")))
-                .andExpect(jsonPath("$.organisations[0].count", Matchers.is(42)));
+                .andExpect(jsonPath("$.organisations[0].count", Matchers.is(42)))
+                .andExpect(jsonPath("$.organisations[0].servicePoints[0].id", Matchers.is(20000001)))
+                .andExpect(jsonPath("$.organisations[0].servicePoints[0].name", Matchers.is("ARDC SP")))
+                .andExpect(jsonPath("$.organisations[0].servicePoints[0].count", Matchers.is(42)));
     }
 
     @Test
     @DisplayName("Count endpoint returns count filtered by service point with name")
     void countRaids_ReturnsCountFilteredByServicePoint() throws Exception {
         final var servicePointId = 20000001L;
+        final var sp = ServicePointCountDto.builder()
+                .id(servicePointId)
+                .name("Australian Research Data Commons")
+                .count(15)
+                .build();
         final var org = OrganisationCountDto.builder()
                 .id("https://ror.org/038sjwq14")
                 .name("Australian Research Data Commons")
                 .count(15)
+                .servicePoints(List.of(sp))
                 .build();
 
         final var expectedCount = RaidCountDto.builder()
@@ -903,7 +919,9 @@ class RaidControllerTest {
                 .andExpect(jsonPath("$.servicePointId", Matchers.is(20000001)))
                 .andExpect(jsonPath("$.servicePointName", Matchers.is("Australian Research Data Commons")))
                 .andExpect(jsonPath("$.organisations[0].id", Matchers.is("https://ror.org/038sjwq14")))
-                .andExpect(jsonPath("$.organisations[0].count", Matchers.is(15)));
+                .andExpect(jsonPath("$.organisations[0].count", Matchers.is(15)))
+                .andExpect(jsonPath("$.organisations[0].servicePoints[0].id", Matchers.is(20000001)))
+                .andExpect(jsonPath("$.organisations[0].servicePoints[0].count", Matchers.is(15)));
     }
 
     @Test
@@ -934,21 +952,39 @@ class RaidControllerTest {
     }
 
     @Test
-    @DisplayName("Count endpoint returns count with all filters applied and multiple organisations")
+    @DisplayName("Count endpoint returns count with all filters applied and multiple organisations with service points")
     void countRaids_ReturnsCountWithAllFilters() throws Exception {
         final var servicePointId = 20000001L;
         final var startDate = LocalDate.of(2025, 1, 1);
         final var endDate = LocalDate.of(2025, 6, 30);
 
+        final var sp1 = ServicePointCountDto.builder()
+                .id(servicePointId)
+                .name("Test Service Point")
+                .count(3)
+                .build();
+        final var sp2 = ServicePointCountDto.builder()
+                .id(servicePointId)
+                .name("Test Service Point")
+                .count(5)
+                .build();
+        final var sp3 = ServicePointCountDto.builder()
+                .id(20000002L)
+                .name("Other Service Point")
+                .count(2)
+                .build();
+
         final var org1 = OrganisationCountDto.builder()
                 .id("https://ror.org/038sjwq14")
                 .name("Australian Research Data Commons")
                 .count(3)
+                .servicePoints(List.of(sp1))
                 .build();
         final var org2 = OrganisationCountDto.builder()
                 .id("https://ror.org/04qw24q55")
                 .name("Wageningen University")
                 .count(7)
+                .servicePoints(List.of(sp2, sp3))
                 .build();
 
         final var expectedCount = RaidCountDto.builder()
@@ -977,11 +1013,11 @@ class RaidControllerTest {
                 .andExpect(jsonPath("$.endDate", Matchers.is("2025-06-30")))
                 .andExpect(jsonPath("$.organisations", Matchers.hasSize(2)))
                 .andExpect(jsonPath("$.organisations[0].id", Matchers.is("https://ror.org/038sjwq14")))
-                .andExpect(jsonPath("$.organisations[0].name", Matchers.is("Australian Research Data Commons")))
                 .andExpect(jsonPath("$.organisations[0].count", Matchers.is(3)))
+                .andExpect(jsonPath("$.organisations[0].servicePoints", Matchers.hasSize(1)))
                 .andExpect(jsonPath("$.organisations[1].id", Matchers.is("https://ror.org/04qw24q55")))
-                .andExpect(jsonPath("$.organisations[1].name", Matchers.is("Wageningen University")))
-                .andExpect(jsonPath("$.organisations[1].count", Matchers.is(7)));
+                .andExpect(jsonPath("$.organisations[1].count", Matchers.is(7)))
+                .andExpect(jsonPath("$.organisations[1].servicePoints", Matchers.hasSize(2)));
     }
 
     private RaidDto createRaidForGet(final String title, final LocalDate startDate) throws IOException {

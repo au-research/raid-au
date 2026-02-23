@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.Record4;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +23,7 @@ import static au.org.raid.db.jooq.tables.Raid.RAID;
 import static au.org.raid.db.jooq.tables.RaidContributor.RAID_CONTRIBUTOR;
 import static au.org.raid.db.jooq.tables.RaidHistory.RAID_HISTORY;
 import static au.org.raid.db.jooq.tables.RaidOrganisation.RAID_ORGANISATION;
+import static au.org.raid.db.jooq.tables.ServicePoint.SERVICE_POINT;
 
 @Repository
 @RequiredArgsConstructor
@@ -222,9 +224,10 @@ public class RaidRepository {
                 .fetchOne(0, int.class);
     }
 
-    public Map<String, Integer> countByOwnerOrganisation(final Long servicePointId,
-                                                          final LocalDateTime startDate,
-                                                          final LocalDateTime endDate) {
+    public List<Record4<String, Long, String, Integer>> countByOrganisationAndServicePoint(
+            final Long servicePointId,
+            final LocalDateTime startDate,
+            final LocalDateTime endDate) {
         var condition = DSL.noCondition();
 
         if (servicePointId != null) {
@@ -239,11 +242,16 @@ public class RaidRepository {
 
         condition = condition.and(RAID.OWNER_ORGANISATION_ID.isNotNull());
 
-        return dslContext.select(ORGANISATION.PID, DSL.count())
+        return dslContext.select(
+                        ORGANISATION.PID,
+                        RAID.SERVICE_POINT_ID,
+                        SERVICE_POINT.NAME,
+                        DSL.count())
                 .from(RAID)
                 .join(ORGANISATION).on(RAID.OWNER_ORGANISATION_ID.eq(ORGANISATION.ID))
+                .join(SERVICE_POINT).on(RAID.SERVICE_POINT_ID.eq(SERVICE_POINT.ID))
                 .where(condition)
-                .groupBy(ORGANISATION.PID)
-                .fetchMap(ORGANISATION.PID, DSL.count());
+                .groupBy(ORGANISATION.PID, RAID.SERVICE_POINT_ID, SERVICE_POINT.NAME)
+                .fetch();
     }
 }

@@ -4,6 +4,7 @@ import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.dto.OrganisationCountDto;
 import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
+import au.org.raid.api.dto.ServicePointCountDto;
 import au.org.raid.api.exception.InvalidVersionException;
 import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
@@ -36,9 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static au.org.raid.api.util.TokenUtil.OPERATOR_ROLE;
@@ -295,21 +294,45 @@ public class RaidService {
                     .orElse(null);
         }
 
-        final var orgCounts = raidRepository.countByOwnerOrganisation(
+        final var rows = raidRepository.countByOrganisationAndServicePoint(
                 servicePointId, startDateTime, endDateTime);
 
-        final var organisations = orgCounts.entrySet().stream()
+        // Group rows by org PID, preserving insertion order
+        final var orgMap = new LinkedHashMap<String, List<ServicePointCountDto>>();
+        for (final var row : rows) {
+            final var orgPid = row.value1();
+            final var spId = row.value2();
+            final var spName = row.value3();
+            final var spCount = row.value4();
+
+            orgMap.computeIfAbsent(orgPid, k -> new ArrayList<>())
+                    .add(ServicePointCountDto.builder()
+                            .id(spId)
+                            .name(spName)
+                            .count(spCount)
+                            .build());
+        }
+
+        final var organisations = orgMap.entrySet().stream()
                 .map(entry -> {
+                    final var orgPid = entry.getKey();
+                    final var servicePoints = entry.getValue();
+                    final var orgCount = servicePoints.stream()
+                            .mapToLong(ServicePointCountDto::getCount)
+                            .sum();
+
                     String name = null;
                     try {
-                        name = rorClient.getOrganisationName(entry.getKey());
+                        name = rorClient.getOrganisationName(orgPid);
                     } catch (Exception e) {
-                        log.warn("Failed to resolve organisation name for {}", entry.getKey(), e);
+                        log.warn("Failed to resolve organisation name for {}", orgPid, e);
                     }
+
                     return OrganisationCountDto.builder()
-                            .id(entry.getKey())
+                            .id(orgPid)
                             .name(name)
-                            .count(entry.getValue())
+                            .count(orgCount)
+                            .servicePoints(servicePoints)
                             .build();
                 })
                 .toList();
