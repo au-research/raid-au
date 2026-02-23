@@ -8,10 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.Record4;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static au.org.raid.db.jooq.tables.Contributor.CONTRIBUTOR;
@@ -20,6 +23,7 @@ import static au.org.raid.db.jooq.tables.Raid.RAID;
 import static au.org.raid.db.jooq.tables.RaidContributor.RAID_CONTRIBUTOR;
 import static au.org.raid.db.jooq.tables.RaidHistory.RAID_HISTORY;
 import static au.org.raid.db.jooq.tables.RaidOrganisation.RAID_ORGANISATION;
+import static au.org.raid.db.jooq.tables.ServicePoint.SERVICE_POINT;
 
 @Repository
 @RequiredArgsConstructor
@@ -207,5 +211,57 @@ public class RaidRepository {
                 .where(RAID.SERVICE_POINT_ID.eq(servicePointId))
                 .and(RAID.ACCESS_TYPE_ID.in(accessTypeIds))
                 .fetchInto(RaidRecord.class);
+    }
+
+    public int countByFilters(final Long servicePointId,
+                              final LocalDateTime startDate,
+                              final LocalDateTime endDate) {
+        var condition = DSL.noCondition();
+
+        if (servicePointId != null) {
+            condition = condition.and(RAID.SERVICE_POINT_ID.eq(servicePointId));
+        }
+        if (startDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.greaterOrEqual(startDate));
+        }
+        if (endDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.lessThan(endDate));
+        }
+
+        return dslContext.selectCount()
+                .from(RAID)
+                .where(condition)
+                .fetchOne(0, int.class);
+    }
+
+    public List<Record4<String, Long, String, Integer>> countByOrganisationAndServicePoint(
+            final Long servicePointId,
+            final LocalDateTime startDate,
+            final LocalDateTime endDate) {
+        var condition = DSL.noCondition();
+
+        if (servicePointId != null) {
+            condition = condition.and(RAID.SERVICE_POINT_ID.eq(servicePointId));
+        }
+        if (startDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.greaterOrEqual(startDate));
+        }
+        if (endDate != null) {
+            condition = condition.and(RAID.DATE_CREATED.lessThan(endDate));
+        }
+
+        condition = condition.and(RAID.OWNER_ORGANISATION_ID.isNotNull());
+
+        return dslContext.select(
+                        ORGANISATION.PID,
+                        RAID.SERVICE_POINT_ID,
+                        SERVICE_POINT.NAME,
+                        DSL.count())
+                .from(RAID)
+                .join(ORGANISATION).on(RAID.OWNER_ORGANISATION_ID.eq(ORGANISATION.ID))
+                .join(SERVICE_POINT).on(RAID.SERVICE_POINT_ID.eq(SERVICE_POINT.ID))
+                .where(condition)
+                .groupBy(ORGANISATION.PID, RAID.SERVICE_POINT_ID, SERVICE_POINT.NAME)
+                .fetch();
     }
 }

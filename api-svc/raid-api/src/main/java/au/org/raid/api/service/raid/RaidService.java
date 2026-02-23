@@ -1,6 +1,10 @@
 package au.org.raid.api.service.raid;
 
+import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.dto.OrganisationCountDto;
+import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
+import au.org.raid.api.dto.ServicePointCountDto;
 import au.org.raid.api.dto.legacy.RaidDtoFactory;
 import au.org.raid.api.exception.InvalidVersionException;
 import au.org.raid.api.exception.ResourceNotFoundException;
@@ -33,9 +37,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static au.org.raid.api.util.TokenUtil.OPERATOR_ROLE;
@@ -63,6 +66,7 @@ public class RaidService {
     private final ObjectMapper objectMapper;
 
     private final RaidRepository raidRepository;
+    private final RorClient rorClient;
     private final RaidDtoFactory raidDtoFactory;
 
     @Transactional
@@ -270,6 +274,79 @@ public class RaidService {
         }
 
         return raids;
+    }
+
+    @Transactional(readOnly = true)
+    public RaidCountDto countRaids(final Long servicePointId,
+                                   final LocalDate startDate,
+                                   final LocalDate endDate) {
+        final var startDateTime = startDate != null
+                ? startDate.atStartOfDay()
+                : null;
+        final var endDateTime = endDate != null
+                ? endDate.plusDays(1).atStartOfDay()
+                : null;
+
+        final int count = raidRepository.countByFilters(servicePointId, startDateTime, endDateTime);
+
+        String servicePointName = null;
+        if (servicePointId != null) {
+            servicePointName = servicePointRepository.findById(servicePointId)
+                    .map(ServicePointRecord::getName)
+                    .orElse(null);
+        }
+
+        final var rows = raidRepository.countByOrganisationAndServicePoint(
+                servicePointId, startDateTime, endDateTime);
+
+        // Group rows by org PID, preserving insertion order
+        final var orgMap = new LinkedHashMap<String, List<ServicePointCountDto>>();
+        for (final var row : rows) {
+            final var orgPid = row.value1();
+            final var spId = row.value2();
+            final var spName = row.value3();
+            final var spCount = row.value4();
+
+            orgMap.computeIfAbsent(orgPid, k -> new ArrayList<>())
+                    .add(ServicePointCountDto.builder()
+                            .id(spId)
+                            .name(spName)
+                            .count(spCount)
+                            .build());
+        }
+
+        final var organisations = orgMap.entrySet().stream()
+                .map(entry -> {
+                    final var orgPid = entry.getKey();
+                    final var servicePoints = entry.getValue();
+                    final var orgCount = servicePoints.stream()
+                            .mapToLong(ServicePointCountDto::getCount)
+                            .sum();
+
+                    String name = null;
+                    try {
+                        name = rorClient.getOrganisationName(orgPid);
+                    } catch (Exception e) {
+                        log.warn("Failed to resolve organisation name for {}", orgPid, e);
+                    }
+
+                    return OrganisationCountDto.builder()
+                            .id(orgPid)
+                            .name(name)
+                            .count(orgCount)
+                            .servicePoints(servicePoints)
+                            .build();
+                })
+                .toList();
+
+        return RaidCountDto.builder()
+                .count(count)
+                .servicePointId(servicePointId)
+                .servicePointName(servicePointName)
+                .startDate(startDate)
+                .endDate(endDate)
+                .organisations(organisations)
+                .build();
     }
 
     public void postToDatacite(@Valid RaidDto raid) {
