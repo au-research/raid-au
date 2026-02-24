@@ -25,6 +25,7 @@ export const defaultConfig: AppConfig = {
     ],
     showSocialLinks: false,
     socialLinks: [],
+    main: []
   },
   content: {
     landingPage: {

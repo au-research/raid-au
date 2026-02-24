@@ -12,6 +12,13 @@ export interface NavLink {
   external?: boolean;
 }
 
+export interface LogosConfig {
+  src: string;
+  alt: string;
+  height?: number;
+  link: string;
+}
+
 export interface HeaderConfig {
   logo: LogoConfig;
   title: string;
@@ -30,6 +37,7 @@ export interface FooterConfig {
   links: NavLink[];
   showSocialLinks?: boolean;
   socialLinks?: SocialLink[];
+  main: { logos: LogosConfig[], text: string[] };
 }
 
 export interface ContentConfig {

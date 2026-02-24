@@ -15,6 +15,42 @@
     "showSearch": true
   },
   "footer": {
+    "main": {
+      "logos": [
+        {
+          
+        },
+        {
+          "src": "/RAiD-Strapline.svg",
+          "alt": "App Logo",
+          "height": 30,
+          "link": "https://www.raid.org.au"
+        },
+        {
+          "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ardc-logo.svg",
+          "alt": "",
+          "height": 30,
+          "link": "https://www.ardc.edu.au"
+        },
+        {
+          "src": "/sponsor-logo.png",
+          "alt": "Australian Government Logo",
+          "height": 30,
+          "link": "https://www.australia.gov.au"
+        },
+        {
+          "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ncris-provider.svg",
+          "alt": "NCRIS Provider Logo",
+          "height": 30,
+          "link": "https://www.education.gov.au/ncris"
+        }
+      ],
+      "text": [
+        "RAiD global is run by an international consortium led by the Australian Research Data Commons (ARDC).\n",
+        "The ARDC is enabled by the Australian Government’s National Collaborative Research Infrastructure Strategy (NCRIS). \n",
+        "A global network of partners deliver RAiD services within their regions, including the Australian Research Data Commons for Australia."
+      ]
+    },
     "copyright": "© 2025 ARDC. All rights reserved.",
     "links": [
       { "label": "Privacy Policy", "path": "/privacy" },
@@ -40,7 +76,7 @@
       "secondary": { "main": "#808080" },
       "background": { "default": "#f5f5f5", "paper": "#ffffff" },
        "error": {
-        "main": "#E51875"
+        "main": "#e5187512"
       },
       "warning": {
         "main": "#f6861f"
