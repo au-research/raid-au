@@ -51,11 +51,12 @@
         "A global network of partners deliver RAiD services within their regions, including the Australian Research Data Commons for Australia."
       ]
     },
-    "copyright": "© 2025 ARDC. All rights reserved.",
+    "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
     "links": [
-      { "label": "Privacy Policy", "path": "/privacy" },
-      { "label": "Terms of Service", "path": "/terms" },
-      { "label": "Contact", "path": "/contact" }
+      { "label": "contact@raid.org", "path": "contact@raid.org" },
+      { "label": "Terms of use", "path": "/terms" },
+      { "label": " Accessibility", "path": "/contact" },
+      { "label": "Privacy policy", "path": "/privacy" }
     ],
     "showSocialLinks": true,
     "socialLinks": [

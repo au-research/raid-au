@@ -12,10 +12,16 @@ export const Footer = () => {
     }
 
     return (
-        <footer className="footer-bar">
+        <footer className="footer-bar" >
             <div className="footer-content">
-                <Container disableGutters maxWidth={false}>
-                    <Stack direction="column" justifyContent="center" alignItems="center" spacing={1}>
+                <Container disableGutters maxWidth={false} sx={{
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        width: '100%',
+                        zIndex: 1000,
+                    }}>
+                    <Stack direction="column" justifyContent="center" alignItems="center" spacing={0} >
                         <Paper variant="outlined" sx={{ padding: '8px 16px', width: '100%' }}>
                             <Stack
                                 direction={{ xs: 'column', sm: 'row' }}
@@ -27,9 +33,9 @@ export const Footer = () => {
                                 >
                                 {config.footer.main.logos.map((logo, index) => (
                                     <Box key={index} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                    <a href={logo.link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <img src={logo.src} alt={logo.alt} style={{height: 'auto', width: '50%' }} />
-                                    </a>
+                                        <a href={logo.link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img src={logo.src} alt={logo.alt} style={{height: 'auto', width: '50%' }} />
+                                        </a>
                                     </Box>
                                 ))}
                             </Stack>
@@ -39,11 +45,29 @@ export const Footer = () => {
                                 </Box>
                             </Stack>
                         </Paper>
-                        <Paper variant="outlined" sx={{ padding: '8px 16px' }}>
-                            contact details, copyrights etc
+                        <Paper elevation={0} sx={{ padding: '8px 16px', backgroundColor: 'transparent', width: '100%'  }}>
+                            <Stack
+                                direction={{ xs: 'column', sm: 'row' }}
+                                spacing={2}
+                                justifyContent="space-evenly"
+                                alignItems="center"
+                                useFlexGap
+                                flexWrap="wrap"
+                                width={"80%"}
+                                >
+                                {config.footer.links.map((link, index) => (
+                                    <Box key={index} sx={{ display: 'inline-flex' }}>
+                                        <a key={index} href={link.path} target="_blank" rel="noopener noreferrer" style={{ margin: '0 8px', textDecoration: 'none', color: 'inherit'}}>
+                                        <Typography variant="h6">{link.label}</Typography>
+                                        </a>
+                                    </Box>
+                                ))}
+                            </Stack>
                         </Paper>
-                        <Paper variant="outlined" sx={{ padding: '8px 16px' }}>
-                            acknowledgement of country
+                        <Paper elevation={1} sx={{ padding: ' 20px', width: '100%' }}>
+                            <Typography variant="body1" align="center">
+                                {config.footer.copyright}
+                            </Typography>
                         </Paper>
                     </Stack>
                 </Container>
