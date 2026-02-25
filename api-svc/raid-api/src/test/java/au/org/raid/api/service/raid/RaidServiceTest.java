@@ -1,8 +1,6 @@
 package au.org.raid.api.service.raid;
 
 import au.org.raid.api.client.ror.RorClient;
-import au.org.raid.api.dto.OrganisationCountDto;
-import au.org.raid.api.dto.ServicePointCountDto;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.IdFactory;

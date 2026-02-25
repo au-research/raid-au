@@ -1,6 +1,5 @@
 package au.org.raid.api.controller;
 
-import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationException;
@@ -189,13 +188,11 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllNonLegacy());
     }
 
-    @GetMapping("/raid/count")
-    public ResponseEntity<RaidCountDto> countRaids(
-            @RequestParam(required = false) final Long servicePointId,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate) {
+    @Override
+    public ResponseEntity<RaidCountResponse> countRaids(
+            final Long servicePointId,
+            final LocalDate startDate,
+            final LocalDate endDate) {
         return ResponseEntity.ok(raidService.countRaids(servicePointId, startDate, endDate));
     }
 
