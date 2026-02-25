@@ -1,8 +1,8 @@
 package au.org.raid.api.controller;
 
-import au.org.raid.api.dto.OrganisationCountDto;
-import au.org.raid.api.dto.RaidCountDto;
-import au.org.raid.api.dto.ServicePointCountDto;
+import au.org.raid.idl.raidv2.model.OrganisationCount;
+import au.org.raid.idl.raidv2.model.RaidCountResponse;
+import au.org.raid.idl.raidv2.model.ServicePointCount;
 import au.org.raid.api.endpoint.raidv2.RaidExceptionHandler;
 import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.service.RaidHistoryService;
@@ -852,22 +852,16 @@ class RaidControllerTest {
     @Test
     @DisplayName("Count endpoint returns total count with no filters")
     void countRaids_ReturnsCountWithNoFilters() throws Exception {
-        final var sp = ServicePointCountDto.builder()
-                .id(20000001L)
-                .name("ARDC SP")
-                .count(42)
-                .build();
-        final var org = OrganisationCountDto.builder()
+        final var sp = new ServicePointCount().id(20000001L).name("ARDC SP").count(42L);
+        final var org = new OrganisationCount()
                 .id("https://ror.org/038sjwq14")
                 .name("Australian Research Data Commons")
-                .count(42)
-                .servicePoints(List.of(sp))
-                .build();
+                .count(42L)
+                .servicePoints(List.of(sp));
 
-        final var expectedCount = RaidCountDto.builder()
-                .count(42)
-                .organisations(List.of(org))
-                .build();
+        final var expectedCount = new RaidCountResponse()
+                .count(42L)
+                .organisations(List.of(org));
 
         when(raidService.countRaids(null, null, null)).thenReturn(expectedCount);
 
@@ -888,24 +882,18 @@ class RaidControllerTest {
     @DisplayName("Count endpoint returns count filtered by service point with name")
     void countRaids_ReturnsCountFilteredByServicePoint() throws Exception {
         final var servicePointId = 20000001L;
-        final var sp = ServicePointCountDto.builder()
-                .id(servicePointId)
-                .name("Australian Research Data Commons")
-                .count(15)
-                .build();
-        final var org = OrganisationCountDto.builder()
+        final var sp = new ServicePointCount().id(servicePointId).name("Australian Research Data Commons").count(15L);
+        final var org = new OrganisationCount()
                 .id("https://ror.org/038sjwq14")
                 .name("Australian Research Data Commons")
-                .count(15)
-                .servicePoints(List.of(sp))
-                .build();
+                .count(15L)
+                .servicePoints(List.of(sp));
 
-        final var expectedCount = RaidCountDto.builder()
-                .count(15)
+        final var expectedCount = new RaidCountResponse()
+                .count(15L)
                 .servicePointId(servicePointId)
                 .servicePointName("Australian Research Data Commons")
-                .organisations(List.of(org))
-                .build();
+                .organisations(List.of(org));
 
         when(raidService.countRaids(eq(servicePointId), isNull(), isNull()))
                 .thenReturn(expectedCount);
@@ -929,12 +917,11 @@ class RaidControllerTest {
     void countRaids_ReturnsCountFilteredByDateRange() throws Exception {
         final var startDate = LocalDate.of(2025, 1, 1);
         final var endDate = LocalDate.of(2025, 6, 30);
-        final var expectedCount = RaidCountDto.builder()
-                .count(25)
+        final var expectedCount = new RaidCountResponse()
+                .count(25L)
                 .startDate(startDate)
                 .endDate(endDate)
-                .organisations(Collections.emptyList())
-                .build();
+                .organisations(Collections.emptyList());
 
         when(raidService.countRaids(isNull(), eq(startDate), eq(endDate)))
                 .thenReturn(expectedCount);
@@ -958,43 +945,28 @@ class RaidControllerTest {
         final var startDate = LocalDate.of(2025, 1, 1);
         final var endDate = LocalDate.of(2025, 6, 30);
 
-        final var sp1 = ServicePointCountDto.builder()
-                .id(servicePointId)
-                .name("Test Service Point")
-                .count(3)
-                .build();
-        final var sp2 = ServicePointCountDto.builder()
-                .id(servicePointId)
-                .name("Test Service Point")
-                .count(5)
-                .build();
-        final var sp3 = ServicePointCountDto.builder()
-                .id(20000002L)
-                .name("Other Service Point")
-                .count(2)
-                .build();
+        final var sp1 = new ServicePointCount().id(servicePointId).name("Test Service Point").count(3L);
+        final var sp2 = new ServicePointCount().id(servicePointId).name("Test Service Point").count(5L);
+        final var sp3 = new ServicePointCount().id(20000002L).name("Other Service Point").count(2L);
 
-        final var org1 = OrganisationCountDto.builder()
+        final var org1 = new OrganisationCount()
                 .id("https://ror.org/038sjwq14")
                 .name("Australian Research Data Commons")
-                .count(3)
-                .servicePoints(List.of(sp1))
-                .build();
-        final var org2 = OrganisationCountDto.builder()
+                .count(3L)
+                .servicePoints(List.of(sp1));
+        final var org2 = new OrganisationCount()
                 .id("https://ror.org/04qw24q55")
                 .name("Wageningen University")
-                .count(7)
-                .servicePoints(List.of(sp2, sp3))
-                .build();
+                .count(7L)
+                .servicePoints(List.of(sp2, sp3));
 
-        final var expectedCount = RaidCountDto.builder()
-                .count(10)
+        final var expectedCount = new RaidCountResponse()
+                .count(10L)
                 .servicePointId(servicePointId)
                 .servicePointName("Test Service Point")
                 .startDate(startDate)
                 .endDate(endDate)
-                .organisations(List.of(org1, org2))
-                .build();
+                .organisations(List.of(org1, org2));
 
         when(raidService.countRaids(eq(servicePointId), eq(startDate), eq(endDate)))
                 .thenReturn(expectedCount);

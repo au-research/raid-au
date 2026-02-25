@@ -1,10 +1,7 @@
 package au.org.raid.api.service.raid;
 
 import au.org.raid.api.client.ror.RorClient;
-import au.org.raid.api.dto.OrganisationCountDto;
-import au.org.raid.api.dto.RaidCountDto;
 import au.org.raid.api.dto.RaidPermissionsDto;
-import au.org.raid.api.dto.ServicePointCountDto;
 import au.org.raid.api.dto.legacy.RaidDtoFactory;
 import au.org.raid.api.exception.InvalidVersionException;
 import au.org.raid.api.exception.ResourceNotFoundException;
@@ -20,10 +17,7 @@ import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
-import au.org.raid.idl.raidv2.model.Contributor;
-import au.org.raid.idl.raidv2.model.RaidCreateRequest;
-import au.org.raid.idl.raidv2.model.RaidDto;
-import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
+import au.org.raid.idl.raidv2.model.*;;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -277,9 +271,9 @@ public class RaidService {
     }
 
     @Transactional(readOnly = true)
-    public RaidCountDto countRaids(final Long servicePointId,
-                                   final LocalDate startDate,
-                                   final LocalDate endDate) {
+    public RaidCountResponse countRaids(final Long servicePointId,
+                                        final LocalDate startDate,
+                                        final LocalDate endDate) {
         final var startDateTime = startDate != null
                 ? startDate.atStartOfDay()
                 : null;
@@ -300,7 +294,7 @@ public class RaidService {
                 servicePointId, startDateTime, endDateTime);
 
         // Group rows by org PID, preserving insertion order
-        final var orgMap = new LinkedHashMap<String, List<ServicePointCountDto>>();
+        final var orgMap = new LinkedHashMap<String, List<ServicePointCount>>();
         for (final var row : rows) {
             final var orgPid = row.value1();
             final var spId = row.value2();
@@ -308,11 +302,10 @@ public class RaidService {
             final var spCount = row.value4();
 
             orgMap.computeIfAbsent(orgPid, k -> new ArrayList<>())
-                    .add(ServicePointCountDto.builder()
+                    .add(new ServicePointCount()
                             .id(spId)
                             .name(spName)
-                            .count(spCount)
-                            .build());
+                            .count((long) spCount));
         }
 
         final var organisations = orgMap.entrySet().stream()
@@ -320,7 +313,7 @@ public class RaidService {
                     final var orgPid = entry.getKey();
                     final var servicePoints = entry.getValue();
                     final var orgCount = servicePoints.stream()
-                            .mapToLong(ServicePointCountDto::getCount)
+                            .mapToLong(ServicePointCount::getCount)
                             .sum();
 
                     String name = null;
@@ -330,23 +323,21 @@ public class RaidService {
                         log.warn("Failed to resolve organisation name for {}", orgPid, e);
                     }
 
-                    return OrganisationCountDto.builder()
+                    return new OrganisationCount()
                             .id(orgPid)
                             .name(name)
                             .count(orgCount)
-                            .servicePoints(servicePoints)
-                            .build();
+                            .servicePoints(servicePoints);
                 })
                 .toList();
 
-        return RaidCountDto.builder()
-                .count(count)
+        return new RaidCountResponse()
+                .count((long) count)
                 .servicePointId(servicePointId)
                 .servicePointName(servicePointName)
                 .startDate(startDate)
                 .endDate(endDate)
-                .organisations(organisations)
-                .build();
+                .organisations(organisations);
     }
 
     public void postToDatacite(@Valid RaidDto raid) {

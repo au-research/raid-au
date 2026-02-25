@@ -116,6 +116,47 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RaidDto'
+  /raid/count:
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: countRaids
+      summary: Count RAiDs with optional filtering
+      description: >
+        Returns the total number of RAiDs, optionally filtered by service point
+        and/or date range. Includes a breakdown by owner organisation and service
+        point. Requires operator or service-point-user role.
+      parameters:
+        - name: servicePointId
+          in: query
+          required: false
+          description: Filter by service point ID
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          required: false
+          description: Filter by start date (inclusive)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          description: Filter by end date (inclusive)
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: The count of RAiDs matching the filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaidCountResponse'
   /raid/{prefix}/{suffix}:
     parameters:
       - name: prefix
@@ -1030,3 +1071,67 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationFailure'
+    RaidCountResponse:
+      type: object
+      required: [ count ]
+      properties:
+        count:
+          type: integer
+          format: int64
+          description: Total number of RAiDs matching the filters
+        servicePointId:
+          type: integer
+          format: int64
+          description: The service point ID filter applied (if any)
+        servicePointName:
+          type: string
+          description: The name of the filtered service point (if any)
+        startDate:
+          type: string
+          format: date
+          description: The start date filter applied (if any)
+        endDate:
+          type: string
+          format: date
+          description: The end date filter applied (if any)
+        organisations:
+          type: array
+          description: Breakdown of RAiD counts by owner organisation
+          items:
+            $ref: '#/components/schemas/OrganisationCount'
+    OrganisationCount:
+      type: object
+      required: [ id, count ]
+      properties:
+        id:
+          type: string
+          description: The ROR identifier of the organisation
+          example: https://ror.org/038sjwq14
+        name:
+          type: string
+          description: The name of the organisation (resolved from ROR API)
+          example: Australian Research Data Commons
+        count:
+          type: integer
+          format: int64
+          description: Number of RAiDs owned by this organisation
+        servicePoints:
+          type: array
+          description: Breakdown of RAiD counts by service point within this organisation
+          items:
+            $ref: '#/components/schemas/ServicePointCount'
+    ServicePointCount:
+      type: object
+      required: [ id, count ]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The service point ID
+        name:
+          type: string
+          description: The name of the service point
+        count:
+          type: integer
+          format: int64
+          description: Number of RAiDs at this service point for the parent organisation
