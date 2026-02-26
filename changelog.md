@@ -17,7 +17,9 @@ See the [Changelog audience](#changelog-audience) section for info about
 * Fix defect related to saving the language in the Access field
 * Fix access mapping subject code and organisation class typo
 * Fix RAiD edit page defect and useQuery caching issue
-* Move manually-created Citation types to src/model/raid/
+* Move extended Citation types to src/model/raid/ - Raid App
+* Add ORCID and ROR details to Raid data and render in the static pages as per the guidelines
+* Move extended ROR and ORCID types to src/model/raid - static landing pages
 
 ## SSO
 * Upgrade Keycloak from 24.0.1 to 26.5.3 (requires CDK deployment)
