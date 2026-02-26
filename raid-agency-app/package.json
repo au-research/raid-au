@@ -45,7 +45,7 @@
     "react-spinners": "^0.17.0",
     "rehype-raw": "^7.0.0",
     "typescript": "5.3.3",
-    "vite": "5.1.4",
+    "vite": "7.3.1",
     "vitest": "2.0.5",
     "zod": "3.22.4"
   },
