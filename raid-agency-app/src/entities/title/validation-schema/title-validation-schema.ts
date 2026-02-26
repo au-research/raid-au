@@ -17,8 +17,8 @@ const titleTypeValidationSchema = z.object({
 });
 
 const titleLanguageValidationSchema = z.object({
-  id: z.string(),
-  schemaUri: z.literal(languageSchema[0].uri),
+  id: z.string().optional(),
+  schemaUri: z.literal(languageSchema[0].uri).optional(),
 });
 
 export const singleTitleValidationSchema = z

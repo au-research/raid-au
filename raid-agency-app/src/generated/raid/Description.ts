@@ -1,4 +1,4 @@
-﻿import type { DescriptionType } from './DescriptionType';
+import type { DescriptionType } from './DescriptionType';
 import type { Language } from './Language';
 
 export interface Description {

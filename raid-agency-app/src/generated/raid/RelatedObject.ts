@@ -1,4 +1,4 @@
-﻿import type { RelatedObjectType } from './RelatedObjectType';
+import type { RelatedObjectType } from './RelatedObjectType';
 import type { RelatedObjectCategory } from './RelatedObjectCategory';
 
 export interface RelatedObject {

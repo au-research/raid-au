@@ -44,6 +44,18 @@ export const raidPageRoutes: RouteObject[] = [
     ],
   },
   {
+    path: ROUTES.RAID_HISTORY_DETAIL,
+  // This route is protected, meaning it requires authentication
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: ROUTES.EMPTY_PATH,
+        // The empty path under RAID_DISPLAY will render the RaidDisplay component
+        element: <RaidDisplay />,
+      },
+    ],
+  },
+  {
     path: ROUTES.RAID_EDIT,
   // This route is protected, meaning it requires authentication
     element: <ProtectedRoute />,

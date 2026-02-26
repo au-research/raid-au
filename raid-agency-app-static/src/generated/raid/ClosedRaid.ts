@@ -1,4 +1,4 @@
-﻿import type { Access } from './Access';
+import type { Access } from './Access';
 import type { Id } from './Id';
 
 export interface ClosedRaid {

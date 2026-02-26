@@ -14,20 +14,15 @@ import au.org.raid.db.jooq.tables.records.UserAuthzRequestRecord;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jooq.Check;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function12;
 import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row12;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -263,29 +258,5 @@ public class UserAuthzRequest extends TableImpl<UserAuthzRequestRecord> {
     @Override
     public UserAuthzRequest rename(Table<?> name) {
         return new UserAuthzRequest(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row12 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row12<Long, AuthRequestStatus, Long, String, String, IdProvider, String, Long, Long, String, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row12) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function12<? super Long, ? super AuthRequestStatus, ? super Long, ? super String, ? super String, ? super IdProvider, ? super String, ? super Long, ? super Long, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function12<? super Long, ? super AuthRequestStatus, ? super Long, ? super String, ? super String, ? super IdProvider, ? super String, ? super Long, ? super Long, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

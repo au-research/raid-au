@@ -1,4 +1,4 @@
-﻿import type { Language } from './Language';
+import type { Language } from './Language';
 import type { TitleType } from './TitleType';
 
 export interface Title {

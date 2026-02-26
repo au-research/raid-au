@@ -1,6 +1,8 @@
 package au.org.raid.api.service.raid;
 
+import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.dto.RaidPermissionsDto;
+import au.org.raid.api.dto.legacy.RaidDtoFactory;
 import au.org.raid.api.exception.InvalidVersionException;
 import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
@@ -15,10 +17,7 @@ import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
-import au.org.raid.idl.raidv2.model.Contributor;
-import au.org.raid.idl.raidv2.model.RaidCreateRequest;
-import au.org.raid.idl.raidv2.model.RaidDto;
-import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
+import au.org.raid.idl.raidv2.model.*;;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +31,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static au.org.raid.api.util.TokenUtil.OPERATOR_ROLE;
@@ -62,6 +60,8 @@ public class RaidService {
     private final ObjectMapper objectMapper;
 
     private final RaidRepository raidRepository;
+    private final RorClient rorClient;
+    private final RaidDtoFactory raidDtoFactory;
 
     @Transactional
     public RaidDto mint(
@@ -270,6 +270,76 @@ public class RaidService {
         return raids;
     }
 
+    @Transactional(readOnly = true)
+    public RaidCountResponse countRaids(final Long servicePointId,
+                                        final LocalDate startDate,
+                                        final LocalDate endDate) {
+        final var startDateTime = startDate != null
+                ? startDate.atStartOfDay()
+                : null;
+        final var endDateTime = endDate != null
+                ? endDate.plusDays(1).atStartOfDay()
+                : null;
+
+        final int count = raidRepository.countByFilters(servicePointId, startDateTime, endDateTime);
+
+        String servicePointName = null;
+        if (servicePointId != null) {
+            servicePointName = servicePointRepository.findById(servicePointId)
+                    .map(ServicePointRecord::getName)
+                    .orElse(null);
+        }
+
+        final var rows = raidRepository.countByOrganisationAndServicePoint(
+                servicePointId, startDateTime, endDateTime);
+
+        // Group rows by org PID, preserving insertion order
+        final var orgMap = new LinkedHashMap<String, List<ServicePointCount>>();
+        for (final var row : rows) {
+            final var orgPid = row.value1();
+            final var spId = row.value2();
+            final var spName = row.value3();
+            final var spCount = row.value4();
+
+            orgMap.computeIfAbsent(orgPid, k -> new ArrayList<>())
+                    .add(new ServicePointCount()
+                            .id(spId)
+                            .name(spName)
+                            .count((long) spCount));
+        }
+
+        final var organisations = orgMap.entrySet().stream()
+                .map(entry -> {
+                    final var orgPid = entry.getKey();
+                    final var servicePoints = entry.getValue();
+                    final var orgCount = servicePoints.stream()
+                            .mapToLong(ServicePointCount::getCount)
+                            .sum();
+
+                    String name = null;
+                    try {
+                        name = rorClient.getOrganisationName(orgPid);
+                    } catch (Exception e) {
+                        log.warn("Failed to resolve organisation name for {}", orgPid, e);
+                    }
+
+                    return new OrganisationCount()
+                            .id(orgPid)
+                            .name(name)
+                            .count(orgCount)
+                            .servicePoints(servicePoints);
+                })
+                .toList();
+
+        return new RaidCountResponse()
+                .count((long) count)
+                .servicePointId(servicePointId)
+                .servicePointName(servicePointName)
+                .startDate(startDate)
+                .endDate(endDate)
+                .organisations(organisations);
+    }
+
     public void postToDatacite(@Valid RaidDto raid) {
         final var handle = new Handle(raid.getIdentifier().getId());
 
@@ -281,5 +351,19 @@ public class RaidService {
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
 
         dataciteSvc.update(raid, handle.toString(), servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
+    }
+
+    public List<RaidDto> findAllEmbargoed() {
+        final var raidRecords = raidRepository.findAllEmbargoed();
+
+        final var raids = new ArrayList<RaidDto>();
+
+        for (final var record : raidRecords) {
+            final var raidDto = raidHistoryService.findByHandle(record.getHandle())
+                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle()));
+            raids.add(raidDto);
+        }
+
+        return raids;
     }
 }

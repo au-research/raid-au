@@ -33,13 +33,21 @@ export const raidService = {
     },
     fetchHistory: async (handle: string) => {
         const url = API_CONSTANTS.RAID.HISTORY(handle);
-        const response = await fetch(url);
+        const response = await authService.fetchWithAuth(url.toString());
 
         if (!response.ok) {
             throw new Error(`RAiD history could not be fetched`);
         }
 
         return await response.json() as RaidHistoryType[];
+    },
+    fetchVersion: async (handle: string, version: string) => {
+        const url = API_CONSTANTS.RAID.HISTORY_DETAIL(handle, version);
+        const response = await authService.fetchWithAuth(url.toString());
+        if (!response.ok) {
+            throw new Error(`RAiD version could not be fetched`);
+        }
+        return await response.json() as RaidDto;
     },
     create: async (raid: RaidDto) => {
         const url = API_CONSTANTS.RAID.ALL;

@@ -1,4 +1,4 @@
-﻿import type { RelatedRaidType } from './RelatedRaidType';
+import type { RelatedRaidType } from './RelatedRaidType';
 
 export interface RelatedRaid {
     id?: string;

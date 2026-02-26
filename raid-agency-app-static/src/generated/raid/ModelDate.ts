@@ -1,4 +1,5 @@
-﻿export interface ModelDate {
+
+export interface ModelDate {
     startDate: string;
     endDate?: string;
 }

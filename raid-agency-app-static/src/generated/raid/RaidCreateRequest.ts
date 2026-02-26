@@ -1,4 +1,4 @@
-﻿import type { RelatedObject } from './RelatedObject';
+import type { RelatedObject } from './RelatedObject';
 import type { Description } from './Description';
 import type { Organisation } from './Organisation';
 import type { ModelDate } from './ModelDate';

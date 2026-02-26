@@ -20,4 +20,5 @@ export const ROUTES = {
     SERVICE_POINTS: "/service-points",
     SERVICE_POINT: "/service-points/:servicePointId",
     ORCID_SUCCESS: "/orcid/success",
+    RAID_HISTORY_DETAIL: "/raids/:prefix/:suffix/:version",
 }

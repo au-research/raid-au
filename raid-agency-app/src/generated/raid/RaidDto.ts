@@ -1,4 +1,4 @@
-﻿import type { RelatedObject } from './RelatedObject';
+import type { RelatedObject } from './RelatedObject';
 import type { Description } from './Description';
 import type { Organisation } from './Organisation';
 import type { ModelDate } from './ModelDate';
@@ -15,7 +15,6 @@ import type { TraditionalKnowledgeLabel } from './TraditionalKnowledgeLabel';
 import type { SpatialCoverage } from './SpatialCoverage';
 
 export interface RaidDto {
-    traditionalKnowledgeLabel?: Array<TraditionalKnowledgeLabel>;
     metadata?: Metadata;
     identifier: Id;
     title?: Array<Title>;
@@ -30,4 +29,5 @@ export interface RaidDto {
     relatedObject?: Array<RelatedObject>;
     alternateIdentifier?: Array<AlternateIdentifier>;
     spatialCoverage?: Array<SpatialCoverage>;
+    traditionalKnowledgeLabel?: Array<TraditionalKnowledgeLabel>;
 }

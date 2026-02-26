@@ -3,7 +3,7 @@ import { AppNavBar } from "@/components/app-nav-bar";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { Loading } from "@/pages/loading";
 import { Box, Container } from "@mui/material";
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 /**
@@ -15,6 +15,11 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
  * 
  * @returns {JSX.Element} Authenticated content, loading indicator, or redirect to login
  */
+
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
 export const ProtectedRoute = memo(() => {
   const { isInitialized, authenticated } = useKeycloak();
   const location = useLocation();
@@ -30,7 +35,7 @@ export const ProtectedRoute = memo(() => {
 
   return authenticated ? (
     <>
-      <AppNavBar authenticated={true} />
+      <AppNavBar />
       {!isProduction && (
         <Banner
           variant="warning"
@@ -46,12 +51,8 @@ export const ProtectedRoute = memo(() => {
       <Outlet />
     </>
   ) : (
-    <Navigate
-      to="/login"
-      replace
-      state={{ from: location.pathname + location.search }}
-    />
-  );
+    <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
+  )
 });
 
 ProtectedRoute.displayName = "ProtectedRoute";

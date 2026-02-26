@@ -14,6 +14,7 @@ import au.org.raid.api.validator.ValidationService;
 import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.idl.raidv2.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.format.annotation.DateTimeFormat;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
@@ -28,6 +29,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -176,9 +178,22 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllPublic());
     }
 
+    @Override
+    public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids() {
+        return ResponseEntity.ok(raidService.findAllEmbargoed());
+    }
+
     @GetMapping(value="/raid/non-legacy")
     public ResponseEntity<List<RaidDto>> findAllNonLegacy() {
         return ResponseEntity.ok(raidService.findAllNonLegacy());
+    }
+
+    @Override
+    public ResponseEntity<RaidCountResponse> countRaids(
+            final Long servicePointId,
+            final LocalDate startDate,
+            final LocalDate endDate) {
+        return ResponseEntity.ok(raidService.countRaids(servicePointId, startDate, endDate));
     }
 
     private long getServicePointId() {

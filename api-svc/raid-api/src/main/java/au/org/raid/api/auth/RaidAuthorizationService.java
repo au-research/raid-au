@@ -124,7 +124,8 @@ public class RaidAuthorizationService {
         return AuthorizationManagers.anyOf(
                 this::servicePointOwner,
                 this::hasRaidAdminPermissions,
-                this::hasRaidUserPermissions
+                this::hasRaidUserPermissions,
+                this::isOperator
         );
     }
 

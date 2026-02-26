@@ -15,9 +15,6 @@ class ServicePointRecordFactoryTest {
     private static final String TECH_EMAIL = "tech-email";
     private static final boolean APP_WRITES_ENABLED = true;
     private static final boolean ENABLED = true;
-    private static final String PREFIX = "_prefix";
-    private static final String REPOSITORY_ID = "repository-id";
-    private static final String PASSWORD = "_password";
     private final ServicePointRecordFactory factory = new ServicePointRecordFactory();
 
     @Test
@@ -32,10 +29,7 @@ class ServicePointRecordFactoryTest {
                 .adminEmail(ADMIN_EMAIL)
                 .techEmail(TECH_EMAIL)
                 .appWritesEnabled(APP_WRITES_ENABLED)
-                .enabled(ENABLED)
-                .prefix(PREFIX)
-                .repositoryId(REPOSITORY_ID)
-                .password(PASSWORD);
+                .enabled(ENABLED);
 
         final var result = factory.create(servicePoint);
 
@@ -46,27 +40,25 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getTechEmail(), is(TECH_EMAIL));
         assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
         assertThat(result.getEnabled(), is(ENABLED));
-        assertThat(result.getPrefix(), is(PREFIX));
-        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
-        assertThat(result.getPassword(), is(PASSWORD));
     }
 
 
     @Test
     @DisplayName("Sets all fields from ServicePointCreateRequest")
     void setsAllFieldsFromCreateServicePointRequest() {
+        final var repositoryId = "TEST.REPO123";
+        final var prefix = "10.12345";
+        final var password = "password123";
+
         final var servicePoint = new ServicePointCreateRequest()
                 .name(NAME)
                 .identifierOwner(IDENTIFIER_OWNER)
                 .adminEmail(ADMIN_EMAIL)
                 .techEmail(TECH_EMAIL)
                 .appWritesEnabled(APP_WRITES_ENABLED)
-                .enabled(ENABLED)
-                .prefix(PREFIX)
-                .repositoryId(REPOSITORY_ID)
-                .password(PASSWORD);
+                .enabled(ENABLED);
 
-        final var result = factory.create(servicePoint);
+        final var result = factory.create(servicePoint, repositoryId, prefix, password);
 
         assertThat(result.getName(), is(NAME));
         assertThat(result.getIdentifierOwner(), is(IDENTIFIER_OWNER));
@@ -74,26 +66,27 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getTechEmail(), is(TECH_EMAIL));
         assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
         assertThat(result.getEnabled(), is(ENABLED));
-        assertThat(result.getPrefix(), is(PREFIX));
-        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
-        assertThat(result.getPassword(), is(PASSWORD));
+        assertThat(result.getRepositoryId(), is(repositoryId));
+        assertThat(result.getPrefix(), is(prefix));
+        assertThat(result.getPassword(), is(password));
     }
 
     @Test
     @DisplayName("Should trim whitespace from input")
     void trimInput() {
+        final var repositoryId = " TEST.REPO123 ";
+        final var prefix = " 10.12345 ";
+        final var password = "password123";
+
         final var servicePoint = new ServicePointCreateRequest()
                 .name(NAME)
                 .identifierOwner(IDENTIFIER_OWNER)
                 .adminEmail(" " + ADMIN_EMAIL + " ")
                 .techEmail(" " + TECH_EMAIL + " ")
                 .appWritesEnabled(APP_WRITES_ENABLED)
-                .enabled(ENABLED)
-                .prefix(" " + PREFIX + " ")
-                .repositoryId(" " + REPOSITORY_ID + " ")
-                .password(PASSWORD);
+                .enabled(ENABLED);
 
-        final var result = factory.create(servicePoint);
+        final var result = factory.create(servicePoint, repositoryId, prefix, password);
 
         assertThat(result.getName(), is(NAME));
         assertThat(result.getIdentifierOwner(), is(IDENTIFIER_OWNER));
@@ -101,9 +94,7 @@ class ServicePointRecordFactoryTest {
         assertThat(result.getTechEmail(), is(TECH_EMAIL));
         assertThat(result.getAppWritesEnabled(), is(APP_WRITES_ENABLED));
         assertThat(result.getEnabled(), is(ENABLED));
-        assertThat(result.getPrefix(), is(PREFIX));
-        assertThat(result.getRepositoryId(), is(REPOSITORY_ID));
-        assertThat(result.getPassword(), is(PASSWORD));
-
+        assertThat(result.getRepositoryId(), is("TEST.REPO123"));
+        assertThat(result.getPrefix(), is("10.12345"));
     }
 }

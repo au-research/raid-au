@@ -2,7 +2,7 @@ package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.config.properties.DataciteProperties;
-import au.org.raid.api.model.datacite.DataciteContributor;
+import au.org.raid.api.model.datacite.doi.DataciteContributor;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;

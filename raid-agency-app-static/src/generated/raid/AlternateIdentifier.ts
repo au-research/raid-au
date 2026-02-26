@@ -1,4 +1,5 @@
-﻿export interface AlternateIdentifier {
+
+export interface AlternateIdentifier {
     id?: string;
     type?: string;
 }

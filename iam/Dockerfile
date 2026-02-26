@@ -4,7 +4,7 @@ RUN dnf install --installroot /mnt/rootfs curl --releasever 9 --setopt install_w
     dnf --installroot /mnt/rootfs clean all && \
     rpm --root /mnt/rootfs -e --nodeps setup
 
-FROM quay.io/keycloak/keycloak:24.0.1 as builder
+FROM quay.io/keycloak/keycloak:26.5.3 as builder
 COPY --from=ubi-micro-build /mnt/rootfs /
 
 WORKDIR /opt/keycloak
@@ -17,6 +17,9 @@ RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysi
 RUN keytool -import -storepass password -noprompt -trustcacerts -alias test.raid.org.au -file test-raid-org-au.pem -keystore conf/server.keystore
 RUN keytool -import -storepass password -noprompt -trustcacerts -alias demo.raid.org.au -file test-raid-org-au.pem -keystore conf/server.keystore
 RUN keytool -import -storepass password -noprompt -trustcacerts -alias prod.raid.org.au -file test-raid-org-au.pem -keystore conf/server.keystore
+
+# Added this line to copy custom theme into the image
+COPY themes/raid-custom /opt/keycloak/themes/raid-custom
 
 RUN /opt/keycloak/bin/kc.sh build
 

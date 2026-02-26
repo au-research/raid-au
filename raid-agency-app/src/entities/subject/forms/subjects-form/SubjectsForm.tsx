@@ -178,7 +178,7 @@ export function SubjectsForm({
             </Typography>
           )}
           <Stack gap={2} data-testid={`${key}-form`}>
-            <Typography variant="body1" color="black" textAlign="left" marginBottom={2}>
+            <Typography variant="body1" textAlign="left" marginBottom={2}>
               {"Subject Selection"}
             </Typography>
             <Stack

@@ -1,4 +1,5 @@
-﻿export interface ContributorPosition {
+
+export interface ContributorPosition {
     schemaUri: string;
     id: string;
     startDate: string;

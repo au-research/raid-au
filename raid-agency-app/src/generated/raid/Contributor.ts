@@ -1,4 +1,4 @@
-﻿import type { ContributorPosition } from './ContributorPosition';
+import type { ContributorPosition } from './ContributorPosition';
 import type { ContributorRole } from './ContributorRole';
 
 export interface Contributor {
