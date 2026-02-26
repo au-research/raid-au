@@ -56,3 +56,4 @@ npm run dev
 We welcome contributions from the community! Whether you're fixing bugs, adding new features, improving documentation, or suggesting ideas, we'd love to have your input. Feel free to raise a pull request (include tests).
 # License
 This project is licensed under the Apache 2.0 License - see the license.txt file for details.
+ 
