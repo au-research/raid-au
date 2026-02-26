@@ -1,5 +1,32 @@
 See the [Changelog audience](#changelog-audience) section for info about 
  the expected audience and content of the changelog.
+# 2.7.0
+## API
+* Add GET /raid/count endpoint for KPI reporting with service point and organisation breakdowns
+* Add integration test for service point CRUD operations
+* Remove DataCite repositoryId, prefix, and password from service point request models
+* Pass DataCite values directly to factory instead of setting on request
+* Remove unused RaidClient and RaidPermissionsDto
+
+## App-client UI
+* Add RAiD history page with API integration and route setup
+* Add caching for ORCID and ROR data fetching on landing pages
+* Display DataCite fields as read-only information from ServicePoint response
+* Make access statement language field optional
+* Make title language dropdown optional
+* Fix defect related to saving the language in the Access field
+* Fix access mapping subject code and organisation class typo
+* Fix RAiD edit page defect and useQuery caching issue
+* Move extended Citation types to src/model/raid/ - Raid App
+* Add ORCID and ROR details to Raid data and render in the static pages as per the guidelines
+* Move extended ROR and ORCID types to src/model/raid - static landing pages
+
+## SSO
+* Upgrade Keycloak from 24.0.1 to 26.5.3 (requires CDK deployment)
+* Add unit test coverage for Keycloak SPI extensions
+* Fix local dev Keycloak health check to use HTTPS
+* Fix docker-compose health check for Keycloak 26
+
 # 2.6.1
 ## App-client UI
 * Bug fixes for Subject picker. Currently, supports ANZSRC-FOR and ANZSRC-SEO codes
