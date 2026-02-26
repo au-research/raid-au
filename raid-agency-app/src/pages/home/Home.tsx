@@ -11,7 +11,7 @@ export const Home = () => {
 
   return (
     <>
-    <Container>
+    <Container sx={{minHeight: '100vh'}}>
       <Stack gap={2}>
         {((hasServicePointGroup && isServicePointUser) || isOperator)  && (
           <Fab

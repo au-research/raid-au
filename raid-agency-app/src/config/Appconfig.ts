@@ -63,6 +63,10 @@ export interface ThemeConfig {
       default?: string;
       paper?: string;
     };
+    error: ThemePaletteColor;
+    warning: ThemePaletteColor;
+    info: ThemePaletteColor;
+    success: ThemePaletteColor;
   };
   typography?: {
     fontFamily?: string;
@@ -80,4 +84,5 @@ export interface AppConfig {
   footer: FooterConfig;
   content: ContentConfig;
   theme: ThemeConfig;
+  default?: boolean; // Indicates if this is the default config
 }

@@ -1,5 +1,6 @@
 import type { Breadcrumb } from "@/components/breadcrumbs-bar";
 import { BreadcrumbsBar } from "@/components/breadcrumbs-bar";
+import Footer from "@/components/footer-bar/footer";
 import { RaidTable } from "@/pages/raid-table";
 import {
   HistoryEdu as HistoryEduIcon,
@@ -22,11 +23,14 @@ export const Raids = () => {
   ];
 
   return (
-    <Container maxWidth="lg">
-      <Stack gap={2}>
-        <BreadcrumbsBar breadcrumbs={breadcrumbs} />
-        <RaidTable />
+    <>
+      <Container maxWidth="lg" sx={{ minHeight: '100vh' }}>
+        <Stack gap={2}>
+          <BreadcrumbsBar breadcrumbs={breadcrumbs} />
+          <RaidTable />
       </Stack>
-    </Container>
+      </Container>
+      <Footer />
+    </>
   );
 };

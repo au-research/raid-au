@@ -3,6 +3,7 @@
 import { AppConfig } from "./Appconfig";
 
 export const defaultConfig: AppConfig = {
+  default: true,
   header: {
     logo: {
       src: "/logo.png",
@@ -37,16 +38,22 @@ export const defaultConfig: AppConfig = {
   theme: {
     palette: {
       primary: {
-        main: "rgb(65, 131, 206)",
-        contrastText: "#ffffff",
+        main: "#4183CE",
       },
       secondary: {
-        main: "#9c27b0",
-        contrastText: "#ffffff",
+        main: "#DC8333",
       },
-      background: {
-        default: "#c6d9f0",
-        paper: "#ffffff",
+      error: {
+        main: "#d32f2f",
+      },
+      warning: {
+        main: "#f57c00",
+      },
+      info: {
+        main: "#1976d2",
+      },
+      success: {
+        main: "#2e7d32",
       },
     },
     typography: {

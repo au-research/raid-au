@@ -1,4 +1,5 @@
 {
+  "default": false,
   "header": {
     "logo": {
       "src": "/logo.png",
@@ -33,16 +34,10 @@
           "link": "https://www.ardc.edu.au"
         },
         {
-          "src": "/sponsor-logo.png",
-          "alt": "Australian Government Logo",
+          "src": "/combined-logos.svg",
+          "alt": "Australian Government & NCRIS Logo",
           "height": 30,
           "link": "https://www.australia.gov.au"
-        },
-        {
-          "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ncris-provider.svg",
-          "alt": "NCRIS Provider Logo",
-          "height": 30,
-          "link": "https://www.education.gov.au/ncris"
         }
       ],
       "text": [
@@ -87,6 +82,10 @@
       },
       "success": {
         "main": "#39833e"
+      },
+      "text": {
+        "primary": "#000000",
+        "secondary": "#555555"
       }
     },
     "typography": {
@@ -96,7 +95,7 @@
       "fontWeightRegular": 400,
       "fontWeightMedium": 500
     },
-    "shape": { "borderRadius": 4 },
+    "shape": { "borderRadius": 1 },
     "mode": "light"
   }
 }
