@@ -32,9 +32,6 @@ function AppContent() {
         palette: {
           ...appTheme.palette,
           mode: prefersDarkMode ? "dark" : "light",
-          background: {
-            default: prefersDarkMode ? "#000" : grey[50],
-          },
         },
       }),
     [prefersDarkMode]
@@ -50,7 +47,13 @@ function AppContent() {
   });
 
   return (
-    <Container disableGutters maxWidth={false} sx={{backgroundColor: theme.palette.background.default, height: '100%', minHeight: '100vh'}}>
+    <Container
+      disableGutters
+      maxWidth={false}
+      sx={{backgroundColor: theme.palette.mode === "dark" ? appTheme.palette.background?.dark : appTheme.palette.background?.default,
+      height: '100%',
+      minHeight: '100vh'
+    }}>
       <NotificationProvider>
         <StrictMode>
           <CssBaseline />

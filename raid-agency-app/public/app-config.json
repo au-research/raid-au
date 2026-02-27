@@ -71,7 +71,7 @@
       "mode":  "dark",
       "primary": { "main": "#8E489B" },
       "secondary": { "main": "#808080" },
-      "background": { "default": "#f5f5f5", "paper": "#ffffff" },
+      "background": { "default": "#f5f5f5","dark":"#4A4A4A", "paper": "#ffffff" },
        "error": {
         "main": "#e5187512"
       },

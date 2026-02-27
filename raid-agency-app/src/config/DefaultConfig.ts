@@ -49,6 +49,11 @@ export const defaultConfig: AppConfig = {
       secondary: {
         main: "#DC8333",
       },
+      background: {
+        default: "#c6d9f0",
+        dark: "#1b3e60",
+        paper: "#ffffff"
+      },
       error: {
         main: "#d32f2f",
       },

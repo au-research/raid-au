@@ -63,6 +63,7 @@ export interface ThemeConfig {
     background?: {
       default?: string;
       paper?: string;
+      dark?: string;
     };
     error: ThemePaletteColor;
     warning: ThemePaletteColor;
