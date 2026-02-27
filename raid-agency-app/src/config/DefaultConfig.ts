@@ -17,6 +17,7 @@ export const defaultConfig: AppConfig = {
       { label: "Dashboard", path: "/dashboard" },
     ],
     showSearch: false,
+    toolBar: false,
   },
   footer: {
     copyright: `© ${new Date().getFullYear()} ARDC. All rights reserved.`,
@@ -26,7 +27,12 @@ export const defaultConfig: AppConfig = {
     ],
     showSocialLinks: false,
     socialLinks: [],
-    main: []
+    main: {
+      logos: [
+        { src: "/ardc-logo.svg", alt: "ARDC Logo", link: "https://ardc.edu.au" },
+      ],
+      text: ["This is a default configuration. Please provide a valid app-config.json."],
+    },
   },
   content: {
     landingPage: {
@@ -55,6 +61,10 @@ export const defaultConfig: AppConfig = {
       success: {
         main: "#2e7d32",
       },
+      text: {
+        primary: "#000000",
+        secondary: "#555555"
+      }
     },
     typography: {
       fontFamily: "Figtree, sans-serif",

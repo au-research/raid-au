@@ -68,6 +68,10 @@ export interface ThemeConfig {
     warning: ThemePaletteColor;
     info: ThemePaletteColor;
     success: ThemePaletteColor;
+    text: {
+      primary: string;
+      secondary: string;
+    };
   };
   typography?: {
     fontFamily?: string;
