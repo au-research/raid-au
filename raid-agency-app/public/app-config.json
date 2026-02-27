@@ -2,9 +2,9 @@
   "default": false,
   "header": {
     "logo": {
-      "src": "/logo.png",
+      "src": "/RAiD-Strapline.svg",
       "alt": "App Logo",
-      "height": 40
+      "height": 80
     },
     "title": "RAiD",
     "subtitle": "Research Activity Identifier",
@@ -13,7 +13,8 @@
       { "label": "Dashboard", "path": "/dashboard" },
       { "label": "Documentation", "path": "/docs" }
     ],
-    "showSearch": true
+    "showSearch": true,
+    "toolBar": true
   },
   "footer": {
     "main": {

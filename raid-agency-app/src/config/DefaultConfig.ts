@@ -6,7 +6,7 @@ export const defaultConfig: AppConfig = {
   default: true,
   header: {
     logo: {
-      src: "/logo.png",
+      src: "/raid-logo-light.svg",
       alt: "App Logo",
       height: 40,
     },

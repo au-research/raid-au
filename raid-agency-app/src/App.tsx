@@ -59,7 +59,6 @@ function AppContent() {
               <SnackbarProvider>
                 <QueryClientProvider client={queryClient}>
                   <ReactErrorBoundary>
-                    <Box sx={{ pt: 7.4 }}></Box>
                     <CodesProvider>
                       <Outlet />
                     </CodesProvider>

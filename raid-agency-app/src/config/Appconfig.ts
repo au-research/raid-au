@@ -25,6 +25,7 @@ export interface HeaderConfig {
   subtitle?: string;
   navLinks: NavLink[];
   showSearch?: boolean;
+  toolBar?: boolean;
 }
 
 export interface SocialLink {
