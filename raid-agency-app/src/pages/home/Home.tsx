@@ -1,4 +1,5 @@
 import {useAuthHelper} from "@/auth/keycloak"
+import { Footer } from "@/components/footer-bar/footer";
 import {GroupSelector} from "@/pages/home/components/GroupSelector";
 import {RaidTable} from "@/pages/raid-table";
 import {Add as AddIcon} from "@mui/icons-material";
@@ -9,7 +10,8 @@ export const Home = () => {
   const { hasServicePointGroup, isServicePointUser, isOperator } = useAuthHelper();
 
   return (
-    <Container>
+    <>
+    <Container sx={{minHeight: '100vh' }}>
       <Stack gap={2}>
         {((hasServicePointGroup && isServicePointUser) || isOperator)  && (
           <Fab
@@ -35,5 +37,7 @@ export const Home = () => {
         {((hasServicePointGroup && isServicePointUser) || isOperator) && <RaidTable />}
       </Stack>
     </Container>
+    <Footer />
+    </>
   );
 };
