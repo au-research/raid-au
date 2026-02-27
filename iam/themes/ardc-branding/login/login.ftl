@@ -4,7 +4,8 @@
         <!-- Header card moved outside to template.ftl for navigation -->
 
     <#elseif section = "form">
-        <!-- RAiD Info Card -->
+
+        <!-- ==================== RAiD INFO CARD ==================== -->
         <div class="raid-info-card">
             <p class="raid-title pb-1">
                 ${msg("welcomeTitle")?no_esc}
@@ -19,9 +20,9 @@
             </div>
         </div>
 
-        <!-- Login Card -->
+        <!-- ==================== LOGIN CARD ==================== -->
         <div class="login-card">
-            <p class="raid-title pb-0">${msg("signinTitle")}</h2>
+            <p class="raid-title pb-0">${msg("signinTitle")}</p>
             <p class="raid-description pb-1">${msg("signinText")}</p>
             <#if social.providers??>
                 <div class="idp-buttons pt-0">
@@ -92,5 +93,50 @@
                 </div>
             </#if>
         </div>
+
+        <!-- ==================== FOOTER ==================== -->
+
+
     </#if>
+
 </@layout.registrationLayout>
+        <div class="raid-footer">
+            <!-- Logos Row -->
+            <div class="raid-footer-logos">
+                <div class="footer-logo" id="footer-logo-raid">
+                    <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="logo-text" alt="RAiD logo"></img>
+                </div>
+                <div class="footer-logo" id="footer-logo-ardc">
+                    <img src="https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ardc-logo.svg" class="logo-text" alt="ARDC logo"></img>
+
+                </div>
+                <div class="footer-logo" id="footer-logo-aus-gov">
+                    <img src="${url.resourcesPath}/img/combined-logos.svg" class="logo-text" alt="NCRIS Logo"></img>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="raid-footer-description">
+                <p>
+                    RAiD global is run by an international consortium led by the Australian Research Data Commons
+                    (ARDC). The ARDC is enabled by the Australian Government's National Collaborative Research
+                    Infrastructure Strategy (NCRIS). A global network of partners deliver RAiD services within their regions,
+                    including the Australian Research Data Commons for Australia.
+                </p>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="raid-footer-links">
+                <a href="mailto:contact@raid.org" class="footer-link">contact@raid.org</a>
+                <a href="#" class="footer-link">Terms of use</a>
+                <a href="#" class="footer-link">Accessibility</a>
+                <a href="#" class="footer-link">Privacy policy</a>
+            </div>
+
+            <!-- Acknowledgement of Country -->
+            <div class="raid-footer-acknowledgement">
+                <p>
+                    We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging
+                </p>
+            </div>
+        </div>

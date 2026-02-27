@@ -20,17 +20,69 @@ body {
     margin: 0;
 }
 
-/* Top Navigation Bar */
+/* ==================== ARDC Top Bar ==================== */
+.ardc-top-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+}
+
+.ardc-top-bar-inner {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.ardc-explore-menu {
+    display: flex;
+    align-items: center;
+}
+
+.ardc-explore-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #333333;
+    text-decoration: none;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.ardc-explore-link:hover {
+    color: #000000;
+}
+
+.ardc-explore-chevron {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+}
+
+/* ==================== Top Navigation Bar ==================== */
 .top-navbar {
     background: white;
     border-bottom: 1px solid #8E489B;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: fixed;
-    top: 0;
+    top: 40px;
     left: 0;
     right: 0;
     z-index: 1000;
-    height: 52px;
+    height: 85px;
     border-top: solid #8E489B;
 }
 
@@ -51,18 +103,20 @@ body {
     font-size: 1.5rem;
     font-weight: 600;
     color: #1e293b;
-    height: 37px;
+    height: 80px;
 }
 
 .logo-bracket {
     color: #3b82f6;
 }
 
-/* Page Container */
+/* ==================== Page Container ==================== */
 .page-container {
-    padding-top: 80px;
-    padding-bottom: 2rem;
-    min-height: 100vh;
+    padding-top: 120px;
+    padding-bottom: 0;
+    min-height: 68vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .content-wrapper {
@@ -70,9 +124,11 @@ body {
     margin: 0 auto;
     padding-left: 24px;
     padding-right: 24px;
+    flex: 1;
+    width: 100%;
 }
 
-/* RAiD Info Card */
+/* ==================== RAiD Info Card ==================== */
 .raid-info-card {
     background: white;
     border-radius: 4px;
@@ -153,7 +209,7 @@ body {
     text-decoration: underline;
 }
 
-/* Login Card */
+/* ==================== Login Card ==================== */
 .login-card {
     background: white;
     border-radius: 4px;
@@ -198,7 +254,7 @@ body {
     margin-bottom: 2rem;
 }
 
-/* Identity Provider Buttons */
+/* ==================== Identity Provider Buttons ==================== */
 .idp-buttons {
     display: flex;
     gap: 1rem;
@@ -281,7 +337,7 @@ body {
     background: #8E489B;
 }
 
-/* Alert Messages */
+/* ==================== Alert Messages ==================== */
 .alert {
     padding: 1rem;
     border-radius: 6px;
@@ -312,7 +368,100 @@ body {
     color: #1e40af;
 }
 
-/* Responsive Design */
+/* ==================== Footer ==================== */
+.raid-footer {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    padding-top: 40px;
+    font-family: 'Figtree', sans-serif;
+    background-color: #ffffff;
+}
+
+.raid-footer-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 0 24px 30px 24px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-logo img {
+    max-height: 80px;
+    width: auto;
+}
+
+.footer-logo-placeholder {
+    color: #999;
+    font-size: 13px;
+    font-style: italic;
+    padding: 10px 16px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.raid-footer-description {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px 30px 24px;
+    text-align: center;
+}
+
+.raid-footer-description p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #333333;
+    margin: 0;
+}
+
+.raid-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    background-color: #e8e8e8;
+    border-top: 1px solid #d0d0d0;
+}
+
+.raid-footer-links .footer-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.raid-footer-links .footer-link:hover {
+    color: #0066cc;
+    text-decoration: underline;
+}
+
+.raid-footer-acknowledgement {
+    background-color: #ffffff;
+    padding: 16px 24px;
+    text-align: center;
+}
+
+.raid-footer-acknowledgement p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a4a4a;
+    margin: 0;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==================== Responsive Design ==================== */
 @media (max-width: 768px) {
     .raid-info-card,
     .login-card {
@@ -337,5 +486,30 @@ body {
     .raid-links {
         flex-direction: column;
         gap: 0.75rem;
+    }
+
+    .raid-footer-logos {
+        gap: 24px;
+    }
+
+    .raid-footer-links {
+        gap: 24px;
+        padding: 16px;
+    }
+
+    .raid-footer-links .footer-link {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .raid-footer-logos {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .raid-footer-links {
+        flex-direction: column;
+        gap: 12px;
     }
 }
