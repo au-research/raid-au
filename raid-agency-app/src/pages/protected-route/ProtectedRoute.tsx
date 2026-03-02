@@ -36,17 +36,6 @@ export const ProtectedRoute = memo(() => {
   return authenticated ? (
     <>
       <AppNavBar />
-      {!isProduction && (
-        <Banner
-          variant="warning"
-          message={
-            <>
-              This is not a production system. Research organisations can request access to the production system.
-            </>
-          }
-          dismissible={false}
-        />
-      )}
       <Box sx={{ height: "3em" }} />
       <Outlet />
     </>

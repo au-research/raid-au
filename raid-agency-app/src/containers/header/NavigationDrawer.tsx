@@ -24,6 +24,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
+import { useAppConfig } from "@/config/Appconfigcontext";
 
 function CombinedMenu({ setDrawerOpen }: { setDrawerOpen: (open: boolean) => void }) {
   const { isOperator, isGroupAdmin } = useAuthHelper();
@@ -127,7 +128,7 @@ function CombinedMenu({ setDrawerOpen }: { setDrawerOpen: (open: boolean) => voi
 
 export function NavigationDrawer() {
   const [drawerOpen, setDrawerOpen] = React.useState<boolean>(false as boolean);
-
+  const config = useAppConfig();
   return (
     <>
       <IconButton
@@ -147,10 +148,11 @@ export function NavigationDrawer() {
           "& .MuiDrawer-paper": {
             width: 320,
             boxSizing: "border-box",
+            mt: '60px',
           },
         }}
       >
-        <Toolbar />
+        {config.header.toolBar && <Toolbar />}
         <CombinedMenu
           setDrawerOpen={setDrawerOpen}
         />

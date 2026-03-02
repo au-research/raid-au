@@ -20,6 +20,7 @@ RUN keytool -import -storepass password -noprompt -trustcacerts -alias prod.raid
 
 # Added this line to copy custom theme into the image
 COPY themes/raid-custom /opt/keycloak/themes/raid-custom
+COPY themes/ardc-branding /opt/keycloak/themes/ardc-branding
 
 RUN /opt/keycloak/bin/kc.sh build
 

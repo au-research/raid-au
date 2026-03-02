@@ -3,8 +3,8 @@ import {
   setKeycloakUserAttribute,
 } from "@/services/keycloak-groups";
 import { KeycloakGroup } from "@/types";
-import { Circle as CircleIcon } from "@mui/icons-material";
-import { Box, Tooltip, Typography } from "@mui/material";
+import { Circle as CircleIcon, ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Box, Toolbar, Tooltip, Typography, useTheme } from "@mui/material";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ import { ErrorAlertComponent } from "../../../components/error-alert-component";
 
 export function ServicePointSwitcher() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
+  const theme = useTheme();
   const open = Boolean(anchorEl);
   const handleClickListItem = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -75,6 +75,7 @@ export function ServicePointSwitcher() {
           component="nav"
           aria-label="service point switcher"
           sx={{ bgcolor: "background.paper", borderRadius: 1 }}
+          
         >
           <ListItemButton
             id="lock-button"
@@ -84,7 +85,10 @@ export function ServicePointSwitcher() {
             aria-expanded={open ? "true" : undefined}
             onClick={handleClickListItem}
             sx={{
-              color: "text.secondary",
+              backgroundColor: open ? "action.selected" : (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100],
+              "&:hover": {
+                backgroundColor: "action.hover",
+              }
             }}
           >
             <CircleIcon
@@ -98,6 +102,7 @@ export function ServicePointSwitcher() {
             <Typography
               sx={{
                 display: { xs: "none", md: "block" },
+                color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.secondary,
               }}
             >
               {
@@ -110,10 +115,13 @@ export function ServicePointSwitcher() {
             <Typography
               sx={{
                 display: { xs: "block", md: "none" },
+                color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.secondary,
               }}
             >
               SP
             </Typography>
+            <Box sx={{ m: 1 }} />
+            {open ? <ExpandLess sx={{ color: "text.primary" }} /> : <ExpandMore sx={{ color: "text.primary" }}/>}
           </ListItemButton>
         </List>
       </Tooltip>

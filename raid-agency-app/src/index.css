@@ -2,9 +2,7 @@ html,
 body {
   min-height: 100%;
 }
-body {
-  background: #c6d9f0 !important;
-}
+
 @media (prefers-color-scheme: dark) {
   .raid-card-well {
     background: rgba(255, 255, 255, 0.05);

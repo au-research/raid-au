@@ -1,0 +1,102 @@
+{
+  "default": false,
+  "header": {
+    "logo": {
+      "src": "/RAiD-Strapline.svg",
+      "alt": "App Logo",
+      "height": 80
+    },
+    "title": "RAiD",
+    "subtitle": "Research Activity Identifier",
+    "navLinks": [
+      { "label": "Home", "path": "/" },
+      { "label": "Dashboard", "path": "/dashboard" },
+      { "label": "Documentation", "path": "/docs" }
+    ],
+    "showSearch": true,
+    "toolBar": true
+  },
+  "footer": {
+    "main": {
+      "logos": [
+        {
+          
+        },
+        {
+          "src": "/RAiD-Strapline.svg",
+          "alt": "App Logo",
+          "height": 30,
+          "link": "https://www.raid.org.au"
+        },
+        {
+          "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ardc-logo.svg",
+          "alt": "",
+          "height": 30,
+          "link": "https://www.ardc.edu.au"
+        },
+        {
+          "src": "/combined-logos.svg",
+          "alt": "Australian Government & NCRIS Logo",
+          "height": 30,
+          "link": "https://www.australia.gov.au"
+        }
+      ],
+      "text": [
+        "RAiD global is run by an international consortium led by the Australian Research Data Commons (ARDC).\n",
+        "The ARDC is enabled by the Australian Government’s National Collaborative Research Infrastructure Strategy (NCRIS). \n",
+        "A global network of partners deliver RAiD services within their regions, including the Australian Research Data Commons for Australia."
+      ]
+    },
+    "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
+    "links": [
+      { "label": "contact@raid.org", "path": "contact@raid.org" },
+      { "label": "Terms of use", "path": "/terms" },
+      { "label": " Accessibility", "path": "/contact" },
+      { "label": "Privacy policy", "path": "/privacy" }
+    ],
+    "showSocialLinks": true,
+    "socialLinks": [
+      { "platform": "github", "url": "https://github.com/au-research" }
+    ]
+  },
+  "content": {
+    "landingPage": {
+      "heroTitle": "Welcome to RAiD",
+      "heroSubtitle": "Manage your Research Activity Identifiers",
+      "showHero": true
+    }
+  },
+  "theme": {
+    "palette": {
+      "mode":  "dark",
+      "primary": { "main": "#8E489B" },
+      "secondary": { "main": "#808080" },
+      "background": { "default": "#f5f5f5","dark":"#4A4A4A", "paper": "#ffffff" },
+       "error": {
+        "main": "#e5187512"
+      },
+      "warning": {
+        "main": "#f6861f"
+      },
+      "info": {
+        "main": "#00A2C4"
+      },
+      "success": {
+        "main": "#39833e"
+      },
+      "text": {
+        "primary": "#000000",
+        "secondary": "#f5f5f5"
+      }
+    },
+    "typography": {
+      "fontFamily": "Figtree, sans-serif",
+      "fontSize": 14,
+      "fontWeightLight": 300,
+      "fontWeightRegular": 400,
+      "fontWeightMedium": 500
+    },
+    "shape": { "borderRadius": 1 },
+    "mode": "light"
+  }
+}
