@@ -9,6 +9,8 @@ export const MegaMenu = () => {
             <Stack direction="row" spacing={2} justifyContent="right" alignItems="center">
                 <Button onClick={() => setToggleBtn(!toggleBtn)}>
                     <Typography
+                      component="a"
+                      href="https://ardc.edu.au/"
                       sx={{
                         textTransform: "capitalize",
                         color: "text.primary",
