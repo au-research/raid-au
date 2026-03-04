@@ -101,12 +101,16 @@ public class RaidRepository {
                 .fetch();
     }
 
-    public List<RaidRecord> findAllViewable(final Long servicePointId, final List<String> handles) {
-        var condition = RAID.ACCESS_TYPE_ID.in(OPEN_ACCESS_LEGACY_ID, OPEN_ACCESS_COAR_ID)
-                .or(RAID.HANDLE.in(handles));
+    public List<RaidRecord> findAllViewable(final Long servicePointId, final boolean isServicePointUser, final List<String> handles) {
+        var condition = RAID.HANDLE.in(handles);
 
-        if (servicePointId != null) {
+        if (isServicePointUser) {
             condition = condition.or(RAID.SERVICE_POINT_ID.eq(servicePointId));
+        } else {
+            condition = condition.or(
+                    RAID.SERVICE_POINT_ID.eq(servicePointId)
+                            .and(RAID.ACCESS_TYPE_ID.in(OPEN_ACCESS_LEGACY_ID, OPEN_ACCESS_COAR_ID))
+            );
         }
 
         return dslContext.selectFrom(RAID)

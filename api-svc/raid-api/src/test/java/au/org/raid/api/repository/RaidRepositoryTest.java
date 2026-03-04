@@ -36,22 +36,23 @@ class RaidRepositoryTest {
     }
 
     @Test
-    @DisplayName("findAllViewable() issues a select against the raid table")
-    void findAllViewable() {
+    @DisplayName("findAllViewable() with service-point-user includes all service point raids")
+    void findAllViewableAsServicePointUser() {
         final var servicePointId = 20000000L;
         final var handles = List.of("10.26193/ABC123", "10.26193/DEF456");
 
-        raidRepository.findAllViewable(servicePointId, handles);
+        raidRepository.findAllViewable(servicePointId, true, handles);
 
         verify(dslContext).selectFrom(RAID);
     }
 
     @Test
-    @DisplayName("findAllViewable() with null servicePointId omits service point condition")
-    void findAllViewableWithNullServicePointId() {
+    @DisplayName("findAllViewable() without service-point-user only includes open-access service point raids")
+    void findAllViewableWithoutServicePointUserRole() {
+        final var servicePointId = 20000000L;
         final var handles = List.of("10.26193/ABC123", "10.26193/DEF456");
 
-        raidRepository.findAllViewable(null, handles);
+        raidRepository.findAllViewable(servicePointId, false, handles);
 
         verify(dslContext).selectFrom(RAID);
     }
