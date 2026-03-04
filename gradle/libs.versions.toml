@@ -37,7 +37,7 @@ spring-security-test = "6.2.2"
 springboot = "3.4.11"
 springboot-plugin = "3.4.11"
 springcloud = "4.3.0"
-springdoc = "2.8.14"
+springdoc = "3.0.2"
 xjc = "1.8.2"
 
 [libraries]
