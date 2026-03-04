@@ -20,9 +20,6 @@
     "main": {
       "logos": [
         {
-          
-        },
-        {
           "src": "/RAiD-Strapline.svg",
           "alt": "App Logo",
           "height": 30,
@@ -49,10 +46,10 @@
     },
     "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
     "links": [
-      { "label": "contact@raid.org", "path": "contact@raid.org" },
-      { "label": "Terms of use", "path": "/terms" },
-      { "label": " Accessibility", "path": "/contact" },
-      { "label": "Privacy policy", "path": "/privacy" }
+      { "label": "contact@raid.org", "path": "mailto:contact@raid.org" },
+      { "label": "Terms of use", "path": "https://ardc.edu.au/terms-and-conditions/" },
+      { "label": " Accessibility", "path": "https://ardc.edu.au/accessibility-statement-for-ardc/" },
+      { "label": "Privacy policy", "path": "https://ardc.edu.au/privacy-policy/" }
     ],
     "showSocialLinks": true,
     "socialLinks": [
