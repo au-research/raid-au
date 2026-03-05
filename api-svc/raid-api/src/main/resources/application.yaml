@@ -19,7 +19,7 @@ raid:
     base-url: https://api.ror.org/v2/
   cors:
     origins:
-      - http://localhost:7080
+      - http://localhost:7080/
       - https://raid-dev.dpslab.surf.nl/
       - https://api.raid-dev.dpslab.surf.nl/
       - https://auth.raid-dev.dpslab.surf.nl/
