@@ -21,17 +21,8 @@
 import psl from 'psl';
 
 export function getApiEndpoint(hostname = window.location.hostname): string {
-  // Special case for localhost
-  if (hostname === 'localhost') {
-    return 'http://localhost:8080';
-  }
 
-  const parts = hostname.split('.');
-
-  // Replace the service (first part) with 'api'
-  parts[0] = 'api';
-
-  return `https://${parts.join('.')}`
+  return "https://api.raid-dev.dpslab.surf.nl";
 }
 /**
  * Determines the current environment based on the hostname

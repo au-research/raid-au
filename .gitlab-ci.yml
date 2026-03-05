@@ -1,10 +1,10 @@
 default:
-  tags:
-    - docker
-    - dps
-    - did
+#  tags:
+#    - docker
+#    - dpsd
+#    - did
   services:
-    - name: docker:24.0.5-dind
+    - name: docker:29.2.1-dind
       alias: docker
 stages:
   - build
@@ -28,10 +28,13 @@ build-frontend:
 
 docker-frontend:
   stage: build
-  image: docker:24.0.5-cli
+  image: docker:29.2.1-cli
   needs:
     - build-frontend
   variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    DOCKER_TLS_CERTDIR: ""
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$CI_COMMIT_REF_SLUG
   cache:
     key: "$CI_PROJECT_ID"
@@ -68,11 +71,14 @@ build-api:
 
 docker-api:
   stage: build
-  image: docker:24.0.5-cli
+  image: docker:29.2.1-cli
   needs:
     - build-api
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    DOCKER_TLS_CERTDIR: ""
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
@@ -81,7 +87,7 @@ docker-api:
 
 test-api:
   stage: test
-  image: gradle:7-jdk17-alpine
+  image: gradle:9.2.1-jdk17-alpine
   needs:
     - build-api
   script:
