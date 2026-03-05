@@ -51,7 +51,13 @@ public class RaidPermissionsController {
                 "https://app.stage.raid.org.au",
                 "https://app3.stage.raid.org.au",
 
-                "https://app.prod.raid.org.au");
+                "https://app.prod.raid.org.au",
+
+                "https://raid.surf.nl",
+
+                "https://raid-dev.dpslab.surf.nl",
+                "https://api.raid-dev.dpslab.surf.nl"
+                );
 
         cors.allowedMethods(allowedMethods);
         cors.auth();
