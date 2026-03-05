@@ -32,6 +32,9 @@ docker-frontend:
   needs:
     - build-frontend
   variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    DOCKER_TLS_CERTDIR: ""
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$CI_COMMIT_REF_SLUG
   cache:
     key: "$CI_PROJECT_ID"
@@ -73,6 +76,9 @@ docker-api:
     - build-api
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    DOCKER_TLS_CERTDIR: ""
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
