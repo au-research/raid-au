@@ -62,8 +62,11 @@ docker-frontend:
     - tag-version
   needs:
     - build-frontend
-    - other-version
-    - tag-version
+    - job: other-version
+      optional: true
+    - job: tag-version
+      optional: true
+
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
