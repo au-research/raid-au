@@ -24,8 +24,8 @@ export const Footer = () => {
                         <Paper variant="outlined" sx={{ padding: '8px 16px', width: '100%' }}>
                             <Stack
                                 direction={{ xs: 'column', sm: 'row' }}
-                                spacing={8}
-                                justifyContent="center"
+                                spacing={{ xs: 1, md: 3 }}
+                                justifyContent={'center'}
                                 alignItems="center"
                                 useFlexGap
                                 flexWrap="wrap"
@@ -49,8 +49,8 @@ export const Footer = () => {
                                 ))}
                                 </Stack>
                             <Stack direction="column" justifyContent="center" alignItems="center" spacing={1} sx={{ marginTop: 2 }}>
-                                <Box width={"60%"} textAlign="center" padding={4}>
-                                    <Typography variant="body1">{config.footer.main.text}</Typography>
+                                <Box width={"60%"} textAlign="center" sx={{ '@media (max-width: 600px)': { width: '100%' }, padding: { xs: 2, sm: 4 } }}>
+                                    <Typography variant="body1" sx={{textWrap: 'pretty'}}>{config.footer.main.text}</Typography>
                                 </Box>
                             </Stack>
                         </Paper>
@@ -58,11 +58,10 @@ export const Footer = () => {
                             <Stack
                                 direction={{ xs: 'column', sm: 'row' }}
                                 spacing={2}
-                                justifyContent="space-evenly"
+                                justifyContent="center"
                                 alignItems="center"
                                 useFlexGap
                                 flexWrap="wrap"
-                                width={"80%"}
                                 >
                                 {config.footer.links.map((link, index) => (
                                     <Box key={index} sx={{ display: 'inline-flex' }}>
@@ -74,7 +73,7 @@ export const Footer = () => {
                             </Stack>
                         </Paper>
                         <Paper elevation={1} sx={{ padding: ' 20px', width: '100%' }}>
-                            <Typography variant="body1" align="center">
+                            <Typography variant="body1" align="center" sx={{textWrap: 'pretty'}}>
                                 {config.footer.copyright}
                             </Typography>
                         </Paper>
