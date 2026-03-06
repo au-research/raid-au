@@ -71,12 +71,12 @@ docker-frontend:
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION
   cache:
     key: "$CI_PROJECT_ID"
     policy: pull
   script:
     - source version.txt
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
     - docker build -t $IMAGE_TAG .
