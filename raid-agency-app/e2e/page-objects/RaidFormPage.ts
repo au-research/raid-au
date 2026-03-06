@@ -21,9 +21,9 @@ export class RaidFormPage {
   }
 
   async waitForSuccessfulSave(): Promise<void> {
-    // After a successful save, the app navigates away from the /create or /edit URL
-    // to the view page at /raids/{prefix}/{suffix}
-    await this.page.waitForURL(/\/raids\/\d+\/\d+$/, { timeout: 15000 });
+    // After a successful save, the app navigates to /raids/{prefix}/{suffix}.
+    // The prefix may contain dots (e.g. "10378.1"), so we use [^/]+ rather than \d+.
+    await this.page.waitForURL(/\/raids\/[^/]+\/[^/]+$/, { timeout: 30000 });
   }
 
   currentUrl(): string {
