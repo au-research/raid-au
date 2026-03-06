@@ -78,7 +78,7 @@ class AccessStatementValidatorTest {
 
         assertThat(failures, is(
                 List.of(new ValidationFailure()
-                        .fieldId("access.statement.statement")
+                        .fieldId("access.statement.text")
                         .errorType("notSet")
                         .message("field must be set"))));
         verify(languageValidator).validate(language, "access.statement");

@@ -77,6 +77,7 @@ class LanguageServiceTest {
         final var schemaUri = "schema-uri";
 
         final var language = new Language()
+                .id("eng")
                 .schemaUri(schemaUri);
 
         when(languageSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
