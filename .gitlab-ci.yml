@@ -67,6 +67,7 @@ build-api:
   artifacts:
     paths:
       - "api-svc/raid-api/build/libs"
+      - "iam/build/libs"
       - "build/reports"
 
 docker-api:
@@ -95,3 +96,20 @@ test-api:
   artifacts:
     paths:
       - "build/reports"
+
+
+docker-iam:
+  stage: build
+  image: docker:29.2.1-cli
+  needs:
+    - build-api
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-iam:$CI_COMMIT_REF_SLUG
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - cd iam
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
