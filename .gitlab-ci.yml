@@ -60,6 +60,7 @@ docker-frontend:
   dependencies:
     - other-version
     - tag-version
+    - build-frontend
   needs:
     - build-frontend
     - job: other-version
