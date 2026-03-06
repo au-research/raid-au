@@ -34,6 +34,10 @@ export class TitleSection {
     await this.page.getByRole("option", { name: value }).click();
   }
 
+  locatorForText(index: number) {
+    return this.page.locator(`#title\\.${index}\\.text`);
+  }
+
   async selectLanguage(index: number, value: string): Promise<void> {
     await this.page.locator(`#title\\.${index}\\.language\\.id`).click();
     await this.page.getByRole("option", { name: value }).click();
