@@ -13,6 +13,9 @@ stages:
 
 tag-version:
   stage: before
+  artifacts:
+    paths:
+      - version.txt
   script:
     - DOCKER_TAG_VERSION=$(date +"%Y%m%d%H")
     - echo "DOCKER_TAG_VERSION=$(date +"%Y%m%d%H")" > version.txt
@@ -23,6 +26,9 @@ tag-version:
 
 other-version:
   stage: before
+  artifacts:
+    paths:
+      - version.txt
   script:
     - DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG
     - echo "DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG" > version.txt
