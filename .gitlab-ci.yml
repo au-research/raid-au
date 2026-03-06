@@ -28,8 +28,8 @@ other-version:
     - echo "DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG" > version.txt
     - echo "Version to use for docker tag $DOCKER_TAG_VERSION"
   rules:
-    - if: $CI_COMMIT_TAG  # Run job ONLY if a tag is present (tag push event)
-      when: never       # never run the job when the condition is met
+    - if: $CI_COMMIT_BRANCH  # Run job ONLY if a tag is present (tag push event)
+      when: always       # never run the job when the condition is met
 
 
 build-frontend:
