@@ -24,8 +24,13 @@ export class DescriptionSection {
     await this.page.getByRole("option", { name: value }).click();
   }
 
-  async selectLanguage(index: number, value: string): Promise<void> {
-    await this.page.locator(`#description\\.${index}\\.language\\.id`).click();
-    await this.page.getByRole("option", { name: value }).click();
+  /**
+   * Select a language via the Autocomplete widget (LanguageSelector).
+   * Type a search term (e.g. "eng") and pick the matching option.
+   */
+  async selectLanguage(index: number, searchTerm: string, optionPattern: RegExp): Promise<void> {
+    const input = this.card.getByLabel("Language");
+    await input.fill(searchTerm);
+    await this.page.getByRole("option", { name: optionPattern }).click();
   }
 }
