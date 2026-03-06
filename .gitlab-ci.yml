@@ -51,13 +51,15 @@ build-frontend:
 docker-frontend:
   stage: build
   image: docker:29.2.1-cli
+  before_script:
+    - source version.txt
   needs:
     - build-frontend
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION
   cache:
     key: "$CI_PROJECT_ID"
     policy: pull
@@ -95,10 +97,12 @@ build-api:
 docker-api:
   stage: build
   image: docker:29.2.1-cli
+  before_script:
+    - source version.txt
   needs:
     - build-api
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$DOCKER_TAG_VERSION
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
@@ -123,10 +127,12 @@ test-api:
 docker-iam:
   stage: build
   image: docker:29.2.1-cli
+  before_script:
+    - source version.txt
   needs:
     - build-api
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-iam:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-iam:$DOCKER_TAG_VERSION
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
