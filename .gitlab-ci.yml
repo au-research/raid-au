@@ -14,6 +14,8 @@ build-frontend:
   stage: build
   image: node
   script:
+    - aap=$(date +"%Y%m%d%H")
+    - echo $aap
     - cd raid-agency-app
     - npm install
     - npm run build
