@@ -163,4 +163,27 @@ class LanguageServiceTest {
         assertThrows(LanguageSchemaNotFoundException.class, () -> languageService.findById(id));
         verifyNoInteractions(languageFactory);
     }
+
+    @Test
+    @DisplayName("findLanguageId() returns null when language has null id and null schemaUri")
+    void findLanguageIdReturnsNullForEmptyLanguage() {
+        final var language = new Language();
+
+        assertThat(languageService.findLanguageId(language), nullValue());
+
+        verifyNoInteractions(languageSchemaRepository);
+        verifyNoInteractions(languageRepository);
+    }
+
+    @Test
+    @DisplayName("findLanguageId() returns null when language has null id and set schemaUri")
+    void findLanguageIdReturnsNullForNullIdWithSchemaUri() {
+        final var language = new Language()
+                .schemaUri("https://www.iso.org/standard/74575.html");
+
+        assertThat(languageService.findLanguageId(language), nullValue());
+
+        verifyNoInteractions(languageSchemaRepository);
+        verifyNoInteractions(languageRepository);
+    }
 }

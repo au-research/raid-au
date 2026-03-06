@@ -108,4 +108,65 @@ class AccessStatementValidatorTest {
         assertThat(failures, is(List.of(failure)));
         verify(languageValidator).validate(language, "access.statement");
     }
+
+    @Test
+    @DisplayName("Skips language validation when language is null")
+    void nullLanguage() {
+        final var accessStatement = new AccessStatement()
+                .text("Embargoed")
+                .language(null);
+
+        final var failures = validationService.validate(accessStatement);
+
+        assertThat(failures, empty());
+        verifyNoInteractions(languageValidator);
+    }
+
+    @Test
+    @DisplayName("Skips language validation when language id is null")
+    void nullLanguageId() {
+        final var language = new Language()
+                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+
+        final var accessStatement = new AccessStatement()
+                .text("Embargoed")
+                .language(language);
+
+        final var failures = validationService.validate(accessStatement);
+
+        assertThat(failures, empty());
+        verifyNoInteractions(languageValidator);
+    }
+
+    @Test
+    @DisplayName("Skips language validation when language id is blank")
+    void blankLanguageId() {
+        final var language = new Language()
+                .id("")
+                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+
+        final var accessStatement = new AccessStatement()
+                .text("Embargoed")
+                .language(language);
+
+        final var failures = validationService.validate(accessStatement);
+
+        assertThat(failures, empty());
+        verifyNoInteractions(languageValidator);
+    }
+
+    @Test
+    @DisplayName("Skips language validation when language is empty object")
+    void emptyLanguageObject() {
+        final var language = new Language();
+
+        final var accessStatement = new AccessStatement()
+                .text("Embargoed")
+                .language(language);
+
+        final var failures = validationService.validate(accessStatement);
+
+        assertThat(failures, empty());
+        verifyNoInteractions(languageValidator);
+    }
 }
