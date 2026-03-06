@@ -27,4 +27,11 @@ export class RelatedObjectSection {
       .click();
     await this.page.getByRole("option", { name: value }).click();
   }
+
+  async selectCategory(objectIndex: number, categoryIndex: number, value: string): Promise<void> {
+    await this.page
+      .locator(`#relatedObject\\.${objectIndex}\\.category\\.${categoryIndex}\\.id`)
+      .click();
+    await this.page.getByRole("option", { name: value }).click();
+  }
 }

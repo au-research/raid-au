@@ -20,4 +20,14 @@ export class SpatialCoverageSection {
   async fillId(index: number, value: string): Promise<void> {
     await this.page.locator(`#spatialCoverage\\.${index}\\.id`).fill(value);
   }
+
+  async addPlace(coverageIndex: number): Promise<void> {
+    await this.card.getByRole("button", { name: "Add Place" }).click();
+  }
+
+  async fillPlaceName(coverageIndex: number, placeIndex: number, value: string): Promise<void> {
+    await this.page
+      .locator(`#spatialCoverage\\.${coverageIndex}\\.place\\.${placeIndex}\\.text`)
+      .fill(value);
+  }
 }
