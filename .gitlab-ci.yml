@@ -57,8 +57,6 @@ build-frontend:
 docker-frontend:
   stage: build
   image: docker:29.2.1-cli
-  before_script:
-    - source version.txt
   needs:
     - build-frontend
   variables:
@@ -70,6 +68,7 @@ docker-frontend:
     key: "$CI_PROJECT_ID"
     policy: pull
   script:
+    - source version.txt
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
     - docker build -t $IMAGE_TAG .
@@ -103,8 +102,6 @@ build-api:
 docker-api:
   stage: build
   image: docker:29.2.1-cli
-  before_script:
-    - source version.txt
   needs:
     - build-api
   variables:
@@ -113,6 +110,7 @@ docker-api:
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
   script:
+    - source version.txt
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
     - docker build -t $IMAGE_TAG .
@@ -133,8 +131,6 @@ test-api:
 docker-iam:
   stage: build
   image: docker:29.2.1-cli
-  before_script:
-    - source version.txt
   needs:
     - build-api
   variables:
@@ -143,6 +139,7 @@ docker-iam:
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
   script:
+    - source version.txt
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd iam
     - docker build -t $IMAGE_TAG .
