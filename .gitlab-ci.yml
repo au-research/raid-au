@@ -22,6 +22,7 @@ tag-version:
       when: always       # Always run the job when the condition is met
 
 other-version:
+  stage: before
   script:
     - DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG
     - echo "DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG" > version.txt
