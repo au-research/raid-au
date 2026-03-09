@@ -7,6 +7,7 @@ import au.org.raid.api.service.Handle;
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.RaidIngestService;
 import au.org.raid.api.service.ServicePointService;
+import au.org.raid.api.service.limiter.RaidLimiter;
 import au.org.raid.api.service.raid.RaidService;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.api.validator.ValidationService;
@@ -46,6 +47,7 @@ public class RaidController implements RaidApi {
     private final RaidHistoryService raidHistoryService;
     private final ServicePointService servicePointService;
     private final ObjectMapper objectMapper;
+    private final RaidLimiter raidLimiter;
 
     @Override
     @SneakyThrows
