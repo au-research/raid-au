@@ -121,12 +121,12 @@ docker-api:
     - job: tag-version
       optional: true
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$DOCKER_TAG_VERSION
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
   script:
     - source version.txt
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-api:$DOCKER_TAG_VERSION
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
     - docker build -t $IMAGE_TAG .
@@ -157,12 +157,12 @@ docker-iam:
     - job: tag-version
       optional: true
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-iam:$DOCKER_TAG_VERSION
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
   script:
     - source version.txt
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-iam:$DOCKER_TAG_VERSION
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd iam
     - docker build -t $IMAGE_TAG .
