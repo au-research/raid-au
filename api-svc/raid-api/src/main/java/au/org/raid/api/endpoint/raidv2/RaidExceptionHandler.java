@@ -1,6 +1,7 @@
 package au.org.raid.api.endpoint.raidv2;
 
 import au.org.raid.api.exception.*;
+import au.org.raid.idl.raidv2.model.BudgetFailureResponse;
 import au.org.raid.idl.raidv2.model.ClosedRaid;
 import au.org.raid.idl.raidv2.model.FailureResponse;
 import au.org.raid.idl.raidv2.model.ValidationFailureResponse;
@@ -33,6 +34,23 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
         final var exception = (ValidationException) e;
 
         final var body = new ValidationFailureResponse()
+                .type(exception.getType())
+                .title(exception.getTitle())
+                .status(exception.getStatus())
+                .detail(exception.getDetail())
+                .instance(exception.getInstance())
+                .failures(exception.getFailures());
+
+        return ResponseEntity
+                .badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+    @ExceptionHandler(BudgetException.class)
+    public ResponseEntity<BudgetFailureResponse> handleBudgetException(final Exception e) {
+        final var exception = (BudgetException) e;
+
+        final var body = new BudgetFailureResponse()
                 .type(exception.getType())
                 .title(exception.getTitle())
                 .status(exception.getStatus())
