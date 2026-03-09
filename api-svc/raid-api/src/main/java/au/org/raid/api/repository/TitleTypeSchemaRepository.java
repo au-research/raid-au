@@ -4,6 +4,7 @@ import au.org.raid.db.jooq.enums.SchemaStatus;
 import au.org.raid.db.jooq.tables.records.TitleTypeSchemaRecord;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -15,6 +16,7 @@ import static au.org.raid.db.jooq.tables.TitleTypeSchema.TITLE_TYPE_SCHEMA;
 public class TitleTypeSchemaRepository {
     private final DSLContext dslContext;
 
+    @Cacheable(value = "title-type-schema", key = "{#uri}")
     public Optional<TitleTypeSchemaRecord> findByUri(final String uri) {
         return dslContext.selectFrom(TITLE_TYPE_SCHEMA)
                 .where(TITLE_TYPE_SCHEMA.URI.eq(uri))

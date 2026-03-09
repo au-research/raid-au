@@ -3,7 +3,7 @@ import { Footer } from "@/components/footer-bar/footer";
 import {GroupSelector} from "@/pages/home/components/GroupSelector";
 import {RaidTable} from "@/pages/raid-table";
 import {Add as AddIcon} from "@mui/icons-material";
-import {Alert, Container, Fab, Stack} from "@mui/material";
+import {Alert, Container, Fab, Stack, Box} from "@mui/material";
 import {Link} from "react-router-dom";
 
 export const Home = () => {
@@ -11,7 +11,8 @@ export const Home = () => {
 
   return (
     <>
-    <Container sx={{minHeight: 'calc(100vh - 168px)'}}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 216px)' }}> 
+    <Container sx={{ flex: 1, mb: 5 }}>
       <Stack gap={2}>
         {((hasServicePointGroup && isServicePointUser) || isOperator)  && (
           <Fab
@@ -38,6 +39,7 @@ export const Home = () => {
       </Stack>
     </Container>
     <Footer />
+    </Box>
     </>
   );
 };

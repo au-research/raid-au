@@ -10,6 +10,7 @@ import java.util.List;
 
 public class TokenUtil {
     public static final String OPERATOR_ROLE = "operator";
+    public static final String SERVICE_POINT_USER_ROLE = "service-point-user";
     private static final String SUBJECT_CLAIM = "sub";
     private static final String USER_RAIDS_CLAIM = "user_raids";
     private static final String ADMIN_RAIDS_CLAIM = "admin_raids";

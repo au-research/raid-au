@@ -3,6 +3,7 @@ package au.org.raid.api.repository;
 import au.org.raid.db.jooq.tables.records.LanguageRecord;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,6 +15,7 @@ import static au.org.raid.db.jooq.tables.Language.LANGUAGE;
 public class LanguageRepository {
     private final DSLContext dslContext;
 
+    @Cacheable(value = "language", key = "{#code, #schemaId}")
     public Optional<LanguageRecord> findByIdAndSchemaId(final String code, final int schemaId) {
         return dslContext
                 .selectFrom(LANGUAGE)

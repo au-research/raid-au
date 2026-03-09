@@ -1,6 +1,5 @@
 package au.org.raid.api.service;
 
-import au.org.raid.api.factory.DateFactory;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
@@ -24,47 +23,45 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RaidIngestServiceTest {
     @Mock
-    private TitleService titleService;
+    TitleService titleService;
     @Mock
-    private DescriptionService descriptionService;
+    DescriptionService descriptionService;
     @Mock
-    private ContributorService contributorService;
+    ContributorService contributorService;
     @Mock
-    private OrganisationService organisationService;
+    OrganisationService organisationService;
     @Mock
-    private RelatedObjectService relatedObjectService;
+    RelatedObjectService relatedObjectService;
     @Mock
-    private AlternateIdentifierService alternateIdentifierService;
+    AlternateIdentifierService alternateIdentifierService;
     @Mock
-    private AlternateUrlService alternateUrlService;
+    AlternateUrlService alternateUrlService;
     @Mock
-    private RelatedRaidService relatedRaidService;
+    RelatedRaidService relatedRaidService;
     @Mock
-    private SubjectService subjectService;
+    SubjectService subjectService;
     @Mock
-    private TraditionalKnowledgeLabelService traditionalKnowledgeLabelService;
+    TraditionalKnowledgeLabelService traditionalKnowledgeLabelService;
     @Mock
-    private SpatialCoverageService spatialCoverageService;
+    SpatialCoverageService spatialCoverageService;
     @Mock
-    private RaidRepository raidRepository;
+    RaidRepository raidRepository;
     @Mock
-    private RaidRecordFactory raidRecordFactory;
+    RaidRecordFactory raidRecordFactory;
     @Mock
-    private AccessService accessService;
+    AccessService accessService;
     @Mock
-    private LanguageService languageService;
+    LanguageService languageService;
     @Mock
-    private HandleFactory handleFactory;
+    HandleFactory handleFactory;
     @Mock
-    private IdService idService;
+    CacheableRaidService cacheableRaidService;
     @Mock
-    private DateFactory dateFactory;
+    RaidHistoryService raidHistoryService;
     @Mock
-    private CacheableRaidService cacheableRaidService;
-    @Mock
-    private RaidHistoryService raidHistoryService;
+    RaidDtoReadService raidDtoReadService;
     @InjectMocks
-    private RaidIngestService raidIngestService;
+    RaidIngestService raidIngestService;
 
     @Test
     @DisplayName("create() saves raid and relations")
@@ -104,39 +101,29 @@ class RaidIngestServiceTest {
         verify(spatialCoverageService).create(RAID_DTO.getSpatialCoverage(), HANDLE);
     }
 
-//    @Test
-//    @DisplayName("findAllByServicePointIdOrNotConfidential()")
-//    void findAllByServicePointIdOrNotConfidential() {
-//        final var servicePointId = 123L;
-//
-//        final var apiToken = mock(ApiToken.class);
-//        when(apiToken.getServicePointId()).thenReturn(servicePointId);
-//
-//        final var raidRecord = new RaidRecord()
-//                .setHandle(HANDLE)
-//                .setStartDateString(START_DATE)
-//                .setEndDate(END_DATE);
-//
-//        when(raidRepository.findAllByServicePointIdOrNotConfidential(servicePointId)).thenReturn(List.of(raidRecord));
-//        when(cacheableRaidService.build(raidRecord)).thenReturn(RAID_DTO);
-//
-//        final var result = raidIngestService.findAllByServicePointIdOrNotConfidential(apiToken);
-//
-//        assertThat(result, is(List.of(RAID_DTO)));
-//    }
-
     @Test
-    @DisplayName("findAllByServicePointId()")
+    @DisplayName("findAllByServicePointId() delegates resolution to RaidDtoReadService")
     void findAllByServicePointId() {
         final var servicePointId = 123L;
-
-        final var raidRecord = new RaidRecord()
-                .setHandle(HANDLE)
-                .setStartDateString(START_DATE)
-                .setEndDate(END_DATE);
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
 
         when(raidRepository.findAllByServicePointId(servicePointId)).thenReturn(List.of(raidRecord));
-        when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(RAID_DTO));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(RAID_DTO));
+
+        final var result = raidIngestService.findAllByServicePointId(servicePointId);
+
+        assertThat(result, is(List.of(RAID_DTO)));
+    }
+
+    @Test
+    @DisplayName("findAllByServicePointId() falls back to cacheableRaidService when RaidDtoReadService returns empty")
+    void findAllByServicePointIdFallsBackToCacheableRaid() {
+        final var servicePointId = 123L;
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
+
+        when(raidRepository.findAllByServicePointId(servicePointId)).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.empty());
+        when(cacheableRaidService.build(raidRecord)).thenReturn(RAID_DTO);
 
         final var result = raidIngestService.findAllByServicePointId(servicePointId);
 
@@ -156,24 +143,6 @@ class RaidIngestServiceTest {
     void findByHandleReturnsEmptyOptional() {
         when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.empty());
         assertThat(raidIngestService.findByHandle(HANDLE), is(Optional.empty()));
-    }
-
-    private void mockBuild(final RaidRecord record) {
-        when(titleService.findAllByHandle(HANDLE)).thenReturn(TITLES);
-        when(descriptionService.findAllByHandle(HANDLE)).thenReturn(DESCRIPTIONS);
-        when(contributorService.findAllByHandle(HANDLE)).thenReturn(CONTRIBUTORS);
-        when(organisationService.findAllByHandle(HANDLE)).thenReturn(ORGANISATIONS);
-        when(relatedObjectService.findAllByHandle(HANDLE)).thenReturn(RELATED_OBJECTS);
-        when(alternateIdentifierService.findAllByHandle(HANDLE)).thenReturn(ALTERNATE_IDENTIFIERS);
-        when(alternateUrlService.findAllByHandle(HANDLE)).thenReturn(ALTERNATE_URLS);
-        when(relatedRaidService.findAllByHandle(HANDLE)).thenReturn(RELATED_RAIDS);
-        when(subjectService.findAllByHandle(HANDLE)).thenReturn(SUBJECTS);
-        when(traditionalKnowledgeLabelService.findAllByHandle(HANDLE)).thenReturn(TRADITIONAL_KNOWLEDGE_LABELS);
-        when(spatialCoverageService.findAllByHandle(HANDLE)).thenReturn(SPATIAL_COVERAGES);
-
-        when(idService.getId(record)).thenReturn(IDENTIFIER);
-        when(dateFactory.create(START_DATE, END_DATE)).thenReturn(DATES);
-        when(accessService.getAccess(record)).thenReturn(ACCESS);
     }
 
     @Test
