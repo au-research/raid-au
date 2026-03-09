@@ -30,18 +30,19 @@ setup("authenticate", async ({ page }) => {
   await page.goto("/");
 
   // Wait for redirect to Keycloak login page
-  await page.waitForURL(/localhost:8001/, { timeout: 15000 });
+  await page.waitForSelector("#username", { timeout: 15000 });
 
   // Fill in credentials on the Keycloak login page
   await page.locator("#username").fill(username);
   await page.locator("#password").fill(password);
   await page.locator('[type="submit"]').click();
 
-  // Wait for redirect back to the app
-  await page.waitForURL(/localhost:7080/, { timeout: 15000 });
-
-  // Wait for the app to be fully loaded (raids list or home page)
-  await expect(page).toHaveURL(/localhost:7080/);
+  // Wait for redirect back to the app after login.
+  // After Keycloak login the app lands on "/" — wait for the login page to disappear.
+  await page.waitForFunction(
+    () => !window.location.pathname.startsWith("/login"),
+    { timeout: 15000 }
+  );
   await page.waitForLoadState("networkidle");
 
   // Save authenticated session state
