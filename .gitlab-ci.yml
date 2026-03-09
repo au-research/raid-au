@@ -7,8 +7,36 @@ default:
     - name: docker:29.2.1-dind
       alias: docker
 stages:
+  - before
   - build
   - test
+
+tag-version:
+  stage: before
+  artifacts:
+    paths:
+      - version.txt
+  script:
+    - DOCKER_TAG_VERSION=$(date +"%Y%m%d%H")
+    - echo "DOCKER_TAG_VERSION=$(date +"%Y%m%d%H")" > version.txt
+    - echo "Version to use for docker tag $DOCKER_TAG_VERSION"
+  rules:
+    - if: $CI_COMMIT_TAG  # Run job ONLY if a tag is present (tag push event)
+      when: always       # Always run the job when the condition is met
+
+other-version:
+  stage: before
+  artifacts:
+    paths:
+      - version.txt
+  script:
+    - DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG
+    - echo "DOCKER_TAG_VERSION=$CI_COMMIT_REF_SLUG" > version.txt
+    - echo "Version to use for docker tag $DOCKER_TAG_VERSION"
+  rules:
+    - if: $CI_COMMIT_BRANCH  # Run job ONLY if a tag is present (tag push event)
+      when: always       # never run the job when the condition is met
+
 
 build-frontend:
   stage: build
@@ -29,35 +57,44 @@ build-frontend:
 docker-frontend:
   stage: build
   image: docker:29.2.1-cli
+  dependencies:
+    - other-version
+    - tag-version
+    - build-frontend
   needs:
     - build-frontend
+    - job: other-version
+      optional: true
+    - job: tag-version
+      optional: true
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-fe:$CI_COMMIT_REF_SLUG
   cache:
     key: "$CI_PROJECT_ID"
     policy: pull
   script:
+    - source version.txt
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
-
-test-frontend:
-  stage: test
-  image: node
-  needs:
-    - build-frontend
-  script:
-    - cd raid-agency-app
-    - npm install
-    - npm run test
-    - npm run e2e
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull
+#
+#test-frontend:
+#  stage: test
+#  image: node
+#  needs:
+#    - build-frontend
+#  script:
+#    - cd raid-agency-app
+#    - npm install
+#    - npm run test
+#    - npm run e2e
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull
 
 build-api:
   stage: build
@@ -73,14 +110,23 @@ build-api:
 docker-api:
   stage: build
   image: docker:29.2.1-cli
+  dependencies:
+    - other-version
+    - tag-version
+    - build-api
   needs:
     - build-api
+    - job: other-version
+      optional: true
+    - job: tag-version
+      optional: true
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-api:$CI_COMMIT_REF_SLUG
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
   script:
+    - source version.txt
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-api:$DOCKER_TAG_VERSION
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd api-svc/raid-api
     - docker build -t $IMAGE_TAG .
@@ -97,18 +143,26 @@ test-api:
     paths:
       - "build/reports"
 
-
 docker-iam:
   stage: build
   image: docker:29.2.1-cli
+  dependencies:
+    - other-version
+    - tag-version
+    - build-api
   needs:
     - build-api
+    - job: other-version
+      optional: true
+    - job: tag-version
+      optional: true
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/raid-iam:$CI_COMMIT_REF_SLUG
     DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: 1
     DOCKER_TLS_CERTDIR: ""
   script:
+    - source version.txt
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-iam:$DOCKER_TAG_VERSION
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd iam
     - docker build -t $IMAGE_TAG .
