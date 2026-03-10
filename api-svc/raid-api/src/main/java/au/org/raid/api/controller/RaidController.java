@@ -1,12 +1,14 @@
 package au.org.raid.api.controller;
 
 import au.org.raid.api.dto.RaidPermissionsDto;
+import au.org.raid.api.exception.BudgetException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationException;
 import au.org.raid.api.service.Handle;
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.RaidIngestService;
 import au.org.raid.api.service.ServicePointService;
+import au.org.raid.api.service.limiter.RaidLimiter;
 import au.org.raid.api.service.raid.RaidService;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.api.validator.ValidationService;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +49,7 @@ public class RaidController implements RaidApi {
     private final RaidHistoryService raidHistoryService;
     private final ServicePointService servicePointService;
     private final ObjectMapper objectMapper;
+    private final RaidLimiter raidLimiter;
 
     @Override
     @SneakyThrows
@@ -75,6 +79,12 @@ public class RaidController implements RaidApi {
 
         if (!failures.isEmpty()) {
             throw new ValidationException(failures);
+        }
+
+
+        final var budgetFailures = raidLimiter.check(request, servicePointId);
+        if (!budgetFailures.isEmpty()) {
+            throw new BudgetException(budgetFailures);
         }
 
         final var raidDto = raidService.mint(request, servicePointId);
@@ -119,7 +129,14 @@ public class RaidController implements RaidApi {
             throw new ValidationException(failures);
         }
 
-        return ResponseEntity.ok(raidService.update(request, getServicePointId()));
+        final var servicePointId = getServicePointId();
+
+        final var budgetFailures = raidLimiter.check(request, servicePointId);
+        if (!budgetFailures.isEmpty()) {
+            throw new BudgetException(budgetFailures);
+        }
+
+        return ResponseEntity.ok(raidService.update(request, servicePointId));
     }
 
     @Override
@@ -160,6 +177,13 @@ public class RaidController implements RaidApi {
             throw new ValidationException(failures);
         }
 
+
+        final var budgetFailures = raidLimiter.check(request, getServicePointId());
+        if (!budgetFailures.isEmpty()) {
+            throw new BudgetException(budgetFailures);
+        }
+
+
         return ResponseEntity.ok(
                 raidService.patchContributors(prefix, suffix, request.getContributor()));
     }
@@ -175,7 +199,7 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllEmbargoed());
     }
 
-    @GetMapping(value="/raid/non-legacy")
+    @GetMapping(value = "/raid/non-legacy")
     public ResponseEntity<List<RaidDto>> findAllNonLegacy() {
         return ResponseEntity.ok(raidService.findAllNonLegacy());
     }
