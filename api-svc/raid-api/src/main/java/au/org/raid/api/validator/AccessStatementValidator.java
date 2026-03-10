@@ -36,12 +36,10 @@ public class AccessStatementValidator {
             );
         }
 
-        if (accessStatement.getLanguage() != null
-                && !isBlank(accessStatement.getLanguage().getId())) {
+        if (accessStatement.getLanguage() != null) {
             failures.addAll(
                     languageValidator.validate(accessStatement.getLanguage(), "access.statement"));
         }
-
         return failures;
     }
 }

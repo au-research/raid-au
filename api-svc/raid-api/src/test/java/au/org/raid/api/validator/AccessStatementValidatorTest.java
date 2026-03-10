@@ -123,10 +123,18 @@ class AccessStatementValidatorTest {
     }
 
     @Test
-    @DisplayName("Skips language validation when language id is null")
+    @DisplayName("Validates language when id is null but schemaUri is set")
     void nullLanguageId() {
         final var language = new Language()
                 .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+
+        final var failure = new ValidationFailure()
+                .fieldId("access.statement.language.id")
+                .errorType("notSet")
+                .message("field must be set");
+
+        when(languageValidator.validate(language, "access.statement"))
+                .thenReturn(List.of(failure));
 
         final var accessStatement = new AccessStatement()
                 .text("Embargoed")
@@ -134,39 +142,56 @@ class AccessStatementValidatorTest {
 
         final var failures = validationService.validate(accessStatement);
 
-        assertThat(failures, empty());
-        verifyNoInteractions(languageValidator);
+        assertThat(failures, is(List.of(failure)));
+        verify(languageValidator).validate(language, "access.statement");
     }
 
     @Test
-    @DisplayName("Skips language validation when language id is blank")
+    @DisplayName("Validates language when id is blank")
     void blankLanguageId() {
         final var language = new Language()
                 .id("")
                 .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
 
+        final var failure = new ValidationFailure()
+                .fieldId("access.statement.language.id")
+                .errorType("notSet")
+                .message("field must be set");
+
+        when(languageValidator.validate(language, "access.statement"))
+                .thenReturn(List.of(failure));
+
         final var accessStatement = new AccessStatement()
                 .text("Embargoed")
                 .language(language);
 
         final var failures = validationService.validate(accessStatement);
 
-        assertThat(failures, empty());
-        verifyNoInteractions(languageValidator);
+        assertThat(failures, is(List.of(failure)));
+        verify(languageValidator).validate(language, "access.statement");
     }
 
+    // With:
     @Test
-    @DisplayName("Skips language validation when language is empty object")
+    @DisplayName("Validates language when language is empty object")
     void emptyLanguageObject() {
         final var language = new Language();
 
+        final var failure = new ValidationFailure()
+                .fieldId("access.statement.language.id")
+                .errorType("notSet")
+                .message("field must be set");
+
+        when(languageValidator.validate(language, "access.statement"))
+                .thenReturn(List.of(failure));
+
         final var accessStatement = new AccessStatement()
                 .text("Embargoed")
                 .language(language);
 
         final var failures = validationService.validate(accessStatement);
 
-        assertThat(failures, empty());
-        verifyNoInteractions(languageValidator);
-    }
+        assertThat(failures, is(List.of(failure)));
+        verify(languageValidator).validate(language, "access.statement");
+    };
 }
