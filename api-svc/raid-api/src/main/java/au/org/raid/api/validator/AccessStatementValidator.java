@@ -35,11 +35,8 @@ public class AccessStatementValidator {
                     .message(NOT_SET_MESSAGE)
             );
         }
-
-        if (accessStatement.getLanguage() != null) {
-            failures.addAll(
-                    languageValidator.validate(accessStatement.getLanguage(), "access.statement"));
-        }
+        failures.addAll(
+                languageValidator.validate(accessStatement.getLanguage(), "access.statement"));
         return failures;
     }
 }
