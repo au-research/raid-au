@@ -1,5 +1,5 @@
 // RAID-536: Thin HTTP client for API-based test data seeding
-// Uses the RAiD API at localhost:8080 to create and retrieve RAiDs directly,
+// Uses the RAiD API (API_BASE_URL) to create and retrieve RAiDs directly,
 // which is faster than driving the UI for test setup.
 
 const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8080";

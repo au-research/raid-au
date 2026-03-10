@@ -4,11 +4,21 @@
 
 import { test, expect } from "@playwright/test";
 
+const { VITE_KEYCLOAK_URL } = process.env;
+
+if (!VITE_KEYCLOAK_URL) {
+  throw new Error("VITE_KEYCLOAK_URL environment variable is not set.");
+}
+
+// Escape special regex characters in the URL so it can be used as a literal match
+const keycloakUrlPattern = new RegExp(
+  VITE_KEYCLOAK_URL.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+);
+
 test.describe("Authentication", () => {
   test.describe("Unauthenticated access", () => {
     test(
       "redirects to Keycloak login when visiting root unauthenticated",
-      { tag: "@local" },
       async ({ browser }) => {
         // Create a fresh context with no stored session
         const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
@@ -17,8 +27,8 @@ test.describe("Authentication", () => {
         await page.goto("/");
 
         // Should redirect to Keycloak
-        await page.waitForURL(/localhost:8001/, { timeout: 15000 });
-        await expect(page).toHaveURL(/localhost:8001/);
+        await page.waitForURL(keycloakUrlPattern, { timeout: 15000 });
+        await expect(page).toHaveURL(keycloakUrlPattern);
 
         // Keycloak login page should be visible
         await expect(page.locator("#username")).toBeVisible();
@@ -30,15 +40,14 @@ test.describe("Authentication", () => {
 
     test(
       "redirects to Keycloak login when visiting /raids unauthenticated",
-      { tag: "@local" },
       async ({ browser }) => {
         const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
         const page = await context.newPage();
 
         await page.goto("/raids");
 
-        await page.waitForURL(/localhost:8001/, { timeout: 15000 });
-        await expect(page).toHaveURL(/localhost:8001/);
+        await page.waitForURL(keycloakUrlPattern, { timeout: 15000 });
+        await expect(page).toHaveURL(keycloakUrlPattern);
         await expect(page.locator("#username")).toBeVisible();
 
         await context.close();
@@ -51,19 +60,17 @@ test.describe("Authentication", () => {
 
     test(
       "authenticated session allows access to /raids",
-      { tag: "@local" },
       async ({ page }) => {
         await page.goto("/raids");
 
         // Should NOT be redirected to Keycloak
-        await expect(page).not.toHaveURL(/localhost:8001/);
+        await expect(page).not.toHaveURL(keycloakUrlPattern);
         await expect(page).toHaveURL(/\/raids/);
       }
     );
 
     test(
       "authenticated user can see the RAiD list page",
-      { tag: "@local" },
       async ({ page }) => {
         await page.goto("/raids");
 
