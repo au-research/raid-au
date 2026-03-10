@@ -110,8 +110,11 @@ class AccessStatementValidatorTest {
     }
 
     @Test
-    @DisplayName("Skips language validation when language is null")
+    @DisplayName("No failures when language is null")
     void nullLanguage() {
+        when(languageValidator.validate(null, "access.statement"))
+                .thenReturn(Collections.emptyList());
+
         final var accessStatement = new AccessStatement()
                 .text("Embargoed")
                 .language(null);
@@ -119,7 +122,7 @@ class AccessStatementValidatorTest {
         final var failures = validationService.validate(accessStatement);
 
         assertThat(failures, empty());
-        verifyNoInteractions(languageValidator);
+        verify(languageValidator).validate(null, "access.statement");
     }
 
     @Test
