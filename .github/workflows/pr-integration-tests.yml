@@ -3,6 +3,7 @@ name: PR Integration Tests
 on:
   pull_request:
     paths:
+      - '.github/**'
       - 'api-svc/**'
       - 'iam/**'
       - 'gradle/**'
