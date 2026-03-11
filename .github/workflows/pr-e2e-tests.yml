@@ -77,17 +77,35 @@ jobs:
         working-directory: raid-agency-app
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
+      - name: Start frontend dev server
         working-directory: raid-agency-app
         env:
-          CI: true
-          BASE_URL: http://localhost:7080
           VITE_RAIDO_ENV: dev
           VITE_KEYCLOAK_URL: http://localhost:8001
           VITE_KEYCLOAK_CLIENT_ID: raid-api
           VITE_KEYCLOAK_REALM: raid
           VITE_SUPPORT_EMAIL: contact@raid.org
           VITE_RAID_DOMAIN: http://www.raid.org.au
+        run: |
+          yarn dev &
+          echo "Waiting for frontend dev server..."
+          for i in $(seq 1 30); do
+            if curl -fs http://localhost:7080 2>/dev/null; then
+              echo "Frontend is ready"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Frontend failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Run Playwright tests
+        working-directory: raid-agency-app
+        env:
+          CI: true
+          BASE_URL: http://localhost:7080
           VITE_KEYCLOAK_E2E_USER: raid-test-user
           VITE_KEYCLOAK_E2E_PASSWORD: password
         run: npx playwright test
