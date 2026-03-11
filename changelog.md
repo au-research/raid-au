@@ -1,5 +1,25 @@
-See the [Changelog audience](#changelog-audience) section for info about 
+See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
+# 2.8.0
+## API
+* Fix NPE in IsniClient when personalName.nameUse is null
+* Read raids from metadata column for faster list queries
+* Materialise current RaidDto state with admin backfill endpoint
+* Cache reference data repository lookups
+* Parallelise I/O-bound validators in ValidationService
+* Scope raid visibility to user's own service point and push filtering into SQL
+
+## App-client UI
+* Add ARDC branding with header, footer, NCRIS logo, dark/light mode, and mega-menu
+* Scope raid visibility to user's own service point only
+* Fix Access Type statement language validation issue
+* Fix title language generation on load
+* Add Playwright E2E test suite covering create, edit, validation, optional metadata, and vocabulary dropdowns
+
+## IAM
+* Add ARDC branding theme for Keycloak login page
+* Upgrade Keycloak SPI dependency from 26.5.3 to 26.5.4
+
 # 2.7.0
 ## API
 * Add GET /raid/count endpoint for KPI reporting with service point and organisation breakdowns
