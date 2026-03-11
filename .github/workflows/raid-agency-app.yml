@@ -2,11 +2,6 @@ name: Build and test raid-agency-app
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/**
-      - raid-agency-app
-      - raid-agency-app-static
   pull_request:
     paths:
       - .github/**
