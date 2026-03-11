@@ -88,6 +88,8 @@ jobs:
           VITE_KEYCLOAK_REALM: raid
           VITE_SUPPORT_EMAIL: contact@raid.org
           VITE_RAID_DOMAIN: http://www.raid.org.au
+          VITE_KEYCLOAK_E2E_USER: raid-test-user
+          VITE_KEYCLOAK_E2E_PASSWORD: password
         run: npx playwright test
 
       - name: Upload Playwright report
