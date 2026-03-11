@@ -117,14 +117,52 @@ class IsniClientTest {
         assertThat(isniClient.exists(isni), is(false));
     }
 
+    @Test
+    @DisplayName("getName should return name from public entry when first PersonalName has null nameUse")
+    void shouldReturnNameFromPublicEntryWhenFirstPersonalNameHasNullNameUse() throws Exception {
+        final var isni = "https://isni.org/isni/0000000078519858";
+        final var requestEntity = new RequestEntity<Void>(HttpMethod.GET, URI.create("https://localhost"));
+
+        final var searchRetrieveResponse = getResponse("/fixtures/isni-null-name-use-with-public.xml");
+        final var responseEntity = ResponseEntity.of(Optional.of(searchRetrieveResponse));
+
+        when(requestEntityFactory.create(isni)).thenReturn(requestEntity);
+        when(restTemplate.exchange(requestEntity, SearchRetrieveResponse.class)).thenReturn(responseEntity);
+
+        final var name = isniClient.getName(isni);
+
+        assertThat(name, is("Correct Name"));
+    }
+
+    @Test
+    @DisplayName("getName should return first PersonalName as fallback when all entries have null nameUse")
+    void shouldReturnFirstPersonalNameWhenAllNameUsesAreNull() throws Exception {
+        final var isni = "https://isni.org/isni/0000000078519858";
+        final var requestEntity = new RequestEntity<Void>(HttpMethod.GET, URI.create("https://localhost"));
+
+        final var searchRetrieveResponse = getResponse("/fixtures/isni-all-null-name-use.xml");
+        final var responseEntity = ResponseEntity.of(Optional.of(searchRetrieveResponse));
+
+        when(requestEntityFactory.create(isni)).thenReturn(requestEntity);
+        when(restTemplate.exchange(requestEntity, SearchRetrieveResponse.class)).thenReturn(responseEntity);
+
+        final var name = isniClient.getName(isni);
+
+        assertThat(name, is("First Entry"));
+    }
+
     private SearchRetrieveResponse getResponse() throws JAXBException {
+        return getResponse("/fixtures/valid-isni.xml");
+    }
+
+    private SearchRetrieveResponse getResponse(final String fixturePath) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(SearchRetrieveResponse.class);
 
         // Create unmarshaller
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         final var root =
-                unmarshaller.unmarshal(new StreamSource(new File(getClass().getResource("/fixtures/valid-isni.xml").getPath())), SearchRetrieveResponse.class);
+                unmarshaller.unmarshal(new StreamSource(new File(getClass().getResource(fixturePath).getPath())), SearchRetrieveResponse.class);
 
         return root.getValue();
     }

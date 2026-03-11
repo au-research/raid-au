@@ -6,11 +6,9 @@ import au.org.raid.api.dto.isni.SearchRetrieveResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Element;
 
-@Component
 @RequiredArgsConstructor
 public class IsniClient implements ContributorClient {
     private final RestTemplate restTemplate;
@@ -42,8 +40,12 @@ public class IsniClient implements ContributorClient {
             }
 
             return personalNames.stream()
-                    .filter(personalName -> personalName.getNameUse().equalsIgnoreCase("legal") || personalName.getNameUse().equalsIgnoreCase("public"))
+                    .filter(personalName -> {
+                        final var nameUse = personalName.getNameUse();
+                        return nameUse != null && (nameUse.equalsIgnoreCase("legal") || nameUse.equalsIgnoreCase("public"));
+                    })
                     .findFirst()
+                    .or(() -> personalNames.stream().findFirst())
                     .map(this::getFullName)
                     .orElseThrow(() -> new RuntimeException("No name found for ISNI %s".formatted(isni)));
         } else {
