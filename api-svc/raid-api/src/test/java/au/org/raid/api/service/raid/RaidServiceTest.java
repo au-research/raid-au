@@ -1,6 +1,7 @@
 package au.org.raid.api.service.raid;
 
 import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.dto.legacy.RaidDtoFactory;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.IdFactory;
@@ -88,6 +89,10 @@ class RaidServiceTest {
     private KeycloakService keycloakService;
     @Mock
     private RorClient rorClient;
+    @Mock
+    private RaidDtoFactory raidDtoFactory;
+    @Mock
+    private RaidDtoReadService raidDtoReadService;
     @InjectMocks
     private RaidService raidService;
 
@@ -117,6 +122,7 @@ class RaidServiceTest {
 
         when(idFactory.create(handle.toString(), servicePointRecord)).thenReturn(id);
         when(raidHistoryService.save(createRaidRequest)).thenReturn(raidDto);
+        when(mapper.writeValueAsString(raidDto)).thenReturn("{\"identifier\":{\"id\":\"" + handle + "\"}}");
 
         try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
             tokenUtil.when(TokenUtil::getUserId).thenReturn(userId);
@@ -124,6 +130,7 @@ class RaidServiceTest {
             raidService.mint(createRaidRequest, servicePointId);
             verify(raidIngestService).create(raidDto);
             verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
+            verify(raidRepository).updateMetadata(eq(handle.toString()), anyString());
             verify(orcidIntegrationService).setContributorStatus(createRaidRequest.getContributor());
             verify(orcidIntegrationService).updateOrcidRecord(raidDto);
         }
@@ -181,6 +188,7 @@ class RaidServiceTest {
 
         when(raidHistoryService.save(expected)).thenReturn(expected);
         when(raidIngestService.update(expected)).thenReturn(expected);
+        when(mapper.writeValueAsString(expected)).thenReturn(raidJson);
 
         when(servicePointRepository.findById(servicePointId)).thenReturn(Optional.of(servicePointRecord));
 
@@ -188,6 +196,7 @@ class RaidServiceTest {
         assertThat(result, Matchers.is(expected));
 
         verify(dataciteService).update(expected, handle, repositoryId, password);
+        verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
         verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
         verify(orcidIntegrationService).updateOrcidRecord(expected);
     }
@@ -218,6 +227,7 @@ class RaidServiceTest {
 
         when(raidHistoryService.save(updateRequest)).thenReturn(expected);
         when(raidIngestService.update(expected)).thenReturn(expected);
+        when(mapper.writeValueAsString(expected)).thenReturn(raidJson);
 
         try (MockedStatic<SecurityContextHolder> securityContextHolder = mockStatic(SecurityContextHolder.class)) {
             final var securityContext = mock(SecurityContext.class);
@@ -236,6 +246,7 @@ class RaidServiceTest {
             assertThat(result, Matchers.is(expected));
 
             verify(dataciteService).update(updateRequest, handle, repositoryId, password);
+            verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
             verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
             verify(orcidIntegrationService).updateOrcidRecord(expected);
         }

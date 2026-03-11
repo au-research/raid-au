@@ -106,6 +106,9 @@ public class SecurityConfig {
                 .requestMatchers(POST, SERVICE_POINT_API + "/**").hasRole(OPERATOR_ROLE)
                 .requestMatchers(GET, SERVICE_POINT_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, OPERATOR_ROLE)
 
+                // Admin endpoints
+                .requestMatchers(POST, "/admin/**").hasRole(OPERATOR_ROLE)
+
                 .anyRequest().denyAll();
     }
 

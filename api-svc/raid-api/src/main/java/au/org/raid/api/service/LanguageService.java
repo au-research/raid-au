@@ -25,7 +25,7 @@ public class LanguageService {
 
     @Transactional(readOnly = true)
     public Integer findLanguageId(@Nullable final Language language) {
-        if (language == null) {
+        if (language == null || language.getId() == null ) {
             return null;
         }
 

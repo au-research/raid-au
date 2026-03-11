@@ -24,6 +24,7 @@ services:
     volumes:
       - './realms:/opt/keycloak/data/import'
       - './themes/raid-custom:/opt/keycloak/themes/raid-custom'
+      - './themes/ardc-branding:/opt/keycloak/themes/ardc-branding'
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin

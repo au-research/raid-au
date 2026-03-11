@@ -8,6 +8,7 @@ import { memo, useContext, useEffect } from "react";
 import {
   Control,
   FieldErrors,
+  set,
   useFormContext,
   UseFormTrigger,
   useWatch,
@@ -34,17 +35,31 @@ const AccessForm = memo(
       control,
       name: "access.type.id",
     });
-    const { setValue, watch } = useFormContext();
-    const languageId = `access.statement.language.id`;
+    const { setValue, watch, getValues } = useFormContext();
+    const languageId = `access.statement`;
     const schemaUriPath = `access.statement.language.schemaUri`;
     const currentSchemaUri = watch(languageId);
 
     useEffect(() => {
-      const embargoed = accessTypeId?.includes("c_f1cf/");
-      if (embargoed && languageSchema?.[0]?.uri) {
-        setValue(schemaUriPath, languageSchema[0].uri);
-      }
-    }, [currentSchemaUri, setValue, schemaUriPath, accessTypeId]);
+        const embargoed = accessTypeId?.includes("c_f1cf/");
+        if (!embargoed) {
+            setValue("access.statement", undefined);
+            setValue("access.embargoExpiry", undefined);
+        }
+    }, [accessTypeId, setValue, currentSchemaUri]);
+
+    const currentLangValue = useWatch({
+        control,
+        name: "access.statement.language.id",
+    });
+
+    useEffect(() => {
+        if (currentLangValue) {
+            setValue("access.statement.language.schemaUri", languageSchema[0].uri);
+        } else {
+            setValue("access.statement.language", undefined);
+        }
+    }, [currentLangValue, setValue, accessTypeId]);
 
     const accessTypeOptions = generalMapping
       .filter((el) => el.field === "access.type.id")

@@ -4,7 +4,7 @@ RUN dnf install --installroot /mnt/rootfs curl --releasever 9 --setopt install_w
     dnf --installroot /mnt/rootfs clean all && \
     rpm --root /mnt/rootfs -e --nodeps setup
 
-FROM quay.io/keycloak/keycloak:26.5.3 as builder
+FROM quay.io/keycloak/keycloak:26.5.4 as builder
 COPY --from=ubi-micro-build /mnt/rootfs /
 
 WORKDIR /opt/keycloak
@@ -20,6 +20,7 @@ RUN keytool -import -storepass password -noprompt -trustcacerts -alias prod.raid
 
 # Added this line to copy custom theme into the image
 COPY themes/raid-custom /opt/keycloak/themes/raid-custom
+COPY themes/ardc-branding /opt/keycloak/themes/ardc-branding
 
 RUN /opt/keycloak/bin/kc.sh build
 

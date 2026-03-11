@@ -17,7 +17,7 @@ import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
-import au.org.raid.idl.raidv2.model.*;;
+import au.org.raid.idl.raidv2.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +62,7 @@ public class RaidService {
     private final RaidRepository raidRepository;
     private final RorClient rorClient;
     private final RaidDtoFactory raidDtoFactory;
+    private final RaidDtoReadService raidDtoReadService;
 
     @Transactional
     public RaidDto mint(
@@ -80,6 +81,9 @@ public class RaidService {
         raidIngestService.create(raidDto);
 
         keycloakService.addHandleToAdminRaids(new Handle(raidDto.getIdentifier().getId()).toString());
+
+        final var handle = new Handle(raidDto.getIdentifier().getId()).toString();
+        updateMaterialisedMetadata(handle, raidDto);
 
         orcidIntegrationService.updateOrcidRecord(raidDto);
         return raidDto;
@@ -143,7 +147,8 @@ public class RaidService {
 
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
 
-        final var saved =  raidIngestService.update(raidDto);
+        final var saved = raidIngestService.update(raidDto);
+        updateMaterialisedMetadata(handle, saved);
         orcidIntegrationService.updateOrcidRecord(saved);
         return saved;
     }
@@ -166,6 +171,7 @@ public class RaidService {
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
 
         final var saved = raidIngestService.update(raid);
+        updateMaterialisedMetadata(handle, saved);
 
         orcidIntegrationService.updateOrcidRecord(saved);
         return saved;
@@ -249,9 +255,8 @@ public class RaidService {
         final var raids = new ArrayList<RaidDto>();
 
         for (final var record : raidRecords) {
-            final var raidDto = raidHistoryService.findByHandle(record.getHandle())
-                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle()));
-            raids.add(raidDto);
+            raids.add(raidDtoReadService.toRaidDto(record)
+                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle())));
         }
 
         return raids;
@@ -262,9 +267,8 @@ public class RaidService {
         final var raids = new ArrayList<RaidDto>();
 
         for (final var record : raidRecords) {
-            final var raidDto = raidHistoryService.findByHandle(record.getHandle())
-                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle()));
-            raids.add(raidDto);
+            raids.add(raidDtoReadService.toRaidDto(record)
+                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle())));
         }
 
         return raids;
@@ -359,11 +363,19 @@ public class RaidService {
         final var raids = new ArrayList<RaidDto>();
 
         for (final var record : raidRecords) {
-            final var raidDto = raidHistoryService.findByHandle(record.getHandle())
-                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle()));
-            raids.add(raidDto);
+            raids.add(raidDtoReadService.toRaidDto(record)
+                    .orElseThrow(() -> new ResourceNotFoundException(record.getHandle())));
         }
 
         return raids;
+    }
+
+    @SneakyThrows
+    private void updateMaterialisedMetadata(final String handle, final RaidDto raidDto) {
+        final var json = objectMapper.writeValueAsString(raidDto);
+        final var rowsUpdated = raidRepository.updateMetadata(handle, json);
+        if (rowsUpdated == 0) {
+            log.warn("Failed to materialise metadata for handle {}: no matching raid record", handle);
+        }
     }
 }

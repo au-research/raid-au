@@ -1,15 +1,18 @@
 import {useAuthHelper} from "@/auth/keycloak"
+import { Footer } from "@/components/footer-bar/footer";
 import {GroupSelector} from "@/pages/home/components/GroupSelector";
 import {RaidTable} from "@/pages/raid-table";
 import {Add as AddIcon} from "@mui/icons-material";
-import {Alert, Container, Fab, Stack} from "@mui/material";
+import {Alert, Container, Fab, Stack, Box} from "@mui/material";
 import {Link} from "react-router-dom";
 
 export const Home = () => {
   const { hasServicePointGroup, isServicePointUser, isOperator } = useAuthHelper();
 
   return (
-    <Container>
+    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 216px)' }}> 
+    <Container sx={{ flex: 1, mb: 5 }}>
       <Stack gap={2}>
         {((hasServicePointGroup && isServicePointUser) || isOperator)  && (
           <Fab
@@ -35,5 +38,8 @@ export const Home = () => {
         {((hasServicePointGroup && isServicePointUser) || isOperator) && <RaidTable />}
       </Stack>
     </Container>
+    <Footer />
+    </Box>
+    </>
   );
 };

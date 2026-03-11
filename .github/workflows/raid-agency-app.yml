@@ -5,8 +5,8 @@ on:
   pull_request:
     paths:
       - .github/**
-      - raid-agency-app
-      - raid-agency-app-static
+      - raid-agency-app/**
+      - raid-agency-app-static/**
 
 jobs:
   build:

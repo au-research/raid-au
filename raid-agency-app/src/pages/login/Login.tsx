@@ -19,10 +19,10 @@ export function Login() {
       navigate(redirectTo, { replace: true });
     } else {
       // User is not logged in, redirect to Keycloak login page
-      const redirectUri = searchParams.get('redirect') 
+      const redirectUri = searchParams.get('redirect')
         ? `${window.location.origin}/login?redirect=${searchParams.get('redirect')}`
         : `${window.location.origin}/`;
-      
+
       login({
         redirectUri: redirectUri,
       });

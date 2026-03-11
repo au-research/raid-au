@@ -31,7 +31,7 @@ export const dateGenerator = (fields: [Title]): string => {
 export const titleDataGenerator = (fields: [Title]): Title => ({
   text: "",
   type: titleTypeGenerator(),
-  language: titleLanguageGenerator(),
+  language: undefined,
   startDate: dateGenerator(fields),
   endDate: dayjs(new Date()).add(1, "year").format("YYYY-MM-DD"),
 });

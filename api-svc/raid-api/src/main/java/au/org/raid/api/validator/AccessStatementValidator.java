@@ -30,15 +30,13 @@ public class AccessStatementValidator {
 
         if (isBlank(accessStatement.getText())) {
             failures.add(new ValidationFailure()
-                    .fieldId("access.statement.statement")
+                    .fieldId("access.statement.text")
                     .errorType(NOT_SET_TYPE)
                     .message(NOT_SET_MESSAGE)
             );
         }
-
         failures.addAll(
                 languageValidator.validate(accessStatement.getLanguage(), "access.statement"));
-
         return failures;
     }
 }
