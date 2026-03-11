@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "Waiting for Keycloak..."
           for i in $(seq 1 60); do
-            if curl -fsk https://localhost:9443/health/ready 2>/dev/null; then
+            if curl -fs http://localhost:8001/realms/raid 2>/dev/null; then
               echo "Keycloak is ready"
               break
             fi
