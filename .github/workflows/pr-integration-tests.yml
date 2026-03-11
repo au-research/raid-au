@@ -55,13 +55,6 @@ jobs:
             sleep 5
           done
 
-      - name: Run database migrations
-        run: >
-          ./gradlew :api-svc:db:flywayMigrate
-          -PapiSvcPgPassword=supersecret
-          -PapiSvcRolePassword=supersecret
-          -PapiSvcExtraLocations='["classpath:db/env/api_user"]'
-
       - name: Build API
         run: ./gradlew build
 
