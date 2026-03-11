@@ -8,9 +8,6 @@
 name: Build and tests api-svc
 
 on:
-  push:
-    paths-ignore:
-      - raid-agency-app/*
   pull_request:
     paths-ignore:
       - raid-agency-app/*
