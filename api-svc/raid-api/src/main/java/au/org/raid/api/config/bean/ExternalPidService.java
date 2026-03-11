@@ -34,7 +34,7 @@ public class ExternalPidService {
             IsniRequestEntityFactory isniRequestEntityFactory,
             RestTemplate restTemplate
     ) {
-        if (stubProperties.getIsni().isEnabled()) {
+        if (stubProperties.getIsni() != null && stubProperties.getIsni().isEnabled()) {
             log.with("isniInMemoryStubDelay", stubProperties.getIsni().getDelay()).
                     warn("using the in-memory ISNI service");
             return new IsniClientStub(stubProperties.getIsni().getDelay());

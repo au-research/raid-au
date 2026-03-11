@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static au.org.raid.api.service.stub.InMemoryStubTestData.NONEXISTENT_TEST_ISNI;
+import static au.org.raid.api.service.stub.InMemoryStubTestData.SERVER_ERROR_TEST_ISNI;
 
 @Slf4j
 public class IsniClientStub extends IsniClient {
@@ -30,6 +31,10 @@ public class IsniClientStub extends IsniClient {
         final var duration = Duration.between(start, end);
         log.info("request to {} took {}.{} seconds", isni, duration.getSeconds(), duration.getNano());
 
+        if (SERVER_ERROR_TEST_ISNI.equals(isni)) {
+            throw new RuntimeException("Simulated server error for ISNI %s".formatted(isni));
+        }
+
         return !NONEXISTENT_TEST_ISNI.equals(isni);
     }
 
@@ -44,6 +49,10 @@ public class IsniClientStub extends IsniClient {
         final var end = Instant.now();
         final var duration = Duration.between(start, end);
         log.info("request to {} took {}.{} seconds", isni, duration.getSeconds(), duration.getNano());
+
+        if (NONEXISTENT_TEST_ISNI.equals(isni)) {
+            throw new RuntimeException("ISNI not found %s".formatted(isni));
+        }
 
         return "Test User";
     }
