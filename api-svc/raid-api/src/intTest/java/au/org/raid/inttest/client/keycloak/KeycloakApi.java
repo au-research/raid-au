@@ -64,5 +64,6 @@ public interface KeycloakApi {
     @PostMapping(path = "/admin/realms/raid/users/{userId}/role-mappings/realm")
     ResponseEntity<Void> addUserToRole(@PathVariable final String userId, @RequestBody final List<KeycloakRole> roles);
 
-
+    @RequestMapping(method = RequestMethod.DELETE, value = "/realms/raid/group/delete")
+    ResponseEntity<java.util.Map<String, String>> deleteGroup(@RequestParam final String groupId);
 }
