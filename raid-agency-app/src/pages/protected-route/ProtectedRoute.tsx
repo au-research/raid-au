@@ -1,4 +1,3 @@
-import Banner from "@/components/alert-notifications/banner/Banner";
 import { AppNavBar } from "@/components/app-nav-bar";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { Loading } from "@/pages/loading";
@@ -23,7 +22,6 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = memo(() => {
   const { isInitialized, authenticated } = useKeycloak();
   const location = useLocation();
-  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
 
   if (!isInitialized) {
     return (

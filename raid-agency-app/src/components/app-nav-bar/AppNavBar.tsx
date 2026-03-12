@@ -58,6 +58,7 @@ export const AppNavBar = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const config = useAppConfig();
+  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -107,7 +108,7 @@ export const AppNavBar = () => {
         {authenticated && <AuthenticatedNavbarContent /> }
       </Toolbar>
     </AppBar>
-    {authenticated &&
+    {authenticated && !isProduction &&
       (
         <Banner
           variant="warning"
