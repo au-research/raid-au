@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "raid-agency-app"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     groups:
       mui:
         patterns: ["@mui/*"]
@@ -26,7 +26,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     groups:
       keycloak:
         patterns: ["org.keycloak:*"]
@@ -47,9 +47,9 @@ updates:
   - package-ecosystem: "docker"
     directory: "iam"
     schedule:
-      interval: "weekly"
+      interval: "daily"
 
   - package-ecosystem: "docker"
     directory: "api-svc/raid-api"
     schedule:
-      interval: "weekly"
+      interval: "daily"
