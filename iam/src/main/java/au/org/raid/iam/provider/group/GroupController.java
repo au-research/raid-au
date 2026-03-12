@@ -524,4 +524,67 @@ public class GroupController {
                     .build();
         }
     }
+    @OPTIONS
+    @Path("/delete")
+    public Response deleteGroupPreflight() {
+        return cors.buildOptionsResponse("DELETE", "OPTIONS");
+    }
+
+    @DELETE
+    @Path("/delete")
+    @Produces(MediaType.APPLICATION_JSON)
+    @SneakyThrows
+    public Response deleteGroup(@QueryParam("groupId") String groupId) {
+        log.debug("Deleting group with id: {}", groupId);
+
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var user = auth.session().getUser();
+        if (user == null) {
+            throw new NotAuthorizedException("Bearer");
+        }
+
+        // Only operators can delete groups
+        if (!isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not authorized to delete groups");
+        }
+
+        // Validate groupId
+        if (groupId == null || groupId.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"groupId parameter is required\"}")
+                    .build();
+        }
+
+        final var realm = session.getContext().getRealm();
+        var group = session.groups().getGroupById(realm, groupId);
+
+        if (group == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"Group not found\"}")
+                    .build();
+        }
+
+        try {
+            String groupName = group.getName();
+            session.groups().removeGroup(realm, group);
+
+            var responseBody = new HashMap<String, String>();
+            responseBody.put("message", "Group deleted successfully");
+            responseBody.put("groupId", groupId);
+            responseBody.put("groupName", groupName);
+
+            return cors.buildCorsResponse("DELETE",
+                    Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
+
+        } catch (Exception e) {
+            log.error("Error deleting group: {}", e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Failed to delete group\"}")
+                    .build();
+        }
+    }
+
 }
