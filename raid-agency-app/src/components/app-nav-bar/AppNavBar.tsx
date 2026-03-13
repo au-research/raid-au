@@ -21,7 +21,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppConfig } from "@/config/Appconfigcontext";
 import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
-import { a } from "vitest/dist/chunks/suite.CcK46U-P.js";
 
 const AuthenticatedNavbarContent = () => {
   const { isOperator, isGroupAdmin } = useAuthHelper();
