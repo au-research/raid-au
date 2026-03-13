@@ -6,9 +6,7 @@ package au.org.raid.db.jooq.tables.records;
 
 import au.org.raid.db.jooq.tables.RaidoOperator;
 
-import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Row1;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -16,7 +14,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * any app_user with an email in this table will be considered an operator
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class RaidoOperatorRecord extends UpdatableRecordImpl<RaidoOperatorRecord> implements Record1<String> {
+public class RaidoOperatorRecord extends UpdatableRecordImpl<RaidoOperatorRecord> {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,47 +40,6 @@ public class RaidoOperatorRecord extends UpdatableRecordImpl<RaidoOperatorRecord
     @Override
     public Record1<String> key() {
         return (Record1) super.key();
-    }
-
-    // -------------------------------------------------------------------------
-    // Record1 type implementation
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row1<String> fieldsRow() {
-        return (Row1) super.fieldsRow();
-    }
-
-    @Override
-    public Row1<String> valuesRow() {
-        return (Row1) super.valuesRow();
-    }
-
-    @Override
-    public Field<String> field1() {
-        return RaidoOperator.RAIDO_OPERATOR.EMAIL;
-    }
-
-    @Override
-    public String component1() {
-        return getEmail();
-    }
-
-    @Override
-    public String value1() {
-        return getEmail();
-    }
-
-    @Override
-    public RaidoOperatorRecord value1(String value) {
-        setEmail(value);
-        return this;
-    }
-
-    @Override
-    public RaidoOperatorRecord values(String value1) {
-        value1(value1);
-        return this;
     }
 
     // -------------------------------------------------------------------------

@@ -10,7 +10,20 @@ import au.org.raid.db.jooq.tables.records.RaidRelatedObjectRecord;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+
+import org.jooq.Field;
+import org.jooq.ForeignKey;
+import org.jooq.Identity;
+import org.jooq.Name;
+import org.jooq.Record;
+import org.jooq.Schema;
+import org.jooq.Table;
+import org.jooq.TableField;
+import org.jooq.TableOptions;
+import org.jooq.UniqueKey;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
+import org.jooq.impl.TableImpl;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -201,29 +214,5 @@ public class RaidRelatedObject extends TableImpl<RaidRelatedObjectRecord> {
     @Override
     public RaidRelatedObject rename(Table<?> name) {
         return new RaidRelatedObject(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row4 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row4<Integer, String, Integer, Integer> fieldsRow() {
-        return (Row4) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function4<? super Integer, ? super String, ? super Integer, ? super Integer, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function4<? super Integer, ? super String, ? super Integer, ? super Integer, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

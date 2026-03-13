@@ -2,7 +2,7 @@ include:
   - '../../iam/docker-compose.yaml'
 services:
   raid-api-db:
-    image: postgres:16.2
+    image: postgres:16.8
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'postgres']
       interval: 10s

@@ -2,9 +2,7 @@ html,
 body {
   min-height: 100%;
 }
-body {
-  background: #c6d9f0 !important;
-}
+
 @media (prefers-color-scheme: dark) {
   .raid-card-well {
     background: rgba(255, 255, 255, 0.05);
@@ -40,4 +38,22 @@ body {
   background: rgba(0, 0, 0, 0.05);
   padding: 16px;
   border-radius: 8px;
+}
+/* Thin scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
 }

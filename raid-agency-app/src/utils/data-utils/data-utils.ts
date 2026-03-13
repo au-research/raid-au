@@ -1,3 +1,9 @@
+/**
+ * Data Utilities Module
+ *
+ * This module provides utility functions and constants for working with
+ * RAID data, including display configuration and data transformations.
+ */
 import { accessDataGenerator } from "@/entities/access/data-generator/access-data-generator";
 import { dateCleaner } from "@/utils/date-cleaner";
 import { dateDataGenerator } from "@/entities/date/data-generator/date-data-generator";
@@ -33,6 +39,18 @@ import { SpatialCoveragesView } from "@/entities/spatial-coverage/views/spatial-
 import { SubjectsView } from "@/entities/subject/views/subjects-view";
 import { TitlesView } from "@/entities/title/views/titles-view";
 
+/**
+ * Configuration for displaying RAID entity components
+ * 
+ * This array defines the display configuration for each RAID entity type,
+ * including:
+ * - itemKey: The property key in the RAID data object
+ * - label: The human-readable label for the entity type
+ * - Component: The React component used to display this entity type
+ * - emptyValue: The default empty value for this entity type
+ * 
+ * This configuration is used to dynamically render RAID data in display views.
+ */
 export const displayItems = [
   {
     itemKey: "date",
@@ -108,6 +126,15 @@ export const displayItems = [
   },
 ];
 
+/**
+ * Creates a complete RaidDto object with default values for missing properties
+ * 
+ * This function ensures that all required properties exist in the RAID data
+ * object, providing empty arrays or objects as needed for any missing properties.
+ * 
+ * @param data - The source RAID data, which may be incomplete
+ * @returns A complete RaidDto object with all required properties
+ */
 export const raidRequest = (data: RaidDto): RaidDto => {
   return {
     identifier: data?.identifier || ({} as Id),
@@ -116,7 +143,7 @@ export const raidRequest = (data: RaidDto): RaidDto => {
     access: data?.access || ({} as Access),
     alternateUrl: data?.alternateUrl || ([] as AlternateUrl[]),
     relatedRaid: data?.relatedRaid || ([] as RelatedRaid[]),
-    date: dateCleaner(data?.date) || ({} as ModelDate),
+    date: dateCleaner(data?.date) ?? ({} as ModelDate),
     contributor: data?.contributor || ([] as Contributor[]),
     alternateIdentifier:
       data?.alternateIdentifier || ([] as AlternateIdentifier[]),
@@ -127,15 +154,41 @@ export const raidRequest = (data: RaidDto): RaidDto => {
   };
 };
 
+/**
+ * Template for creating a new RAID with minimum required fields
+ * 
+ * This constant provides a template with the minimum required fields
+ * for creating a new RAID, with generated default values for required fields.
+ */
 export const newRaid: RaidCreateRequest = {
-  title: [titleDataGenerator()],
+  title: [titleDataGenerator([{} as Title])],
   date: dateDataGenerator(),
   access: accessDataGenerator(),
-  organisation: [],
-  contributor: [],
-  alternateUrl: [],
+  organisation: [] as Organisation[],
+  contributor: [] as Contributor[],
+  alternateUrl: [] as AlternateUrl[],
+  relatedRaid: [] as RelatedRaid[],
+  description: [] as Description[],
+  relatedObject: [] as RelatedObject[],
+  alternateIdentifier: [] as AlternateIdentifier[],
+  spatialCoverage: [] as SpatialCoverage[],
+  subject: [] as Subject[],
 };
 
+/**
+ * Safely retrieves a nested property from an object using a dot-notation path
+ * 
+ * This function allows safe access to deeply nested properties without
+ * causing errors if intermediate properties are undefined.
+ * 
+ * @param obj - The source object to traverse
+ * @param keyString - A dot-notation string representing the path to the desired property
+ * @returns The value at the specified path, or undefined if any part of the path doesn't exist
+ * 
+ * @example
+ * // Returns "value" if obj.a.b.c exists, otherwise undefined
+ * getErrorMessageForField(obj, "a.b.c");
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getErrorMessageForField(obj: any, keyString: string): any {
   const keys = keyString.split("."); // Split the keyString into an array of keys

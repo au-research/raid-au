@@ -78,6 +78,7 @@ class LanguageServiceTest {
         final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var language = new Language()
+                .id("eng")
                 .schemaUri(schemaUri);
 
         when(languageSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.empty());
@@ -163,5 +164,28 @@ class LanguageServiceTest {
 
         assertThrows(LanguageSchemaNotFoundException.class, () -> languageService.findById(id));
         verifyNoInteractions(languageFactory);
+    }
+
+    @Test
+    @DisplayName("findLanguageId() returns null when language has null id and null schemaUri")
+    void findLanguageIdReturnsNullForEmptyLanguage() {
+        final var language = new Language();
+
+        assertThat(languageService.findLanguageId(language), nullValue());
+
+        verifyNoInteractions(languageSchemaRepository);
+        verifyNoInteractions(languageRepository);
+    }
+
+    @Test
+    @DisplayName("findLanguageId() returns null when language has null id and set schemaUri")
+    void findLanguageIdReturnsNullForNullIdWithSchemaUri() {
+        final var language = new Language()
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+
+        assertThat(languageService.findLanguageId(language), nullValue());
+
+        verifyNoInteractions(languageSchemaRepository);
+        verifyNoInteractions(languageRepository);
     }
 }

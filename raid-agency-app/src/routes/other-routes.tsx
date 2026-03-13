@@ -1,5 +1,5 @@
 import { AppNavBar } from "@/components/app-nav-bar";
-import { ProtectedRoute } from "@/components/protected-route";
+import { ProtectedRoute } from "@/pages/protected-route";
 import { AboutRaid } from "@/pages/about-raid";
 import { ApiKey } from "@/pages/api-key";
 import { CacheManager } from "@/pages/cache-manager";
@@ -11,90 +11,114 @@ import { Privacy } from "@/pages/privacy";
 import { UsageTerms } from "@/pages/usage-terms";
 import { Box } from "@mui/material";
 import { RouteObject } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import OrcidSuccess from "@/pages/orcid-success/orcid-success";
 
 export const otherRoutes: RouteObject[] = [
   {
-    path: "/",
+    path: ROUTES.HOME,
     element: <ProtectedRoute />,
     children: [
       {
-        path: "",
+        path: ROUTES.EMPTY_PATH,
+        // The empty path under HOME will render the Home component
         element: <Home />,
       },
     ],
   },
   {
-    path: "/login",
+    path: ROUTES.LOGIN,
+    // No need for ProtectedRoute here since this is the login page
     element: (
       <Box sx={{ pt: 5 }}>
-        <AppNavBar authenticated={false} />
         <Login />
       </Box>
     ),
   },
   {
-    path: "/privacy",
+    path: ROUTES.PRIVACY,
+    // No need for ProtectedRoute here since this is a public page
     element: (
       <>
-        <AppNavBar authenticated={false} />
+        <AppNavBar />
         <Privacy />
       </>
     ),
   },
   {
-    path: "/terms",
+    path: ROUTES.TERMS,
+    // No need for ProtectedRoute here since this is a public page
     element: (
       <>
-        <AppNavBar authenticated={false} />
+        <AppNavBar />
         <UsageTerms />
       </>
     ),
   },
   {
-    path: "/about-raid",
+    path: ROUTES.ABOUT_RAID,
+    // No need for ProtectedRoute here since this is a public page
     element: (
       <>
-        <AppNavBar authenticated={false} />
+        <AppNavBar />
         <AboutRaid />
       </>
     ),
   },
+   {
+    path: ROUTES.ORCID_SUCCESS,
+    // No need for ProtectedRoute here since this is a public page
+    element: (
+      <>
+        <AppNavBar />
+        <OrcidSuccess />
+      </>
+    ),
+  },
   {
-    path: "/api-key",
+    path: ROUTES.API_KEY,
+    // ProtectedRoute is used here to ensure the user is authenticated before accessing the API key page
     element: <ProtectedRoute />,
     children: [
       {
-        path: "",
+        path: ROUTES.EMPTY_PATH,
+        // The empty path under API_KEY will render the ApiKey component
         element: <ApiKey />,
       },
     ],
   },
-  {
-    path: "/invites",
+  /* {
+    path: ROUTES.INVITES,
+    // ProtectedRoute ensures that only authenticated users can access this page
     element: <ProtectedRoute />,
     children: [
       {
-        path: "",
+        path: ROUTES.EMPTY_PATH,
+        // The empty path under INVITES will render the Invites component
         element: <Invites />,
       },
     ],
-  },
+  }, */
   {
-    path: "/cache-manager",
+    path: ROUTES.CACHE_MANAGER,
+    // ProtectedRoute ensures that only authenticated users can access this page
     element: <ProtectedRoute />,
     children: [
       {
-        path: "",
+        path: ROUTES.EMPTY_PATH,
+        // The empty path under CACHE_MANAGER will render the CacheManager component
         element: <CacheManager />,
       },
     ],
   },
   {
-    path: "/invite",
+    path: ROUTES.INVITE,
+    // ProtectedRoute ensures that only authenticated users can access this page
     element: <ProtectedRoute />,
     children: [
       {
-        path: "",
+        path: ROUTES.EMPTY_PATH,
+        // The empty path under INVITE will render the InviteRedirect component
         element: <InviteRedirect />,
       },
     ],

@@ -4,10 +4,11 @@
 1. [Getting Started](#getting-started)
 2. [Installation](#installation)
 3. [Running the Application](#running-the-application)
-4. [Project Structure](#project-structure)
-5. [API Documentation](#api-documentation)
-6. [Contributing](#contributing)
-7. [License](#license)
+4. [Running E2E Tests](#running-e2e-tests)
+5. [Project Structure](#project-structure)
+6. [API Documentation](#api-documentation)
+7. [Contributing](#contributing)
+8. [License](#license)
 ## Getting Started
 To get started you'll need the following tools installed in your machine:
 - Node.js >= 18
@@ -29,14 +30,31 @@ cd raid-agency-app
 npm install
 ```
 ## Running the Application
-1. Start the API
+1. Start the local dev stack (Docker services + API)
 ```bash
-./gradlew dockerComposeUp bootRun
+./gradlew bootRunLocal
 ```
-2. Start the app
+This starts PostgreSQL, Keycloak, and MockServer via Docker Compose, then launches the Spring Boot API with the `dev` profile. The API runs on `http://localhost:8080`.
+
+2. Start the frontend (in a separate terminal)
 ```bash
 cd raid-agency-app
 npm run dev
+```
+The app runs on `http://localhost:7080`.
+
+## Running E2E Tests
+End-to-end tests use [Playwright](https://playwright.dev/) and require the local dev stack to be running.
+
+1. Start the local dev stack (if not already running)
+```bash
+./gradlew bootRunLocal
+```
+
+2. Run the tests (in a separate terminal)
+```bash
+cd raid-agency-app
+npx playwright test
 ```
 ## Project Structure
 |                      |                                                                                                |

@@ -1,7 +1,7 @@
 package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.config.properties.IdentifierProperties;
-import au.org.raid.api.model.datacite.*;
+import au.org.raid.api.model.datacite.doi.*;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 import lombok.RequiredArgsConstructor;
@@ -348,7 +348,8 @@ public class DataciteAttributesDtoFactory {
                     .toList());
         }
 
-        final var creators = addCreators(request.getContributor());
+        final var creators = (request.getContributor() != null) ?
+                addCreators(request.getContributor()) : new ArrayList<DataciteCreator>();
 
         final var relatedIdentifiers = new ArrayList<DataciteRelatedIdentifier>();
 

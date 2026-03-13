@@ -18,6 +18,7 @@ public class RaidSubjectRepository {
         return dslContext.insertInto(RAID_SUBJECT)
                 .set(RAID_SUBJECT.HANDLE, record.getHandle())
                 .set(RAID_SUBJECT.SUBJECT_TYPE_ID, record.getSubjectTypeId())
+                .set(RAID_SUBJECT.SUBJECT_TYPE_SCHEMA_ID, record.getSubjectTypeSchemaId())
                 .returning()
                 .fetchOne();
     }

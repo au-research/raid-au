@@ -71,12 +71,22 @@ test("should return a full year", () => {
   expect(dateDisplayFormatter(input)).toBe("2023");
 });
 
-test("should return a month and year in format MMM-YYYY", () => {
+test("should return a year and month in format YYYY-MM", () => {
   const input = "2023-05";
-  expect(dateDisplayFormatter(input)).toBe("May-2023");
+  expect(dateDisplayFormatter(input)).toBe("2023-05");
 });
 
-test("should return a month and year in format DD-MMM-YYYY", () => {
+test("should return a year, month and day in format YYYY-MM-DD", () => {
   const input = "2023-05-23";
-  expect(dateDisplayFormatter(input)).toBe("23-May-2023");
+  expect(dateDisplayFormatter(input)).toBe("2023-05-23");
+});
+
+test("should return '---', if the year, month and day are not in format YYYY-MM-DD", () => {
+  const input = "23-05-2023";
+  expect(dateDisplayFormatter(input)).toBe("---");
+});
+
+test("should return '---', if the input is not valid date", () => {
+  const input = "abcd";
+  expect(dateDisplayFormatter(input)).toBe("---");
 });

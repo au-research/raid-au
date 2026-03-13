@@ -1,8 +1,7 @@
 package au.org.raid.iam.provider.group;
 
-import au.org.raid.iam.provider.group.dto.Grant;
-import au.org.raid.iam.provider.group.dto.GroupJoinRequest;
-import au.org.raid.iam.provider.group.dto.SetActiveGroupRequest;
+import au.org.raid.iam.provider.cors.Cors;
+import au.org.raid.iam.provider.group.dto.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
@@ -24,17 +23,6 @@ import java.util.List;
 @Slf4j
 @Provider
 public class GroupController {
-    private static final List<String> ALLOWED_ORIGINS = List.of(
-            "http://localhost:7080",
-            "https://app.test.raid.org.au",
-            "https://app3.test.raid.org.au",
-            "https://app.demo.raid.org.au",
-            "https://app3.demo.raid.org.au",
-            "https://app.stage.raid.org.au",
-            "https://app3.stage.raid.org.au",
-            "https://app.prod.raid.org.au"
-    );
-
     private static final String OPERATOR_ROLE_NAME = "operator";
     private static final String GROUP_ADMIN_ROLE_NAME = "group-admin";
     private static final String SERVICE_POINT_USER_ROLE = "service-point-user";
@@ -42,56 +30,18 @@ public class GroupController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final KeycloakSession session;
+    private final Cors cors;
 
     public GroupController(final KeycloakSession session) {
         this.session = session;
         this.auth = new AppAuthManager.BearerTokenAuthenticator(session).authenticate();
-    }
-
-
-    @SneakyThrows
-    private Response buildCorsResponse(String method, Response.ResponseBuilder responseBuilder) {
-        String origin = session.getContext().getRequestHeaders().getHeaderString("Origin");
-
-        // Only set the Origin header if it's in our allowed list
-        if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
-            responseBuilder.header("Access-Control-Allow-Origin", origin);
-            responseBuilder.header("Access-Control-Allow-Credentials", "true");
-        }
-
-        responseBuilder.header("Access-Control-Allow-Methods", String.join(", ", method));
-        responseBuilder.header("Access-Control-Allow-Headers", "Authorization,Content-Type");
-        responseBuilder.header("Access-Control-Max-Age", "3600");
-
-        final var response = responseBuilder.build();
-        log.debug("Returning response {}", objectMapper.writeValueAsString(response));
-        return response;
-    }
-
-    @SneakyThrows
-    private Response buildOptionsResponse(String... methods) {
-        String origin = session.getContext().getRequestHeaders().getHeaderString("Origin");
-        Response.ResponseBuilder builder = Response.ok();
-
-        // Only set the Origin header if it's in our allowed list
-        if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
-            builder.header("Access-Control-Allow-Origin", origin);
-            builder.header("Access-Control-Allow-Credentials", "true");
-        }
-
-        builder.header("Access-Control-Allow-Methods", String.join(", ", methods));
-        builder.header("Access-Control-Allow-Headers", "Authorization,Content-Type");
-        builder.header("Access-Control-Max-Age", "3600");
-
-        final var response = builder.build();
-        log.debug("Returning response {}", objectMapper.writeValueAsString(response));
-        return response;
+        this.cors = new Cors(session, objectMapper);
     }
 
     @OPTIONS
     @Path("/all")
     public Response getGroupsPreflight() {
-        return buildOptionsResponse("GET", "PUT", "OPTIONS");
+        return cors.buildOptionsResponse("GET", "PUT", "OPTIONS");
     }
 
     @GET
@@ -104,7 +54,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -123,14 +73,14 @@ public class GroupController {
         final var responseBody = new HashMap<String, Object>();
         responseBody.put("groups", groups);
 
-        return buildCorsResponse("GET",
+        return cors.buildCorsResponse("GET",
                 Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
     }
 
     @OPTIONS
     @Path("")
     public Response preflight() {
-        return buildOptionsResponse("GET", "PUT", "OPTIONS");
+        return cors.buildOptionsResponse("GET", "PUT", "OPTIONS");
     }
 
     @GET
@@ -138,51 +88,64 @@ public class GroupController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@QueryParam("groupId") String groupId) throws JsonProcessingException {
         log.debug("Getting members of group");
-
         if (this.auth == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
-
         if (!isGroupAdmin(user) && !isOperator(user)) {
             throw new NotAuthorizedException("Permission denied");
         }
-
+        
+        // Return error if groupId not provided
+        if (groupId == null || groupId.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity("\"groupId parameter is required\"")
+                .build();
+        }
+        
         final var realm = session.getContext().getRealm();
-        var group = (groupId != null && isOperator(user))
-                ? session.groups().getGroupById(realm, groupId)
-                : user.getGroupsStream().toList().get(0);
-
+        var group = session.groups().getGroupById(realm, groupId);
+        
+        // Check if group exists
+        if (group == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                .entity("\"Group not found\"")
+                .build();
+        }
+        
+        // Check if user has access to this group
+        if (!isOperator(user) && !user.getGroupsStream().anyMatch(g -> g.getId().equals(groupId))) {
+            throw new NotAuthorizedException("Permission denied for accessing this group");
+        }
+        
         final var responseBody = new HashMap<String, Object>();
         responseBody.put("id", group.getId());
         responseBody.put("name", group.getName());
         responseBody.put("attributes", group.getAttributes());
-
+        
         final var members = session.users().getGroupMembersStream(realm, group)
-                .filter(u -> !u.getId().equals(user.getId()))
-                .map(u -> {
-                    final var map = new HashMap<String, Object>();
-                    map.put("id", u.getId());
-                    map.put("attributes", u.getAttributes());
-                    map.put("roles", u.getRoleMappingsStream().map(RoleModel::getName).toList());
-                    return map;
-                })
-                .toList();
-
+            .filter(u -> !u.getId().equals(user.getId()))
+            .map(u -> {
+                final var map = new HashMap<String, Object>();
+                map.put("id", u.getId());
+                map.put("attributes", u.getAttributes());
+                map.put("roles", u.getRoleMappingsStream().map(RoleModel::getName).toList());
+                return map;
+            })
+            .toList();
+            
         responseBody.put("members", members);
-
-        return buildCorsResponse("GET",
-                Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
+        return cors.buildCorsResponse("GET",
+            Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
     }
 
     @OPTIONS
     @Path("/grant")
     public Response grantPreflight() {
-        return buildOptionsResponse("PUT");
+        return cors.buildOptionsResponse("PUT");
     }
 
     @PUT
@@ -194,7 +157,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -217,14 +180,14 @@ public class GroupController {
 
         groupUser.grantRole(servicePointUserRole);
 
-        return buildCorsResponse("PUT",
+        return cors.buildCorsResponse("PUT",
                 Response.ok().entity("{}"));
     }
 
     @OPTIONS
     @Path("/revoke")
     public Response revokePreflight() {
-        return buildOptionsResponse("PUT");
+        return cors.buildOptionsResponse("PUT");
     }
 
     @PUT
@@ -236,7 +199,7 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         if (user == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -259,14 +222,92 @@ public class GroupController {
 
         groupUser.deleteRoleMapping(servicePointUserRole);
 
-        return buildCorsResponse("PUT",
+        return cors.buildCorsResponse("PUT",
+                Response.ok().entity("{}"));
+    }
+
+    @OPTIONS
+    @Path("/group-admin")
+    public Response grantGroupAdminPreflight() {
+        return cors.buildOptionsResponse("PUT", "DELETE");
+    }
+
+    @DELETE
+    @Path("/group-admin")
+    @SneakyThrows
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response grant(final RemoveGroupAdminRequest grant) {
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var user = auth.session().getUser();
+        if (user == null) {
+            throw new NotAuthorizedException("Bearer");
+        }
+
+        if (!isGroupAdmin(user) && !isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not a group admin");
+        }
+
+        if (!isGroupMember(user, grant.getGroupId()) && !isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not a group member");
+        }
+
+        final var realm = session.getContext().getRealm();
+        final var groupUser = session.users().getUserById(realm, grant.getUserId());
+        final var groupAdminUserRole = session.roles()
+                .getRealmRolesStream(realm, null, null)
+                .filter(r -> r.getName().equals(GROUP_ADMIN_ROLE_NAME))
+                .findFirst()
+                .orElseThrow(() -> new RoleNotFoundException(GROUP_ADMIN_ROLE_NAME));
+
+        groupUser.deleteRoleMapping(groupAdminUserRole);
+
+        return cors.buildCorsResponse("PUT",
+                Response.ok().entity("{}"));
+    }
+
+    @PUT
+    @Path("/group-admin")
+    @SneakyThrows
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response grant(final AddGroupAdminRequest grant) {
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var user = auth.session().getUser();
+        if (user == null) {
+            throw new NotAuthorizedException("Bearer");
+        }
+
+        if (!isGroupAdmin(user) && !isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not a group admin");
+        }
+
+        if (!isGroupMember(user, grant.getGroupId()) && !isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not a group member");
+        }
+
+        final var realm = session.getContext().getRealm();
+        final var groupUser = session.users().getUserById(realm, grant.getUserId());
+        final var groupAdminUserRole = session.roles()
+                .getRealmRolesStream(realm, null, null)
+                .filter(r -> r.getName().equals(GROUP_ADMIN_ROLE_NAME))
+                .findFirst()
+                .orElseThrow(() -> new RoleNotFoundException(GROUP_ADMIN_ROLE_NAME));
+
+        groupUser.grantRole(groupAdminUserRole);
+
+        return cors.buildCorsResponse("PUT",
                 Response.ok().entity("{}"));
     }
 
     @OPTIONS
     @Path("/join")
     public Response joinPreflight() {
-        return buildOptionsResponse("PUT");
+        return cors.buildOptionsResponse("PUT");
     }
 
     @PUT
@@ -278,17 +319,39 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         user.joinGroup(session.groups().getGroupById(session.getContext().getRealm(), request.getGroupId()));
 
-        return buildCorsResponse("PUT",
+        return cors.buildCorsResponse("PUT",
+                Response.ok().entity("{}"));
+    }
+
+    @OPTIONS
+    @Path("/leave")
+    public Response leavePreflight() {
+        return cors.buildOptionsResponse("PUT");
+    }
+
+    @PUT
+    @Path("/leave")
+    @SneakyThrows
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response leave(GroupLeaveRequest request) {
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        final var realm = session.getContext().getRealm();
+        final var user = session.users().getUserById(realm, request.getUserId());
+        user.leaveGroup(session.groups().getGroupById(session.getContext().getRealm(), request.getGroupId()));
+
+        return cors.buildCorsResponse("PUT",
                 Response.ok().entity("{}"));
     }
 
     @OPTIONS
     @Path("/active-group")
     public Response setActiveGroupPreflight() {
-        return buildOptionsResponse("PUT");
+        return cors.buildOptionsResponse("PUT", "DELETE");
     }
 
     @PUT
@@ -299,17 +362,33 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         user.setAttribute("activeGroupId", List.of(request.getActiveGroupId()));
 
-        return buildCorsResponse("PUT",
+        return cors.buildCorsResponse("PUT",
+                Response.ok().entity("{}"));
+    }
+
+    @DELETE
+    @Path("/active-group")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response removeActiveGroup(RemoveActiveGroupRequest request) {
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var realm = session.getContext().getRealm();
+        final var user = session.users().getUserById(realm, request.getUserId());
+        user.removeAttribute("activeGroupId");
+
+        return cors.buildCorsResponse("DELETE",
                 Response.ok().entity("{}"));
     }
 
     @OPTIONS
     @Path("/user-groups")
     public Response userGroupsPreflight() {
-        return buildOptionsResponse("GET");
+        return cors.buildOptionsResponse("GET");
     }
 
     @GET
@@ -321,12 +400,12 @@ public class GroupController {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        final var user = auth.getSession().getUser();
+        final var user = auth.session().getUser();
         final var userGroups = user.getGroupsStream()
                 .map(g -> new GroupDetails(g.getId(), g.getName()))
                 .toList();
 
-        return buildCorsResponse("GET",
+        return cors.buildCorsResponse("GET",
                 Response.ok().entity(objectMapper.writeValueAsString(userGroups)));
     }
 
@@ -348,5 +427,101 @@ public class GroupController {
         return !user.getRoleMappingsStream()
                 .filter(r -> r.getName().equals(OPERATOR_ROLE_NAME))
                 .toList().isEmpty();
+    }
+
+    @OPTIONS
+    @Path("/create")
+    public Response createGroupPreflight() {
+        return cors.buildOptionsResponse("POST", "OPTIONS");
+    }
+    @POST
+    @Path("/create")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @SneakyThrows
+    public Response createGroup(CreateGroupRequest request) {
+        log.debug("Creating new group with name: {}", request.getName());
+
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var user = auth.session().getUser();
+        if (user == null) {
+            throw new NotAuthorizedException("Bearer");
+        }
+
+        // Only operators can create groups
+        if (!isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not authorized to create groups");
+        }
+
+        // Validate request
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Group name is required\"}")
+                    .build();
+        }
+
+        final var realm = session.getContext().getRealm();
+
+        // Check if group with same name already exists
+        var existingGroups = session.groups().getGroupsStream(realm)
+                .filter(g -> g.getName().equals(request.getName().trim()))
+                .toList();
+
+        if (!existingGroups.isEmpty()) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("{\"error\": \"Group with this name already exists\"}")
+                    .build();
+        }
+
+        try {
+            // Create the group
+            var newGroup = session.groups().createGroup(realm, request.getName().trim());
+
+            // Set path if provided, otherwise use default
+            String path = request.getPath() != null ? request.getPath() : "/" + request.getName().trim();
+            // Note: Keycloak groups don't have a direct "path" field, but you can store it as an attribute
+            newGroup.setAttribute("path", List.of(path));
+
+            // Add any additional attributes if provided
+            if (request.getAttributes() != null) {
+                request.getAttributes().forEach((key, values) -> {
+                    newGroup.setAttribute(key, values);
+                });
+            }
+
+            // Add the creating user to the group as a member
+            user.joinGroup(newGroup);
+
+            // make the creator a group admin
+            final var groupAdminRole = session.roles()
+                    .getRealmRolesStream(realm, null, null)
+                    .filter(r -> r.getName().equals(GROUP_ADMIN_ROLE_NAME))
+                    .findFirst();
+
+            if (groupAdminRole.isPresent()) {
+                user.grantRole(groupAdminRole.get());
+            }
+
+            // Prepare response
+            CreateGroupResponse response = new CreateGroupResponse(
+                    newGroup.getId(),
+                    newGroup.getName(),
+                    newGroup.getAttributes(),
+                    "Group created successfully"
+            );
+
+            return cors.buildCorsResponse("POST",
+                    Response.status(Response.Status.CREATED)
+                            .entity(objectMapper.writeValueAsString(response)));
+
+        } catch (Exception e) {
+            log.error("Error creating group: {}", e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Failed to create group\"}")
+                    .build();
+        }
     }
 }

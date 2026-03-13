@@ -12,7 +12,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useContext} from "react";
 import {
   Control,
   FieldErrors,
@@ -21,6 +21,9 @@ import {
 } from "react-hook-form";
 import { OrganisationRolesForm } from "@/entities/organisation-role/forms/organisation-roles-form";
 import { OrganisationDetailsForm } from "@/entities/organisation/forms/organisation-details-form";
+import { MetadataContext } from "@/components/raid-form/RaidForm";
+import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export function OrganisationsForm({
   control,
@@ -51,7 +54,8 @@ export function OrganisationsForm({
     append(await generator({ token, tokenParsed }));
     trigger(key);
   };
-
+  const metadata = useContext(MetadataContext);
+  const tooltip = metadata?.[key]?.tooltip;
   return (
     <Card
       sx={{
@@ -60,7 +64,17 @@ export function OrganisationsForm({
       }}
       id={key}
     >
-      <CardHeader title={labelPlural} />
+      <Stack direction="row" alignItems="center">
+        <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+        <CustomStyledTooltip
+          title={label}
+          content={tooltip || ""}
+          variant="info"
+          placement="top"
+          tooltipIcon={<InfoOutlinedIcon />}
+        >
+        </CustomStyledTooltip>
+      </Stack>
       <CardContent>
         <Stack gap={2} className={isRowHighlighted ? "add" : ""}>
           {errorMessage && (

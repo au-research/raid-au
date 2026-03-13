@@ -1,16 +1,22 @@
-import LanguageSelector from "@/fields/LanguageSelector";
-import { TextInputField } from "@/fields/TextInputField";
-import { TextSelectField } from "@/fields/TextSelectField";
+import LanguageSelector from "@/components/fields/LanguageSelector";
+import { TextInputField } from "@/components/fields/TextInputField";
+import { TextSelectField } from "@/components/fields/TextSelectField";
 import { RaidDto } from "@/generated/raid";
 import generalMapping from "@/mapping/data/general-mapping.json";
-import { Card, CardContent, CardHeader, Grid } from "@mui/material";
-import { memo } from "react";
+import { Card, CardContent, CardHeader, Grid, Stack } from "@mui/material";
+import { memo, useContext, useEffect } from "react";
 import {
   Control,
   FieldErrors,
+  set,
+  useFormContext,
   UseFormTrigger,
   useWatch,
 } from "react-hook-form";
+import { MetadataContext } from "@/components/raid-form/RaidForm";
+import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import languageSchema from "@/references/language_schema.json";
 
 const AccessForm = memo(
   ({
@@ -22,12 +28,38 @@ const AccessForm = memo(
     trigger: UseFormTrigger<RaidDto>;
   }) => {
     const key = "access";
+    const label = "Access";
     const labelPlural = "Access";
 
     const accessTypeId = useWatch({
       control,
       name: "access.type.id",
     });
+    const { setValue, watch, getValues } = useFormContext();
+    const languageId = `access.statement`;
+    const schemaUriPath = `access.statement.language.schemaUri`;
+    const currentSchemaUri = watch(languageId);
+
+    useEffect(() => {
+        const embargoed = accessTypeId?.includes("c_f1cf/");
+        if (!embargoed) {
+            setValue("access.statement", undefined);
+            setValue("access.embargoExpiry", undefined);
+        }
+    }, [accessTypeId, setValue, currentSchemaUri]);
+
+    const currentLangValue = useWatch({
+        control,
+        name: "access.statement.language.id",
+    });
+
+    useEffect(() => {
+        if (currentLangValue) {
+            setValue("access.statement.language.schemaUri", languageSchema[0].uri);
+        } else {
+            setValue("access.statement.language", undefined);
+        }
+    }, [currentLangValue, setValue, accessTypeId]);
 
     const accessTypeOptions = generalMapping
       .filter((el) => el.field === "access.type.id")
@@ -35,7 +67,8 @@ const AccessForm = memo(
         value: el.key,
         label: el.value,
       }));
-
+    const metadata = useContext(MetadataContext);
+    const tooltip = metadata?.[key]?.tooltip;
     return (
       <Card
         sx={{
@@ -44,7 +77,17 @@ const AccessForm = memo(
         }}
         id={key}
       >
-        <CardHeader title={labelPlural} />
+        <Stack direction="row" alignItems="center">
+          <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+          <CustomStyledTooltip
+            title={label}
+            content={tooltip || ""}
+            variant="info"
+            placement="top"
+            tooltipIcon={<InfoOutlinedIcon />}
+          >
+          </CustomStyledTooltip>
+        </Stack>
         <CardContent>
           <Grid container spacing={2}>
             <TextSelectField

@@ -1,4 +1,6 @@
 import { getEnv } from "@/utils/api-utils/api-utils";
+import {authService} from "@/services/auth-service.ts";
+import { API_CONSTANTS } from "@/constants/apiConstants";
 
 let currentEnv = getEnv();
 if (currentEnv === "dev") {
@@ -19,14 +21,10 @@ export async function sendInvite({
   title: string;
   token: string;
 } & ({ email: string } | { orcid: string })) {
-  const response = await fetch(
-    `https://${subDomain}.${currentEnv}.raid.org.au/invite`,
+  const response = await authService.fetchWithAuth(
+    API_CONSTANTS.INVITE.SEND(subDomain, currentEnv),
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         inviteeEmail: email || "",
         inviteeOrcid: orcid || "",
@@ -44,15 +42,8 @@ export async function sendInvite({
 }
 
 export async function fetchInvites({ token }: { token: string }) {
-  const response = await fetch(
-    `https://${subDomain}.${currentEnv}.raid.org.au/invite/fetch`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const response = await authService.fetchWithAuth(
+      API_CONSTANTS.INVITE.FETCH(subDomain, currentEnv),
   );
   return await response.json();
 }
@@ -66,14 +57,10 @@ export async function acceptInvite({
   token: string;
   handle: string;
 }) {
-  const response = await fetch(
-    `https://${subDomain}.${currentEnv}.raid.org.au/invite/accept`,
+  const response = await authService.fetchWithAuth(
+    API_CONSTANTS.INVITE.ACCEPT(subDomain, currentEnv),
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         code,
         handle,
@@ -92,14 +79,10 @@ export async function rejectInvite({
   token: string;
   handle: string;
 }) {
-  const response = await fetch(
-    `https://${subDomain}.${currentEnv}.raid.org.au/invite/reject`,
+  const response = await authService.fetchWithAuth(
+    API_CONSTANTS.INVITE.REJECT(subDomain, currentEnv),
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         code,
         handle,

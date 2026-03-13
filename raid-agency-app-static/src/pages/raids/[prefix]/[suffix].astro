@@ -16,6 +16,7 @@ import Titles from "@/components/raid-components/titles.astro";
 import type { ModelDate, RaidDto } from "@/generated/raid";
 import Layout from "@/layouts/main.astro";
 import { raids } from "@/store/raids";
+import { getLastTwoUrlSegments } from "@/utils";
 
 export async function getStaticPaths() {
   return raids.map((el) => {
@@ -37,7 +38,27 @@ const { raid } = Astro.props as unknown as { raid: Partial<RaidDto> };
 ---
 
 <Layout title={`RAiD ${prefix}/${suffix}`}>
-  <div class="sticky top-0 z-10 bg-white border border-gray-300 rounded-t-md">
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ResearchProject",
+      name: raid?.title?.map((el) => el.text).join(" | ") || "",
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: "RAID",
+        value: raid?.identifier?.id || "",
+      },
+      alternateName: raid?.identifier?.id || "",
+      url: `https://doi.org/${getLastTwoUrlSegments(raid?.identifier?.id || "")}`,
+      funder: {
+        "@type": "Organization",
+        identifier: raid?.identifier?.registrationAgency?.id || "",
+      },
+    })}
+  />
+
+  <div class="sticky top-0 z-10 bg-white border border-gray-300 border-b-0">
     <Breadcrumbs
       elements={[
         { to: "/raids", label: "RAiDs" },

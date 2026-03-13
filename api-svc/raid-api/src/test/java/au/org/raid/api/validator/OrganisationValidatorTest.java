@@ -1,5 +1,6 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
@@ -13,8 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE;
-import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_TYPE;
+import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.verify;
@@ -26,7 +26,7 @@ class OrganisationValidatorTest {
     private OrganisationRoleValidator roleValidationService;
 
     @Mock
-    private RorValidator rorValidationService;
+    private RorClient rorClient;
 
     @InjectMocks
     private OrganisationValidator validationService;
@@ -45,11 +45,242 @@ class OrganisationValidatorTest {
                 .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
                 .role(List.of(role));
 
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
         final var failures = validationService.validate(List.of(organisation));
 
         assertThat(failures, empty());
-        verify(rorValidationService).validate(TestConstants.VALID_ROR, 0);
         verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("Validation fails with duplicate organisations")
+    void duplicateOrganisation() {
+        final var role = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation, organisation));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation")
+                        .errorType("duplicateValue")
+                        .message("An organisation can appear only once. There are 2 occurrences of https://ror.org/038sjwq14")
+        ));
+        verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("Validation fails with missing schemaUri")
+    void missingIdentifierSchemeUri() {
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .role(List.of(
+                        new OrganisationRole()
+                                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                ));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].schemaUri")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Validation fails with empty schemaUri")
+    void emptyIdentifierSchemeUri() {
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .role(List.of(
+                        new OrganisationRole()
+                                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                ));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].schemaUri")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Role validation failures are returned")
+    void roleValidationFailuresReturned() {
+        final var role = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role));
+
+        final var roleError = new ValidationFailure()
+                .fieldId("organisation[0].role[0].id")
+                .errorType(NOT_SET_TYPE)
+                .message(NOT_SET_MESSAGE);
+
+        when(roleValidationService.validate(role, 0, 0))
+                .thenReturn(List.of(roleError));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(roleError));
+
+        verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("Validation fails with non-existent ROR")
+    void existsReturnsFalse() {
+        final var role = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(false);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        final var roleError = new ValidationFailure()
+                .fieldId("organisation[0].id")
+                .errorType(NOT_FOUND_TYPE)
+                .message("This ROR does not exist");
+
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(roleError));
+
+        verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("Validation fails with missing schemaUri (second case)")
+    void invalidSchemaUri() {
+        final var role = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .role(List.of(role));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].schemaUri")
+                        .errorType(NOT_SET_TYPE)
+                        .message(NOT_SET_MESSAGE)
+        ));
+    }
+
+    @Test
+    @DisplayName("Validation fails when organisation roles have overlapping dates")
+    void overlappingOrganisationRoles() {
+        final var role1 = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate("2023-01-01")
+                .endDate("2023-12-31");
+
+        final var role2 = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate("2023-06-01")
+                .endDate("2024-06-30");
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role1, role2));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].role")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message("This contributor has simultaneous roles.")
+        ));
+    }
+
+    @Test
+    @DisplayName("Validation passes when organisation roles have non-overlapping dates")
+    void nonOverlappingOrganisationRoles() {
+        final var role1 = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate("2022-01-01")
+                .endDate("2022-12-31");
+
+        final var role2 = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate("2023-01-01")
+                .endDate("2023-12-31");
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role1, role2));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, empty());
+        verify(roleValidationService).validate(role1, 0, 0);
+        verify(roleValidationService).validate(role2, 0, 1);
     }
 
 }

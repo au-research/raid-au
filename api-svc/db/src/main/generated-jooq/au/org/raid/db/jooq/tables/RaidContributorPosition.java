@@ -10,7 +10,20 @@ import au.org.raid.db.jooq.tables.records.RaidContributorPositionRecord;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+
+import org.jooq.Field;
+import org.jooq.ForeignKey;
+import org.jooq.Identity;
+import org.jooq.Name;
+import org.jooq.Record;
+import org.jooq.Schema;
+import org.jooq.Table;
+import org.jooq.TableField;
+import org.jooq.TableOptions;
+import org.jooq.UniqueKey;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
+import org.jooq.impl.TableImpl;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -196,29 +209,5 @@ public class RaidContributorPosition extends TableImpl<RaidContributorPositionRe
     @Override
     public RaidContributorPosition rename(Table<?> name) {
         return new RaidContributorPosition(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row5 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row5<Integer, Integer, Integer, String, String> fieldsRow() {
-        return (Row5) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function5<? super Integer, ? super Integer, ? super Integer, ? super String, ? super String, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function5<? super Integer, ? super Integer, ? super Integer, ? super String, ? super String, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

@@ -1,5 +1,7 @@
 package au.org.raid.api.config.bean;
 
+import au.org.raid.api.client.contributor.isni.IsniClient;
+import au.org.raid.api.client.contributor.isni.IsniRequestEntityFactory;
 import au.org.raid.api.config.properties.StubProperties;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.orcid.OrcidService;
@@ -27,8 +29,19 @@ public class ExternalPidService {
     private static final Log log = to(ExternalPidService.class);
 
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+    @Primary
+    public IsniClient isniClient(
+            StubProperties stubProperties,
+            IsniRequestEntityFactory isniRequestEntityFactory,
+            RestTemplate restTemplate
+    ) {
+        if (stubProperties.getIsni() != null && stubProperties.getIsni().isEnabled()) {
+            log.with("isniInMemoryStubDelay", stubProperties.getIsni().getDelay()).
+                    warn("using the in-memory ISNI service");
+            return new IsniClientStub(stubProperties.getIsni().getDelay());
+        }
+
+        return new IsniClient(restTemplate, isniRequestEntityFactory);
     }
 
     @Bean

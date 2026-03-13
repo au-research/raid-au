@@ -1,26 +1,28 @@
-import { useErrorDialog } from "@/components/error-dialog";
-import { RaidForm } from "@/components/raid-form";
-import { RaidFormErrorMessage } from "@/components/raid-form-error-message";
-import { useKeycloak } from "@/contexts/keycloak-context";
-import { RaidDto } from "@/generated/raid";
-import { createOneRaid } from "@/services/raid";
-import { newRaid, raidRequest } from "@/utils/data-utils";
-import { Container, Stack } from "@mui/material";
+import {useErrorDialog} from "@/components/error-dialog";
+import {RaidForm} from "@/components/raid-form";
+import {RaidFormErrorMessage} from "@/components/raid-form-error-message";
+import {RaidDto} from "@/generated/raid";
+import {newRaid, raidRequest} from "@/utils/data-utils";
+import {Container, Stack} from "@mui/material";
 
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import {useMutation} from "@tanstack/react-query";
+import {useNavigate} from "react-router-dom";
+import {raidService} from "@/services/raid-service.ts";
+import { useSnackbar } from "@/components/snackbar/hooks/useSnackbar";
+import { messages } from "@/constants/messages";
 
 export const MintRaid = () => {
   const { openErrorDialog } = useErrorDialog();
-  const { token } = useKeycloak();
   const navigate = useNavigate();
+  const snackbar = useSnackbar();
 
   const mintMutation = useMutation({
-    mutationFn: createOneRaid,
+    mutationFn: raidService.create,
     onSuccess: async (data) => {
       const resultHandle = new URL(data.identifier?.id ?? "");
       const [prefix, suffix] = resultHandle.pathname.split("/").filter(Boolean);
       navigate(`/raids/${prefix}/${suffix}`);
+      snackbar.openSnackbar(messages.raidCreated, 3000, "success");
     },
     onError: (error: Error) => {
       RaidFormErrorMessage(error, openErrorDialog);
@@ -28,10 +30,7 @@ export const MintRaid = () => {
   });
 
   const handleSubmit = async (data: RaidDto) => {
-    mintMutation.mutate({
-      raid: raidRequest(data),
-      token: token!,
-    });
+    mintMutation.mutate(raidRequest(data));
   };
 
   return (

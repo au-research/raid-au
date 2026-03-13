@@ -15419,5 +15419,12 @@
     "description": "This group covers social and personality psychology. The study of the manner in which social groups influence the motivations, attitudes, personality and behaviour of the individual and the importance of the ways that individuals differ on those factors.",
     "note": "a) Neuroscientific underpinnings of interpersonal, individual-group and intergroup interactions are included in the Group 5202 Biological psychology.",
     "schema_id": 1
+  },
+  {
+    "id": "44",
+    "name": "Human Society",
+    "description": "This group covers human society. The study of the manner in which social groups influence the motivations, attitudes, personality and behaviour of the individual and the importance of the ways that individuals differ on those factors.",
+    "note": "a) Indigenous human society is included in Division 45 Indigenous studies.",
+    "schema_id": 1
   }
 ]

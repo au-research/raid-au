@@ -1,0 +1,148 @@
+---
+// CopyToClipboard.astro
+interface Props {
+  text: string;
+  className?: string;
+  size?: number;
+}
+
+const { 
+  text, 
+  className = "",
+  size = 20
+} = Astro.props;
+---
+
+<button 
+  class={`copy-to-clipboard ${className}`}
+  data-text={text}
+  aria-label="Copy to clipboard"
+  type="button"
+>
+  <svg class="icon copy-icon" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+  
+  <span class="success-wrapper" hidden>
+    <svg class="icon check-icon" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span class="success-text">Copied to clipboard</span>
+  </span>
+</button>
+
+<style>
+  .copy-to-clipboard {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0.30rem;
+    cursor: pointer;
+    color: #6b7280;
+    transition: color 0.2s;
+    vertical-align: middle;
+    line-height: 1;
+  }
+
+  .copy-to-clipboard:hover {
+    color: #374151;
+  }
+
+  .copy-to-clipboard:active {
+    transform: scale(0.95);
+  }
+
+  .copy-to-clipboard.copied {
+    color: #10b981;
+  }
+
+  .icon {
+    display: block;
+    transition: opacity 0.2s;
+  }
+
+  .copy-icon {
+    display: block;
+  }
+
+  .check-icon {
+    display: none;
+  }
+
+  .copy-to-clipboard.copied .copy-icon {
+    display: none;
+  }
+
+  .copy-to-clipboard.copied .check-icon {
+    display: block;
+  }
+
+ .success-wrapper {
+    display: none;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .copy-to-clipboard.copied .success-wrapper {
+    display: flex;
+  }
+
+  .success-text {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  function initCopyButtons() {
+    const buttons = document.querySelectorAll('.copy-to-clipboard') as NodeListOf<HTMLElement>;
+    
+    buttons.forEach(button => {
+      // Remove existing listeners by cloning
+      const newButton = button.cloneNode(true) as HTMLElement;
+      button.parentNode?.replaceChild(newButton, button);
+      
+      newButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const text = newButton.getAttribute('data-text');
+
+        if (!text) {
+          console.error('No text to copy');
+          return;
+        }
+        
+        try {
+          await navigator.clipboard.writeText(text);
+          
+          newButton.classList.add('copied');
+          const successWrapper = newButton.querySelector('.success-wrapper');
+          const copyIcon = newButton.querySelector('.copy-icon');
+
+          if (successWrapper) successWrapper.removeAttribute('hidden');
+          if (copyIcon) copyIcon.setAttribute('hidden', '');
+          
+          setTimeout(() => {
+            newButton.classList.remove('copied');
+            if (successWrapper) successWrapper.setAttribute('hidden', '');
+            if (copyIcon) copyIcon.removeAttribute('hidden');
+          }, 2000);
+        } catch (err: unknown) {
+          console.error('Failed to copy:', err);
+          const message = err instanceof Error ? err.message : String(err);
+          alert('Failed to copy to clipboard. Error: ' + message);
+        }
+      });
+    });
+  }
+
+  // Initialize on page load
+  initCopyButtons();
+  
+  // Re-initialize after Astro view transitions
+  document.addEventListener('astro:page-load', initCopyButtons);
+</script>

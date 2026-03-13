@@ -2,18 +2,22 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.service.raid.id.IdentifierParser;
 import au.org.raid.idl.raidv2.model.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.concurrent.Executor;
 
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class RaidoStableV1ValidatorTest {
+
+    private static final Executor DIRECT_EXECUTOR = Runnable::run;
+
     @Mock
     private SubjectValidator subjectValidationService;
     @Mock
@@ -38,8 +42,27 @@ class RaidoStableV1ValidatorTest {
     private AccessValidator accessValidationService;
     @Mock
     private DateValidator dateValidator;
-    @InjectMocks
+
     private ValidationService validationService;
+
+    @BeforeEach
+    void setUp() {
+        validationService = new ValidationService(
+                titleValidationService,
+                descSvc,
+                contribSvc,
+                orgSvc,
+                accessValidationService,
+                subjectValidationService,
+                identifierParser,
+                relatedObjectValidationService,
+                alternateIdentifierValidationService,
+                relatedRaidValidationService,
+                spatialCoverageValidationService,
+                dateValidator,
+                DIRECT_EXECUTOR
+        );
+    }
 
     @Test
     void validatesAccessOnCreate() {
@@ -135,7 +158,6 @@ class RaidoStableV1ValidatorTest {
 
     @Test
     void validatesAlternateIdentifiersOnCreate() {
-        final var handle = "test-handle";
         final var alternateIdentifiers = Collections.singletonList(new AlternateIdentifier());
 
         final var raid = new RaidCreateRequest()
@@ -161,7 +183,6 @@ class RaidoStableV1ValidatorTest {
 
     @Test
     void validatesSpatialCoverageOnCreate() {
-        final var handle = "test-handle";
         final var spatialCoverages =
                 Collections.singletonList(new SpatialCoverage());
 

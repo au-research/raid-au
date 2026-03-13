@@ -34,12 +34,15 @@ class OrcidIntegrationClientTest {
         final var httpEntity = mock(HttpEntity.class);
         final var uri = "_uri";
         final var response = mock(ResponseEntity.class);
+        final var apiKey = "api-key";
+
+        when(properties.getApiKey()).thenReturn(apiKey);
 
         final var raidListenerProperties = new OrcidIntegrationProperties.RaidListener();
         raidListenerProperties.setUri(uri);
 
         when(properties.getRaidListener()).thenReturn(raidListenerProperties);
-        when(httpEntityFactory.create(message)).thenReturn(httpEntity);
+        when(httpEntityFactory.create(message, apiKey)).thenReturn(httpEntity);
         when(restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Void.class)).thenReturn(response);
 
         orcidIntegrationClient.post(message);

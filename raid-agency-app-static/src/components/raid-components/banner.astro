@@ -1,0 +1,278 @@
+---
+export interface Props {
+  title?: string;
+  message?: string;
+  variant?: 'info' | 'warning' | 'success' | 'error';
+  dismissible?: boolean;
+  actionLabel?: string;
+  actionHref?: string;
+}
+
+const {
+  title = "",
+  message = "We've made some important updates to improve your experience",
+  variant = "warning",
+  dismissible = true,
+  actionLabel,
+  actionHref,
+} = Astro.props;
+
+---
+
+<div 
+  class={`notification-banner notification-banner--${variant}`}
+  role="banner"
+  aria-live="polite"
+  data-dismissible={dismissible}
+>
+  <div class="notification-banner__container">
+    <div class="notification-banner__icon">
+      {variant === 'info' && (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 16v-4m0-4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      )}
+      {variant === 'warning' && (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      )}
+      {variant === 'success' && (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      )}
+      {variant === 'error' && (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M15 9l-6 6m0-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      )}
+    </div>
+
+    <div class="notification-banner__content">
+      {title && <div class="notification-banner__title">{title}</div>}
+      {message && <div class="notification-banner__message" set:html={message} />}
+    </div>
+
+    <div class="notification-banner__actions">
+      {actionHref && actionLabel && (
+        <a 
+          href={actionHref}
+          class="notification-banner__button"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {actionLabel}
+        </a>
+      )}
+      
+      {dismissible && (
+        <button 
+          class="notification-banner__dismiss"
+          aria-label="Dismiss notification"
+          data-dismiss-banner
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path 
+              d="M6 6l8 8M14 6l-8 8" 
+              stroke="currentColor" 
+              stroke-width="1.5" 
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  .notification-banner {
+    font-family: 'Inter', system-ui, sans-serif;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-banner--info {
+    background: #dbeafe;
+    border-left: 4px solid #3b82f6;
+  }
+
+  .notification-banner--warning {
+    background: #f5c955;
+    border-left: 4px solid #f59e0b;
+  }
+
+  .notification-banner--success {
+    background: #d1fae5;
+    border-left: 4px solid #10b981;
+  }
+
+  .notification-banner--error {
+    background: #fee2e2;
+    border-left: 4px solid #ef4444;
+  }
+
+  .notification-banner__container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .notification-banner__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+  }
+
+  .notification-banner--info .notification-banner__icon {
+    background: #bfdbfe;
+    color: #1e40af;
+  }
+
+  .notification-banner--warning .notification-banner__icon {
+    color: #92400e;
+  }
+
+  .notification-banner--success .notification-banner__icon {
+    background: #a7f3d0;
+    color: #047857;
+  }
+
+  .notification-banner--error .notification-banner__icon {
+    background: #fecaca;
+    color: #b91c1c;
+  }
+
+  .notification-banner__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-banner__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .notification-banner__message {
+    font-size: 0.875rem;
+    color: #000000de;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .notification-banner__message :global(a) {
+    color: #2563eb;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .notification-banner__message :global(a:hover) {
+    color: #1d4ed8;
+  }
+
+  .notification-banner--warning .notification-banner__message :global(a) {
+    color: #d97706;
+  }
+
+  .notification-banner--warning .notification-banner__message :global(a:hover) {
+    color: #b45309;
+  }
+
+  .notification-banner--error .notification-banner__message :global(a) {
+    color: #dc2626;
+  }
+
+  .notification-banner--error .notification-banner__message :global(a:hover) {
+    color: #b91c1c;
+  }
+
+  .notification-banner--success .notification-banner__message :global(a) {
+    color: #059669;
+  }
+
+  .notification-banner--success .notification-banner__message :global(a:hover) {
+    color: #047857;
+  }
+
+  .notification-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .notification-banner__button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .notification-banner__button:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  .notification-banner__dismiss {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .notification-banner__dismiss:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .notification-banner__container {
+      flex-wrap: wrap;
+      padding: 1rem;
+    }
+
+    .notification-banner__actions {
+      width: 100%;
+      margin-left: 56px;
+    }
+
+    .notification-banner__button {
+      flex: 1;
+    }
+  }
+</style>

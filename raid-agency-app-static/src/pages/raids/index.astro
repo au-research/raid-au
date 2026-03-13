@@ -6,7 +6,31 @@ import { getRaidAppUrl } from "@/utils/data-utils";
 import { raids } from "@/store/raids";
 
 const raidAppUrl = getRaidAppUrl();
+
+const raidParts = raids.map((el) => {
+  const [_, prefix, suffix] = new URL(el.identifier.id).pathname.split("/");
+  return {
+    "@type": "SiteNavigationElement",
+    name: `${el.title?.map((el) => el.text).join(" | ")}`,
+    identifier: {
+      "@type": "PropertyValue",
+      propertyID: "RAiD",
+      value: `https://raid.org/${prefix}/${suffix}`,
+    },
+    url: `https://doi.org/${prefix}/${suffix}`,
+  };
+});
 ---
+
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    name: "Main Navigation",
+    hasPart: raidParts,
+  })}
+/>
 
 <Layout title="main">
   <div class="overflow-hidden rounded-md bg-white border border-gray-300">

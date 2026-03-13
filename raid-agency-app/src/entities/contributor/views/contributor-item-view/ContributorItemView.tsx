@@ -58,9 +58,9 @@ const ContributorItemView = memo(
             {contributor?.role ? (
               contributor.role
                 .sort((a, b) => a.id.localeCompare(b.id))
-                .map((role) => (
+                .map((role, index) => (
                   <ContributorRoleItemView
-                    key={`contributor-${i}-role-${role.id}`}
+                    key={`contributor-${i}-role-${index}`}
                     contributorRole={role}
                   />
                 ))
@@ -81,9 +81,9 @@ const ContributorItemView = memo(
           </Stack>
           <Stack gap={2} divider={<Divider />}>
             {contributor?.position ? (
-              contributor.position.map((position) => (
+              contributor.position.map((position, index) => (
                 <ContributorPositionItemView
-                  key={`contributor-${i}-position-${position.id}`}
+                  key={`contributor-${i}-position-${index}`}
                   contributorPosition={position}
                 />
               ))

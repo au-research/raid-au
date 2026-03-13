@@ -22,4 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+
 src/raw-data/*.json
+src/temp/*.json

@@ -1,18 +1,19 @@
 import type { Breadcrumb } from "@/components/breadcrumbs-bar";
 import { BreadcrumbsBar } from "@/components/breadcrumbs-bar";
 import { ErrorAlertComponent } from "@/components/error-alert-component";
-import { useAuthHelper } from "@/keycloak";
+import { useAuthHelper } from "@/auth/keycloak";
 import { Loading } from "@/pages/loading";
 import { fetchServicePointWithMembers } from "@/services/service-points";
 import { ServicePointWithMembers } from "@/types";
 import { Home as HomeIcon, Hub as HubIcon } from "@mui/icons-material";
 import { Alert, Card, CardContent, CardHeader, Container, Stack } from "@mui/material";
 
-import { ServicePointUsersList } from "@/components/service-point-users/ServicePointUsersList";
+import { ServicePointUsersList } from "@/containers/header/service-point-users/ServicePointUsersList";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { ServicePointUpdateForm } from "./";
+import { RefreshCcw } from "lucide-react";
 
 export const ServicePoint = () => {
   const { isOperator } = useAuthHelper();
@@ -71,7 +72,7 @@ export const ServicePoint = () => {
       <Stack direction="column" gap={2}>
         <BreadcrumbsBar breadcrumbs={breadcrumbs} />
         <Card hidden={!isOperator} variant="outlined" sx={{ mt: 2 }}>
-          <CardHeader title="Update service point" />
+          <CardHeader title={<><RefreshCcw /> Update Service Point</>} />
           <CardContent>
             <ServicePointUpdateForm servicePoint={servicePointQuery.data!} />
           </CardContent>

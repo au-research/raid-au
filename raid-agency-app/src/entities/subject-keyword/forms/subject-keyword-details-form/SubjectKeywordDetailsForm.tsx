@@ -1,9 +1,13 @@
-import LanguageSelector from "@/fields/LanguageSelector";
-import { TextInputField } from "@/fields/TextInputField";
+import { useEffect } from "react";
+import LanguageSelector from "@/components/fields/LanguageSelector";
+import { TextInputField } from "@/components/fields/TextInputField";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import languageSchema from "@/references/language_schema.json";
+import { Check, Delete } from "lucide-react";
+import CustomizedDialogs from "@/components/alert-dialog/alert-dialog";
 
 function FieldGrid({
   parentIndex,
@@ -14,6 +18,17 @@ function FieldGrid({
   index: number;
   isRowHighlighted: boolean;
 }) {
+  const { setValue, watch } = useFormContext();
+
+  const schemaUriPath = `subject.${parentIndex}.keyword.${index}.language.schemaUri`;
+  const currentSchemaUri = watch(schemaUriPath);
+
+  useEffect(() => {
+    if (!currentSchemaUri && languageSchema?.[0]?.uri) {
+      setValue(schemaUriPath, languageSchema[0].uri);
+    }
+  }, [currentSchemaUri, setValue, schemaUriPath]);
+
   return (
     <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
       <TextInputField
@@ -26,6 +41,7 @@ function FieldGrid({
       <LanguageSelector
         name={`subject.${parentIndex}.keyword.${index}.language.id`}
         width={6}
+        required={false}
       />
     </Grid>
   );
@@ -44,10 +60,10 @@ export function SubjectKeywordDetailsForm({
   const label = "Subject Keyword";
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const { getValues } = useFormContext();
-
+  
   const handleMouseEnter = () => setIsRowHighlighted(true);
   const handleMouseLeave = () => setIsRowHighlighted(false);
-
+  const [alertOpen, setAlertOpen] = useState(false);
   const currentValue = getValues(`${key}.text`);
 
   return (
@@ -72,19 +88,35 @@ export function SubjectKeywordDetailsForm({
             color="error"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Are you sure you want to delete ${label} "${currentValue}"?`
-                )
-              ) {
-                handleRemoveItem(index);
-              }
-            }}
+            onClick={() => setAlertOpen(true)}
           >
             <IndeterminateCheckBox />
           </IconButton>
         </Tooltip>
+        <CustomizedDialogs
+          modalTitle="Confirm Removal"
+          modalContent={`Are you sure you want to remove ${label} # ${index + 1}?`}
+          alertOpen={alertOpen}
+          onClose={() => setAlertOpen(false)}
+          modalAction={true}
+          modalActions={[
+            {
+              label: "Cancel",
+              onClick: () => setAlertOpen(false),
+              icon: Delete,
+              bgColor: "primary.main",
+            },
+            {
+              label: "Yes",  
+              onClick: () => {
+                handleRemoveItem(index);
+                setAlertOpen(false);
+              },
+              icon: Check,
+              bgColor: "error.main",
+            }
+          ]}
+        />
       </Stack>
     </Stack>
   );

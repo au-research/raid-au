@@ -106,7 +106,9 @@ export const GroupSelector = memo(() => {
         }),
       ]);
 
-      alert("Service point joined. Click to reload the page.");
+      alert(
+        "Request submitted and awaiting approval. Click to reload the page."
+      );
       window.location.reload();
     } catch (error) {
       console.error("Error joining service point:", error);

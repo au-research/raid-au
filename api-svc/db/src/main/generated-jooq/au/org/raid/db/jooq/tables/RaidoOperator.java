@@ -8,17 +8,11 @@ import au.org.raid.db.jooq.ApiSvc;
 import au.org.raid.db.jooq.Keys;
 import au.org.raid.db.jooq.tables.records.RaidoOperatorRecord;
 
-import java.util.function.Function;
-
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function1;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row1;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -134,29 +128,5 @@ public class RaidoOperator extends TableImpl<RaidoOperatorRecord> {
     @Override
     public RaidoOperator rename(Table<?> name) {
         return new RaidoOperator(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row1 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row1<String> fieldsRow() {
-        return (Row1) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function1<? super String, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function1<? super String, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

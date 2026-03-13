@@ -10,15 +10,16 @@ import org.springframework.stereotype.Component;
 public class HttpEntityFactory {
     private final HttpHeadersFactory httpHeadersFactory;
 
-    public <T> HttpEntity<T> create(final T body, final String repositoryId, final String password) {
-        final HttpHeaders headers = httpHeadersFactory.createBasicAuthHeaders(repositoryId, password);
+    public <T> HttpEntity<T> create(final T body, final String username, final String password) {
+        final HttpHeaders headers = httpHeadersFactory.createBasicAuthHeaders(username, password);
         return new HttpEntity<>(body, headers);
     }
 
 
-    public <T> HttpEntity<T> create(final T body) {
+    public <T> HttpEntity<T> create(final T body, final String apiKey) {
         final var headers = new HttpHeaders();
         headers.set("Content-type", "application/json");
+        headers.set("X-API-Key", apiKey);
 
         return new HttpEntity<>(body, headers);
     }

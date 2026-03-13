@@ -1,6 +1,6 @@
 package au.org.raid.api.factory.datacite;
 
-import au.org.raid.api.model.datacite.DataciteDescription;
+import au.org.raid.api.model.datacite.doi.DataciteDescription;
 import au.org.raid.idl.raidv2.model.Description;
 import org.springframework.stereotype.Component;
 

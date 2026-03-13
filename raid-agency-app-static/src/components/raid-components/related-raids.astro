@@ -2,12 +2,14 @@
 import type { RelatedRaid } from "@/generated/raid";
 import InfoField from "@/components/info-field.astro";
 import mapping from "@/mapping/data/general-mapping.json";
+import { hyperlinkFlexibleHandles } from "@/utils/hyperlink-utils";
 
 interface Props {
   relatedRaids: RelatedRaid[];
 }
 
 const { relatedRaids } = Astro.props as Props;
+const baseUrl = import.meta.env.PUBLIC_BASE_URL || 'https://static.prod.raid.org.au/raids/';
 ---
 
 <section class="py-5">
@@ -28,13 +30,16 @@ const { relatedRaids } = Astro.props as Props;
           return (
             <div class="ml-5 space-y-2 py-4">
               <div class="grid grid-cols-1 gap-5 text-sm">
-                <InfoField label="Title" value={el.id || ""} />
+                <InfoField
+                  label="Title"
+                  value={el.id || ""}
+                />
               </div>
 
               <div class="grid grid-cols-4 gap-5 text-sm">
                 <InfoField
                   label="Related RAiD type"
-                  value={relatedRaidType?.value}
+                  value={hyperlinkFlexibleHandles(relatedRaidType?.value ?? "", baseUrl) || ""}
                   tooltip={relatedRaidType?.definition}
                 />
               </div>

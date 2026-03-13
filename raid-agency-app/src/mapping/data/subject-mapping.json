@@ -10963,6 +10963,12 @@
   },
   {
     "field": "subject.type.id",
+    "key": "44",
+    "value": "Human society",
+    "definition": "https://linked.data.gov.au/def/anzsrc-for/2020/44"
+  },
+  {
+    "field": "subject.type.id",
     "key": "500105",
     "value": "Legal ethics",
     "definition": "https://linked.data.gov.au/def/anzsrc-for/2020/500105"
@@ -11800,5 +11806,11 @@
     "key": "529999",
     "value": "Other psychology not elsewhere classified",
     "definition": "https://linked.data.gov.au/def/anzsrc-for/2020/529999"
+  },
+  {
+    "field": "subject.type.id",
+    "key": "4206",
+    "value": "Public health",
+    "definition": "https://linked.data.gov.au/def/anzsrc-for/2020/4206"
   }
 ]

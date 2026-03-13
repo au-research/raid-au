@@ -5,31 +5,29 @@ buildscript {
   repositories {
     mavenCentral()
   }
-  dependencies {
-//    classpath 'com.avast.gradle:gradle-docker-compose-plugin:0.17.7'
-  }
 }
 
 plugins {
   id 'java'
-  id 'org.springframework.boot' version '3.3.11'
-  id 'io.spring.dependency-management' version '1.1.6'
-//  id 'com.avast.gradle.docker-compose' version '0.17.6'
+  id 'jvm-test-suite'
+  alias(libs.plugins.spring.boot)
+  alias(libs.plugins.jsonschema2pojo)
+  alias(libs.plugins.xjc)
 }
 
 //apply plugin: 'docker-compose'
 
 ext {
   defaultSysProps = [
-    /* prod machines will always be set to UTC, but developer machines are set 
+    /* prod machines will always be set to UTC, but developer machines are set
     to whatever they want - so this forces it for gradle stuff. */
     'user.timezone': 'UTC',
     // platform specific, so force it
     'file.encoding': 'UTF-8',
-    // for consistency, rather than any specific reason 
+    // for consistency, rather than any specific reason
     "user.language":"", "user.country":"", "user.variant":"",
   ]
-  
+
   // the config loading config :/
   homeDir = System.properties['user.home']
   configPath = System.getProperty("RAIDO_APISVC_CONFIG_PATH",
@@ -47,97 +45,101 @@ if( file(configPath).exists() ){
 
 version = rootProject.version
 
-/* don't use groovy for prod code: dynamic typing, slow startup and poor 
+/* don't use groovy for prod code: dynamic typing, slow startup and poor
    historical upgrade compatibility */
 dependencies{
-  compileOnly 'org.jetbrains:annotations:13.0'
+  constraints {
+    implementation(libs.commons.lang3) {
+      because 'Force single version of commons-lang3 across all transitive dependencies'
+    }
+  }
+
+  compileOnly libs.annotations
   implementation project(':api-svc:db')
   implementation project(':api-svc:idl-raid-v2')
-  implementation 'org.flywaydb:flyway-core:9.22.3'
-  // look in settings.gradle for version catalog specs 
+  implementation libs.flyway.core
+  // look in settings.gradle for version catalog specs
   implementation libs.bundles.springboot
   implementation libs.springdoc.openapi
 
   implementation 'jakarta.annotation:jakarta.annotation-api'
 
-  implementation 'org.geonames:geonames-ws-client:1.1.17'
-  compileOnly 'org.projectlombok:lombok:1.18.36'
-  annotationProcessor 'org.projectlombok:lombok:1.18.36'
+  implementation libs.geonames.ws.client
+  compileOnly libs.lombok
+  annotationProcessor libs.lombok
 
-  testCompileOnly 'org.projectlombok:lombok:1.18.36'
-  testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+  testCompileOnly libs.lombok
+  testAnnotationProcessor libs.lombok
     // postgres DB driver
-  runtimeOnly libs.pgjdbc
+  runtimeOnly libs.postgresql
 
-  runtimeOnly 'com.fasterxml.jackson.core:jackson-databind'
-  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
-  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+  runtimeOnly libs.jackson.databind
+  implementation libs.jackson.dataformat.xml
+  implementation libs.jackson.datatype.jsr310
+  implementation libs.jackson.annotations
 
-  implementation 'jakarta.json:jakarta.json-api:2.1.3'
-  implementation 'org.eclipse.parsson:jakarta.json:1.1.5'
-  
-  // RDF libraries for content negotiation
-  implementation 'org.apache.jena:jena-core:4.8.0'
-  implementation 'org.apache.jena:jena-arq:4.8.0'
+  implementation libs.jakarta.json.api
+  implementation libs.jakarta.json
+  implementation libs.commons.lang3
+
+  implementation libs.jakarta.xml.bind.api
+  implementation libs.jaxb.runtime
+
+  implementation libs.jena.arq
 
   testImplementation libs.bundles.springboot.test
 
-  testImplementation 'org.mockito:mockito-inline:4.11.0'
-  testImplementation 'org.mockito:mockito-junit-jupiter'
-  // https://junit.org/junit5/docs/current/release-notes/index.html
-  testImplementation 'org.junit.jupiter:junit-jupiter-api'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+  testImplementation testFixtures(project(':api-svc:testFixtures'))
+
+  testImplementation libs.mockito.inline
+  testImplementation libs.mockito.junit.jupiter
+  testImplementation libs.junit.jupiter
 
   testImplementation libs.assertj
 
   // because MockRestServiceServer couldn't find class org.hamcrest.Matcher
-  testImplementation 'org.hamcrest:hamcrest'
+  testImplementation libs.hamcrest
 
   // needed for jsonpath testing in Spring MVC tests
-  testImplementation 'com.jayway.jsonpath:json-path'
-  testImplementation 'org.springframework.security:spring-security-test:6.2.2'
+  testImplementation libs.spring.security.test
 
-  implementation('org.springframework.boot:spring-boot-starter-validation') {
-    exclude group: 'org.hibernate', module: 'hibernate-validator'
-  }
-// https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
-  implementation("org.hibernate.validator:hibernate-validator:8.0.2.Final")
-  // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+  // XJC dependencies - need the actual compiler tools
+  xjc libs.jaxb.xjc
+  xjc libs.jaxb.runtime
+  xjc libs.jakarta.xml.bind.api
 }
 
 compileJava {
   options.compilerArgs <<
-    // avoid warnings about spring classes using deprecated '-debug' 
+    // avoid warnings about spring classes using deprecated '-debug'
     "-parameters" <<
     // annoy people into not doing unchecked shenanigans 😒
     "-Xlint:unchecked" <<
-    // annoy people into fixing their deprecation warnings 
+    // annoy people into fixing their deprecation warnings
     "-Xlint:deprecation"
 }
 
 testing{
-  //noinspection GroovyAssignabilityCheck
   suites{
-    //noinspection GroovyAssignabilityCheck
     intTest(JvmTestSuite){
-      //testType = TestSuiteType.INTEGRATION_TEST
       dependencies{
         implementation project(':api-svc:idl-raid-v2')
 
         implementation.bundle libs.bundles.springboot
         implementation.bundle libs.bundles.springboot.test
 
+        implementation testFixtures(project(':api-svc:testFixtures'))
         implementation.bundle libs.bundles.feign
 
         implementation libs.assertj
 
         // for PostConstruct/PreDestroy - pkg: jakarta.annotation (used to be javax)
-        implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+        implementation libs.jakarta.annotation.api
 
-        implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3"
+        implementation libs.jackson.datatype.jsr310
 
-        compileOnly 'org.projectlombok:lombok:1.18.36'
-        annotationProcessor 'org.projectlombok:lombok:1.18.36'
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
 
       }
     }
@@ -166,15 +168,16 @@ intTest {
   testLogging.showStandardStreams = true
 }
 
+tasks.register('buildInfo', WriteProperties) {
+    description = "Write build-info.properties file"
+    destinationFile = file("${sourceSets.main.output.resourcesDir}/META-INF/build-info.properties")
+    encoding = "UTF-8"
+    comment = "This file built by Gradle task buildInfo"
 
-task buildInfo(type: WriteProperties) {
-  description = "Write build-info.properties file"
-  outputFile = file("${sourceSets.main.output.resourcesDir}/META-INF/build-info.properties")
-  encoding = "UTF-8"
-  comment = "This file built by Gradle task buildInfo"
-
-  property("build.version", project.version)
-  property("build.buildDate", new Date().toString())
+    property("build.version", project.version)
+//  property("build.commitId", rootProject.gitCommitHash)
+    // we don't use it for stuff, it's for people, so format it nice
+    property("build.buildDate", new Date().toString())
 }
 processResources.dependsOn buildInfo
 
@@ -209,4 +212,80 @@ tasks.withType(Test) {
     showCauses = true
     showStackTraces = true
   }
+}
+
+jsonSchema2Pojo {
+  // Source directory containing your JSON schema files
+  source = files("${projectDir}/src/main/resources/ror_schema_v2_1.json")
+
+  // Target directory for generated Java classes
+  targetDirectory = file("${projectDir}/src/main/generated")
+
+  // Target package for generated classes
+  targetPackage = 'au.org.raid.api.client.ror.dto'
+
+  // Include generated sources in compilation
+  sourceType = 'jsonschema'
+
+  // Generate builder methods
+  generateBuilders = true
+
+  // Include JSR-303 annotations (@Valid, @NotNull, etc.)
+  useJakartaValidation = true
+  includeJsr303Annotations = true
+
+  // Jackson annotations are already included by default (annotationStyle = 'jackson')
+
+  // Date/time type configuration
+  dateTimeType = 'java.time.OffsetDateTime'
+
+  // Additional options
+  useLongIntegers = false
+  useDoubleNumbers = true
+  includeHashcodeAndEquals = true
+  includeToString = true
+  includeAllPropertiesConstructor = true
+  constructorsRequiredPropertiesOnly = false
+}
+
+sourceSets {
+  main {
+    java {
+      srcDir "${projectDir}/src/main/generated"
+    }
+  }
+}
+
+tasks.named('compileJava') {
+  dependsOn tasks.named('generateJsonSchema2Pojo')
+}
+
+xjc {
+  xsdDir.set(layout.projectDirectory.dir("src/main/resources/schema/xsd"))
+  bindingFiles.from("src/main/resources/schema/xsd/bindings.xjb")
+  outputJavaDir.set(layout.projectDirectory.dir("src/main/generated"))
+  defaultPackage.set("au.org.raid.api.client.isni.dto")
+}
+
+tasks.named('compileJava') {
+  dependsOn tasks.named('generateJsonSchema2Pojo')
+  dependsOn tasks.named('xjc')
+}
+
+bootRun {
+  systemProperties = System.properties
+}
+
+tasks.register('bootRunLocal') {
+  description = 'Start Docker services and API with dev profile'
+  group = 'application'
+  dependsOn 'dockerComposeUp'
+
+  doLast {
+    // Configure and run bootRun with dev profile
+    tasks.named('bootRun').configure {
+      systemProperty 'spring.profiles.active', 'dev'
+    }
+  }
+  finalizedBy 'bootRun'
 }

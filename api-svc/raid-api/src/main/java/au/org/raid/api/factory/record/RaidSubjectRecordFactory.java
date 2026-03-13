@@ -5,9 +5,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RaidSubjectRecordFactory {
-    public RaidSubjectRecord create(final String handle, final Integer subjectTypeId) {
+    public RaidSubjectRecord create(final String handle, final String subjectTypeId, final int schemaId) {
         return new RaidSubjectRecord()
                 .setHandle(handle)
-                .setSubjectTypeId(subjectTypeId);
+                .setSubjectTypeId(subjectTypeId)
+                .setSubjectTypeSchemaId(schemaId);
     }
 }

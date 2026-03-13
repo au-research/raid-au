@@ -1,0 +1,156 @@
+name: PR E2E Tests
+
+on:
+  pull_request:
+
+jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-changed: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - '.github/**'
+              - 'raid-agency-app/**'
+
+  e2e-tests:
+    needs: check-paths
+    if: needs.check-paths.outputs.frontend-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Build IAM module
+        run: ./gradlew :iam:build
+
+      - name: Start infrastructure
+        working-directory: api-svc/raid-api
+        run: docker compose up -d --wait
+
+      - name: Wait for Keycloak to be healthy
+        run: |
+          echo "Waiting for Keycloak..."
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8001/realms/raid 2>/dev/null; then
+              echo "Keycloak is ready"
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "Keycloak failed to start"
+              docker compose -f api-svc/raid-api/docker-compose.yaml logs raid-iam
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Build and start API server
+        run: |
+          ./gradlew build
+          ./gradlew :api-svc:raid-api:bootRun -Dspring.profiles.active=dev &
+          echo "Waiting for API to start..."
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8080/actuator/health 2>/dev/null; then
+              echo "API is ready"
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "API failed to start"
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Install frontend dependencies
+        working-directory: raid-agency-app
+        run: yarn install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: raid-agency-app
+        run: npx playwright install --with-deps chromium
+
+      - name: Start frontend dev server
+        working-directory: raid-agency-app
+        env:
+          VITE_RAIDO_ENV: dev
+          VITE_KEYCLOAK_URL: http://localhost:8001
+          VITE_KEYCLOAK_CLIENT_ID: raid-api
+          VITE_KEYCLOAK_REALM: raid
+          VITE_SUPPORT_EMAIL: contact@raid.org
+          VITE_RAID_DOMAIN: http://www.raid.org.au
+        run: |
+          yarn dev &
+          echo "Waiting for frontend dev server..."
+          for i in $(seq 1 30); do
+            if curl -fs http://localhost:7080 2>/dev/null; then
+              echo "Frontend is ready"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Frontend failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Run Playwright tests
+        working-directory: raid-agency-app
+        env:
+          CI: true
+          BASE_URL: http://localhost:7080
+          VITE_RAIDO_ENV: dev
+          VITE_KEYCLOAK_URL: http://localhost:8001
+          VITE_KEYCLOAK_CLIENT_ID: raid-api
+          VITE_KEYCLOAK_REALM: raid
+          VITE_SUPPORT_EMAIL: contact@raid.org
+          VITE_RAID_DOMAIN: http://www.raid.org.au
+          VITE_KEYCLOAK_E2E_USER: raid-test-user
+          VITE_KEYCLOAK_E2E_PASSWORD: password
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: raid-agency-app/playwright-report/
+          retention-days: 14
+
+      - name: Stop infrastructure
+        if: always()
+        working-directory: api-svc/raid-api
+        run: docker compose down
+
+  e2e-tests-result:
+    if: always()
+    needs: [check-paths, e2e-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check result
+        run: |
+          if [ "${{ needs.e2e-tests.result }}" = "failure" ]; then
+            echo "E2E tests failed"
+            exit 1
+          fi
+          echo "E2E tests passed or were skipped"

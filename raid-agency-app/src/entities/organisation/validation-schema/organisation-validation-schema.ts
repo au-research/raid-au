@@ -23,6 +23,3 @@ export const organisationValidationSchema = z
       role: organisationRoleValidationSchema,
     })
   )
-  .nonempty({
-    message: "At least one organisation is required",
-  });

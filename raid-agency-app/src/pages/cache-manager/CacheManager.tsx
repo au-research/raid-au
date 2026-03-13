@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useMemo, useState } from "react";
@@ -131,48 +131,60 @@ function CachedItemsList({
     </>
   );
 }
-export function CacheManager() {
-  const queryClient = useQueryClient();
 
-  const useCache = ({ key }: { key: string }) => {
-    return useQuery({
-      queryKey: [key],
-      queryFn: () => {
-        const stored = localStorage.getItem(key);
-        return stored ? new Map(JSON.parse(stored)) : new Map();
-      },
-      staleTime: Infinity,
-    });
+const useCache = ({ key }: { key: string }) => {
+  const [cachedData, setCachedData] = useState(() => {
+    const stored = localStorage.getItem(key);
+    return stored ? new Map(JSON.parse(stored)) : new Map();
+  });
+  
+  return { data: cachedData, refresh: setCachedData };
+};
+
+export function CacheManager() {
+
+  const { data: relatedObjectCitations, refresh: refreshRelatedObjectCitations } = useCache({
+    key: 'relatedObjectCitations'
+  });
+
+  const { data: organisationNames, refresh: refreshOrganisationNames  } = useCache({
+    key: 'organisationNames'
+  });
+
+  const { data: contributorNames, refresh: refreshContributorNames } = useCache({
+    key: 'orcidCache'
+  });
+
+    // Map storageKey to refresh function
+  const refreshFunctions = {
+    'relatedObjectCitations': refreshRelatedObjectCitations,
+    'organisationNames': refreshOrganisationNames,
+    'orcidCache': refreshContributorNames,
   };
 
-  const deleteItemMutation = useMutation({
-    mutationFn: async ({
-      key,
-      storageKey,
-    }: {
-      key: string;
-      storageKey: string;
-    }) => {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const map = new Map(JSON.parse(stored));
-        map.delete(key);
-        localStorage.setItem(storageKey, JSON.stringify(Array.from(map)));
-      }
-      return Promise.resolve();
-    },
-    onSuccess: (_, { storageKey }) => {
-      queryClient.invalidateQueries({ queryKey: [storageKey] });
-    },
-  });
+const deleteItemMutation = useMutation({
+  mutationFn: async ({ key, storageKey }: { key: string; storageKey: string }) => {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const map = new Map(JSON.parse(stored));
+      map.delete(key);
+      localStorage.setItem(storageKey, JSON.stringify(Array.from(map)));
+    }
+    return Promise.resolve();
+  },
+  onSuccess: (_, { key, storageKey }) => {
+    // Re-read from localStorage and update state
+    const stored = localStorage.getItem(storageKey);
+    const updatedMap = stored ? new Map(JSON.parse(stored)) : new Map();
+      
+    // Call the appropriate refresh function
+    const refreshFn = refreshFunctions[storageKey as keyof typeof refreshFunctions];
+    if (refreshFn) {
+      refreshFn(updatedMap);
+    }
+  },
+});
 
-  const { data: relatedObjectTitles } = useCache({
-    key: "relatedObjectTitles",
-  });
-
-  const { data: organisationNames } = useCache({
-    key: "organisationNames",
-  });
 
   const handleDelete = ({
     key,
@@ -183,7 +195,7 @@ export function CacheManager() {
   }) => {
     deleteItemMutation.mutate({
       key,
-      storageKey,
+      storageKey
     });
   };
 
@@ -202,13 +214,13 @@ export function CacheManager() {
           <Typography variant="h5">Cache Manager</Typography>
         </Stack>
         <Card>
-          <CardHeader title="Related object titles" />
+          <CardHeader title="Related object citations" />
           <CardContent>
-            {(relatedObjectTitles?.size && (
+            {(relatedObjectCitations?.size && (
               <CachedItemsList
-                cachedMap={relatedObjectTitles}
+                cachedMap={relatedObjectCitations}
                 handleDelete={handleDelete}
-                storageKey="relatedObjectTitles"
+                storageKey="relatedObjectCitations"
               />
             )) || <Typography>No related objects in cache</Typography>}
           </CardContent>
@@ -224,6 +236,19 @@ export function CacheManager() {
                 storageKey="organisationNames"
               />
             )) || <Typography>No organisation names in cache</Typography>}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader title="ORCID names" />
+          <CardContent>
+            {(contributorNames?.size && (
+              <CachedItemsList
+                cachedMap={contributorNames}
+                handleDelete={handleDelete}
+                storageKey="orcidCache"
+              />
+            )) || <Typography>No ORCID names in cache</Typography>}
           </CardContent>
         </Card>
       </Stack>

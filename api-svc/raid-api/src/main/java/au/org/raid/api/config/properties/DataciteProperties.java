@@ -9,4 +9,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "datacite")
 public class DataciteProperties {
     private String endpoint;
+    private String registrationAgencyName;
 }

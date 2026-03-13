@@ -1,0 +1,1 @@
+insert into api_svc.description_type (uri, schema_id) values ('https://vocabulary.raid.org/description.type.schema/392', 2);

@@ -24,30 +24,14 @@ public class OrcidIntegrationClient {
     private final HttpEntityFactory httpEntityFactory;
 
     public void post(final RaidListenerMessage message) {
-        final var httpEntity = httpEntityFactory.create(message);
+        final var httpEntity = httpEntityFactory.create(message, properties.getApiKey());
 
         final var response = restTemplate.exchange(properties.getRaidListener().getUri(), HttpMethod.POST, httpEntity, Void.class);
         log.debug("Response from Raid Listener: {} {}", response.getStatusCode(), response.getBody());
     }
 
-    public Optional<ContributorLookupResponse> findByEmail(final String email) {
-        final var httpEntity = httpEntityFactory.create(Map.of("email", email));
-
-        try {
-            final var response = restTemplate.exchange(properties.getContributorEmailLookup().getUri(), HttpMethod.POST, httpEntity, ContributorLookupResponse.class);
-            log.debug("Response from Raid Listener: {} {}", response.getStatusCode(), response.getBody());
-            return Optional.ofNullable(response.getBody());
-        } catch (HttpClientErrorException e) {
-            if (e.getStatusCode() != HttpStatusCode.valueOf(404)) {
-                throw e;
-            }
-        }
-
-        return Optional.empty();
-    }
-
     public Optional<ContributorLookupResponse> findByOrcid(final String orcid) {
-        final var httpEntity = httpEntityFactory.create(Map.of("orcid", orcid));
+        final var httpEntity = httpEntityFactory.create(Map.of("orcid", orcid), properties.getApiKey());
 
         try {
             final var response = restTemplate.exchange(properties.getContributorIdLookup().getUri(), HttpMethod.POST, httpEntity, ContributorLookupResponse.class);

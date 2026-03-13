@@ -2,9 +2,10 @@
 
 # temp directory that Gradle dumps in the repo root
 .gradle
-
 # gradle build artifacts
 build/
+
+api-svc/**/generated/
 
 # Default location for us to put files for input/output purposes.  
 # Avoids polluting the root of the repo, but not under the /build dir so

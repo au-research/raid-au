@@ -3,11 +3,19 @@ import Navbar from "@/components/navbar.astro";
 
 import "@fontsource/figtree";
 
+import GoogleAnalytics from '@/components/google-analytics.astro';
+import Banner from "@/components/raid-components/banner.astro";
+
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+// Only show banner in non-production environments
+// Check RAID_ENV environment variable
+const raidEnv = import.meta.env.RAID_ENV;
+const isProduction = raidEnv === 'prod';
+const shouldRender = !isProduction;
 ---
 
 <!doctype html>
@@ -17,6 +25,7 @@ const { title } = Astro.props;
     <meta name="description" content="Astro description" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <style>
@@ -24,14 +33,20 @@ const { title } = Astro.props;
         font-family: "Figtree";
       }
     </style>
+    <GoogleAnalytics />
   </head>
-  <body
-    class="h-full bg-gradient-to-b from-[#c6d9f0] to-[#fff] dark:from-[#1b3e60] dark:to-[#373b3c]"
-  >
+  <body class="h-full bg-[#c6d9f0] dark:bg-[#1b3e60]">
     <div
       class="m-7 mx-auto max-w-7xl rounded-md border border-gray-300 bg-white shadow-md"
     >
       <Navbar />
+      {shouldRender && (
+        <Banner
+          variant="warning"
+          message="This is is not a production RAiD and it should only be used for demonstration purposes."
+          dismissible={false}
+        />
+      )}
       <main class="px-4 py-8 sm:px-6 lg:px-8">
         <slot />
       </main>

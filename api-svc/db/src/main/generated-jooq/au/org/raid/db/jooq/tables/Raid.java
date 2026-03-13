@@ -14,19 +14,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function21;
 import org.jooq.Index;
 import org.jooq.JSONB;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row21;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -311,29 +306,5 @@ public class Raid extends TableImpl<RaidRecord> {
     @Override
     public Raid rename(Table<?> name) {
         return new Raid(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row21 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row21<String, Long, String, Integer, String, Boolean, Metaschema, JSONB, LocalDate, LocalDateTime, Integer, String, String, String, Integer, LocalDate, String, Integer, String, Integer, Integer> fieldsRow() {
-        return (Row21) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function21<? super String, ? super Long, ? super String, ? super Integer, ? super String, ? super Boolean, ? super Metaschema, ? super JSONB, ? super LocalDate, ? super LocalDateTime, ? super Integer, ? super String, ? super String, ? super String, ? super Integer, ? super LocalDate, ? super String, ? super Integer, ? super String, ? super Integer, ? super Integer, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function21<? super String, ? super Long, ? super String, ? super Integer, ? super String, ? super Boolean, ? super Metaschema, ? super JSONB, ? super LocalDate, ? super LocalDateTime, ? super Integer, ? super String, ? super String, ? super String, ? super Integer, ? super LocalDate, ? super String, ? super Integer, ? super String, ? super Integer, ? super Integer, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

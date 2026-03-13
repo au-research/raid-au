@@ -1,0 +1,55 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "raid-agency-app"
+    schedule:
+      interval: "weekly"
+    groups:
+      mui:
+        patterns: ["@mui/*"]
+      tanstack:
+        patterns: ["@tanstack/*"]
+      testing:
+        patterns: ["@testing-library/*", "@playwright/*", "vitest", "@vitest/*", "jsdom"]
+      eslint:
+        patterns: ["eslint*", "@typescript-eslint/*"]
+      vite:
+        patterns: ["vite", "@vitejs/*"]
+    ignore:
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@typescript-eslint/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      keycloak:
+        patterns: ["org.keycloak:*"]
+      spring:
+        patterns: ["org.springframework*"]
+      testing:
+        patterns: ["org.mockito:*", "org.assertj:*", "org.junit*"]
+      feign:
+        patterns: ["io.github.openfeign:*"]
+      jakarta:
+        patterns: ["jakarta.*"]
+    ignore:
+      - dependency-name: "org.springframework.boot"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.openapi.generator"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "docker"
+    directory: "iam"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "api-svc/raid-api"
+    schedule:
+      interval: "weekly"

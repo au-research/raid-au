@@ -30,7 +30,9 @@ public class TestConstants {
     public static final String UNKNOWN_TITLE_TYPE =
             "https://github.com/au-research/raid-metadata/blob/main/scheme/title/type/v1/unknown.json";
 
-    public static final String CONTRIBUTOR_IDENTIFIER_SCHEMA_URI = "https://orcid.org/";
+    public static final String ORCID_SCHEMA_URI = "https://orcid.org/";
+
+    public static final String ISNI_SCHEMA_URI = "https://isni.org/";
 
     public static final String CONTRIBUTOR_ROLE_SCHEMA_URI =
             "https://github.com/au-research/raid-metadata/tree/main/scheme/contributor/role/v1";
@@ -45,6 +47,8 @@ public class TestConstants {
             "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/leader.json";
 
     public static final String VALID_ORCID = "https://orcid.org/0000-0000-0000-0001";
+
+    public static final String VALID_ISNI = "https://isni.org/0000000078519858";
 
     public static final String ORGANISATION_ROLE_SCHEMA_URI =
             "https://github.com/au-research/raid-metadata/tree/main/scheme/organisation/role/v1";

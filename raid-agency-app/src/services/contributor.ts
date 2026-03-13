@@ -1,12 +1,13 @@
 import { getEnv } from "@/utils/api-utils/api-utils";
+import { API_CONSTANTS } from "@/constants/apiConstants";
 
 export async function fetchOrcidContributors({ handle }: { handle: string }) {
   let environment = getEnv();
   environment = environment === "dev" ? "test" : environment;
   const subDomain = "orcid";
   try {
-    const url = `https://${subDomain}.${environment}.raid.org.au`;
-    const response = await fetch(`${url}/contributors`, {
+    const url = API_CONSTANTS.ORCID.CONTRIBUTORS(subDomain, environment);
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ handle }),

@@ -9,18 +9,12 @@ import au.org.raid.db.jooq.Keys;
 import au.org.raid.db.jooq.enums.SchemaStatus;
 import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 
-import java.util.function.Function;
-
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function3;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row3;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -65,6 +59,11 @@ public class SubjectTypeSchema extends TableImpl<SubjectTypeSchemaRecord> {
      * The column <code>api_svc.subject_type_schema.status</code>.
      */
     public final TableField<SubjectTypeSchemaRecord, SchemaStatus> STATUS = createField(DSL.name("status"), SQLDataType.VARCHAR.asEnumDataType(au.org.raid.db.jooq.enums.SchemaStatus.class), this, "");
+
+    /**
+     * The column <code>api_svc.subject_type_schema.id_starts_with</code>.
+     */
+    public final TableField<SubjectTypeSchemaRecord, String> ID_STARTS_WITH = createField(DSL.name("id_starts_with"), SQLDataType.VARCHAR, this, "");
 
     private SubjectTypeSchema(Name alias, Table<SubjectTypeSchemaRecord> aliased) {
         this(alias, aliased, null);
@@ -153,29 +152,5 @@ public class SubjectTypeSchema extends TableImpl<SubjectTypeSchemaRecord> {
     @Override
     public SubjectTypeSchema rename(Table<?> name) {
         return new SubjectTypeSchema(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row3 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row3<Integer, String, SchemaStatus> fieldsRow() {
-        return (Row3) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function3<? super Integer, ? super String, ? super SchemaStatus, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function3<? super Integer, ? super String, ? super SchemaStatus, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

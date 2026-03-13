@@ -1,6 +1,14 @@
 package au.org.raid.inttest;
 
-import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.Contributor;
+import au.org.raid.idl.raidv2.model.ContributorPosition;
+import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ContributorRole;
+import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.factory.RaidPatchRequestFactory;
 import au.org.raid.inttest.factory.RaidUpdateRequestFactory;
 import au.org.raid.inttest.service.Handle;
@@ -16,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
-import static au.org.raid.inttest.service.TestConstants.*;
+import static au.org.raid.fixtures.TestConstants.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -35,15 +43,36 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Contributor create tests")
     class ContributorCreateTests {
         @Test
-        @DisplayName("Email address should not be visible after create")
+        @DisplayName("Should create a RAiD with a valid contributor")
         void happyPath() {
             final var createResponse = raidApi.mintRaid(createRequest);
             final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
             final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
             final var raidDto = readResponse.getBody();
 
-            assertThat(raidDto.getContributor().get(0).getEmail(), is(nullValue()));
+            assertThat(raidDto.getContributor().get(0).getId(), is(REAL_TEST_ORCID));
         }
+
+        @Test
+        @DisplayName("Should create a RAiD with a contributor with an ISNI id")
+        void raidWithIsniContributor() {
+
+            createRequest.contributor(List.of(
+                    isniContributor(REAL_TEST_ISNI, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today, null)));
+
+            try {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
+                final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
+                final var raidDto = readResponse.getBody();
+
+                assertThat(raidDto.getContributor().get(0).getId(), is(REAL_TEST_ISNI));
+            } catch (RaidApiValidationException e) {
+                fail(e.getMessage());
+            }
+        }
+
+
 
         @Test
         @DisplayName("Minting a RAiD with no contributor fails")
@@ -90,7 +119,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void missingIdentifierSchemeUri() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .id("https://orcid.org/0000-0000-0000-0001")
+                            .id(REAL_TEST_ORCID)
                             .contact(true)
                             .leader(true)
                             .position(List.of(
@@ -121,50 +150,49 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
         }
 
-        /*
-                @Test
-                @DisplayName("Minting a RAiD with empty schemaUri fails")
-                void emptyIdentifierSchemeUri() {
-                    createRequest.setContributor(List.of(
-                            new Contributor()
-                                    .schemaUri()
-                                    .contact(true)
-                                    .leader(true)
-                                    .id("https://orcid.org/0000-0000-0000-0001")
-                                    .position(List.of(
-                                            new ContributorPosition()
-                                                    .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                                    .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                                    .id(PRINCIPAL_INVESTIGATOR_POSITION)
-                                    ))
-                                    .role(List.of(
-                                            new ContributorRole()
-                                                    .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                                    .id(SOFTWARE_CONTRIBUTOR_ROLE)
-                                    ))
-                    ));
+        @Test
+        @DisplayName("Minting a RAiD with empty schemaUri fails")
+        void emptyIdentifierSchemeUri() {
+            createRequest.setContributor(List.of(
+                    new Contributor()
+                            .schemaUri((ContributorSchemaUriEnum) null)
+                            .contact(true)
+                            .leader(true)
+                            .id(REAL_TEST_ORCID)
+                            .position(List.of(
+                                    new ContributorPosition()
+                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                            .id(PRINCIPAL_INVESTIGATOR_POSITION)
+                            ))
+                            .role(List.of(
+                                    new ContributorRole()
+                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                            ))
+            ));
 
-                    try {
-                        raidApi.mintRaid(createRequest);
-                        fail("No exception thrown with empty schemaUri");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor[0].schemaUri")
-                                        .errorType("notSet")
-                                        .message("field must be set")
-                        ));
-                    }
-                }
-        */
+            try {
+                raidApi.mintRaid(createRequest);
+                fail("No exception thrown with empty schemaUri");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor[0].schemaUri")
+                                .errorType("notSet")
+                                .message("field must be set")
+                ));
+            }
+        }
+
         @Test
         @DisplayName("Minting a RAiD with missing contributor id fails")
         void missingId() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                            .schemaUri(ORCID_SCHEMA_URI)
                             .contact(true)
                             .leader(true)
                             .position(List.of(
@@ -188,9 +216,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 assertThat(failures, hasSize(1));
                 assertThat(failures, contains(
                         new ValidationFailure()
-                                .fieldId("contributor[0]")
+                                .fieldId("contributor[0].id")
                                 .errorType("notSet")
-                                .message("email, uuid or id is required")
+                                .message("field must be set")
                 ));
             }
         }
@@ -200,7 +228,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void emptyId() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
                             .contact(true)
                             .leader(true)
                             .id("")
@@ -225,9 +254,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 assertThat(failures, hasSize(1));
                 assertThat(failures, contains(
                         new ValidationFailure()
-                                .fieldId("contributor[0]")
+                                .fieldId("contributor[0].id")
                                 .errorType("notSet")
-                                .message("email, uuid or id is required")
+                                .message("field must be set")
                 ));
             }
         }
@@ -237,8 +266,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void nullPositions() {
             createRequest.setContributor(List.of(
                     new Contributor()
+                            .id(REAL_TEST_ORCID)
                             .email(CONTRIBUTOR_EMAIL)
-                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                            .schemaUri(ORCID_SCHEMA_URI)
                             .contact(true)
                             .leader(true)
                             .role(List.of(
@@ -268,7 +298,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void emptyPositions() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
                             .contact(true)
                             .leader(true)
                             .email(CONTRIBUTOR_EMAIL)
@@ -300,7 +331,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void missingContact() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
                             .email(CONTRIBUTOR_EMAIL)
                             .leader(true)
                             .position(List.of(
@@ -335,7 +367,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void missingLeader() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
                             .email(CONTRIBUTOR_EMAIL)
                             .contact(true)
                             .position(List.of(
@@ -365,6 +398,120 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
         }
 
+        @Test
+        @DisplayName("Minting a RAiD with duplicate contributors fails")
+        void duplicateContributors() {
+            createRequest.setContributor(List.of(
+                    new Contributor()
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
+                            .contact(true)
+                            .leader(true)
+                            .position(List.of(
+                                    new ContributorPosition()
+                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                            .id(OTHER_PARTICIPANT_POSITION)
+                            )).role(List.of(
+                                    new ContributorRole()
+                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                            )),
+            new Contributor()
+                    .id(REAL_TEST_ORCID)
+                    .schemaUri(ORCID_SCHEMA_URI)
+                    .contact(true)
+                    .leader(true)
+                    .position(List.of(
+                            new ContributorPosition()
+                                    .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                    .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                    .id(OTHER_PARTICIPANT_POSITION)
+                    )).role(List.of(
+                            new ContributorRole()
+                                    .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                    .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                    ))
+            ));
+
+            try {
+                raidApi.mintRaid(createRequest);
+                fail("No exception thrown with duplicate contributors");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor[1].id")
+                                .errorType("duplicateValue")
+                                .message("A contributor can appear only once. There are 2 occurrences of https://sandbox.orcid.org/0009-0002-5128-5184")
+                ));
+            }
+        }
+
+        @Test
+        @DisplayName("Removing a contributor passes")
+        void removeContributor() {
+            createRequest.setContributor(List.of(
+                    new Contributor()
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
+                            .contact(true)
+                            .leader(true)
+                            .position(List.of(
+                                    new ContributorPosition()
+                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                            .id(PRINCIPAL_INVESTIGATOR_POSITION)
+                            )).role(List.of(
+                                    new ContributorRole()
+                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                            )),
+                    new Contributor()
+                            .id("https://sandbox.orcid.org/0009-0005-9091-4416")
+                            .schemaUri(ORCID_SCHEMA_URI)
+                            .position(List.of(
+                                    new ContributorPosition()
+                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                            .id(OTHER_PARTICIPANT_POSITION)
+                            )).role(List.of(
+                                    new ContributorRole()
+                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                            ))
+            ));
+
+            final var response = raidApi.mintRaid(createRequest);
+
+            final var updateRequest = response.getBody();
+
+            updateRequest.setContributor(List.of(
+                    new Contributor()
+                            .id(REAL_TEST_ORCID)
+                            .schemaUri(ORCID_SCHEMA_URI)
+                            .contact(true)
+                            .leader(true)
+                            .position(List.of(
+                                    new ContributorPosition()
+                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                            .id(PRINCIPAL_INVESTIGATOR_POSITION)
+                            )).role(List.of(
+                                    new ContributorRole()
+                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                            ))
+            ));
+
+            try {
+                raidApi.mintRaid(createRequest);
+            } catch (Exception e) {
+                fail(e);
+            }
+        }
+
         @Nested
         @DisplayName("Position tests...")
         class ContributorPositionTests {
@@ -373,9 +520,10 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             void missingPositionSchemeUri() {
                 createRequest.setContributor(List.of(
                         new Contributor()
+                                .id(REAL_TEST_ORCID)
                                 .contact(true)
                                 .leader(true)
-                                .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                                .schemaUri(ORCID_SCHEMA_URI)
                                 .email("https://orcid.org/0000-0000-0000-0001")
                                 .position(List.of(
                                         new ContributorPosition()
@@ -408,7 +556,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             void missingPositionType() {
                 createRequest.setContributor(List.of(
                         new Contributor()
-                                .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                                .id(REAL_TEST_ORCID)
+                                .schemaUri(ORCID_SCHEMA_URI)
                                 .contact(true)
                                 .leader(true)
                                 .email(CONTRIBUTOR_EMAIL)
@@ -439,89 +588,93 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 }
             }
 
-            /*
-                        @Test
-                        @DisplayName("Minting a RAiD with invalid position schemaUri fails")
-                        void invalidPositionSchemeUri() {
-                            createRequest.setContributor(List.of(
-                                    new Contributor()
-                                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                                            .contact(true)
-                                            .leader(true)
-                                            .email(CONTRIBUTOR_EMAIL)
-                                            .position(List.of(
-                                                    new ContributorPosition()
-                                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                                            .schemaUri("https://github.com/au-research/raid-metadata/tree/main/scheme/contributor/position/v2")
-                                                            .id(OTHER_PARTICIPANT_POSITION)
-                                            ))
-                                            .role(List.of(
-                                                    new ContributorRole()
-                                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
-                                            ))
-                            ));
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
+            @DisplayName("Minting a RAiD with invalid position schemaUri fails")
+            void invalidPositionSchemeUri() {
+                createRequest.setContributor(List.of(
+                        new Contributor()
+                                .id(REAL_TEST_ORCID)
+                                .schemaUri(ORCID_SCHEMA_URI)
+                                .contact(true)
+                                .leader(true)
+                                .email(CONTRIBUTOR_EMAIL)
+                                .position(List.of(
+                                        new ContributorPosition()
+                                                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                                .schemaUri((ContributorPositionSchemaUriEnum) null)
+                                                .id(OTHER_PARTICIPANT_POSITION)
+                                ))
+                                .role(List.of(
+                                        new ContributorRole()
+                                                .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                                .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                                ))
+                ));
 
-                            try {
-                                raidApi.mintRaid(createRequest);
-                                fail("No exception thrown with missing contributor schemaUri");
-                            } catch (RaidApiValidationException e) {
-                                final var failures = e.getFailures();
-                                assertThat(failures, hasSize(1));
-                                assertThat(failures, contains(
-                                        new ValidationFailure()
-                                                .fieldId("contributor[0].position[0].schemaUri")
-                                                .errorType("invalidValue")
-                                                .message("schema is unknown/unsupported")
-                                ));
-                            }
-                        }
+                try {
+                    raidApi.mintRaid(createRequest);
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].schemaUri")
+                                    .errorType("invalidValue")
+                                    .message("schema is unknown/unsupported")
+                    ));
+                }
+            }
 
-                        @Test
-                        @DisplayName("Minting a RAiD with invalid position type for schema fails")
-                        void invalidPositionTypeForScheme() {
-                            createRequest.setContributor(List.of(
-                                    new Contributor()
-                                            .contact(true)
-                                            .leader(true)
-                                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                                            .email(CONTRIBUTOR_EMAIL)
-                                            .position(List.of(
-                                                    new ContributorPosition()
-                                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                                            .id("https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/unknown.json")
-                                            ))
-                                            .role(List.of(
-                                                    new ContributorRole()
-                                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
-                                            ))
-                            ));
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
+            @DisplayName("Minting a RAiD with invalid position type for schema fails")
+            void invalidPositionTypeForScheme() {
+                createRequest.setContributor(List.of(
+                        new Contributor()
+                                .id(REAL_TEST_ORCID)
+                                .contact(true)
+                                .leader(true)
+                                .schemaUri(ORCID_SCHEMA_URI)
+                                .email(CONTRIBUTOR_EMAIL)
+                                .position(List.of(
+                                        new ContributorPosition()
+                                                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                                .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                                .id((ContributorPositionIdEnum) null)
+                                ))
+                                .role(List.of(
+                                        new ContributorRole()
+                                                .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                                .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                                ))
+                ));
 
-                            try {
-                                raidApi.mintRaid(createRequest);
-                                fail("No exception thrown with missing contributor schemaUri");
-                            } catch (RaidApiValidationException e) {
-                                final var failures = e.getFailures();
-                                assertThat(failures, hasSize(1));
-                                assertThat(failures, contains(
-                                        new ValidationFailure()
-                                                .fieldId("contributor[0].position[0].id")
-                                                .errorType("invalidValue")
-                                                .message("id does not exist within the given schema")
-                                ));
-                            }
-                        }
-            */
+                try {
+                    raidApi.mintRaid(createRequest);
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].id")
+                                    .errorType("invalidValue")
+                                    .message("id does not exist within the given schema")
+                    ));
+                }
+            }
+
             @Test
             @DisplayName("Minting a RAiD with a contributor with overlapping positions fails")
             void overlappingPositions() {
                 createRequest.setContributor(List.of(
                         new Contributor()
+                                .id(REAL_TEST_ORCID)
                                 .contact(true)
                                 .leader(true)
-                                .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                                .schemaUri(ORCID_SCHEMA_URI)
                                 .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(
                                         new ContributorPosition()
@@ -564,7 +717,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             void missingRoleSchemeUri() {
                 createRequest.setContributor(List.of(
                         new Contributor()
-                                .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                                .id(REAL_TEST_ORCID)
+                                .schemaUri(ORCID_SCHEMA_URI)
                                 .contact(true)
                                 .leader(true)
                                 .email(CONTRIBUTOR_EMAIL)
@@ -601,7 +755,8 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             void missingPositionType() {
                 createRequest.setContributor(List.of(
                         new Contributor()
-                                .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
+                                .id(REAL_TEST_ORCID)
+                                .schemaUri(ORCID_SCHEMA_URI)
                                 .email(CONTRIBUTOR_EMAIL)
                                 .contact(true)
                                 .leader(true)
@@ -632,500 +787,480 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 }
             }
 
-            /*
-                        @Test
-                        @DisplayName("Minting a RAiD with invalid role schemaUri fails")
-                        void invalidPositionSchemeUri() {
-                            createRequest.setContributor(List.of(
-                                    new Contributor()
-                                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                                            .contact(true)
-                                            .leader(true)
-                                            .email(CONTRIBUTOR_EMAIL)
-                                            .position(List.of(
-                                                    new ContributorPosition()
-                                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                                            .id(OTHER_PARTICIPANT_POSITION)
-                                            ))
-                                            .role(List.of(
-                                                    new ContributorRole()
-                                                            .schemaUri("unknown")
-                                                            .id(SOFTWARE_CONTRIBUTOR_ROLE)
-                                            ))
-                            ));
-
-                            try {
-                                raidApi.mintRaid(createRequest);
-                                fail("No exception thrown with invalid role schemaUri");
-                            } catch (RaidApiValidationException e) {
-                                final var failures = e.getFailures();
-                                assertThat(failures, hasSize(1));
-                                assertThat(failures, contains(
-                                        new ValidationFailure()
-                                                .fieldId("contributor[0].role[0].schemaUri")
-                                                .errorType("invalidValue")
-                                                .message("schema is unknown/unsupported")
-                                ));
-                            }
-                        }
-
-                        @Test
-                        @DisplayName("Minting a RAiD with invalid type for role schema fails")
-                        void invalidPositionTypeForScheme() {
-                            createRequest.setContributor(List.of(
-                                    new Contributor()
-                                            .contact(true)
-                                            .leader(true)
-                                            .schemaUri(CONTRIBUTOR_IDENTIFIER_SCHEMA_URI)
-                                            .email(CONTRIBUTOR_EMAIL)
-                                            .position(List.of(
-                                                    new ContributorPosition()
-                                                            .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                                            .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                                            .id(OTHER_PARTICIPANT_POSITION)
-                                            ))
-                                            .role(List.of(
-                                                    new ContributorRole()
-                                                            .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                                            .id("unknown")
-                                            ))
-                            ));
-
-                            try {
-                                raidApi.mintRaid(createRequest);
-                                fail("No exception thrown with invalid type for role schema");
-                            } catch (RaidApiValidationException e) {
-                                final var failures = e.getFailures();
-                                assertThat(failures, hasSize(1));
-                                assertThat(failures, contains(
-                                        new ValidationFailure()
-                                                .fieldId("contributor[0].role[0].id")
-                                                .errorType("invalidValue")
-                                                .message("id does not exist within the given schema")
-                                ));
-                            }
-                        }
-                    }
-                }
-            */
-            @Nested
-            @DisplayName("Contributor update tests")
-            class ContributorUpdateTests {
-
-                @Test
-                @DisplayName("Should not be able to update id of contributor with PUT request")
-                void updateId() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var raidDto = createResponse.getBody();
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    final var uuid = raidDto.getContributor().get(0).getUuid();
-
-                    raidDto.getContributor().get(0).setId(REAL_TEST_ORCID);
-
-                    try {
-                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor[0]")
-                                        .errorType("notFound")
-                                        .message("Contributor not found with PID (%s) and UUID (%s)".formatted(REAL_TEST_ORCID, uuid))
-                        ));
-                    }
-                }
-
-                @Test
-                @Disabled("Email not currently supported")
-                @DisplayName("Should not be able to update status of contributor with PUT request")
-                void updateStatus() {
-                    createRequest.getContributor().get(0).email("awaiting-authentication@test.raid.org.au");
-                    createRequest.getContributor().get(0).id(null);
-
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var raidDto = createResponse.getBody();
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    raidDto.getContributor().get(0).setStatus("AUTHENTICATED");
-
-                    final var updateResponse = raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                    assertThat(updateResponse.getBody().getContributor().get(0).getStatus(), is("AWAITING_AUTHENTICATION"));
-                }
-
-                @Test
-                @DisplayName("Updating a RAiD with no contributors fails")
-                void noContributors() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var raidDto = createResponse.getBody();
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    raidDto.contributor(null);
-
-                    try {
-                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                        fail("No exception thrown with no contributors");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor")
-                                        .errorType("notSet")
-                                        .message("field must be set")
-                        ));
-                    }
-                }
-
-                @Test
-                @DisplayName("Updating a RAiD with missing contact fails")
-                void missingContact() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-
-                    final var raidDto = createResponse.getBody();
-
-                    raidDto.getContributor().get(0).contact(false);
-
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    try {
-                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                        fail("No exception thrown with missing leader position");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor")
-                                        .errorType("notSet")
-                                        .message("At least one contributor must be flagged as a project contact")
-                        ));
-                    }
-                }
-
-                @Test
-                @DisplayName("Updating a RAiD with missing leader fails")
-                void missingLeader() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-
-                    final var raidDto = createResponse.getBody();
-
-                    raidDto.getContributor().get(0).leader(false);
-
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    try {
-                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                        fail("No exception thrown with missing leader position");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor")
-                                        .errorType("notSet")
-                                        .message("At least one contributor must be flagged as a project leader")
-                        ));
-                    }
-                }
-
-                @Test
-                @DisplayName("Updating a RAiD with empty position fails")
-                void emptyPositions() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-
-                    final var raidDto = createResponse.getBody();
-
-                    raidDto.getContributor().get(0).position(List.of());
-
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    try {
-                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                        fail("No exception thrown with empty position");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor[0]")
-                                        .errorType("notSet")
-                                        .message("A contributor must have a position")
-                        ));
-                    }
-                }
-
-                @Test
-                @DisplayName("Updating a RAiD with null positions fails")
-                void nullPositions() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-
-                    final var raidDto = createResponse.getBody();
-
-                    raidDto.getContributor().get(0).position(null);
-
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                    try {
-                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                        fail("No exception thrown with empty position");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor[0].position")
-                                        .errorType("notSet")
-                                        .message("field must be set")
-                        ));
-                    }
-                }
-
-                @Nested
-                @DisplayName("Position tests...")
-                class ContributorPositionTests {
-                    @Test
-                    @DisplayName("Updating a RAiD with missing position schemaUri fails")
-                    void missingPositionSchemeUri() {
-                        final var createResponse = raidApi.mintRaid(createRequest);
-                        final var raidDto = createResponse.getBody();
-                        final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                        raidDto.getContributor().get(0).getPosition().get(0).schemaUri(null);
-
-                        try {
-                            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                            fail("No exception thrown with missing contributor schemaUri");
-                        } catch (RaidApiValidationException e) {
-                            final var failures = e.getFailures();
-                            assertThat(failures, hasSize(1));
-                            assertThat(failures, contains(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[0].position[0].schemaUri")
-                                            .errorType("notSet")
-                                            .message("field must be set")
-                            ));
-                        }
-                    }
-
-                    @Test
-                    @DisplayName("Updating a RAiD with missing position id fails")
-                    void missingPositionId() {
-                        final var createResponse = raidApi.mintRaid(createRequest);
-                        final var raidDto = createResponse.getBody();
-                        final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                        raidDto.getContributor().get(0).getPosition().get(0).id(null);
-
-                        try {
-                            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                            fail("No exception thrown with missing contributor schemaUri");
-                        } catch (RaidApiValidationException e) {
-                            final var failures = e.getFailures();
-                            assertThat(failures, hasSize(1));
-                            assertThat(failures, contains(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[0].position[0].id")
-                                            .errorType("notSet")
-                                            .message("field must be set")
-                            ));
-                        }
-                    }
-
-                    /*
-                                @Test
-                                @DisplayName("Updating a RAiD with empty position id fails")
-                                void emptyPositionId() {
-                                    final var createResponse = raidApi.mintRaid(createRequest);
-                                    final var raidDto = createResponse.getBody();
-                                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                                    raidDto.getContributor().get(0).getPosition().get(0).id("");
-
-                                    try {
-                                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                                        fail("No exception thrown with missing contributor schemaUri");
-                                    } catch (RaidApiValidationException e) {
-                                        final var failures = e.getFailures();
-                                        assertThat(failures, hasSize(1));
-                                        assertThat(failures, contains(
-                                                new ValidationFailure()
-                                                        .fieldId("contributor[0].position[0].id")
-                                                        .errorType("notSet")
-                                                        .message("field must be set")
-                                        ));
-                                    }
-                                }
-
-                                @Test
-                                @DisplayName("Updating a RAiD with invalid position schemaUri fails")
-                                void invalidPositionSchemeUri() {
-                                    final var createResponse = raidApi.mintRaid(createRequest);
-                                    final var raidDto = createResponse.getBody();
-                                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                                    raidDto.getContributor().get(0).getPosition().get(0)
-                                            .schemaUri("https://github.com/au-research/raid-metadata/tree/main/scheme/contributor/position/v2");
-
-                                    try {
-                                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                                        fail("No exception thrown with missing contributor schemaUri");
-                                    } catch (RaidApiValidationException e) {
-                                        final var failures = e.getFailures();
-                                        assertThat(failures, hasSize(1));
-                                        assertThat(failures, contains(
-                                                new ValidationFailure()
-                                                        .fieldId("contributor[0].position[0].schemaUri")
-                                                        .errorType("invalidValue")
-                                                        .message("schema is unknown/unsupported")
-                                        ));
-                                    }
-                                }
-
-                                @Test
-                                @DisplayName("Updating a RAiD with invalid position type for schema fails")
-                                void invalidPositionTypeForScheme() {
-                                    final var createResponse = raidApi.mintRaid(createRequest);
-                                    final var raidDto = createResponse.getBody();
-                                    final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                                    raidDto.getContributor().get(0).getPosition().get(0)
-                                            .id("https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/unknown.json");
-
-                                    try {
-                                        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                                        fail("No exception thrown with missing contributor schemaUri");
-                                    } catch (RaidApiValidationException e) {
-                                        final var failures = e.getFailures();
-                                        assertThat(failures, hasSize(1));
-                                        assertThat(failures, contains(
-                                                new ValidationFailure()
-                                                        .fieldId("contributor[0].position[0].id")
-                                                        .errorType("invalidValue")
-                                                        .message("id does not exist within the given schema")
-                                        ));
-                                    }
-                                }
-                    */
-                    @Test
-                    @DisplayName("Updating a RAiD with a contributor with overlapping positions fails")
-                    void overlappingPositions() {
-                        final var createResponse = raidApi.mintRaid(createRequest);
-                        final var raidDto = createResponse.getBody();
-                        final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                        raidDto.getContributor().get(0).position(List.of(
-                                new ContributorPosition()
-                                        .id(PRINCIPAL_INVESTIGATOR_POSITION)
-                                        .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                        .startDate(LocalDate.now().minusYears(2).format(DateTimeFormatter.ISO_LOCAL_DATE)),
-                                new ContributorPosition()
-                                        .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_308)
-                                        .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                        .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
-                        ));
-
-                        try {
-                            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                            fail("No exception thrown with missing contributor schemaUri");
-                        } catch (RaidApiValidationException e) {
-                            final var failures = e.getFailures();
-                            assertThat(failures, hasSize(1));
-                            assertThat(failures, contains(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[0].position[1].startDate")
-                                            .errorType("invalidValue")
-                                            .message("Contributors can only hold one position at any given time. This position conflicts with contributor[0].position[0]")
-                            ));
-                        }
-                    }
-                }
-
-                @Nested
-                @DisplayName("Role tests...")
-                class ContributorRoleTestsNested {
-                    @Test
-                    @DisplayName("Updating a RAiD with missing role schemaUri fails")
-                    void missingRoleSchemeUri() {
-                        final var createResponse = raidApi.mintRaid(createRequest);
-                        final var raidDto = createResponse.getBody();
-                        final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                        raidDto.getContributor().get(0).getRole().get(0).schemaUri(null);
-
-                        try {
-                            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                            fail("No exception thrown with missing role schemaUri");
-                        } catch (RaidApiValidationException e) {
-                            final var failures = e.getFailures();
-                            assertThat(failures, hasSize(1));
-                            assertThat(failures, contains(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[0].role[0].schemaUri")
-                                            .errorType("notSet")
-                                            .message("field must be set")
-                            ));
-                        }
-                    }
-/*
-                    @Test
-                    @DisplayName("Updating a RAiD with empty role schemaUri fails")
-                    void emptyRoleSchemeUri() {
-                        final var createResponse = raidApi.mintRaid(createRequest);
-                        final var raidDto = createResponse.getBody();
-                        final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                        raidDto.getContributor().get(0).getRole().get(0).schemaUri("");
-
-                        try {
-                            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                            fail("No exception thrown with missing role schemaUri");
-                        } catch (RaidApiValidationException e) {
-                            final var failures = e.getFailures();
-                            assertThat(failures, hasSize(1));
-                            assertThat(failures, contains(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[0].role[0].schemaUri")
-                                            .errorType("notSet")
-                                            .message("field must be set")
-                            ));
-                        }
-                    }
-*/
-                    @Test
-                    @DisplayName("Updating a RAiD with missing role id fails")
-                    void missingPositionId() {
-                        final var createResponse = raidApi.mintRaid(createRequest);
-                        final var raidDto = createResponse.getBody();
-                        final var handle = new Handle(raidDto.getIdentifier().getId());
-
-                        raidDto.getContributor().get(0).getRole().get(0).id(null);
-
-                        try {
-                            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-                            fail("No exception thrown with missing role type");
-                        } catch (RaidApiValidationException e) {
-                            final var failures = e.getFailures();
-                            assertThat(failures, hasSize(1));
-                            assertThat(failures, contains(
-                                    new ValidationFailure()
-                                            .fieldId("contributor[0].role[0].id")
-                                            .errorType("notSet")
-                                            .message("field must be set")
-                            ));
-                        }
-                    }
-/*
             @Test
-            @DisplayName("Updating a RAiD with empty role id fails")
-            void emptyRoleId() {
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
+            @DisplayName("Minting a RAiD with invalid role schemaUri fails")
+            void invalidPositionSchemeUri() {
+                createRequest.setContributor(List.of(
+                        new Contributor()
+                                .id(REAL_TEST_ORCID)
+                                .schemaUri(ORCID_SCHEMA_URI)
+                                .contact(true)
+                                .leader(true)
+                                .email(CONTRIBUTOR_EMAIL)
+                                .position(List.of(
+                                        new ContributorPosition()
+                                                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                                .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                                .id(OTHER_PARTICIPANT_POSITION)
+                                ))
+                                .role(List.of(
+                                        new ContributorRole()
+                                                .schemaUri((ContributorRoleSchemaUriEnum) null)
+                                                .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                                ))
+                ));
+
+                try {
+                    raidApi.mintRaid(createRequest);
+                    fail("No exception thrown with invalid role schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].role[0].schemaUri")
+                                    .errorType("invalidValue")
+                                    .message("schema is unknown/unsupported")
+                    ));
+                }
+            }
+
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
+            @DisplayName("Minting a RAiD with invalid type for role schema fails")
+            void invalidPositionTypeForScheme() {
+                createRequest.setContributor(List.of(
+                        new Contributor()
+                                .id(REAL_TEST_ORCID)
+                                .contact(true)
+                                .leader(true)
+                                .schemaUri(ORCID_SCHEMA_URI)
+                                .email(CONTRIBUTOR_EMAIL)
+                                .position(List.of(
+                                        new ContributorPosition()
+                                                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                                .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                                .id(OTHER_PARTICIPANT_POSITION)
+                                ))
+                                .role(List.of(
+                                        new ContributorRole()
+                                                .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
+                                                .id((ContributorRoleIdEnum) null)
+                                ))
+                ));
+
+                try {
+                    raidApi.mintRaid(createRequest);
+                    fail("No exception thrown with invalid type for role schema");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].role[0].id")
+                                    .errorType("invalidValue")
+                                    .message("id does not exist within the given schema")
+                    ));
+                }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Contributor update tests")
+    class ContributorUpdateTests {
+
+        @Test
+        @DisplayName("Should not be able to update id of contributor with PUT request")
+        void updateId() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var raidDto = createResponse.getBody();
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            final var uuid = raidDto.getContributor().get(0).getUuid();
+
+            raidDto.getContributor().get(0).setId(REAL_TEST_ORCID);
+
+            try {
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor[0]")
+                                .errorType("notFound")
+                                .message("Contributor not found with PID (%s) and UUID (%s)".formatted(REAL_TEST_ORCID, uuid))
+                ));
+            }
+        }
+
+        @Test
+        @Disabled("Email not currently supported")
+        @DisplayName("Should not be able to update status of contributor with PUT request")
+        void updateStatus() {
+            createRequest.getContributor().get(0).email("awaiting-authentication@test.raid.org.au");
+            createRequest.getContributor().get(0).id(null);
+
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var raidDto = createResponse.getBody();
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            raidDto.getContributor().get(0).setStatus("AUTHENTICATED");
+
+            final var updateResponse = raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+            assertThat(updateResponse.getBody().getContributor().get(0).getStatus(), is("AWAITING_AUTHENTICATION"));
+        }
+
+        @Test
+        @DisplayName("Updating a RAiD with no contributors fails")
+        void noContributors() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var raidDto = createResponse.getBody();
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            raidDto.contributor(null);
+
+            try {
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                fail("No exception thrown with no contributors");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor")
+                                .errorType("notSet")
+                                .message("field must be set")
+                ));
+            }
+        }
+
+        @Test
+        @DisplayName("Updating a RAiD with missing contact fails")
+        void missingContact() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+
+            final var raidDto = createResponse.getBody();
+
+            raidDto.getContributor().get(0).contact(false);
+
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            try {
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                fail("No exception thrown with missing leader position");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor")
+                                .errorType("notSet")
+                                .message("At least one contributor must be flagged as a project contact")
+                ));
+            }
+        }
+
+        @Test
+        @DisplayName("Updating a RAiD with missing leader fails")
+        void missingLeader() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+
+            final var raidDto = createResponse.getBody();
+
+            raidDto.getContributor().get(0).leader(false);
+
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            try {
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                fail("No exception thrown with missing leader position");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor")
+                                .errorType("notSet")
+                                .message("At least one contributor must be flagged as a project leader")
+                ));
+            }
+        }
+
+        @Test
+        @DisplayName("Updating a RAiD with empty position fails")
+        void emptyPositions() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+
+            final var raidDto = createResponse.getBody();
+
+            raidDto.getContributor().get(0).position(List.of());
+
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            try {
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                fail("No exception thrown with empty position");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor[0]")
+                                .errorType("notSet")
+                                .message("A contributor must have a position")
+                ));
+            }
+        }
+
+        @Test
+        @DisplayName("Updating a RAiD with null positions fails")
+        void nullPositions() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+
+            final var raidDto = createResponse.getBody();
+
+            raidDto.getContributor().get(0).position(null);
+
+            final var handle = new Handle(raidDto.getIdentifier().getId());
+
+            try {
+                raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                fail("No exception thrown with empty position");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor[0].position")
+                                .errorType("notSet")
+                                .message("field must be set")
+                ));
+            }
+        }
+
+        @Nested
+        @DisplayName("Position tests...")
+        class ContributorPositionTests {
+            @Test
+            @DisplayName("Updating a RAiD with missing position schemaUri fails")
+            void missingPositionSchemeUri() {
                 final var createResponse = raidApi.mintRaid(createRequest);
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).id("");
+                raidDto.getContributor().get(0).getPosition().get(0).schemaUri(null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].schemaUri")
+                                    .errorType("notSet")
+                                    .message("field must be set")
+                    ));
+                }
+            }
+
+            @Test
+            @DisplayName("Updating a RAiD with missing position id fails")
+            void missingPositionId() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getPosition().get(0).id(null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].id")
+                                    .errorType("notSet")
+                                    .message("field must be set")
+                    ));
+                }
+            }
+
+            @Test
+            @DisplayName("Updating a RAiD with empty position id fails")
+            void emptyPositionId() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getPosition().get(0).id((ContributorPositionIdEnum) null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].id")
+                                    .errorType("notSet")
+                                    .message("field must be set")
+                    ));
+                }
+            }
+
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
+            @DisplayName("Updating a RAiD with invalid position schemaUri fails")
+            void invalidPositionSchemeUri() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getPosition().get(0)
+                        .schemaUri((ContributorPositionSchemaUriEnum) null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].schemaUri")
+                                    .errorType("invalidValue")
+                                    .message("schema is unknown/unsupported")
+                    ));
+                }
+            }
+
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
+            @DisplayName("Updating a RAiD with invalid position type for schema fails")
+            void invalidPositionTypeForScheme() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getPosition().get(0)
+                        .id((ContributorPositionIdEnum) null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[0].id")
+                                    .errorType("invalidValue")
+                                    .message("id does not exist within the given schema")
+                    ));
+                }
+            }
+
+            @Test
+            @DisplayName("Updating a RAiD with a contributor with overlapping positions fails")
+            void overlappingPositions() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).position(List.of(
+                        new ContributorPosition()
+                                .id(PRINCIPAL_INVESTIGATOR_POSITION)
+                                .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                .startDate(LocalDate.now().minusYears(2).format(DateTimeFormatter.ISO_LOCAL_DATE)),
+                        new ContributorPosition()
+                                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_308)
+                                .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                ));
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing contributor schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].position[1].startDate")
+                                    .errorType("invalidValue")
+                                    .message("Contributors can only hold one position at any given time. This position conflicts with contributor[0].position[0]")
+                    ));
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("Role tests...")
+        class ContributorRoleTests {
+            @Test
+            @DisplayName("Updating a RAiD with missing role schemaUri fails")
+            void missingRoleSchemeUri() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getRole().get(0).schemaUri(null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing role schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].role[0].schemaUri")
+                                    .errorType("notSet")
+                                    .message("field must be set")
+                    ));
+                }
+            }
+
+            @Test
+            @DisplayName("Updating a RAiD with empty role schemaUri fails")
+            void emptyRoleSchemeUri() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getRole().get(0).schemaUri((ContributorRoleSchemaUriEnum) null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing role schemaUri");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].role[0].schemaUri")
+                                    .errorType("notSet")
+                                    .message("field must be set")
+                    ));
+                }
+            }
+
+            @Test
+            @DisplayName("Updating a RAiD with missing role id fails")
+            void missingPositionId() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getRole().get(0).id(null);
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1142,16 +1277,39 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 }
             }
 
- */
-/*
             @Test
+            @DisplayName("Updating a RAiD with empty role id fails")
+            void emptyRoleId() {
+                final var createResponse = raidApi.mintRaid(createRequest);
+                final var raidDto = createResponse.getBody();
+                final var handle = new Handle(raidDto.getIdentifier().getId());
+
+                raidDto.getContributor().get(0).getRole().get(0).id((ContributorRoleIdEnum) null);
+
+                try {
+                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
+                    fail("No exception thrown with missing role type");
+                } catch (RaidApiValidationException e) {
+                    final var failures = e.getFailures();
+                    assertThat(failures, hasSize(1));
+                    assertThat(failures, contains(
+                            new ValidationFailure()
+                                    .fieldId("contributor[0].role[0].id")
+                                    .errorType("notSet")
+                                    .message("field must be set")
+                    ));
+                }
+            }
+
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Updating a RAiD with invalid role id fails")
             void invalidRoleId() {
                 final var createResponse = raidApi.mintRaid(createRequest);
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).id("invalid");
+                raidDto.getContributor().get(0).getRole().get(0).id((ContributorRoleIdEnum) null);
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1168,14 +1326,15 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 }
             }
 
-
+            @Test
+            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Updating a RAiD with invalid role schemaUri fails")
             void invalidPositionSchemeUri() {
                 final var createResponse = raidApi.mintRaid(createRequest);
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).schemaUri("unknown");
+                raidDto.getContributor().get(0).getRole().get(0).schemaUri((ContributorRoleSchemaUriEnum) null);
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1191,110 +1350,118 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                     ));
                 }
             }
-            */
+        }
+    }
 
-                }
+    @Nested
+    @DisplayName("Contributor patch tests")
+    class ContributorPatchTests {
 
+        @Disabled("Flakey test fails in test environment")
+        @Test
+        @DisplayName("Should patch a RAiD with a contributor with an ISNI")
+        void patchRaidWithIsniContributor() {
 
-            }
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var raidDto = createResponse.getBody();
+            final var handle = new Handle(raidDto.getIdentifier().getId());
 
-            @Nested
-            @DisplayName("Contributor patch tests")
-            class ContributorPatchTests {
+            raidDto.getContributor().add(
+                    isniContributor(REAL_TEST_ISNI, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today, "AUTHENTICATED")
+            );
 
-                @Test
-                @DisplayName("Should add authenticated contributor to raid")
-                void authenticatedContributor() {
-                    createRequest.getContributor().get(0).setEmail("authenticated@test.raid.org.au");
-                    createRequest.getContributor().get(0).setId(null);
+            final var patchResponse = raidApi.patchRaid(handle.getPrefix(), handle.getSuffix(), raidPatchRequestFactory.create(raidDto));
+            final var updateRequest = raidUpdateRequestFactory.create(patchResponse.getBody());
+            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequest);
+        }
 
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
+        @Test
+        @DisplayName("Should add authenticated contributor to raid")
+        void authenticatedContributor() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
 
-                    final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
-                    final var raidDto = readResponse.getBody();
+            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
+            final var raidDto = readResponse.getBody();
 
-                    assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATED"));
-                    assertThat(raidDto.getContributor().get(0).getId(), is("https://orcid.org/0000-0002-1474-3214"));
-                    assertThat(raidDto.getContributor().get(0).getUuid(), is("04742bfa-0e91-4339-b878-a4b850724f7b"));
-                }
+            assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATED"));
+            assertThat(raidDto.getContributor().get(0).getId(), is(REAL_TEST_ORCID));
+        }
 
-                @Test
-                @Disabled("Email not currently supported")
-                @DisplayName("Should set awaiting-authentication contributor")
-                void awaitingAuthenticationContributor() {
-                    createRequest.getContributor().get(0).setEmail("awaiting-authentication@test.raid.org.au");
-                    createRequest.getContributor().get(0).setId(null);
+        @Test
+        @Disabled("Email not currently supported")
+        @DisplayName("Should set awaiting-authentication contributor")
+        void awaitingAuthenticationContributor() {
+            createRequest.getContributor().get(0).setEmail("awaiting-authentication@test.raid.org.au");
+            createRequest.getContributor().get(0).setId(null);
 
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
 
-                    final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
-                    final var raidDto = readResponse.getBody();
+            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
+            final var raidDto = readResponse.getBody();
 
-                    assertThat(raidDto.getContributor().get(0).getStatus(), is("AWAITING_AUTHENTICATION"));
-                    assertThat(raidDto.getContributor().get(0).getId(), is(nullValue()));
-                    assertThat(raidDto.getContributor().get(0).getUuid(), is("4b932e7c-f7c2-4bd6-93d0-0244f47bdbcb"));
-                }
+            assertThat(raidDto.getContributor().get(0).getStatus(), is("AWAITING_AUTHENTICATION"));
+            assertThat(raidDto.getContributor().get(0).getId(), is(nullValue()));
+            assertThat(raidDto.getContributor().get(0).getUuid(), is("4b932e7c-f7c2-4bd6-93d0-0244f47bdbcb"));
+        }
 
-                @Test
-                @Disabled("Email not currently supported")
-                @DisplayName("Should set authentication-failed contributor")
-                void authenticationFailedContributor() {
-                    createRequest.getContributor().get(0).setEmail("authentication-failed@test.raid.org.au");
-                    createRequest.getContributor().get(0).setId(null);
+        @Test
+        @Disabled("Email not currently supported")
+        @DisplayName("Should set authentication-failed contributor")
+        void authenticationFailedContributor() {
+            createRequest.getContributor().get(0).setEmail("authentication-failed@test.raid.org.au");
+            createRequest.getContributor().get(0).setId(null);
 
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
 
-                    final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
-                    final var raidDto = readResponse.getBody();
+            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
+            final var raidDto = readResponse.getBody();
 
-                    assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATION_FAILED"));
-                    assertThat(raidDto.getContributor().get(0).getId(), is(nullValue()));
-                    assertThat(raidDto.getContributor().get(0).getUuid(), is("de8cb78e-3cb6-424d-9537-3b6a0b15604c"));
-                }
+            assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATION_FAILED"));
+            assertThat(raidDto.getContributor().get(0).getId(), is(nullValue()));
+            assertThat(raidDto.getContributor().get(0).getUuid(), is("de8cb78e-3cb6-424d-9537-3b6a0b15604c"));
+        }
 
-                @Test
-                @DisplayName("Should be able to successfully patch a contributor")
-                void happyPath() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var raidDto = createResponse.getBody();
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
+        @Test
+        @DisplayName("Should be able to successfully patch a contributor")
+        void happyPath() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var raidDto = createResponse.getBody();
+            final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                    raidDto.getContributor().get(0).setId(REAL_TEST_ORCID);
-                    raidDto.getContributor().get(0).setStatus("AUTHENTICATED");
+            raidDto.getContributor().get(0).setId(REAL_TEST_ORCID);
+            raidDto.getContributor().get(0).setStatus("AUTHENTICATED");
 
-                    final var patchResponse = raidApi.patchRaid(handle.getPrefix(), handle.getSuffix(), raidPatchRequestFactory.create(raidDto));
-                    final var updateRequest = raidUpdateRequestFactory.create(patchResponse.getBody());
+            final var patchResponse = raidApi.patchRaid(handle.getPrefix(), handle.getSuffix(), raidPatchRequestFactory.create(raidDto));
+            final var updateRequest = raidUpdateRequestFactory.create(patchResponse.getBody());
+            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequest);
 
-                    raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequest);
-                }
+        }
 
-                @Test
-                @DisplayName("Should fail with invalid status")
-                void invalidStatus() {
-                    final var createResponse = raidApi.mintRaid(createRequest);
-                    final var raidDto = createResponse.getBody();
-                    final var handle = new Handle(raidDto.getIdentifier().getId());
+        @Test
+        @DisplayName("Should fail with invalid status")
+        void invalidStatus() {
+            final var createResponse = raidApi.mintRaid(createRequest);
+            final var raidDto = createResponse.getBody();
+            final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                    raidDto.getContributor().get(0).setId(REAL_TEST_ORCID);
-                    raidDto.getContributor().get(0).setStatus("invalid");
+            raidDto.getContributor().get(0).setId(REAL_TEST_ORCID);
+            raidDto.getContributor().get(0).setStatus("invalid");
 
-                    try {
-                        raidApi.patchRaid(handle.getPrefix(), handle.getSuffix(), raidPatchRequestFactory.create(raidDto));
-                        fail("Patch should fail with invalid status");
-                    } catch (RaidApiValidationException e) {
-                        final var failures = e.getFailures();
-                        assertThat(failures, hasSize(1));
-                        assertThat(failures, contains(
-                                new ValidationFailure()
-                                        .fieldId("contributor[0].status")
-                                        .errorType("invalidValue")
-                                        .message("Contributor status should be one of AUTHENTICATED, UNAUTHENTICATED, AWAITING_AUTHENTICATION, AUTHENTICATION_FAILED")
-                        ));
-                    }
-                }
+            try {
+                raidApi.patchRaid(handle.getPrefix(), handle.getSuffix(), raidPatchRequestFactory.create(raidDto));
+                fail("Patch should fail with invalid status");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasSize(1));
+                assertThat(failures, contains(
+                        new ValidationFailure()
+                                .fieldId("contributor[0].status")
+                                .errorType("invalidValue")
+                                .message("Contributor status should be one of AUTHENTICATED, UNAUTHENTICATED, AWAITING_AUTHENTICATION, AUTHENTICATION_FAILED, AUTHENTICATION_REVOKED")
+                ));
             }
         }
     }

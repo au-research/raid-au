@@ -1,6 +1,13 @@
 raid:
-  identifier:
-    name-prefix: http://localhost:8080/
+  environment: dev
+  isni-client:
+    url-format: http://localhost:1080/sru/?query=pica.isn+%3D+%22__ISNI__%22&operation=searchRetrieve&recordSchema=isni-b
+  orcid-client:
+    base-url: http://localhost:1080/v3.0/
+    access-token: 32cacfb3-6dab-4554-ae51-22efd37a2463
+  ror-client:
+    client-id: 08VB3D1YYHC63CQ8QHP0TBD0I6RULCHQ
+    base-url: http://localhost:1080/v2/
   db:
     user: postgres
     password: supersecret
@@ -13,9 +20,10 @@ raid:
   raid-permissions:
     client-id: raid-permissions-admin
     client-secret: 07ATOSG9hYs8oATcz5wcQAdRuoEsLzEY
+  contributor-validation:
+    orcid:
+      url-prefix: https://sandbox.orcid.org/
 spring:
-  flyway:
-    locations: classpath:db/env/api_user,classpath:db/migration,classpath:db/env/dev
   security:
     oauth2:
       client:

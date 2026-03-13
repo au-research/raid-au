@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class DataciteTypesFactoryTest {
+    private static final String RAID_RESOURCE_TYPE = "RAiD";
     private final DataciteTypesFactory typesFactory = new DataciteTypesFactory();
 
     @Test
@@ -15,6 +16,7 @@ class DataciteTypesFactoryTest {
     void setsResourceTypeGeneral() {
         final var result = typesFactory.create();
 
-        assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.OTHER.getName()));
+        assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
+        assertThat(result.getResourceType(), is(RAID_RESOURCE_TYPE));
     }
 }

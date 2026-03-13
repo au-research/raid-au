@@ -11,7 +11,6 @@ public class IdentifierProperties {
     private String namePrefix;
     private String license;
     private String landingPrefix;
-    private String globalUrlPrefix;
     private String registrationAgencyIdentifier;
     private String handleUrlPrefix;
     private String schemaUri;

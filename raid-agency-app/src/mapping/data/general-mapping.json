@@ -84,6 +84,12 @@
     "definition": "Statement of research significance or anticipated impact"
   },
   {
+    "field": "description.type.id",
+    "key": "https://vocabulary.raid.org/description.type.schema/392",
+    "value": "Acknowledgements",
+    "definition": "Acknowledgements, i.e., for recognition of people not listed as Contributors or organisations not listed as Organisations"
+  },
+  {
     "field": "organisation.role.id",
     "key": "https://vocabulary.raid.org/organisation.role.schema/185",
     "value": "Contractor",

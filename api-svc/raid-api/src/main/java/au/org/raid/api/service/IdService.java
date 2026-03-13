@@ -36,7 +36,7 @@ public class IdService {
                 )
                 .license(record.getLicense())
                 .version(record.getVersion())
-                .raidAgencyUrl(String.format("%s%s", identifierProperties.getHandleUrlPrefix(), record.getHandle()));
+                .raidAgencyUrl(String.format("%s%s", identifierProperties.getLandingPrefix(), record.getHandle()));
 
 
     }

@@ -1,10 +1,11 @@
-import LanguageSelector from "@/fields/LanguageSelector";
-import { TextInputField } from "@/fields/TextInputField";
-import { TextSelectField } from "@/fields/TextSelectField";
+import LanguageSelector from "@/components/fields/LanguageSelector";
+import { TextInputField } from "@/components/fields/TextInputField";
+import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
+import languageSchema from "@/references/language_schema.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 function FieldGrid({
@@ -14,6 +15,19 @@ function FieldGrid({
   index: number;
   isRowHighlighted: boolean;
 }) {
+
+  const { watch, setValue } = useFormContext();
+  const currentTextValue = watch(`title.${index}.language.id`);
+   const accessTypeId = watch(`title.${index}.type.id`);
+
+  useEffect(() => {
+    if (currentTextValue) {
+      setValue(`title.${index}.language.schemaUri`, languageSchema[0].uri);
+    } else {
+      setValue(`title.${index}.language`, undefined);
+    }
+  }, [currentTextValue, setValue, index, accessTypeId]);
+
   const titleTypeOptions = generalMapping
     .filter((el) => el.field === "title.type.schema")
     .map((el) => ({

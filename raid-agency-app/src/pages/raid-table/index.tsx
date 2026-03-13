@@ -1,37 +1,25 @@
-import { RaidDto } from "@/generated/raid";
-import { Loading } from "@/pages/loading";
-import { fetchAllRaids } from "@/services/raid";
-import {
-  Alert,
-  Card,
-  CardContent,
-  CardHeader,
-  LinearProgress,
-  Stack,
-  TableContainer,
-  Typography,
-} from "@mui/material";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
+import {Loading} from "@/pages/loading";
+import {Card, CardContent, CardHeader, LinearProgress, Stack, TableContainer, Typography,} from "@mui/material";
+import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
 
-import { useQuery } from "@tanstack/react-query";
-import { endDateColumn } from "./columns/endDateColumn";
-import { handleColumn } from "./columns/handleColumn";
-import { startDateColumn } from "./columns/startDateColumn";
-import { titleColumn } from "./columns/titleColumn";
-import { RaidTableRowContextMenu } from "./components";
-import { useKeycloak } from "@/contexts/keycloak-context";
-import { ErrorAlertComponent } from "@/components/error-alert-component";
+import {useQuery} from "@tanstack/react-query";
+import {endDateColumn} from "./columns/endDateColumn";
+import {handleColumn} from "./columns/handleColumn";
+import {startDateColumn} from "./columns/startDateColumn";
+import {titleColumn} from "./columns/titleColumn";
+import {RaidTableRowContextMenu} from "./components";
+import {useKeycloak} from "@/contexts/keycloak-context";
+import {ErrorAlertComponent} from "@/components/error-alert-component";
+import {raidService} from "@/services/raid-service.ts";
 
 export const RaidTable = ({ title }: { title?: string }) => {
   const { authenticated, token, isInitialized } = useKeycloak();
 
-  const raidQuery = useQuery<RaidDto[]>({
+  type RaidQueryKey = ["listRaids"];
+
+  const raidQuery = useQuery({
     queryKey: ["listRaids"],
-    queryFn: () =>
-      fetchAllRaids({
-        fields: ["identifier", "title", "date"],
-        token: token!,
-      }),
+    queryFn: () => raidService.fetchAll([]),
     enabled: isInitialized && authenticated,
   });
 

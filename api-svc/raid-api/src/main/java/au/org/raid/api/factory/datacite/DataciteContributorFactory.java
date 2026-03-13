@@ -1,25 +1,32 @@
 package au.org.raid.api.factory.datacite;
 
-import au.org.raid.api.model.datacite.DataciteContributor;
-import au.org.raid.api.model.datacite.NameIdentifier;
+import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.config.properties.DataciteProperties;
+import au.org.raid.api.model.datacite.doi.DataciteContributor;
+import au.org.raid.api.model.datacite.doi.NameIdentifier;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganizationRoleIdEnum;
 import au.org.raid.idl.raidv2.model.RegistrationAgency;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class DataciteContributorFactory {
     private static final String NAME_IDENTIFIER_SCHEME = "ROR";
     private static final String ORGANISATIONAL_NAME_TYPE = "Organizational";
 
+    private final RorClient rorClient;
+    private final DataciteProperties properties;
+
     public DataciteContributor create(final RegistrationAgency registrationAgency) {
         return new DataciteContributor()
                 .setContributorType("RegistrationAgency")
-                .setName("RAiD AU") // move to config
+                .setName(properties.getRegistrationAgencyName())
                 .setNameType(ORGANISATIONAL_NAME_TYPE)
                 .setNameIdentifiers(List.of(
                         new NameIdentifier()
@@ -30,13 +37,15 @@ public class DataciteContributorFactory {
     }
 
     public DataciteContributor create(final Organisation organisation) {
+        final var organisationName = rorClient.getOrganisationName(organisation.getId());
+
         final var latestRole = organisation.getRole().stream()
                 .filter(role -> !role.getId().equals(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186))
                 .max((o1, o2) -> o2.getStartDate().compareTo(o1.getStartDate()))
                 .orElse(null);
 
         final var contributor = new DataciteContributor()
-                .setName(organisation.getId())
+                .setName(organisationName)
                 .setNameType(ORGANISATIONAL_NAME_TYPE)
 
                 .setNameIdentifiers(List.of(

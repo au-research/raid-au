@@ -1,13 +1,40 @@
 raid:
+  environment: not-set
+  repository-client:
+    username: not-set
+    password: not-set
+    url: https://api.test.datacite.org/repositories
+    email: not-set
+  iam:
+    realm-uri: https://iam.${raid.environment}.raid.org.au/realms/raid
+  db:
+    name: raido
+  isni-client:
+    url-format: https://isni.oclc.org/sru/?query=pica.isn+%3D+%22__ISNI__%22&operation=searchRetrieve&recordSchema=isni-b
+  orcid-client:
+    base-url: https://api.sandbox.orcid.org/v3.0/
+    access-token: not-set
+  ror-client:
+    client-id: 08VB3D1YYHC63CQ8QHP0TBD0I6RULCHQ
+    base-url: https://api.ror.org/v2/
+  cors:
+    origins:
+      - http://localhost:7080
+  contributor-validation:
+    orcid:
+      url-prefix: https://orcid.org/
+      schema-uri: https://orcid.org/
+    isni:
+      url-prefix: https://isni.org/
+      schema-uri: https://isni.org/
   orcid-integration:
     orcid-url-prefix: https://sandbox.orcid.org/
     host: http://localhost:1080
     raid-listener:
       uri: ${raid.orcid-integration.host}/raid-update
-    contributor-email-lookup:
-      uri: ${raid.orcid-integration.host}/find-contributor-by-email
     contributor-id-lookup:
       uri: ${raid.orcid-integration.host}/find-contributor-by-orcid
+    api-key: not-set
   stub:
     geo-names:
       enabled: true
@@ -30,10 +57,9 @@ raid:
   identifier:
     schema-uri: https://raid.org/
     license: Creative Commons CC-0
-    landing-prefix: https://raid.org/
-    global-url-prefix: https://hdl.handle.net
+    landing-prefix: https://static.${raid.environment}.raid.org.au/raids/
     registration-agency-identifier: https://ror.org/038sjwq14
-    handle-url-prefix: http://test.static.raid.org.au/
+    name-prefix: https://raid.org/
   spatial-coverage:
     schema-uri:
       geonames: https://www.geonames.org/
@@ -59,6 +85,7 @@ spring:
     default-schema: api_svc
     create-schemas: true
     baseline-version: 25
+    locations:  classpath:db/env/api_user,classpath:db/migration,classpath:db/env/${raid.environment}
   security:
     oauth2:
       resourceserver:
@@ -74,8 +101,6 @@ spring:
           keycloak:
             issuer-uri: ${raid.iam.realm-uri}
             user-name-attribute: preferred_username
-  profiles:
-    active: dev
 springdoc:
   swagger-ui:
     enabled: true
@@ -83,3 +108,4 @@ springdoc:
     path: /docs
 datacite:
   endpoint: https://api.test.datacite.org/dois
+  registration-agency-name: Australian Research Data Commons

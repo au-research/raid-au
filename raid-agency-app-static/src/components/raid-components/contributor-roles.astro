@@ -10,7 +10,7 @@ const { contributorRoles } = Astro.props as Props;
 ---
 
 <section>
-  <div class="ml-5 py-2 flex gap-3">
+  <div class="ml-1 py-2 flex gap-3">
     {
       contributorRoles?.map((el) => {
         const id = new URL(el.id).pathname.split("/").slice(-2, -1)[0];

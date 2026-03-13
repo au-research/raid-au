@@ -9,18 +9,13 @@ import au.org.raid.db.jooq.Keys;
 import au.org.raid.db.jooq.tables.records.TokenRecord;
 
 import java.time.LocalDateTime;
-import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function5;
 import org.jooq.JSONB;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row5;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -157,29 +152,5 @@ public class Token extends TableImpl<TokenRecord> {
     @Override
     public Token rename(Table<?> name) {
         return new Token(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row5 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row5<String, String, LocalDateTime, String, JSONB> fieldsRow() {
-        return (Row5) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function5<? super String, ? super String, ? super LocalDateTime, ? super String, ? super JSONB, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function5<? super String, ? super String, ? super LocalDateTime, ? super String, ? super JSONB, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

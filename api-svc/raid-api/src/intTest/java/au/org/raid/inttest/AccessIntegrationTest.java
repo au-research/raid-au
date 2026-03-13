@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static au.org.raid.inttest.service.TestConstants.*;
+import static au.org.raid.fixtures.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
 public class AccessIntegrationTest extends AbstractIntegrationTest {

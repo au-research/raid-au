@@ -7,7 +7,7 @@ import {
   Menu as MenuIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-
+import { SnackbarContextInterface, useSnackbar } from "@/components/snackbar";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import {
   IconButton,
@@ -18,11 +18,13 @@ import {
 } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import { Link } from "react-router-dom";
+import { copyToClipboardWithNotification } from "@/utils/copy-utils/copyWithNotify";
+
 
 export const RaidTableRowContextMenu = ({ row }: { row: RaidDto }) => {
   const [prefix, setPrefix] = React.useState<string>("");
   const [suffix, setSuffix] = React.useState<string>("");
-
+  const snackbar = useSnackbar();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleContextMenuClick = (
@@ -44,13 +46,33 @@ export const RaidTableRowContextMenu = ({ row }: { row: RaidDto }) => {
       setSuffix("");
     }, 500);
   };
-
+       
   return (
     <>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <MenuItem
           onClick={async () => {
-            navigator.clipboard.writeText(`${suffix}`);
+            await copyToClipboardWithNotification(
+              JSON.stringify(row, null, 2),
+              "Copied raw JSON data to clipboard",
+              snackbar as SnackbarContextInterface
+            );
+            handleClose();
+            }
+          }
+        >
+          <ListItemIcon>
+            <ContentCopy fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Copy raw JSON" secondary={"RAW Data"}/>
+        </MenuItem>
+        <MenuItem
+          onClick={async () => {
+            await copyToClipboardWithNotification(
+              `${suffix}`,
+              "Copied Suffix to clipboard",
+              snackbar as SnackbarContextInterface
+            );
             handleClose();
           }}
         >
@@ -61,7 +83,11 @@ export const RaidTableRowContextMenu = ({ row }: { row: RaidDto }) => {
         </MenuItem>
         <MenuItem
           onClick={async () => {
-            navigator.clipboard.writeText(`${prefix}/${suffix}`);
+            await copyToClipboardWithNotification(
+              `${prefix}/${suffix}`,
+              "Copied Identifier to clipboard",
+              snackbar as SnackbarContextInterface
+            );
             handleClose();
           }}
         >
@@ -75,9 +101,10 @@ export const RaidTableRowContextMenu = ({ row }: { row: RaidDto }) => {
         </MenuItem>
         <MenuItem
           onClick={async () => {
-            // await copy(`https://raid.org/${prefix}/${suffix}`);
-            navigator.clipboard.writeText(
-              `https://raid.org/${prefix}/${suffix}`
+            await copyToClipboardWithNotification(
+              `https://raid.org/${prefix}/${suffix}`,
+              "Copied URL to clipboard",
+              snackbar as SnackbarContextInterface
             );
             handleClose();
           }}

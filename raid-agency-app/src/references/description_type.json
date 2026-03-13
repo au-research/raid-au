@@ -33,5 +33,10 @@
     "id": 9,
     "uri": "https://vocabulary.raid.org/description.type.schema/9",
     "schema_id": 2
+  },
+  {
+    "id": 10,
+    "uri": "https://vocabulary.raid.org/description.type.schema/392",
+    "schema_id": 2
   }
 ]

@@ -1,17 +1,20 @@
-import { useAuthHelper } from "@/keycloak";
-import { GroupSelector } from "@/pages/home/components/GroupSelector";
-import { RaidTable } from "@/pages/raid-table";
-import { Add as AddIcon } from "@mui/icons-material";
-import { Alert, Container, Fab, Stack } from "@mui/material";
-import { Link } from "react-router-dom";
+import {useAuthHelper} from "@/auth/keycloak"
+import { Footer } from "@/components/footer-bar/footer";
+import {GroupSelector} from "@/pages/home/components/GroupSelector";
+import {RaidTable} from "@/pages/raid-table";
+import {Add as AddIcon} from "@mui/icons-material";
+import {Alert, Container, Fab, Stack, Box} from "@mui/material";
+import {Link} from "react-router-dom";
 
 export const Home = () => {
-  const { hasServicePointGroup, isServicePointUser } = useAuthHelper();
+  const { hasServicePointGroup, isServicePointUser, isOperator } = useAuthHelper();
 
   return (
-    <Container>
+    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 216px)' }}> 
+    <Container sx={{ flex: 1, mb: 5 }}>
       <Stack gap={2}>
-        {hasServicePointGroup && isServicePointUser && (
+        {((hasServicePointGroup && isServicePointUser) || isOperator)  && (
           <Fab
             variant="extended"
             component={Link}
@@ -31,9 +34,12 @@ export const Home = () => {
             has not granted you access yet.
           </Alert>
         )}
-        {!hasServicePointGroup && <GroupSelector />}
-        {hasServicePointGroup && isServicePointUser && <RaidTable />}
+        {!hasServicePointGroup && !isOperator && <GroupSelector />}
+        {((hasServicePointGroup && isServicePointUser) || isOperator) && <RaidTable />}
       </Stack>
     </Container>
+    <Footer />
+    </Box>
+    </>
   );
 };

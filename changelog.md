@@ -1,7 +1,242 @@
-See the [Changelog audience](#changelog-audience) section for info about 
+See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
+# 2.8.0
+## API
+* Fix NPE in IsniClient when personalName.nameUse is null
+* Read raids from metadata column for faster list queries
+* Materialise current RaidDto state with admin backfill endpoint
+* Cache reference data repository lookups
+* Parallelise I/O-bound validators in ValidationService
+* Scope raid visibility to user's own service point and push filtering into SQL
 
-# 2.2.0
+## App-client UI
+* Add ARDC branding with header, footer, NCRIS logo, dark/light mode, and mega-menu
+* Scope raid visibility to user's own service point only
+* Fix Access Type statement language validation issue
+* Fix title language generation on load
+* Add Playwright E2E test suite covering create, edit, validation, optional metadata, and vocabulary dropdowns
+
+## IAM
+* Add ARDC branding theme for Keycloak login page
+* Upgrade Keycloak SPI dependency from 26.5.3 to 26.5.4
+
+# 2.7.0
+## API
+* Add GET /raid/count endpoint for KPI reporting with service point and organisation breakdowns
+* Add integration test for service point CRUD operations
+* Remove DataCite repositoryId, prefix, and password from service point request models
+* Pass DataCite values directly to factory instead of setting on request
+* Remove unused RaidClient and RaidPermissionsDto
+
+## App-client UI
+* Add RAiD history page with API integration and route setup
+* Add caching for ORCID and ROR data fetching on landing pages
+* Display DataCite fields as read-only information from ServicePoint response
+* Make access statement language field optional
+* Make title language dropdown optional
+* Fix defect related to saving the language in the Access field
+* Fix access mapping subject code and organisation class typo
+* Fix RAiD edit page defect and useQuery caching issue
+* Move extended Citation types to src/model/raid/ - Raid App
+* Add ORCID and ROR details to Raid data and render in the static pages as per the guidelines
+* Move extended ROR and ORCID types to src/model/raid - static landing pages
+
+## SSO
+* Upgrade Keycloak from 24.0.1 to 26.5.3 (requires CDK deployment)
+* Add unit test coverage for Keycloak SPI extensions
+* Fix local dev Keycloak health check to use HTTPS
+* Fix docker-compose health check for Keycloak 26
+
+# 2.6.1
+## App-client UI
+* Bug fixes for Subject picker. Currently, supports ANZSRC-FOR and ANZSRC-SEO codes
+* Login page customization now configurable via Keycloak User Interface
+* Removed DataCite repository fields from Create Service Point page; fields remain available to view on Update Service Point page
+
+# 2.6.0
+## API
+* Add endpoint to return all embargoed raids
+* Add validation to prevent organisations from having simultaneous roles
+* Add created and updated columns to service point db table
+
+# 2.5.31
+## API
+* Support requests with or without trailing slashes in the URL
+
+# 2.5.30
+## App-client UI
+* Implemented new UX/UI Subject picker. Currently, supports ANZSRC-FOR and ANZSRC-SEO codes
+
+# 2.5.29
+## App-client UI
+* Turned off the contributors call until the new ORCID updater is ready
+
+# 2.5.28
+## API
+* Update ORCID integration endpoints to use raid.org
+
+# 2.5.27
+## API
+* Add SEO codes as subject types  
+
+# 2.5.26
+## API
+* Fix bug in ISNI validation in PATCH requests
+
+# 2.5.25
+## API
+* Add service point name to ORCID notification and change item type to membership in ORCID integration
+
+# 2.5.23/2.5.24
+## App-client UI
+* Updated the date format to follow (YYYY-MM-DD) format throughout the App(View/Edit)
+* Extracted root domain from current origin instead of hard-coding domain name
+
+# 2.5.22
+## SSO
+* Update mappings from AAF to allow usernames to be shown in UI
+
+# 2.5.21
+## API
+* Add validation to prevent duplicate organizations appearing in a RAiD
+
+# 2.5.20
+## API
+* Bug fix in non-legacy endpoint
+
+# 2.5.19
+## API
+* Add migration to remove null values from history
+* Fix security config for non-legacy endpoint
+
+# 2.5.18
+> Note: This release jumps directly from 2.5.16 to 2.5.18 due to a deployment issue. There is no version 2.5.17.
+* Migration to fix raidAgencyUrl field
+* 
+# 2.5.16
+## App-client UI
+* RAiD App Error handling: Added a generic message to the popup to display for the user instead of an empty popup with an unknown error in case of unexpected errors (400, 500, etc.)
+* ROR Widget: Updated selected ROR display results on UI to show ror_display type instead of label type
+* Contributors Get request Uri: Added a default case to render an empty uri value in case the instance doesn't contain any environment-specific keywords (demo, test, prod, etc.)
+
+# 2.5.15
+## API
+* Check ORCIDs and ISNIs exist before sending to Datacite
+
+# 2.5.14
+## API
+* Add names to creators when sending data to Datacite
+
+# 2.5.13
+> Note: This release jumps directly from 2.5.11 to 2.5.13 due to a deployment issue. There is no version 2.5.12.
+## App-client UI
+* RAiD App Notification Service update: Users with "Operator" permission can now be able to see pending requests from all the service points.
+* View RAiD: RAiDs will no contributors can now see empty contributors block instead of "contributors not defined"
+
+# 2.5.11
+## API
+* Add temporary endpoints to uplift legacy RAiDs and RAiDs with GitHub vocabularies
+## App-client UI
+* RAiD App Notification: Added new UX/UI for Notification Service
+* Implemented notification service using React Context API for global state management, allowing any component to add or remove notifications without modifying core code
+* Fixed defect related to hamburger menu toggle and click-away functionality to properly hide the drawer when clicking outside or selecting menu items
+* Removed mandatory validation check for organisation field while minting a RAiD
+
+
+# 2.5.10
+## API
+* Add 'AUTHENTICATION_REVOKED' contributor status for when ORCID owners remove permission for RAiD to update their record.
+* Added POST endpoint for groupID creation
+* Added support to validate the unique repository_Id constraint.
+
+## ORCID Integration
+* Set contributor status to 'AUTHENTICATION_REVOKED' if an update to ORCID record return a 401 status
+
+## App-client UI
+* Service Point Management: Added new UX/UI for service point creation and update functionality
+* ROR Integration: Integrated Research Organization Registry (ROR) search widget
+* Form Organization with Validation: Grouped form fields into logical sections (Service Point Owner, Data Cite Repository, Settings)
+* Collapsible Interface: Added accordion component for form sections (default collapsed)
+* Status Indicators: Added status indicators(loading/loaded/error) and graceful error handling on error scenarios.
+* Defect Fix: Fixed the toggle buttons on both create and update service points forms.
+
+# 2.5.9
+## API
+* Add 'Acknowledgements' as description type
+
+## App-client UI
+* Added attributes to the AAF-SAML identity provider in Keycloak to extract firstName, lastName, and email for displaying human-readable names in the UI(Service-points)
+* Added 'Acknowledgements' as description type in the Web App.
+
+# 2.5.8
+## API
+* Update scheme/host of `identifier.id` to 'https://raid.org' in all RAiDs 
+
+## App-client UI
+* Added missing subject('Public Health')-(HELP-2337).
+* Contributors Management Fix - Resolved issue where users couldn't delete existing contributors and add new ones
+* Removed Invitation feature due to quality concerns. It will return at a later date.
+* Added Google Analytics tracking to the application.
+
+# 2.5.7
+## App-client UI
+* Enhanced ROR Lookup UX: Redesigned Research Organization Registry lookup interface
+* Uplifted search functionality with free text or RORID, visual status feedback (loading, success, error states)
+
+## ORCID Integration
+* Add dedicated authentication success page rather than redirecting to app.
+
+# 2.5.6
+## API
+* Fix NullPointerException when adding/removing contributors
+
+## App-client UI
+* Resolved schemaUri validation issues affecting Subject field.
+* Fixed validation handling for AccessType = Embargoed, ensuring correct schemaUri processing.
+
+# 2.5.5
+## ORCID Integration
+* Bug fixes and refactoring
+
+# 2.5.4
+## App-client UI
+* Implemented DOI citation fetching from DOI.org with "Accept: text/x-bibliography", supporting DataCite, Crossref, and mEDRA formats
+* Added retry functionality for failed DOI citation requests to improve user experience
+* Built Node.js modules to fetch RAiD and DOI citation data for static page generation using Astro framework(static website)
+* Added caching mechanism to DOI citation functionality to store the citations for 5 days(configurable via .env file) in astro app(static website)
+* Implemented markdown rendering on landing pages for rich text content(static website)
+* Added comprehensive tooltip system across the entire RAiD application for improved user guidance
+* Integrated DOI citation display within the main RAiD application
+* Refactored React Hook Form implementation to properly handle controlled/uncontrolled component patterns and resolve console warnings
+* Updated embargoed AccessTypes interface data structure for better data handling
+* Updated ROR (Research Organization Registry) API routes to align with latest ROR.org changelog specifications
+* Fixed edge cases where DOI citations were failing without proper error handling
+
+# 2.5.3
+## App-client UI
+* Enhanced snackbar UX with notifications for successful RAiD minting and editing
+* Improved ROR organization lookup with automatic name population
+* Added dynamic error dialog to display API response errors
+* Enhanced error handling with standardized error structure transformation
+* Improved copy functionality with JSON data export from RAiD table
+* Enhanced validation for DOI and ORCID identifiers to handle whitespace
+* Improved alert dialog messages for required segments with sequence numbers
+* Major project structure reorganization with API constants consolidation
+* Enhanced end date validation for contributor positions and organization roles
+* Various UI/UX improvements and bug fixes
+
+## API
+* Added endpoint to post RAiD data to Datacite with backfill capability
+* Updated Datacite mapping to set 'RAiD' as resource type
+* Enhanced service point input processing with whitespace trimming
+* Improved security configuration and authorization handling
+* Various security and data handling improvements
+
+# 2.5.2
+## App-client UI
+* Fix refresh token request to prevent stale access token
+
+# 2.5.0
 ## App-client UI
 * Enhanced contributor management with ORCID integration
 * Improved invite functionality with ORCID notifications

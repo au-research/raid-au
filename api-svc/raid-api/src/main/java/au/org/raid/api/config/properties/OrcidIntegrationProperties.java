@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "raid.orcid-integration")
 public class OrcidIntegrationProperties {
     private String orcidUrlPrefix;
+    private String apiKey;
     private RaidListener raidListener;
     private ContributorIdLookup contributorIdLookup;
-    private ContributorEmailLookup contributorEmailLookup;
 
     @Getter
     @Setter
@@ -24,12 +24,6 @@ public class OrcidIntegrationProperties {
     @Getter
     @Setter
     public static class ContributorIdLookup {
-        private String uri;
-    }
-
-    @Getter
-    @Setter
-    public static class ContributorEmailLookup {
         private String uri;
     }
 }

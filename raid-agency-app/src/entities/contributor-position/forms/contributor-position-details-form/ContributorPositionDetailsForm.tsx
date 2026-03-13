@@ -1,5 +1,5 @@
-import { TextInputField } from "@/fields/TextInputField";
-import { TextSelectField } from "@/fields/TextSelectField";
+import { TextInputField } from "@/components/fields/TextInputField";
+import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
@@ -41,9 +41,8 @@ function FieldGrid({
       />
       <TextInputField
         name={`contributor.${parentIndex}.position.${index}.endDate`}
-        label="end Date"
-        placeholder="end Date"
-        required={true}
+        label="End Date"
+        placeholder="End Date"
         width={3}
       />
     </Grid>
@@ -94,8 +93,8 @@ export function ContributorPositionDetailsForm({
             onClick={() => {
               if (
                 window.confirm(
-                  `Are you sure you want to delete ${label} "${currentValue}"?`
-                )
+                  `Are you sure you want to delete ${label} # ${index + 1} ?`
+                )//ShortTerm Fix: Display the title of the item and its corresponding sequence number in the confirmation dialog
               ) {
                 handleRemoveItem(index);
               }

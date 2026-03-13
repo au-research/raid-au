@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -91,15 +90,11 @@ public class ContributorService {
         create(contributors, handle);
     }
 
-    public void setStatusAndUuid(final List<Contributor> contributors) {
+    public void setStatus(final List<Contributor> contributors) {
         contributors.forEach(contributor -> {
             if (!isBlank(contributor.getId())) {
                 final var optional = contributorRepository.findByPid(contributor.getId());
-                if (optional.isPresent()) {
-                    final var contributorRecord = optional.get();
-                    contributor.status(contributorRecord.getStatus());
-                    contributor.uuid(contributorRecord.getUuid());
-                }
+                optional.ifPresent(contributorRecord -> contributor.status(contributorRecord.getStatus()));
             }
         });
     }

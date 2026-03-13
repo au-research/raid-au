@@ -155,7 +155,7 @@ public class RaidHistoryService {
     }
 
     @SneakyThrows
-    public Optional<RaidDto> findByHandleAndVersion(final String handle, final Integer version) {
+    public Optional<String> findByHandleAndVersion(final String handle, final Integer version) {
         final var history = raidHistoryRepository.findAllByHandleAndVersion(handle, version).stream()
                 .map(RaidHistoryRecord::getDiff)
                 .map(jsonValueFactory::create)
@@ -165,7 +165,7 @@ public class RaidHistoryService {
             return Optional.empty();
         }
 
-        return Optional.of(objectMapper.readValue(jsonValueFactory.create(history).toString(), RaidDto.class));
+        return Optional.of(jsonValueFactory.create(history).toString());
      }
 
     @SneakyThrows

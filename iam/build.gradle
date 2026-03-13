@@ -16,32 +16,30 @@ repositories {
     mavenCentral()
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
 dependencies {
-    implementation 'org.keycloak:keycloak-server-spi:24.0.1'
-    implementation 'org.keycloak:keycloak-server-spi-private:24.0.1'
-    implementation 'org.keycloak:keycloak-core:24.0.1'
-    implementation 'org.keycloak:keycloak-services:24.0.1'
-    compileOnly 'org.projectlombok:lombok:1.18.36'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    implementation libs.keycloak.server.spi
+    implementation libs.keycloak.server.spi.private
+    implementation libs.keycloak.core
+    implementation libs.keycloak.services
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    implementation 'jakarta.platform:jakarta.jakartaee-web-api:9.1.0'
-    implementation 'org.slf4j:slf4j-simple:2.0.6'
+    implementation libs.jakarta.jakartaee.web.api
+    implementation libs.slf4j.simple
 
     // Use JUnit Jupiter for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
-    testImplementation 'org.mockito:mockito-core:5.11.0'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testImplementation libs.hamcrest
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.jboss.resteasy:resteasy-core:6.2.7.Final'
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api 'org.apache.commons:commons-math3:3.6.1'
+    api libs.commons.math3
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation 'com.google.guava:guava:31.1-jre'
+    implementation libs.guava
 }
 
 tasks.named('test') {
@@ -51,11 +49,4 @@ tasks.named('test') {
 
 jar {
     archiveBaseName = 'raid-iam'
-}
-
-tasks.withType(JavaCompile).configureEach {
-    doFirst {
-        println "Compiling with sourceCompatibility: ${sourceCompatibility}"
-        println "Compiling with targetCompatibility: ${targetCompatibility}"
-    }
 }

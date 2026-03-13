@@ -1,0 +1,1000 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2024 by OCLC -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified"><xs:element name="responseRecord">
+		<xs:annotation>
+			<xs:documentation>Response to ISNI ATOMPub Request v 1.0 2017-11-07</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice>
+				<xs:element name="ISNIAssigned">
+					<xs:annotation>
+						<xs:documentation>003/003E $a.  "assigned" </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="isniUnformatted">
+								<xs:annotation>
+									<xs:documentation>003/003E $0</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="isniURI">
+								<xs:annotation>
+									<xs:documentation>003/003E $0 given as resolvable URI; syntax http://isni.org/isni/#/</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="mergedISNI">
+								<xs:annotation>
+									<xs:documentation>003F $0</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="dataConfidence">
+								<xs:annotation>
+								    <xs:documentation>003/003E $c</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="ISNIMetadata">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element ref="identity"></xs:element>
+										<xs:element maxOccurs="unbounded" minOccurs="0" ref="otherIdentifierOfIdentity"></xs:element>
+										<xs:element maxOccurs="unbounded" minOccurs="0" ref="externalInformation"></xs:element>
+										<xs:element maxOccurs="99" ref="sources"></xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="3" minOccurs="0" ref="matches"></xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" ref="possibleMatch"></xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="noISNI">
+					<xs:annotation>
+						<xs:documentation>003/003E $a IS NOT "assigned" </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element minOccurs="0" name="PPN">
+								<xs:annotation>
+									<xs:documentation>000/003@ $0</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element minOccurs="0" name="reason">
+								<xs:annotation>
+									<xs:documentation>003/003E $b</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element minOccurs="0" name="information">
+							    <xs:annotation>
+									<xs:documentation>003/003E $d</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" ref="possibleMatch"></xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="personalName">
+		<xs:annotation>
+			<xs:documentation>028C</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" name="nameUse">
+					<xs:annotation>
+						<xs:documentation>public, private, fictional etc. 700 $3; 028C $3</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="unknown"></xs:enumeration>
+							<xs:enumeration value="fictional character"></xs:enumeration>
+							<xs:enumeration value="private"></xs:enumeration>
+							<xs:enumeration value="public and private"></xs:enumeration>
+							<xs:enumeration value="public"></xs:enumeration>
+							<xs:enumeration value="legal"></xs:enumeration>
+							<xs:enumeration value="performing"></xs:enumeration>
+							<xs:enumeration value="legal and performing"></xs:enumeration>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="surname">
+					<xs:annotation>
+						<xs:documentation>700/028C $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="forename">
+					<xs:annotation>
+						<xs:documentation>700/028C $d</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="numeration">
+					<xs:annotation>
+						<xs:documentation>700/028C $l, e.g. III, 3rd</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="nameTitle">
+					<xs:annotation>
+						<xs:documentation>700/028C $f, e.g. Sir, Hon., Jnr</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="marcDate">
+					<xs:annotation>
+						<xs:documentation>700/028C $h</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="relationInfo">
+					<xs:annotation>
+						<xs:documentation>700/028C $I</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="languageOfName">
+					<xs:annotation>
+						<xs:documentation>ISO 639-2  2 characters); 700/028C $B</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="script">
+					<xs:annotation>
+						<xs:documentation>ISO 15924 4 letter code; 700 $7; 028C $U</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" name="source">
+					<xs:annotation>
+						<xs:documentation>700/028C $2</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="subsourceIdentifier">
+					<xs:annotation>
+						<xs:documentation>700/028C $0</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="organisationName">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="mainName">
+					<xs:annotation>
+						<xs:documentation>710/029C $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="subdivisionName">
+					<xs:annotation>
+						<xs:documentation>710/029C $b</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="nameOfLocation">
+					<xs:annotation>
+						<xs:documentation>710/029C $k</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="miscellaneousInfo">
+					<xs:annotation>
+						<xs:documentation>710/029C $p</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" name="source">
+					<xs:annotation>
+						<xs:documentation>710/029C $2</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="organisation">
+		<xs:annotation>
+			<xs:documentation>710/029C</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="organisationType">
+					<xs:annotation>
+						<xs:documentation>710/029C $q </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="organisationName"></xs:element>
+				<xs:element minOccurs="0" name="usageDateFrom">
+					<xs:annotation>
+						<xs:documentation>970/032A $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="usageDateTo">
+					<xs:annotation>
+						<xs:documentation>970/032A $b</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="creativeActivity"></xs:element>
+				<xs:element minOccurs="0" name="additionalInformation">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element minOccurs="0" name="location">
+								<xs:annotation>
+									<xs:documentation>370 019A location of the organisation</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="countryCode">
+											<xs:annotation>
+												<xs:documentation>370 $a; 019A $a</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="locode">
+											<xs:annotation>
+												<xs:documentation>370 $t; 019A $t</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="regionOrState">
+											<xs:annotation>
+												<xs:documentation>370 $y; 019A $y</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="city">
+											<xs:annotation>
+												<xs:documentation>370 $z; 019A $z</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="source">
+											<xs:annotation>
+												<xs:documentation>370 $2; 019A $2</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="keywordOrKeyPhrase">
+								<xs:annotation>
+									<xs:documentation>keyword or key phrase 962/044K $a</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>962/044K $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="deweyClassification">
+								<xs:annotation>
+									<xs:documentation>dewey 083/045K $a </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>083/045K $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="publisher">
+								<xs:annotation>
+									<xs:documentation>921/033A $n  includes imprints, release details, publication details, performance details</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>921/033A $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="datesActive">
+								<xs:annotation>
+									<xs:documentation>943/032B$a input as YYYY, stored as decade</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>943/032B $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="languageOfIdentity">
+								<xs:annotation>
+									<xs:documentation>377/010@ $a ISO 639-2 </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>377/010@ $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="countriesAssociated">
+								<xs:annotation>
+									<xs:documentation>922/019@ MARC code list for countries</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="countryCode">
+											<xs:annotation>
+												<xs:documentation>922/019@ $a</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="regionOrState">
+											<xs:annotation>
+												<xs:documentation>922/019@  $y</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="city">
+											<xs:annotation>
+												<xs:documentation>922/019@ $z</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>922/019@ $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="organisationNameVariant">
+					<xs:annotation>
+						<xs:documentation>410/029@</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="mainName">
+								<xs:annotation>
+									<xs:documentation>410/029@ $a</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="subdivisionName">
+								<xs:annotation>
+									<xs:documentation>410/029@ $b</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="99" minOccurs="0" ref="isRelatedPerson">
+					<xs:annotation>
+						<xs:documentation>950/028Z</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="isRelatedOrganisation">
+					<xs:annotation>
+						<xs:documentation>951/029Z</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="personOrFiction">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" ref="personalName">
+					<xs:annotation>
+						<xs:documentation>700/028C </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" ref="creativeActivity"></xs:element>
+				<xs:element minOccurs="0" name="additionalInformation">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="nationality">
+								<xs:annotation>
+									<xs:documentation>370/019A $a</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="livedDates">
+								<xs:annotation>
+									<xs:documentation>970/032A birth, death date and date type</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element minOccurs="0" name="birthDate">
+											<xs:annotation>
+												<xs:documentation>970/032A $a</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="deathDate">
+											<xs:annotation>
+												<xs:documentation>970/032A $b</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="dateType">
+											<xs:annotation>
+												<xs:documentation>970/032A $c</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>970/032A $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="keywordOrKeyPhrase">
+								<xs:annotation>
+									<xs:documentation>keyword or key phrase 962/044K $a</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>962/044K $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="deweyClassification">
+								<xs:annotation>
+									<xs:documentation>dewey 083/045K $a </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>083/045K $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="publisher">
+								<xs:annotation>
+									<xs:documentation>921/033A $n  includes imprints, release details, publication details, performance details</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>922/033A $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="datesActive">
+								<xs:annotation>
+									<xs:documentation>943/032B$a input as YYYY, stored as decade</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>943/032B $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="countriesAssociated">
+								<xs:annotation>
+									<xs:documentation>922/019@ MARC code list for countries</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="countryCode">
+											<xs:annotation>
+												<xs:documentation>922/019@ $a</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="regionOrState">
+											<xs:annotation>
+												<xs:documentation>922/019@  $y</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" name="city">
+											<xs:annotation>
+												<xs:documentation>922/019@ $z</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="source">
+										<xs:annotation>
+											<xs:documentation>922/019@ $2</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="personalNameVariant"></xs:element>
+				<xs:element maxOccurs="99" minOccurs="0" ref="isRelatedPerson">
+					<xs:annotation>
+						<xs:documentation>950/028Z</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" ref="isRelatedOrganisation">
+					<xs:annotation>
+						<xs:documentation>951/029Z</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="identity">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element ref="personOrFiction"></xs:element>
+				<xs:element ref="organisation"></xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="creativeActivity">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="creationRole">
+					<xs:annotation>
+						<xs:documentation>941/032C $a   include unique source + value pairs.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="source">
+							<xs:annotation>
+								<xs:documentation>941/032C $2 first occurrence. Default ISNI</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="creationClass">
+					<xs:annotation>
+						<xs:documentation>944/045R $a  include unique source + value pairs.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="source">
+							<xs:annotation>
+								<xs:documentation>944/045R $2 first occurrence. Default ISNI</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="titleOfWork">
+					<xs:annotation>
+						<xs:documentation>910/021A will include titles if publically available, i.e. 021A $2 is VIAF or not restricted</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="title">
+								<xs:annotation>
+									<xs:documentation>910/021A $a</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element minOccurs="0" name="subtitle">
+								<xs:annotation>
+									<xs:documentation>910/021A $d</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="isrc">
+								<xs:annotation>
+									<xs:documentation>910/021A $r: International Standard Recording Code</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="iswc">
+								<xs:annotation>
+									<xs:documentation>910/021A $w: International Standard Work Code</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element minOccurs="0" name="statementOfResponsibility">
+								<xs:annotation>
+									<xs:documentation>910/021A $h</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element minOccurs="0" name="parallelTitle">
+								<xs:annotation>
+									<xs:documentation>910/021A $f</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element minOccurs="0" name="languageOfTitle">
+								<xs:annotation>
+									<xs:documentation>910/021A $l</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="source">
+							<xs:annotation>
+								<xs:documentation>910/021A $2 first occurrence</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="identifier">
+					<xs:annotation>
+						<xs:documentation>ISBN 901/004A, ISSN 022/005A, 024/006Y (LCCN)ISAN, other 904/007S </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="identifierType">
+								<xs:annotation>
+									<xs:documentation>ISBN, ISSN, LCCN, 007S $l</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="identifierValue">
+								<xs:annotation>
+									<xs:documentation>901/004A $A or $0, 022/005A $0, 024/006Y $0, 904/007S $0</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="source">
+								<xs:annotation>
+									<xs:documentation>$2</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="contributedToOrPerformed">
+					<xs:annotation>
+						<xs:documentation>name of journal or collective work into which the identity contibutes 912/021B</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+					<xs:sequence>
+						<xs:element name="title">
+							<xs:annotation>
+								<xs:documentation>912/021B $a</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element maxOccurs="unbounded" minOccurs="0" name="isrc">
+							<xs:annotation>
+								<xs:documentation>912/021B $r: International Standard Recording Code</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element maxOccurs="unbounded" minOccurs="0" name="iswc">
+							<xs:annotation>
+								<xs:documentation>912/021B $w: International Standard Work Code</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+						<xs:attribute name="source">
+							<xs:annotation>
+								<xs:documentation>912/021B $2 first occurrence</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="instrumentAndVoice">
+					<xs:annotation>
+						<xs:documentation>925/035A $a</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="source">
+							<xs:annotation>
+								<xs:documentation>925/035A $2 first occurrence</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="personalNameVariant">
+		<xs:annotation>
+			<xs:documentation>400/028@</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" name="nameUse">
+					<xs:annotation>
+						<xs:documentation>public, private, fictional etc. 400 $3; 028@ $3</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="unknown"></xs:enumeration>
+							<xs:enumeration value="fictional character"></xs:enumeration>
+							<xs:enumeration value="private"></xs:enumeration>
+							<xs:enumeration value="public and private"></xs:enumeration>
+							<xs:enumeration value="public"></xs:enumeration>
+							<xs:enumeration value="legal"></xs:enumeration>
+							<xs:enumeration value="performing"></xs:enumeration>
+							<xs:enumeration value="legal and performing"></xs:enumeration>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="surname">
+					<xs:annotation>
+						<xs:documentation>400/028@ $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="forename">
+					<xs:annotation>
+						<xs:documentation>400/028@ $d</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="numeration">
+					<xs:annotation>
+						<xs:documentation>400/028@ $l, e.g. III, 3rd</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="nameTitle">
+					<xs:annotation>
+						<xs:documentation>400/028@ $f, e.g. Sir, Hon., Jnr</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="marcDate">
+					<xs:annotation>
+						<xs:documentation>400/028@ $h</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="relationInfo">
+					<xs:annotation>
+						<xs:documentation>400/028@ $I</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="languageOfName">
+					<xs:annotation>
+						<xs:documentation>ISO 639-2  2 characters); 400/028@ $B</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="script">
+					<xs:annotation>
+						<xs:documentation>ISO 15924 4 letter code; 400 $7; 028@ $U</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="source">
+					<xs:annotation>
+						<xs:documentation>400/028@ $2</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="isRelatedPerson">
+		<xs:annotation>
+			<xs:documentation>950/028Z</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" name="ISNI">
+					<xs:annotation>
+						<xs:documentation>ppn converted to isni 950/028Z $9</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="relationshipType">
+					<xs:annotation>
+						<xs:documentation>950/028Z $t; default is "see also"</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="nameUse">
+					<xs:annotation>
+						<xs:documentation>public, private, fictional etc. 950 $3; 950/028Z $3</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="unknown"></xs:enumeration>
+							<xs:enumeration value="fictional character"></xs:enumeration>
+							<xs:enumeration value="private"></xs:enumeration>
+							<xs:enumeration value="public and private"></xs:enumeration>
+							<xs:enumeration value="public"></xs:enumeration>
+							<xs:enumeration value="legal"></xs:enumeration>
+							<xs:enumeration value="performing"></xs:enumeration>
+							<xs:enumeration value="legal and performing"></xs:enumeration>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="surname">
+					<xs:annotation>
+						<xs:documentation>950/028Z $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="forename">
+					<xs:annotation>
+						<xs:documentation>950/028Z $d</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="numeration">
+					<xs:annotation>
+						<xs:documentation>950/028Z $l, e.g. III, 3rd</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="nameTitle">
+					<xs:annotation>
+						<xs:documentation>950/028Z $f, e.g. Sir, Hon., Jnr</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="marcDate">
+					<xs:annotation>
+						<xs:documentation>950/028Z $h</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="languageOfName">
+					<xs:annotation>
+						<xs:documentation>ISO 639-2  2 characters); 950/028Z $B</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="script">
+					<xs:annotation>
+						<xs:documentation>ISO 15924 4 letter code;950 $7; 028Z $U</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="source">
+					<xs:annotation>
+						<xs:documentation>950/028Z $2</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="isRelatedOrganisation">
+		<xs:annotation>
+			<xs:documentation>951/029Z</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" name="ISNI">
+					<xs:annotation>
+						<xs:documentation>converted to isni 951/029Z $9</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="relationshipType">
+					<xs:annotation>
+						<xs:documentation>951/029Z $t</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="organisationType">
+					<xs:annotation>
+						<xs:documentation>951/029Z $q </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="mainName">
+					<xs:annotation>
+						<xs:documentation>951/029Z $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" minOccurs="0" name="subdivisionName">
+					<xs:annotation>
+						<xs:documentation>951/029Z $b</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="otherIdentifierOfIdentity">
+		<xs:annotation>
+			<xs:documentation>090; 006Z</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="type">
+					<xs:annotation>
+						<xs:documentation>090; 006Z $l; e.g. PPN, ISNI, ORCID,
+							IPI</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="identifier">
+					<xs:annotation>
+						<xs:documentation>090$a; 006Z $0</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="source">
+					<xs:annotation>
+						<xs:documentation>090; 006Z $2; Owner</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="externalInformation">
+		<xs:annotation>
+			<xs:documentation>671 / 047P</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="information">
+					<xs:annotation>
+						<xs:documentation>671 $b / 047P $b</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="URI">
+					<xs:annotation>
+						<xs:documentation>671 $u / 047P $u</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="sources">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="codeOfSource">
+					<xs:annotation>
+						<xs:documentation>035/003Z $l letter</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="sourceIdentifier">
+					<xs:annotation>
+						<xs:documentation>035/003Z $0</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="deprecatedLocalIdentifier">
+					<xs:annotation>
+						<xs:documentation>035/003Z $d</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="specialStatus">
+					<xs:annotation>
+						<xs:documentation>035/003Z $s</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element minOccurs="0" name="reference">
+					<xs:annotation>
+						<xs:documentation>include if VIAF; should come from profile record for source</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="class">
+								<xs:annotation>
+									<xs:documentation>should come from profile; for VIAF set to "ALL"</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="role">
+								<xs:annotation>
+									<xs:documentation>should come from profile; for VIAF set to "CRE"</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="URI">
+								<xs:annotation>
+									<xs:documentation>For VIAF 035/003Z $0 in syntax http://viaf.org/viaf/#/ for others should come from profile</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="matches">
+		<xs:annotation>
+			<xs:documentation>976/061A Match information. Max. 3.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+	            <xs:element name="matchData">
+		            <xs:complexType>
+			            <xs:sequence>
+				            <xs:element name="matchDataType">
+					            <xs:annotation>
+                                    <xs:documentation>976/061A $d</xs:documentation>
+					            </xs:annotation>
+				            </xs:element>
+				            <xs:element name="matchDataString">
+					            <xs:annotation>
+						            <xs:documentation>976/061A $c</xs:documentation>
+					            </xs:annotation>
+				            </xs:element>
+			            </xs:sequence>
+		            </xs:complexType>
+	            </xs:element>
+	            <xs:element name="matchConfidence">
+		            <xs:annotation>
+			            <xs:documentation>976/061A $f</xs:documentation>
+		            </xs:annotation>
+	            </xs:element>
+	            <xs:element name="dateTimeOfMatch">
+		            <xs:annotation>
+			            <xs:documentation>976/061A $b</xs:documentation>
+		            </xs:annotation>
+	            </xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="possibleMatch">
+		<xs:annotation>
+			<xs:documentation>77A/038L possible match</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="PPN">
+					<xs:annotation>
+						<xs:documentation>77A/038L $9</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="evaluationScore">
+					<xs:annotation>
+						<xs:documentation>77A/038L $x</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="source">
+					<xs:annotation>
+						<xs:documentation>77A/038L $a</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="mergeInstruction">
+					<xs:annotation>
+						<xs:documentation>77A/038L $b</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

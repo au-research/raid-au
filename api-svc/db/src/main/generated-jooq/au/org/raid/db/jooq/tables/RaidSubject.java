@@ -10,18 +10,13 @@ import au.org.raid.db.jooq.tables.records.RaidSubjectRecord;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function3;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row3;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -65,7 +60,12 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
     /**
      * The column <code>api_svc.raid_subject.subject_type_id</code>.
      */
-    public final TableField<RaidSubjectRecord, Integer> SUBJECT_TYPE_ID = createField(DSL.name("subject_type_id"), SQLDataType.INTEGER, this, "");
+    public final TableField<RaidSubjectRecord, String> SUBJECT_TYPE_ID = createField(DSL.name("subject_type_id"), SQLDataType.VARCHAR.nullable(false), this, "");
+
+    /**
+     * The column <code>api_svc.raid_subject.subject_type_schema_id</code>.
+     */
+    public final TableField<RaidSubjectRecord, Integer> SUBJECT_TYPE_SCHEMA_ID = createField(DSL.name("subject_type_schema_id"), SQLDataType.INTEGER.nullable(false), this, "");
 
     private RaidSubject(Name alias, Table<RaidSubjectRecord> aliased) {
         this(alias, aliased, null);
@@ -117,11 +117,12 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
 
     @Override
     public List<ForeignKey<RaidSubjectRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.RAID_SUBJECT__RAID_SUBJECT_HANDLE_FKEY, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_ID);
+        return Arrays.asList(Keys.RAID_SUBJECT__RAID_SUBJECT_HANDLE_FKEY, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_FKEY, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_SCHEMA_ID_FKEY);
     }
 
     private transient Raid _raid;
     private transient SubjectType _subjectType;
+    private transient SubjectTypeSchema _subjectTypeSchema;
 
     /**
      * Get the implicit join path to the <code>api_svc.raid</code> table.
@@ -139,9 +140,20 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
      */
     public SubjectType subjectType() {
         if (_subjectType == null)
-            _subjectType = new SubjectType(this, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_ID);
+            _subjectType = new SubjectType(this, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_FKEY);
 
         return _subjectType;
+    }
+
+    /**
+     * Get the implicit join path to the
+     * <code>api_svc.subject_type_schema</code> table.
+     */
+    public SubjectTypeSchema subjectTypeSchema() {
+        if (_subjectTypeSchema == null)
+            _subjectTypeSchema = new SubjectTypeSchema(this, Keys.RAID_SUBJECT__RAID_SUBJECT_SUBJECT_TYPE_SCHEMA_ID_FKEY);
+
+        return _subjectTypeSchema;
     }
 
     @Override
@@ -181,29 +193,5 @@ public class RaidSubject extends TableImpl<RaidSubjectRecord> {
     @Override
     public RaidSubject rename(Table<?> name) {
         return new RaidSubject(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row3 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row3<Integer, String, Integer> fieldsRow() {
-        return (Row3) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function3<? super Integer, ? super String, ? super Integer, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function3<? super Integer, ? super String, ? super Integer, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

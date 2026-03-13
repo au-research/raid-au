@@ -281,14 +281,11 @@ class RaidHistoryServiceTest {
         final var raidJsonValue = mock(JsonValue.class);
         when(raidJsonValue.toString()).thenReturn(raidString);
 
-        final var raidDto = new RaidDto();
-
         when(raidHistoryRepository.findAllByHandleAndVersion(handle, version)).thenReturn(List.of(raidHistoryRecord));
         when(jsonValueFactory.create(diff)).thenReturn(jsonValue);
-        when(objectMapper.readValue(raidString, RaidDto.class)).thenReturn(raidDto);
         when(jsonValueFactory.create(List.of(jsonValue))).thenReturn(raidJsonValue);
 
-        assertThat(raidHistoryService.findByHandleAndVersion(handle, version).get(), is(raidDto));
+        assertThat(raidHistoryService.findByHandleAndVersion(handle, version).get(), is(raidString));
     }
 
     @Test

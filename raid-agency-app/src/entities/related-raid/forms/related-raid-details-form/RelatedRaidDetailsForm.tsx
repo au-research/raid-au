@@ -1,5 +1,5 @@
-import { TextInputField } from "@/fields/TextInputField";
-import { TextSelectField } from "@/fields/TextSelectField";
+import { TextInputField } from "@/components/fields/TextInputField";
+import { TextSelectField } from "@/components/fields/TextSelectField";
 import { RelatedRaid } from "@/generated/raid";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import { fetchRelatedRaidTitle } from "@/services/related-raid";
@@ -65,7 +65,7 @@ export function RelatedRaidDetailsForm({
   const relatedRaids: RelatedRaid[] = getValues("relatedRaid");
 
   const segments = relatedRaids[index].id
-    ? getLastTwoUrlSegments(relatedRaids[index].id)
+    ? getLastTwoUrlSegments(relatedRaids[index].id!)
     : null;
   const [prefix, suffix] = segments ? segments.split("/") : ["", ""];
 
@@ -107,10 +107,8 @@ export function RelatedRaidDetailsForm({
             onClick={() => {
               if (
                 window.confirm(
-                  `Are you sure you want to delete ${label} "${getValues(
-                    `${key}.${index}.text`
-                  )}"?`
-                )
+                  `Are you sure you want to delete ${label} # ${index + 1} ?`
+                )//ShortTerm Fix: Display the title of the item and its corresponding sequence number in the confirmation dialog
               ) {
                 handleRemoveItem(index);
               }

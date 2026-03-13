@@ -37,14 +37,17 @@ public class SubjectService {
         }
 
         for (final var subject : subjects) {
-            assert subject.getSchemaUri() != null;
-            assert subject.getId() != null;
+            final var schemaUri = subject.getSchemaUri().getValue();
+
+            final var subjectTypeSchemaRecord = subjectTypeSchemaRepository.findByUri(schemaUri)
+                    .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(schemaUri));
 
             final var subjectId = subject.getId().substring(subject.getId().lastIndexOf('/') + 1);
-            final var subjectType = subjectTypeRepository.findBySubjectTypeIdAndSchemaUri(subjectId, subject.getSchemaUri().getValue())
-                    .orElseThrow(() -> new SubjectTypeNotFoundException(subjectId));
 
-            final var raidSubjectRecord = raidSubjectRecordFactory.create(handle, subjectType.getId());
+            final var subjectTypeRecord = subjectTypeRepository.findByIdAndSchemaId(subjectId, subjectTypeSchemaRecord.getId())
+                    .orElseThrow(() -> new SubjectTypeNotFoundException(subject.getId()));
+
+            final var raidSubjectRecord = raidSubjectRecordFactory.create(handle, subjectTypeRecord.getId(), subjectTypeSchemaRecord.getId());
 
             final var raidSubject = raidSubjectRepository.create(raidSubjectRecord);
 
@@ -69,12 +72,15 @@ public class SubjectService {
         final var records = raidSubjectRepository.findAllByHandle(handle);
 
         for (final var record : records) {
-            final var typeRecord = subjectTypeRepository.findById(record.getSubjectTypeId())
+            final var typeRecord = subjectTypeRepository.findByIdAndSchemaId(record.getSubjectTypeId(), record.getSubjectTypeSchemaId())
                     .orElseThrow(() -> new SubjectTypeNotFoundException(record.getSubjectTypeId()));
+
+            final var schemaRecord = subjectTypeSchemaRepository.findById(typeRecord.getSchemaId())
+                    .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(typeRecord.getSchemaId()));
 
             final var keywords = subjectKeywordService.findAllByRaidSubjectId(record.getId());
 
-            subjects.add(subjectFactory.create(typeRecord.getSubjectTypeId(), typeRecord.getSchemaUri(), keywords));
+            subjects.add(subjectFactory.create(typeRecord.getId(), schemaRecord.getUri(), keywords));
         }
         return subjects;
     }

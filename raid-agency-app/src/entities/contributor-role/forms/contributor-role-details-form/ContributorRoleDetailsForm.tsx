@@ -1,4 +1,4 @@
-import { TextSelectField } from "@/fields/TextSelectField";
+import { TextSelectField } from "@/components/fields/TextSelectField";
 import contributorRole from "@/references/contributor_role.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
@@ -81,8 +81,8 @@ export function ContributorRoleDetailsForm({
             onClick={() => {
               if (
                 window.confirm(
-                  `Are you sure you want to delete ${label} "${currentValue}"?`
-                )
+                  `Are you sure you want to delete ${label} # ${index + 1} ?`
+                )//ShortTerm Fix: Display the title of the item and its corresponding sequence number in the confirmation dialog
               ) {
                 handleRemoveItem(index);
               }

@@ -1,7 +1,10 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.repository.SubjectTypeRepository;
-import au.org.raid.api.repository.dto.SubjectTypeWithSchema;
+import au.org.raid.api.repository.SubjectTypeSchemaRepository;
+import au.org.raid.api.util.SchemaValues;
+import au.org.raid.db.jooq.tables.records.SubjectTypeRecord;
+import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Subject;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
 import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
@@ -31,6 +34,9 @@ class SubjectValidatorTest {
     private SubjectTypeRepository subjectTypeRepository;
 
     @Mock
+    private SubjectTypeSchemaRepository subjectTypeSchemaRepository;
+
+    @Mock
     private SubjectKeywordValidator keywordValidator;
 
     @InjectMocks
@@ -38,17 +44,25 @@ class SubjectValidatorTest {
 
     @Test
     void noFailuresWithValidCode() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/222222";
+        final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
+        final var subjectId = "222222";
+        final var id = idStartsWith.concat(subjectId);
         final var keyword = new SubjectKeyword();
+        final var schemaId = 1;
 
         final var subject = new Subject()
                 .id(id)
                 .schemaUri(SCHEMA_URI)
                 .keyword(List.of(new SubjectKeyword()));
 
+        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
+        subjectTypeSchemaRecord.setId(schemaId);
+        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
+
         when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
-        when(subjectTypeRepository.findBySubjectTypeIdAndSchemaUri("222222", SCHEMA_URI.getValue()))
-                .thenReturn(Optional.of(new SubjectTypeWithSchema()));
+        when(subjectTypeRepository.findByIdAndSchemaId(subjectId, schemaId)).thenReturn(Optional.of(new SubjectTypeRecord()));
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 
@@ -62,32 +76,25 @@ class SubjectValidatorTest {
     }
 
     @Test
-    void returnsFailureWithAlphabeticCharactersInId() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/22a222";
-
-        final var subject = new Subject()
-                .id(id)
-                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
-
-        final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
-
-        assertThat(failures, is(List.of(
-                new ValidationFailure()
-                        .fieldId("subject[0].id")
-                        .errorType("invalidValue")
-                        .message(String.format("%s is not a valid field of research", id))
-        )));
-
-        verifyNoInteractions(subjectTypeRepository);
-    }
-
-    @Test
     void returnsFailureWithInvalidUrlPrefix() {
-        final var id = "https://data.gov.au/def/anzsrc-for/2020/222222";
+        final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
+        final var subjectId = "222222";
+        final var id = "https://data.gov.au/def/anzsrc-for/2020/".concat(subjectId);
+        final var schemaId = 1;
+        final var keyword = new SubjectKeyword();
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
+                .keyword(List.of(new SubjectKeyword()));
+
+        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
+        subjectTypeSchemaRecord.setId(schemaId);
+        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
+
+        when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 
@@ -95,20 +102,31 @@ class SubjectValidatorTest {
                 new ValidationFailure()
                         .fieldId("subject[0].id")
                         .errorType("invalidValue")
-                        .message(String.format("%s is not a valid field of research", id))
+                        .message("https://data.gov.au/def/anzsrc-for/2020/222222 is not a valid id for schema https://vocabs.ardc.edu.au/viewById/316")
         )));
-        verifyNoInteractions(subjectTypeRepository);
     }
 
     @Test
     void returnsFailureIfCodeNotFound() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/222222";
+        final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
+        final var subjectId = "222222";
+        final var id = idStartsWith.concat(subjectId);
+        final var keyword = new SubjectKeyword();
+        final var schemaId = 1;
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SCHEMA_URI);
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
+                .keyword(List.of(new SubjectKeyword()));
 
-        when(subjectTypeRepository.findBySubjectTypeIdAndSchemaUri("222222", SCHEMA_URI.getValue())).thenReturn(Optional.empty());
+        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
+        subjectTypeSchemaRecord.setId(schemaId);
+        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
+
+        when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
+        when(subjectTypeRepository.findByIdAndSchemaId(subjectId, schemaId)).thenReturn(Optional.empty());
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
 
         final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
 
@@ -116,45 +134,93 @@ class SubjectValidatorTest {
                 new ValidationFailure()
                         .fieldId("subject[0].id")
                         .errorType("invalidValue")
-                        .message(String.format("%s is not a standard FoR code", id))
+                        .message("https://linked.data.gov.au/def/anzsrc-for/2020/222222 is not a valid id for schema https://vocabs.ardc.edu.au/viewById/316")
         )));
     }
 
     @Test
     void addsFailureWithInvalidMissingSubjectSchemeUri() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/222222";
+        final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
+        final var subjectId = "222222";
+        final var id = idStartsWith.concat(subjectId);
+        final var keyword = new SubjectKeyword();
+        final var schemaId = 1;
 
         final var subject = new Subject()
-                .id(id);
+                .id(id)
+                .keyword(List.of(new SubjectKeyword()));
+
+        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
+        subjectTypeSchemaRecord.setId(schemaId);
+        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
+
+        when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
 
         final List<ValidationFailure> failures = validationService.validate(Collections.singletonList(subject));
 
         assertThat(failures, is(List.of(
                 new ValidationFailure()
                         .fieldId("subject[0].schemaUri")
-                        .errorType("invalidValue")
-                        .message("must be https://vocabs.ardc.edu.au/viewById/316.")
+                        .errorType("notSet")
+                        .message("field must be set")
         )));
 
-        verifyNoInteractions(subjectTypeRepository);
+    }
+
+    @Test
+    void addsFailureWithMissingSubjectSchemeUri2() {
+        final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
+        final var subjectId = "222222";
+        final var id = idStartsWith.concat(subjectId);
+        final var keyword = new SubjectKeyword();
+        final var schemaId = 1;
+
+        final var subject = new Subject()
+                .id(id)
+                .keyword(List.of(new SubjectKeyword()));
+
+        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
+        subjectTypeSchemaRecord.setId(schemaId);
+        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
+
+        when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
+
+        final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
+
+        assertThat(validationFailures.size(), is(1));
+        assertThat(validationFailures.get(0).getMessage(), is("field must be set"));
+        assertThat(validationFailures.get(0).getErrorType(), is("notSet"));
+        assertThat(validationFailures.get(0).getFieldId(), is("subject[0].schemaUri"));
     }
 
     @Test
     @DisplayName("Keyword validation failures are returned")
     void addsKeywordFailures() {
-        final var id = "https://linked.data.gov.au/def/anzsrc-for/2020/222222";
+        final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
+        final var subjectId = "222222";
+        final var id = idStartsWith.concat(subjectId);
         final var keyword = new SubjectKeyword();
+        final var schemaId = 1;
 
         final var subject = new Subject()
                 .id(id)
                 .schemaUri(SCHEMA_URI)
                 .keyword(List.of(new SubjectKeyword()));
 
+        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
+        subjectTypeSchemaRecord.setId(schemaId);
+        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
+        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
+
         final var failure = new ValidationFailure();
 
         when(keywordValidator.validate(keyword,0,0)).thenReturn(List.of(failure));
-        when(subjectTypeRepository.findBySubjectTypeIdAndSchemaUri("222222", SCHEMA_URI.getValue()))
-                .thenReturn(Optional.of(new SubjectTypeWithSchema()));
+        when(subjectTypeRepository.findByIdAndSchemaId(subjectId, schemaId)).thenReturn(Optional.of(new SubjectTypeRecord()));
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 

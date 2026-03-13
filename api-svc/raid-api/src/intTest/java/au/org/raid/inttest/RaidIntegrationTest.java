@@ -1,10 +1,9 @@
 package au.org.raid.inttest;
 
-import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.idl.raidv2.model.*;
 import au.org.raid.inttest.service.Handle;
 import au.org.raid.inttest.service.RaidApiValidationException;
-import au.org.raid.inttest.service.TestConstants;
+import static au.org.raid.fixtures.TestConstants.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 
-import static au.org.raid.inttest.service.TestConstants.REAL_TEST_ORCID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -298,12 +296,12 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
 
         try {
             createRequest.getOrganisation().forEach(organisation -> organisation.id(ror));
-            createRequest.getAccess().getType().id(TestConstants.EMBARGOED_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(EMBARGOED_ACCESS_TYPE);
             createRequest.getAccess().getStatement().text("Embargoed");
 
             raidApi.mintRaid(createRequest);
 
-            createRequest.getAccess().getType().id(TestConstants.OPEN_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(OPEN_ACCESS_TYPE);
             createRequest.getAccess().getStatement().text("Open");
             createRequest.getAccess().embargoExpiry(null);
 
@@ -320,7 +318,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
                             .map(Organisation::getId)
                             .toList()
                             .contains(ror))
-                    .filter(raid -> !raid.getAccess().getType().getId().equals(TestConstants.EMBARGOED_ACCESS_TYPE))
+                    .filter(raid -> !raid.getAccess().getType().getId().equals(EMBARGOED_ACCESS_TYPE))
                     .toList();
 
             assertThat(raidList).isNotEmpty();
@@ -344,7 +342,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         try {
             raidApi.mintRaid(createRequest);
 
-            createRequest.getAccess().getType().id(TestConstants.OPEN_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(OPEN_ACCESS_TYPE);
             createRequest.getAccess().getStatement().text("Open");
             createRequest.getAccess().embargoExpiry(null);
 
@@ -356,7 +354,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
             // find all raids in resultset that don't have an embargoed access type
             // there shouldn't be any
             final var erroneousRaids = raidList.stream()
-                    .filter(raid -> raid.getAccess().getType().getId().equals(TestConstants.EMBARGOED_ACCESS_TYPE))
+                    .filter(raid -> raid.getAccess().getType().getId().equals(EMBARGOED_ACCESS_TYPE))
                     .toList();
 
             assertThat(raidList).isNotEmpty();
@@ -379,7 +377,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         try {
             raidApi.mintRaid(createRequest);
 
-            createRequest.getAccess().getType().id(TestConstants.OPEN_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(OPEN_ACCESS_TYPE);
             createRequest.getAccess().getStatement().text("Open");
             createRequest.getAccess().embargoExpiry(null);
 

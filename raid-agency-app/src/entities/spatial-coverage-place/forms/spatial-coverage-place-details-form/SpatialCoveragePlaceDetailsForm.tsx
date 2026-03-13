@@ -1,5 +1,5 @@
-import LanguageSelector from "@/fields/LanguageSelector";
-import { TextInputField } from "@/fields/TextInputField";
+import LanguageSelector from "@/components/fields/LanguageSelector";
+import { TextInputField } from "@/components/fields/TextInputField";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";

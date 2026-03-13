@@ -10,18 +10,13 @@ import au.org.raid.db.jooq.tables.records.ContributorRecord;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function5;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row5;
 import org.jooq.Schema;
-import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -66,11 +61,6 @@ public class Contributor extends TableImpl<ContributorRecord> {
      * The column <code>api_svc.contributor.schema_id</code>.
      */
     public final TableField<ContributorRecord, Integer> SCHEMA_ID = createField(DSL.name("schema_id"), SQLDataType.INTEGER.nullable(false), this, "");
-
-    /**
-     * The column <code>api_svc.contributor.uuid</code>.
-     */
-    public final TableField<ContributorRecord, String> UUID = createField(DSL.name("uuid"), SQLDataType.VARCHAR, this, "");
 
     /**
      * The column <code>api_svc.contributor.status</code>.
@@ -127,7 +117,7 @@ public class Contributor extends TableImpl<ContributorRecord> {
 
     @Override
     public List<UniqueKey<ContributorRecord>> getUniqueKeys() {
-        return Arrays.asList(Keys.CONTRIBUTOR_PID_SCHEMA_ID_KEY, Keys.CONTRIBUTOR_UUID_KEY);
+        return Arrays.asList(Keys.CONTRIBUTOR_PID_SCHEMA_ID_KEY);
     }
 
     @Override
@@ -185,29 +175,5 @@ public class Contributor extends TableImpl<ContributorRecord> {
     @Override
     public Contributor rename(Table<?> name) {
         return new Contributor(name.getQualifiedName(), null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row5 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row5<Integer, String, Integer, String, String> fieldsRow() {
-        return (Row5) super.fieldsRow();
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
-     */
-    public <U> SelectField<U> mapping(Function5<? super Integer, ? super String, ? super Integer, ? super String, ? super String, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
-    }
-
-    /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
-     */
-    public <U> SelectField<U> mapping(Class<U> toType, Function5<? super Integer, ? super String, ? super Integer, ? super String, ? super String, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
     }
 }

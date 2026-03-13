@@ -23,8 +23,7 @@ class IdFactoryTest {
     private static final String IDENTIFIER_OWNER = "identifier-owner";
     private static final BigDecimal IDENTIFIER_SERVICE_POINT = new BigDecimal(999L);
     private static final String LICENSE = "raid-license";
-    private static final String GLOBAL_URL_PREFIX = "__global-url-prefix__";
-    private static final String HANDLE_URL_PREFIX = "__handle-url-prefix__";
+    private static final String LANDING_PREFIX = "__landing-prefix__";
     private static final String NAME_PREFIX = "__name-prefix__";
 
     @Mock
@@ -46,7 +45,7 @@ class IdFactoryTest {
 
         when(identifierProperties.getRegistrationAgencyIdentifier()).thenReturn(IDENTIFIER_REGISTRATION_AGENCY);
         when(identifierProperties.getLicense()).thenReturn(LICENSE);
-        when(identifierProperties.getHandleUrlPrefix()).thenReturn(HANDLE_URL_PREFIX);
+        when(identifierProperties.getLandingPrefix()).thenReturn(LANDING_PREFIX);
         when(identifierProperties.getNamePrefix()).thenReturn(NAME_PREFIX);
         when(identifierProperties.getSchemaUri()).thenReturn(SCHEMA_URI);
 
@@ -62,7 +61,7 @@ class IdFactoryTest {
                         .id(IDENTIFIER_OWNER)
                         .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_)
                         .servicePoint(IDENTIFIER_SERVICE_POINT))
-                .raidAgencyUrl("%s%s/%s".formatted(HANDLE_URL_PREFIX, prefix, suffix))
+                .raidAgencyUrl("%s%s/%s".formatted(LANDING_PREFIX, prefix, suffix))
                 .license(LICENSE)
                 .version(1)));
     }
