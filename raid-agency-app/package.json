@@ -52,13 +52,11 @@
   "devDependencies": {
     "@types/node": "20.14.10",
     "@types/trusted-types": "2.0.7",
-    "@typescript-eslint/eslint-plugin": "6.21.0",
-    "@typescript-eslint/parser": "6.21.0",
-    "eslint": "8.56.0",
-    "eslint-plugin-etc": "2.0.3",
-    "eslint-plugin-react-hooks": "4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.16",
-    "jsdom": "24.0.0"
+    "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-react-refresh": "0.5.2",
+    "jsdom": "28.1.0",
+    "typescript-eslint": "^8.57.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
