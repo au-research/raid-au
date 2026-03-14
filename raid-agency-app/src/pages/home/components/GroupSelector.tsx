@@ -39,7 +39,7 @@ type KeycloakGroupSPI = {
 export const GroupSelector = memo(() => {
   const { token, isInitialized } = useKeycloak();
   const [open, setOpen] = useState(false);
-
+  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
   const handleClose = () => {
     setOpen(false);
   };
@@ -133,8 +133,12 @@ export const GroupSelector = memo(() => {
               To use RAiD you must belong to a 'Service Point'; please request
               access to the appropriate Service Point in the list below.
               <br />
-              If you haven't been assigned a Service Point yet, please use
-              'raid-au.'
+              {!isProduction && (
+                <span>
+                  If you haven't been assigned a Service Point yet, please use
+                  'RAiD sandbox'
+                </span>
+              )}
             </Alert>
 
             <>

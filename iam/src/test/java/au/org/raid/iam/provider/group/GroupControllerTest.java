@@ -524,4 +524,116 @@ class GroupControllerTest {
         assertThat(response.getStatus(), is(200));
         verify(targetUser).deleteRoleMapping(groupAdminRole);
     }
+    // --- deleteGroup tests ---
+
+    @Test
+    void deleteGroup_returnsUnauthorizedWhenNotAuthenticated() {
+        var controller = createUnauthenticatedController();
+        try (var response = controller.deleteGroup("g1")) {
+            assertThat(response.getStatus(), is(401));
+        }
+    }
+
+    @Test
+    void deleteGroup_throwsNotAuthorizedForNonOperator() {
+        var controller = createAuthenticatedController();
+        setupNoRoles();
+
+        assertThrows(NotAuthorizedException.class, () -> controller.deleteGroup("g1"));
+    }
+
+    @Test
+    void deleteGroup_throwsNotAuthorizedForGroupAdmin() {
+        var controller = createAuthenticatedController();
+        setupGroupAdminRole();
+
+        assertThrows(NotAuthorizedException.class, () -> controller.deleteGroup("g1"));
+    }
+
+    @Test
+    void deleteGroup_returnsBadRequestWhenGroupIdIsNull() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        try (var response = controller.deleteGroup(null)) {
+            assertThat(response.getStatus(), is(400));
+        }
+    }
+
+    @Test
+    void deleteGroup_returnsBadRequestWhenGroupIdIsEmpty() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        try (var response = controller.deleteGroup("")) {
+            assertThat(response.getStatus(), is(400));
+        }
+    }
+
+    @Test
+    void deleteGroup_returnsBadRequestWhenGroupIdIsBlank() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        try (var response = controller.deleteGroup("   ")) {
+            assertThat(response.getStatus(), is(400));
+        }
+    }
+
+    @Test
+    void deleteGroup_returnsNotFoundWhenGroupDoesNotExist() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.groups()).thenReturn(groupProvider);
+        when(groupProvider.getGroupById(realm, "missing")).thenReturn(null);
+
+        try (var response = controller.deleteGroup("missing")) {
+            assertThat(response.getStatus(), is(404));
+        }
+    }
+
+    @Test
+    void deleteGroup_deletesGroupSuccessfully() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.groups()).thenReturn(groupProvider);
+
+        var group = mock(GroupModel.class);
+        when(group.getId()).thenReturn("g1");
+        when(group.getName()).thenReturn("Test Group");
+        when(groupProvider.getGroupById(realm, "g1")).thenReturn(group);
+        when(groupProvider.removeGroup(realm, group)).thenReturn(true);
+
+        try (var response = controller.deleteGroup("g1")) {
+            assertThat(response.getStatus(), is(200));
+            verify(groupProvider).removeGroup(realm, group);
+        }
+    }
+
+    @Test
+    void deleteGroup_returnsServerErrorWhenRemoveGroupFails() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.groups()).thenReturn(groupProvider);
+
+        var group = mock(GroupModel.class);
+        when(group.getId()).thenReturn("g1");
+        when(group.getName()).thenReturn("Test Group");
+        when(groupProvider.getGroupById(realm, "g1")).thenReturn(group);
+        when(groupProvider.removeGroup(realm, group)).thenThrow(new RuntimeException("DB error"));
+
+        try (var response = controller.deleteGroup("g1")) {
+            assertThat(response.getStatus(), is(500));
+        }
+    }
+
+    // --- deleteGroup preflight test ---
+
+    @Test
+    void deleteGroupPreflight_returns200() {
+        var controller = createAuthenticatedController();
+        try (var response = controller.deleteGroupPreflight()) {
+            assertThat(response.getStatus(), is(200));
+        }
+    }
 }
