@@ -184,6 +184,7 @@ export const ServicePointUpdateForm = ({
                                         name={`servicePointUpdateRequest.identifierOwner`}
                                         defaultValue={form.getValues("servicePointUpdateRequest.identifierOwner")}
                                         styles={{width: '100%'}}
+                                        required={true}
                                     />
                                     <FormHelperText error>
                                         {form.formState.errors?.servicePointUpdateRequest?.identifierOwner?.message}
