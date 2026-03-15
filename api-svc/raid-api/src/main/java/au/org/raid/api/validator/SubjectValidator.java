@@ -3,6 +3,7 @@ package au.org.raid.api.validator;
 import au.org.raid.api.repository.SubjectTypeRepository;
 import au.org.raid.api.repository.SubjectTypeSchemaRepository;
 import au.org.raid.api.util.SchemaValues;
+import au.org.raid.api.util.SubjectSchemaUriMapper;
 import au.org.raid.db.jooq.tables.records.SubjectTypeRecord;
 import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Subject;
@@ -26,7 +27,7 @@ public class SubjectValidator {
     private final SubjectTypeRepository subjectTypeRepository;
     private final SubjectTypeSchemaRepository subjectTypeSchemaRepository;
     private final SubjectKeywordValidator subjectKeywordValidator;
-    
+
     public List<ValidationFailure> validate(List<Subject> subjects) {
 
         final var subjectTypeSchemaRecords = subjectTypeSchemaRepository.findAllActive();
@@ -48,55 +49,50 @@ public class SubjectValidator {
         IntStream.range(0, subjects.size()).forEach(subjectIndex -> {
             final var subject = subjects.get(subjectIndex);
 
-
             if (subject.getId() == null) {
                 final var failure = new ValidationFailure();
                 failure.setFieldId(String.format("subject[%d].id", subjectIndex));
                 failure.setMessage(NOT_SET_MESSAGE);
                 failure.setErrorType(NOT_SET_TYPE);
-
                 failures.add(failure);
             }
-
 
             if (subject.getSchemaUri() == null) {
                 final var failure = new ValidationFailure();
                 failure.setFieldId(String.format("subject[%d].schemaUri", subjectIndex));
                 failure.setMessage(NOT_SET_MESSAGE);
                 failure.setErrorType(NOT_SET_TYPE);
-
                 failures.add(failure);
-            } else if (!subjectTypeSchemaUris.contains(subject.getSchemaUri().getValue())) {
-                final var failure = new ValidationFailure();
-                failure.setFieldId(String.format("subject[%d].schemaUri", subjectIndex));
-                failure.setMessage(String.format("must be %s.", SchemaValues.SUBJECT_SCHEMA_URI.getUri()));
-                failure.setErrorType(INVALID_VALUE_TYPE);
+            } else {
+                // Map the enum constant to its corresponding DB URI for lookups
+                final var dbUri = SubjectSchemaUriMapper.toDbUri(subject.getSchemaUri());
 
-                failures.add(failure);
-            } else if (
-                    subject.getId() != null && !subject.getId().startsWith(subjectIdStartsWithMap.get(subject.getSchemaUri().getValue()))
-            ) {
-                final var failure = new ValidationFailure();
-                failure.setFieldId(String.format("subject[%d].id", subjectIndex));
-                failure.setMessage(String.format("%s is not a valid id for schema %s", subject.getId(), subject.getSchemaUri()));
-                failure.setErrorType(INVALID_VALUE_TYPE);
+                if (dbUri == null || !subjectTypeSchemaUris.contains(dbUri)) {
+                    final var failure = new ValidationFailure();
+                    failure.setFieldId(String.format("subject[%d].schemaUri", subjectIndex));
+                    failure.setMessage(String.format("must be %s.", SchemaValues.SUBJECT_SCHEMA_URI.getUri()));
+                    failure.setErrorType(INVALID_VALUE_TYPE);
+                    failures.add(failure);
+                } else if (subject.getId() != null && !subject.getId().startsWith(subjectIdStartsWithMap.get(dbUri))) {
+                    final var failure = new ValidationFailure();
+                    failure.setFieldId(String.format("subject[%d].id", subjectIndex));
+                    failure.setMessage(String.format("%s is not a valid id for schema %s", subject.getId(), dbUri));
+                    failure.setErrorType(INVALID_VALUE_TYPE);
+                    failures.add(failure);
+                } else if (subject.getId() != null) {
+                    final var subjectId = subject.getId().substring(subject.getId().lastIndexOf('/') + 1);
+                    final var schemaId = subjectTypeSchemaMap.get(dbUri);
 
-                failures.add(failure);
-            } else if (subject.getId() != null){
-                final var subjectId = subject.getId().substring(subject.getId().lastIndexOf('/') + 1);
+                    if (schemaId != null) {
+                        final Optional<SubjectTypeRecord> subjectTypeRecord = subjectTypeRepository.findByIdAndSchemaId(subjectId, schemaId);
 
-                final var schemaId = subjectTypeSchemaMap.get(subject.getSchemaUri().getValue());
-
-                if (schemaId != null) {
-                    final Optional<SubjectTypeRecord> subjectTypeRecord = subjectTypeRepository.findByIdAndSchemaId(subjectId, schemaId);
-
-                    if (subjectTypeRecord.isEmpty()) {
-                        final var failure = new ValidationFailure();
-                        failure.setFieldId(String.format("subject[%d].id", subjectIndex));
-                        failure.setMessage(String.format("%s is not a valid id for schema %s", subject.getId(), subject.getSchemaUri()));
-                        failure.setErrorType(INVALID_VALUE_TYPE);
-
-                        failures.add(failure);
+                        if (subjectTypeRecord.isEmpty()) {
+                            final var failure = new ValidationFailure();
+                            failure.setFieldId(String.format("subject[%d].id", subjectIndex));
+                            failure.setMessage(String.format("%s is not a valid id for schema %s", subject.getId(), dbUri));
+                            failure.setErrorType(INVALID_VALUE_TYPE);
+                            failures.add(failure);
+                        }
                     }
                 }
             }

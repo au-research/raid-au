@@ -7,20 +7,20 @@ imports:
 enums:
   SubjectSchemaURIEnum:
     reachable_from:
-      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-c-v1-6-2
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-0
       source_nodes:
-        - https://vocabulary.raid.org/subject.schemaUri/193
+        - https://vocabulary.raid.org/subject.schemaUri/scheme
       relationship_types:
         - skos:hasTopConcept
       is_direct: true
       traverse_up: false
       include_self: false
-      
+
   SpatialCoverageSchemaUriEnum:
     reachable_from:
-      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-c-v1-6-2
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-0
       source_nodes:
-        - https://vocabulary.raid.org/spatialCoverage.schemaUri/167
+        - https://vocabulary.raid.org/spatialCoverage.schemaUri/scheme
       relationship_types:
         - skos:hasTopConcept
       is_direct: true
@@ -29,9 +29,9 @@ enums:
 
   TraditionalKnowledgeLabelSchemaUriEnum:
     reachable_from:
-      source_ontology: https://vocabs.ardc.edu.au/repository/api/sparql/raid_research-activity-identifier-raid-controlled-lists_raid-c-v1-6-2
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-0
       source_nodes:
-        - https://vocabulary.raid.org/spatialCoverage.schemaUri/160
+        - https://vocabulary.raid.org/traditionalKnowledgeLabel.schemaUri/scheme
       relationship_types:
         - skos:hasTopConcept
       is_direct: true

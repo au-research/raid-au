@@ -50,11 +50,11 @@ class RelatedObjectValidatorTest {
 
         final var categories = List.of(new RelatedObjectCategory()
                 .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
-                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385));
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
 
         final var relatedObject = new RelatedObject()
                 .id(TestConstants.VALID_DOI)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(type)
                 .category(categories);
 

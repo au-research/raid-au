@@ -3,6 +3,7 @@ package au.org.raid.api.service;
 import au.org.raid.api.exception.SubjectTypeNotFoundException;
 import au.org.raid.api.exception.SubjectTypeSchemaNotFoundException;
 import au.org.raid.api.factory.SubjectFactory;
+import au.org.raid.api.util.SubjectSchemaUriMapper;
 import au.org.raid.api.factory.record.RaidSubjectKeywordRecordFactory;
 import au.org.raid.api.factory.record.RaidSubjectRecordFactory;
 import au.org.raid.api.repository.RaidSubjectKeywordRepository;
@@ -37,7 +38,10 @@ public class SubjectService {
         }
 
         for (final var subject : subjects) {
-            final var schemaUri = subject.getSchemaUri().getValue();
+            final var schemaUri = SubjectSchemaUriMapper.toDbUri(subject.getSchemaUri());
+            if (schemaUri == null) {
+                throw new SubjectTypeSchemaNotFoundException(subject.getSchemaUri().getValue());
+            }
 
             final var subjectTypeSchemaRecord = subjectTypeSchemaRepository.findByUri(schemaUri)
                     .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(schemaUri));

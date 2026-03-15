@@ -47,7 +47,7 @@ class RaidRelatedObjectCategoryServiceTest {
     void create() {
         final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190;
         final var id = 123;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385;
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
         final var schemaId = 234;
         final var raidRelatedObjectId = 456;
 
@@ -80,7 +80,7 @@ class RaidRelatedObjectCategoryServiceTest {
     @DisplayName("create() throws RelatedObjectCategorySchemaNotFoundException")
     void createThrowsRelatedObjectCategorySchemaNotFoundException() {
         final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385;
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
         final var raidRelatedObjectId = 456;
 
         final var category = new RelatedObjectCategory()
@@ -101,7 +101,7 @@ class RaidRelatedObjectCategoryServiceTest {
     @DisplayName("create() throws RelatedObjectCategoryNotFoundException")
     void createThrowsRelatedObjectCategoryNotFoundException() {
         final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385;
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
         final var schemaId = 234;
         final var raidRelatedObjectId = 456;
 

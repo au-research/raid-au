@@ -137,13 +137,13 @@ public class TestRaid {
                     .endDate(ORGANISATION_ROLE_END_DATE))));
     public static final List<RelatedObject> RELATED_OBJECTS = List.of(new RelatedObject()
             .id(RELATED_OBJECT_ID)
-            .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+            .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
             .type(new RelatedObjectType()
                     .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
                     .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
             .category(List.of(new RelatedObjectCategory()
                     .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
-                    .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385))));
+                    .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386))));
     public static final List<AlternateIdentifier> ALTERNATE_IDENTIFIERS = List.of(new AlternateIdentifier()
             .id(ALTERNATE_IDENTIFIER_ID)
             .type(ALTERNATE_IDENTIFIER_TYPE));
@@ -170,7 +170,7 @@ public class TestRaid {
                     .language(LANGUAGE))));
     public static final List<TraditionalKnowledgeLabel> TRADITIONAL_KNOWLEDGE_LABELS = List.of(new TraditionalKnowledgeLabel()
             .id(TRADITIONAL_KNOWLEDGE_LABEL_ID)
-            .schemaUri(TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA_URI));
+            .schemaUri(TraditionalKnowledgeLabelSchemaUriEnum.HTTPS_LOCALCONTEXTS_ORG_LABELS_TRADITIONAL_KNOWLEDGE_LABELS_));
     public static final List<SpatialCoverage> SPATIAL_COVERAGES = List.of(new SpatialCoverage()
             .id(SPATIAL_COVERAGE_ID)
             .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_)

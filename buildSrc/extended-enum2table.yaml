@@ -1,8 +1,9 @@
 - enumID: SpatialCoverageSchemaUriEnum
   table: spatial_coverage_schema
-  source: prefLabel
+  source: uri
 - enumID: SubjectSchemaURIEnum
   table: subject_type_schema
-  source: prefLabel
+  source: uri
 - enumID: TraditionalKnowledgeLabelSchemaUriEnum
   table: traditional_knowledge_label_schema
+  source: uri

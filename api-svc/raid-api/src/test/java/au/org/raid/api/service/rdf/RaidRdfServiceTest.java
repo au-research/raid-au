@@ -255,7 +255,7 @@ class RaidRdfServiceTest {
         var relatedObjects = new ArrayList<RelatedObject>();
         var relatedObject = new RelatedObject();
         relatedObject.setId("https://doi.org/10.12345/67890");
-        relatedObject.setSchemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_);
+        relatedObject.setSchemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_);
         
         var relatedObjectType = new RelatedObjectType();
         relatedObjectType.setId(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258);
@@ -265,7 +265,7 @@ class RaidRdfServiceTest {
         var categories = new ArrayList<RelatedObjectCategory>();
         var category = new RelatedObjectCategory();
         category.setId(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190);
-        category.setSchemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385);
+        category.setSchemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386);
         categories.add(category);
         relatedObject.setCategory(categories);
         

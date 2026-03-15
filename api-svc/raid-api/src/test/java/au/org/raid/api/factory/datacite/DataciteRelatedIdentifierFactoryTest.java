@@ -24,7 +24,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var id = "_id";
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -118,7 +118,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_251))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)));
 
@@ -136,7 +136,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_252))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_192)));
 
@@ -154,7 +154,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_253))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -172,7 +172,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_254))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -190,7 +190,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_255))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -208,7 +208,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_256))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -226,7 +226,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_257))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -244,7 +244,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_259))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -262,7 +262,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_260))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -280,7 +280,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_261))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -298,7 +298,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_262))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -316,7 +316,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_263))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -334,7 +334,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_264))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -352,7 +352,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_265))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -370,7 +370,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_266))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -388,7 +388,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_267))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -406,7 +406,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_268))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -424,7 +424,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_269))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -442,7 +442,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_270))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -460,7 +460,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_271))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -478,7 +478,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -496,7 +496,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_273))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
@@ -514,7 +514,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_274))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 

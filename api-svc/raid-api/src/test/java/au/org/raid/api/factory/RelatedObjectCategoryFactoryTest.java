@@ -15,7 +15,7 @@ class RelatedObjectCategoryFactoryTest {
     @DisplayName("Sets all fields")
     void setsAllFields() {
         final var id = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_385;
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
 
         final var result = factory.create(id.getValue(), schemaUri.getValue());
 

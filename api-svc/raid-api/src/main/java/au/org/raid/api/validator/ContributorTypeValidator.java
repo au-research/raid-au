@@ -75,7 +75,7 @@ public class ContributorTypeValidator {
                             .message(NOT_SET_MESSAGE)
             );
         }
-        else if (!contributor.getSchemaUri().getValue().matches(validationProperties.getSchemaUri())) {
+        else if (!contributor.getSchemaUri().getValue().equals(validationProperties.getSchemaUri())) {
             failures.add(new ValidationFailure()
                     .fieldId("contributor[%d].schemaUri".formatted(index))
                     .errorType(INVALID_VALUE_TYPE)

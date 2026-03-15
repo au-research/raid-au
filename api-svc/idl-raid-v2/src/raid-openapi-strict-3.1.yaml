@@ -1576,16 +1576,16 @@ components:
       title: "RelatedObjectCategorySchemaUriEnum"
       type: "string"
       enum:
-      - "https://vocabulary.raid.org/relatedObject.category.schema/385"
+      - "https://vocabulary.raid.org/relatedObject.category.schemaUri/386"
     RelatedObjectSchemaUriEnum:
       description: ""
       title: "RelatedObjectSchemaUriEnum"
       type: "string"
       enum:
-      - "http://doi.org/"
-      - "http://hdl.handle.net/"
       - "https://archive.org/"
       - "https://arks.org/"
+      - "https://doi.org/"
+      - "https://hdl.handle.net/"
       - "https://scicrunch.org/resolver/"
       - "https://www.isbn-international.org/"
     RelatedObjectType:
@@ -1746,9 +1746,8 @@ components:
       title: "SpatialCoverageSchemaUriEnum"
       type: "string"
       enum:
-      - "https://marineregions.org/gazetteer.php"
-      - "https://nominatim.openstreetmap.org/"
       - "https://www.geonames.org/"
+      - "https://www.openstreetmap.org/"
     Subject:
       additionalProperties: false
       description: "metadata schema block containing the subject area of the RAiD\
@@ -1797,8 +1796,10 @@ components:
       title: "SubjectSchemaURIEnum"
       type: "string"
       enum:
-      - "https://id.loc.gov/authorities/subject.html"
+      - "https://linked.data.gov.au/def/anzsrc-for/2020"
+      - "https://linked.data.gov.au/def/anzsrc-seo/2020"
       - "https://vocabs.ardc.edu.au/viewById/316"
+      - "https://vocabs.ardc.edu.au/viewById/317"
     Title:
       additionalProperties: false
       description: "a metadata schema block containing the title of the RAiD and associated\
@@ -1884,7 +1885,8 @@ components:
       description: ""
       title: "TraditionalKnowledgeLabelSchemaUriEnum"
       type: "string"
-      enum: []
+      enum:
+      - "https://localcontexts.org/labels/traditional-knowledge-labels/"
     AlternativeIdentifierPropertyEnum:
       description: ""
       enum:

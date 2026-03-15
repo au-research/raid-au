@@ -4,6 +4,7 @@ import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.OrganizationSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,6 @@ import static au.org.raid.api.util.StringUtil.isBlank;
 public class OrganisationValidator {
     // see https://ror.readme.io/docs/ror-identifier-pattern
     private final String regex = "^https://ror\\.org/[0-9a-z]{9}$";
-    private static final String ROR_SCHEMA_URI = "https://ror.org/";
     private final OrganisationRoleValidator roleValidationService;
     private final RorClient rorClient;
 
@@ -74,7 +74,7 @@ public class OrganisationValidator {
                         .errorType(NOT_SET_TYPE)
                         .message(NOT_SET_MESSAGE)
                 );
-            } else if (!organisation.getSchemaUri().getValue().equals(ROR_SCHEMA_URI)) {
+            } else if (organisation.getSchemaUri() != OrganizationSchemaUriEnum.HTTPS_ROR_ORG_) {
                 failures.add(new ValidationFailure()
                         .fieldId("organisation[%d].schemaUri".formatted(i))
                         .errorType(INVALID_VALUE_TYPE)

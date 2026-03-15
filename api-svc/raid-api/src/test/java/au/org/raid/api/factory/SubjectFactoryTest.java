@@ -18,13 +18,14 @@ class SubjectFactoryTest {
     @DisplayName("Sets all fields")
     void setsAllFields() {
         final var id = "_id";
-        final var schemaUri = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316.getValue();
+        // factory.create() expects a DB URI (not the enum label)
+        final var dbSchemaUri = SchemaValues.SUBJECT_SCHEMA_URI.getUri();
         final var keywords = List.of(new SubjectKeyword());
 
-        final var result = factory.create(id, schemaUri, keywords);
+        final var result = factory.create(id, dbSchemaUri, keywords);
 
         assertThat(result.getId(), is(SchemaValues.SUBJECT_ID_PREFIX.getUri() + id));
-        assertThat(result.getSchemaUri().getValue(), is(schemaUri));
+        assertThat(result.getSchemaUri(), is(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316));
         assertThat(result.getKeyword(), is(keywords));
     }
 }

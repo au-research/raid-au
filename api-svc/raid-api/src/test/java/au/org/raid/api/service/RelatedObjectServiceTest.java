@@ -56,7 +56,7 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_;
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
         final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeSchemaId = 345;
@@ -111,7 +111,7 @@ class RelatedObjectServiceTest {
     void createThrowsRelatedObjectSchemaNotFoundException() {
         final var handle = "_handle";
         final var uri = "_uri";
-        final var schemaUri = RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_;
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
         final var category = new RelatedObjectCategory();
@@ -144,7 +144,7 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_;
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
         final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
@@ -186,7 +186,7 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_;
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
         final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeSchemaId = 345;
@@ -326,7 +326,7 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = RelatedObjectSchemaUriEnum.HTTP_DOI_ORG_;
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
         final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeSchemaId = 345;

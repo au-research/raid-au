@@ -56,7 +56,7 @@ class RaidRecordFactoryTest {
         assertThat(record.getEmbargoExpiry(), is(TestRaid.EMBARGO_EXPIRY));
         assertThat(record.getAccessStatement(), is(TestRaid.ACCESS_STATEMENT_TEXT));
         assertThat(record.getAccessStatementLanguageId(), is(accessStatementLanguageId));
-        assertThat(record.getSchemaUri(), is(TestRaid.RAID_SCHEMA_URI));
+        assertThat(record.getSchemaUri(), is(TestRaid.RAID_DTO.getIdentifier().getSchemaUri().getValue()));
         assertThat(record.getRegistrationAgencyOrganisationId(), is(registrationAgencyOrganisationId));
         assertThat(record.getOwnerOrganisationId(), is(ownerOrganisationId));
     }

@@ -144,7 +144,7 @@
   "relatedObject": [
     {
       "id": "https://doi.org/10.47366/sabia.v5n1a3",
-      "schemaUri": "http://doi.org/",
+      "schemaUri": "https://doi.org/",
       "type": {
         "id": "https://vocabulary.raid.org/relatedObject.type.schema/258",
         "schemaUri": "https://vocabulary.raid.org/relatedObject.type.schema/329"
@@ -152,13 +152,13 @@
       "category": [
         {
           "id": "https://vocabulary.raid.org/relatedObject.category.id/191",
-          "schemaUri": "https://vocabulary.raid.org/relatedObject.category.schema/385"
+          "schemaUri": "https://vocabulary.raid.org/relatedObject.category.schemaUri/386"
         }
       ]
     },
     {
       "id": "https://doi.org/10.47366/sabia.v5n1a3",
-      "schemaUri": "http://doi.org/",
+      "schemaUri": "https://doi.org/",
       "type": {
         "id": "https://vocabulary.raid.org/relatedObject.type.schema/270",
         "schemaUri": "https://vocabulary.raid.org/relatedObject.type.schema/329"
@@ -166,7 +166,7 @@
       "category": [
         {
           "id": "https://vocabulary.raid.org/relatedObject.category.id/191",
-          "schemaUri": "https://vocabulary.raid.org/relatedObject.category.schema/385"
+          "schemaUri": "https://vocabulary.raid.org/relatedObject.category.schemaUri/386"
         }
       ]
     }
@@ -192,7 +192,7 @@
   "subject": [
     {
       "id": "https://linked.data.gov.au/def/anzsrc-for/2020/430106",
-      "schemaUri": "https://vocabs.ardc.edu.au/viewById/316",
+      "schemaUri": "https://linked.data.gov.au/def/anzsrc-for/2020",
       "keyword": [
         {
           "text": "Digital Archeology",
@@ -205,7 +205,7 @@
     },
     {
       "id": "https://linked.data.gov.au/def/anzsrc-for/2020/4301",
-      "schemaUri": "https://vocabs.ardc.edu.au/viewById/316",
+      "schemaUri": "https://linked.data.gov.au/def/anzsrc-for/2020",
       "keyword": [
         {
           "text": "Archeology",

@@ -38,7 +38,7 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Minting a RAiD with a spatial coverage with an non-existent OpenStreetMap uri fails")
     void nonExistentUri_OpenStreetMap() {
         createRequest.getSpatialCoverage().get(0).setId(NONEXISTENT_TEST_OPENSTREETMAP_URI);
-        createRequest.getSpatialCoverage().get(0).setSchemaUri(SpatialCoverageSchemaUriEnum.HTTPS_NOMINATIM_OPENSTREETMAP_ORG_);
+        createRequest.getSpatialCoverage().get(0).setSchemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_OPENSTREETMAP_ORG_);
 
         try {
             raidApi.mintRaid(createRequest);

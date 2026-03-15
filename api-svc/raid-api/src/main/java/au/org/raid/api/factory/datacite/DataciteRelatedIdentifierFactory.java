@@ -1,7 +1,6 @@
 package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.model.datacite.doi.DataciteRelatedIdentifier;
-import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.vocabularies.datacite.RelatedIdentifierType;
 import au.org.raid.api.vocabularies.datacite.RelationType;
 import au.org.raid.api.vocabularies.datacite.ResourceTypeGeneral;
@@ -10,6 +9,7 @@ import au.org.raid.api.vocabularies.raid.RelatedObjectType;
 import au.org.raid.api.vocabularies.raid.RelatedRaidType;
 import au.org.raid.idl.raidv2.model.AlternateUrl;
 import au.org.raid.idl.raidv2.model.RelatedObject;
+import au.org.raid.idl.raidv2.model.RelatedObjectSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
 import au.org.raid.idl.raidv2.model.RelatedRaid;
 import org.springframework.stereotype.Component;
@@ -20,12 +20,12 @@ import static java.util.Map.entry;
 
 @Component
 public class DataciteRelatedIdentifierFactory {
-    private static final Map<String, String> IDENTIFIER_TYPE_MAP = Map.of(
-            SchemaValues.ARKS_SCHEMA.getUri(), RelatedIdentifierType.ARK.getName(),
-            SchemaValues.DOI_SCHEMA.getUri(), RelatedIdentifierType.DOI.getName(),
-            SchemaValues.ISBN_SCHEMA.getUri(), RelatedIdentifierType.ISBN.getName(),
-            SchemaValues.RRID_SCHEMA.getUri(), RelatedIdentifierType.URL.getName(),
-            SchemaValues.ARCHIVE_ORG_SCHEMA.getUri(), RelatedIdentifierType.URL.getName()
+    private static final Map<RelatedObjectSchemaUriEnum, String> IDENTIFIER_TYPE_MAP = Map.of(
+            RelatedObjectSchemaUriEnum.HTTPS_ARKS_ORG_, RelatedIdentifierType.ARK.getName(),
+            RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_, RelatedIdentifierType.DOI.getName(),
+            RelatedObjectSchemaUriEnum.HTTPS_WWW_ISBN_INTERNATIONAL_ORG_, RelatedIdentifierType.ISBN.getName(),
+            RelatedObjectSchemaUriEnum.HTTPS_SCICRUNCH_ORG_RESOLVER_, RelatedIdentifierType.URL.getName(),
+            RelatedObjectSchemaUriEnum.HTTPS_ARCHIVE_ORG_, RelatedIdentifierType.URL.getName()
     );
 
     private static final Map<String, String> RESOURCE_TYPE_MAP = Map.ofEntries(
@@ -76,7 +76,7 @@ public class DataciteRelatedIdentifierFactory {
     public DataciteRelatedIdentifier create(final RelatedObject relatedObject) {
         return new DataciteRelatedIdentifier()
                 .setRelatedIdentifier(relatedObject.getId())
-                .setRelatedIdentifierType(IDENTIFIER_TYPE_MAP.get(relatedObject.getSchemaUri().getValue()))
+                .setRelatedIdentifierType(IDENTIFIER_TYPE_MAP.get(relatedObject.getSchemaUri()))
                 .setResourceTypeGeneral(RESOURCE_TYPE_MAP.get(relatedObject.getType().getId().getValue()))
                 .setRelationType(RELATION_TYPE_MAP.get(relatedObject.getCategory().get(0).getId().getValue()));
     }

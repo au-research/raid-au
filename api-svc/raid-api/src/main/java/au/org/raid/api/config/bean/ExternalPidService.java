@@ -110,7 +110,7 @@ public class ExternalPidService {
     ) {
         return Map.of(
                 SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_, geoNamesUriValidator::validate,
-                SpatialCoverageSchemaUriEnum.HTTPS_NOMINATIM_OPENSTREETMAP_ORG_, openStreetMapUriValidator::validate
+                SpatialCoverageSchemaUriEnum.HTTPS_WWW_OPENSTREETMAP_ORG_, openStreetMapUriValidator::validate
         );
     }
 }
