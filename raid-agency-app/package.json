@@ -45,12 +45,12 @@
     "react-spinners": "^0.17.0",
     "rehype-raw": "^7.0.0",
     "typescript": "5.3.3",
-    "vite": "5.4.21",
+    "vite": "^8.0.0",
     "vitest": "4.1.0",
     "zod": "3.22.4"
   },
   "devDependencies": {
-    "@types/node": "20.14.10",
+    "@types/node": "^20.19.37",
     "@types/trusted-types": "2.0.7",
     "eslint": "^9.0.0",
     "eslint-plugin-react-hooks": "7.0.1",
