@@ -20,8 +20,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@typescript-eslint/*"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "vite"
-        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "gradle"
     directory: "/"
