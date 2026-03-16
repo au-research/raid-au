@@ -1,5 +1,5 @@
 [versions]
-annotations = "13.0"
+annotations = "26.1.0"
 assertj = "3.27.7"
 commons-compress = "1.26.2"
 commons-lang3 = "3.18.0"
