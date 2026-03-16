@@ -66,4 +66,7 @@ public interface KeycloakApi {
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/realms/raid/group/delete")
     ResponseEntity<java.util.Map<String, String>> deleteGroup(@RequestParam final String groupId);
+
+    @RequestMapping(method = RequestMethod.POST, value = "/realms/raid/group/create")
+    ResponseEntity<java.util.Map<String, Object>> createGroupViaSpi(@RequestBody CreateGroupRequest request);
 }

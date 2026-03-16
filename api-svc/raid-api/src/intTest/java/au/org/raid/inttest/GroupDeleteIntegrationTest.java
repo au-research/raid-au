@@ -1,8 +1,7 @@
 package au.org.raid.inttest;
 
-import au.org.raid.inttest.dto.keycloak.Group;
+import au.org.raid.inttest.dto.keycloak.CreateGroupRequest;
 import org.junit.jupiter.api.*;
-import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -12,21 +11,8 @@ class GroupDeleteIntegrationTest extends AbstractIntegrationTest {
 
     private String testGroupId;
 
-    @BeforeEach
-    void createTestGroup() {
-        // Create a group via the Keycloak admin API for deletion tests
-        var groups = keycloakClient
-                .keycloakApi(userContext.getToken())
-                .allGroups()
-                .getBody();
-
-        // Store initial group count for later assertions
-        assertThat(groups).isNotNull();
-    }
-
     @AfterEach
     void cleanupTestGroup() {
-        // Attempt to clean up if group still exists
         if (testGroupId != null) {
             try {
                 var operatorContext = userService.createUser("raid-au", "operator");
@@ -60,9 +46,8 @@ class GroupDeleteIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return 403 when user is not an operator")
-        void shouldReturn403WhenNotOperator() {
-            // Default user from AbstractIntegrationTest has service-point-user role, not operator
+        @DisplayName("Should fail when user is not an operator")
+        void shouldFailWhenNotOperator() {
             try {
                 keycloakClient
                         .keycloakApi(userContext.getToken())
@@ -142,39 +127,19 @@ class GroupDeleteIntegrationTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Should delete group successfully")
         void shouldDeleteGroupSuccessfully() {
-            // Create a group first via the SPI create endpoint
-            var createApi = keycloakClient.keycloakApi(operatorToken);
-
-            // Get all groups before
-            var groupsBefore = createApi.allGroups().getBody();
-            assertThat(groupsBefore).isNotNull();
-            var countBefore = groupsBefore.getGroups().size();
-
-            // Create a test group using the SPI endpoint
-            // We need to use the custom SPI create endpoint
-            var joinRequest = new au.org.raid.inttest.dto.keycloak.GroupJoinRequest();
-
-            // Use admin API to create a group for testing
-            var adminApi = keycloakClient.keycloakApi(operatorToken);
-
-            // Find a group to delete - create one via admin API
             var groupName = "test-delete-group-" + System.currentTimeMillis();
 
-            var createGroupRequest = java.util.Map.of("name", groupName);
+            // Create a group via the SPI create endpoint
+            var createGroupRequest = new CreateGroupRequest();
+            createGroupRequest.setName(groupName);
 
-            // Use RestTemplate directly to create the group via admin API
-            var headers = new org.springframework.http.HttpHeaders();
-            headers.set("Authorization", "Bearer " + operatorToken);
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-
-            var body = java.util.Map.of("name", groupName, "path", "/groups/" + groupName);
-            var entity = new org.springframework.http.HttpEntity<>(body, headers);
-
-            new org.springframework.web.client.RestTemplate()
-                    .postForEntity("http://localhost:8001/realms/raid/group/create", entity, String.class);
+            keycloakClient
+                    .keycloakApi(operatorToken)
+                    .createGroupViaSpi(createGroupRequest);
 
             // Find the created group
-            var groupsAfterCreate = createApi.allGroups().getBody();
+            var api = keycloakClient.keycloakApi(operatorToken);
+            var groupsAfterCreate = api.allGroups().getBody();
             assertThat(groupsAfterCreate).isNotNull();
 
             var createdGroup = groupsAfterCreate.getGroups().stream()
@@ -185,16 +150,13 @@ class GroupDeleteIntegrationTest extends AbstractIntegrationTest {
             testGroupId = createdGroup.getId();
 
             // Delete the group
-            // Delete the group
-            var deleteResponse = keycloakClient
-                    .keycloakApi(operatorToken)
-                    .deleteGroup(testGroupId);
+            var deleteResponse = api.deleteGroup(testGroupId);
 
             assertThat(deleteResponse.getStatusCode().value()).isEqualTo(200);
             assertThat(deleteResponse.getBody()).containsEntry("message", "Group deleted successfully");
 
             // Verify group no longer exists
-            var groupsAfterDelete = createApi.allGroups().getBody();
+            var groupsAfterDelete = api.allGroups().getBody();
             assertThat(groupsAfterDelete).isNotNull();
 
             var deletedGroup = groupsAfterDelete.getGroups().stream()
