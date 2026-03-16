@@ -1,5 +1,6 @@
 package au.org.raid.api.controller;
 
+import au.org.raid.api.service.limiter.RaidLimiter;
 import au.org.raid.idl.raidv2.model.OrganisationCount;
 import au.org.raid.idl.raidv2.model.RaidCountResponse;
 import au.org.raid.idl.raidv2.model.ServicePointCount;
@@ -78,6 +79,8 @@ class RaidControllerTest {
     private MockMvc mockMvc;
     @Mock
     private RaidService raidService;
+    @Mock
+    private RaidLimiter raidLimiter;
     @Mock
     private ValidationService validationService;
     @Mock
