@@ -1,8 +1,6 @@
 package au.org.raid.inttest;
 
-import au.org.raid.inttest.dto.keycloak.Group;
 import org.junit.jupiter.api.*;
-import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -151,27 +149,8 @@ class GroupDeleteIntegrationTest extends AbstractIntegrationTest {
             var countBefore = groupsBefore.getGroups().size();
 
             // Create a test group using the SPI endpoint
-            // We need to use the custom SPI create endpoint
-            var joinRequest = new au.org.raid.inttest.dto.keycloak.GroupJoinRequest();
-
-            // Use admin API to create a group for testing
-            var adminApi = keycloakClient.keycloakApi(operatorToken);
-
-            // Find a group to delete - create one via admin API
             var groupName = "test-delete-group-" + System.currentTimeMillis();
-
-            var createGroupRequest = java.util.Map.of("name", groupName);
-
-            // Use RestTemplate directly to create the group via admin API
-            var headers = new org.springframework.http.HttpHeaders();
-            headers.set("Authorization", "Bearer " + operatorToken);
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-
-            var body = java.util.Map.of("name", groupName, "path", "/groups/" + groupName);
-            var entity = new org.springframework.http.HttpEntity<>(body, headers);
-
-            new org.springframework.web.client.RestTemplate()
-                    .postForEntity("http://localhost:8001/realms/raid/group/create", entity, String.class);
+            createApi.createGroupViaSpi(java.util.Map.of("name", groupName, "path", "/groups/" + groupName));
 
             // Find the created group
             var groupsAfterCreate = createApi.allGroups().getBody();
@@ -184,7 +163,6 @@ class GroupDeleteIntegrationTest extends AbstractIntegrationTest {
 
             testGroupId = createdGroup.getId();
 
-            // Delete the group
             // Delete the group
             var deleteResponse = keycloakClient
                     .keycloakApi(operatorToken)
