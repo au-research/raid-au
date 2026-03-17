@@ -84,7 +84,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: raid-agency-app
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Install Playwright browsers
         working-directory: raid-agency-app
@@ -100,7 +100,7 @@ jobs:
           VITE_SUPPORT_EMAIL: contact@raid.org
           VITE_RAID_DOMAIN: http://www.raid.org.au
         run: |
-          yarn dev &
+          npm run dev &
           echo "Waiting for frontend dev server..."
           for i in $(seq 1 30); do
             if curl -fs http://localhost:7080 2>/dev/null; then
