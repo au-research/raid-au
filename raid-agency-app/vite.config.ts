@@ -35,4 +35,21 @@ export default defineConfig({
   build: {
     sourcemap: true,
   },
+  optimizeDeps: {
+    include: [
+      "@mui/icons-material/esm/AddBoxOutlined",
+      "@mui/icons-material/esm/Close",
+      "@mui/icons-material/esm/CloseRounded",
+      "@mui/icons-material/esm/ContentCopy",
+      "@mui/icons-material/esm/ExpandMore",
+      "@mui/icons-material/esm/Fingerprint",
+      "@mui/icons-material/esm/HelpOutline",
+      "@mui/icons-material/esm/IndeterminateCheckBoxOutlined",
+      "@mui/icons-material/esm/InfoOutlined",
+      "@mui/icons-material/esm/OpenInNew",
+      "@mui/icons-material/esm/Person",
+      "@mui/icons-material/esm/Refresh",
+      "@mui/icons-material/esm/TravelExplore",
+    ],
+  },
 });
