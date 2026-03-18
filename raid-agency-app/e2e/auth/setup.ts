@@ -26,35 +26,11 @@ setup("authenticate", async ({ page }) => {
     );
   }
 
-  // Capture browser console messages for debugging
-  const consoleLogs: string[] = [];
-  page.on("console", (msg) => {
-    consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
-  });
-  page.on("pageerror", (err) => {
-    consoleLogs.push(`[PAGE ERROR] ${err.message}`);
-  });
-
   // Navigate to the app - it will redirect to Keycloak
   await page.goto("/");
 
   // Wait for redirect to Keycloak login page
-  try {
-    await page.waitForSelector("#username", { timeout: 15000 });
-  } catch {
-    // Debug: capture page state on failure
-    const url = page.url();
-    const title = await page.title();
-    const html = await page.content();
-    console.log(`[AUTH DEBUG] URL: ${url}`);
-    console.log(`[AUTH DEBUG] Title: ${title}`);
-    console.log(`[AUTH DEBUG] Console logs:\n${consoleLogs.join("\n")}`);
-    console.log(`[AUTH DEBUG] HTML (first 2000): ${html.substring(0, 2000)}`);
-    await page.screenshot({ path: "e2e/auth-debug.png", fullPage: true });
-    throw new Error(
-      `Auth setup failed: #username not found after 15s. URL: ${url}, Title: ${title}`
-    );
-  }
+  await page.waitForSelector("#username", { timeout: 15000 });
 
   // Fill in credentials on the Keycloak login page
   await page.locator("#username").fill(username);

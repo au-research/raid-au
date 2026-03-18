@@ -136,7 +136,6 @@ jobs:
           name: playwright-report
           path: |
             raid-agency-app/playwright-report/
-            raid-agency-app/e2e/auth-debug.png
             raid-agency-app/test-results/
           retention-days: 14
 
