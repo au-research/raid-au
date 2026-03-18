@@ -6,20 +6,22 @@ import { defineConfig } from "vite";
  * Vite 8 (Rolldown) has a CJS interop issue where default imports from
  * @mui/icons-material deep paths (e.g. '@mui/icons-material/Close') resolve
  * to the CJS module object { __esModule: true, default: Component } instead
- * of the component itself. This plugin redirects those imports to the ESM
- * versions which are bundled correctly.
+ * of the component itself. This plugin rewrites those import specifiers to
+ * point at the ESM versions which are bundled correctly.
  */
 function muiIconsEsmPlugin() {
+  const iconImportRe = /(from\s+['"])@mui\/icons-material\/(?!esm)([\w]+)(['"])/g;
   return {
     name: "mui-icons-esm",
     enforce: "pre" as const,
-    resolveId(source: string) {
-      const match = source.match(
-        /^@mui\/icons-material\/(?!esm)([\w]+)$/
+    transform(code: string, id: string) {
+      if (!code.includes("@mui/icons-material/")) return;
+      if (id.includes("node_modules")) return;
+      const transformed = code.replace(
+        iconImportRe,
+        "$1@mui/icons-material/esm/$2$3"
       );
-      if (match) {
-        return this.resolve(`@mui/icons-material/esm/${match[1]}`);
-      }
+      if (transformed !== code) return transformed;
     },
   };
 }
