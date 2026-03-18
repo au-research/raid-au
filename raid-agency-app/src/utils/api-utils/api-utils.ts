@@ -20,9 +20,10 @@
 // @ts-expect-error: package exports map prevents TypeScript from resolving the bundled .mjs declarations
 import psl from 'psl';
 
+const apiUrl = import.meta.env.VITE_API_URL as string;
 export function getApiEndpoint(hostname = window.location.hostname): string {
 
-  return "https://api.raid-dev.dpslab.surf.nl";
+  return apiUrl;
 }
 /**
  * Determines the current environment based on the hostname
