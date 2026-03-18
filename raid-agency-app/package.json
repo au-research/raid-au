@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --port 7080",
     "build": "tsc && vite build",
+    "build:dev": "tsc && vite build --mode .env.dev",
+    "build:acc": "tsc && vite build --mode .env.acceptance",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
