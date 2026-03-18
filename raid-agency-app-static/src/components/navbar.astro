@@ -1,7 +1,9 @@
 ---
 const pathname = new URL(Astro.request.url).pathname;
 const currentPath = pathname.slice(1); // remove the first "/"
+import { getSiteConfig } from "@/config";
 
+const { topBar } = getSiteConfig().header;
 ---
 
 <header class="inset-x-0 top-0 z-50 flex h-16 border-b border-gray-300">
@@ -10,7 +12,7 @@ const currentPath = pathname.slice(1); // remove the first "/"
   >
     <a href="/">
       <div class="flex flex-1 items-center gap-x-6">
-        <img src="/raid-logo-light.svg" class="h-8 w-auto" alt="" />
+        <img src=`${topBar.show ? "/RAiD-Strapline.svg" : "/raid-logo-light.svg"}` class="h-8 w-auto" alt="" />
       </div>
     </a>
 

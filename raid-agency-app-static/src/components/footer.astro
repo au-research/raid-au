@@ -1,0 +1,170 @@
+---
+// ArdcFooter.astro
+// Renders the full-width footer with logos, description, links, and acknowledgement.
+// Only shown when USE_CUSTOM_CONFIG=true and footer.show=true
+import { getSiteConfig } from "@/config";
+
+const { show, main, links, copyright } = getSiteConfig().footer;
+---
+
+{show && (
+  <footer class="ardc-footer">
+    <!-- Logos Row -->
+    <div class="ardc-footer-logos">
+      {main.logos.map((logo) => (
+        <div class="footer-logo">
+          {logo.link ? (
+            <a href={logo.link} target="_blank" rel="noopener noreferrer" style="display: inline-flex;">
+              <img
+                src={logo.src}
+                alt={logo.alt}
+                style={`height: ${logo.height || 30}px; width: auto;`}
+              />
+            </a>
+          ) : (
+            <img
+              src={logo.src}
+              alt={logo.alt}
+              style={`height: ${logo.height || 30}px; width: auto;`}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+
+    <!-- Description -->
+    <div class="ardc-footer-description">
+      <p>
+        {main.text.join(" ")}
+      </p>
+    </div>
+
+    <!-- Footer Links -->
+    <div class="ardc-footer-links">
+      {links.map((link) => (
+        <a
+          href={link.path}
+          class="footer-link"
+          target={link.path.startsWith("http") ? "_blank" : undefined}
+          rel={link.path.startsWith("http") ? "noopener noreferrer" : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+
+    <!-- Acknowledgement of Country -->
+    <div class="ardc-footer-acknowledgement">
+      <p>{copyright}</p>
+    </div>
+  </footer>
+)}
+
+<style>
+  .ardc-footer {
+    width: 100%;
+    padding-top: 40px;
+    font-family: 'Figtree', sans-serif;
+    background-color: #ffffff;
+  }
+
+  .ardc-footer-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 0 24px 30px 24px;
+  }
+
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .footer-logo img {
+    width: auto;
+  }
+
+  .ardc-footer-description {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px 30px 24px;
+    text-align: center;
+  }
+
+  .ardc-footer-description p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #333333;
+    margin: 0;
+  }
+
+  .ardc-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    background-color: #e8e8e8;
+    border-top: 1px solid #d0d0d0;
+  }
+
+  .footer-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer-link:hover {
+    color: #0066cc;
+    text-decoration: underline;
+  }
+
+  .ardc-footer-acknowledgement {
+    background-color: #ffffff;
+    padding: 16px 24px;
+    text-align: center;
+  }
+
+  .ardc-footer-acknowledgement p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a4a4a;
+    margin: 0;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 768px) {
+    .ardc-footer-logos {
+      gap: 24px;
+    }
+
+    .ardc-footer-links {
+      gap: 24px;
+      padding: 16px;
+    }
+
+    .footer-link {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ardc-footer-logos {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ardc-footer-links {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+</style>
