@@ -295,6 +295,61 @@
   {
     "httpRequest": {
       "method": "HEAD",
+      "path": "/v3.0/0009-0009-5506-7601",
+      "headers": {
+        "Authorization": "Bearer 32cacfb3-6dab-4554-ae51-22efd37a2463"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/v3.0/0009-0009-5506-7601/personal-details",
+      "headers": {
+        "Authorization": "Bearer 32cacfb3-6dab-4554-ae51-22efd37a2463"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "last-modified-date": {
+          "value": 1720153804487
+        },
+        "name": {
+          "created-date": {
+            "value": 1720153804487
+          },
+          "last-modified-date": {
+            "value": 1720153804487
+          },
+          "given-names": {
+            "value": "TestGivenName"
+          },
+          "family-name": null,
+          "credit-name": null,
+          "source": null,
+          "visibility": "public",
+          "path": "0009-0009-5506-7601"
+        },
+        "other-names": {
+          "last-modified-date": null,
+          "other-name": [],
+          "path": "/0009-0009-5506-7601/other-names"
+        },
+        "biography": null,
+        "path": "/0009-0009-5506-7601/personal-details"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "HEAD",
       "path": "/v3.0/0009-0005-9091-4416",
       "headers": {
         "Authorization": "Bearer 32cacfb3-6dab-4554-ae51-22efd37a2463"

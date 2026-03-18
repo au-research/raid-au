@@ -30,3 +30,6 @@ dist-ssr
 /playwright/.cache/
 
 coverage
+
+# Playwright auth state (contains session tokens - never commit)
+e2e/.auth/

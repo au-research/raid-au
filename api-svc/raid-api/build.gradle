@@ -268,3 +268,17 @@ tasks.named('compileJava') {
 bootRun {
   systemProperties = System.properties
 }
+
+tasks.register('bootRunLocal') {
+  description = 'Start Docker services and API with dev profile'
+  group = 'application'
+  dependsOn 'dockerComposeUp'
+
+  doLast {
+    // Configure and run bootRun with dev profile
+    tasks.named('bootRun').configure {
+      systemProperty 'spring.profiles.active', 'dev'
+    }
+  }
+  finalizedBy 'bootRun'
+}

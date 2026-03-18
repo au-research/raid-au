@@ -20,6 +20,9 @@ raid:
     open-street-map:
       enabled: true
       delay: 150
+    isni:
+      enabled: true
+      delay: 150
   identifier:
     name-prefix: http://raid.local/
     license: Creative Commons CC-0

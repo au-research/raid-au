@@ -74,6 +74,71 @@ class OrcidClientTest {
     }
 
     @Test
+    @DisplayName("Should return given name only when family name is null")
+    public void fetchNameWithNullFamilyName() {
+        final var orcid = "https://sandbox.orcid.org/0009-0009-5506-7601";
+        final var givenNames = "_given-names";
+
+        final var personalDetails = PersonalDetails.builder()
+                .name(OrcidName.builder()
+                        .givenNames(OrcidStringValue.builder().value(givenNames).build())
+                        .familyName(null)
+                        .build())
+                .build();
+
+        final var requestEntity = RequestEntity.get("").build();
+        final var response = new ResponseEntity<>(personalDetails, HttpStatusCode.valueOf(200));
+
+        when(requestEntityFactory.createGetPersonalDetailsRequest(orcid)).thenReturn(requestEntity);
+        when(restTemplate.exchange(requestEntity, PersonalDetails.class)).thenReturn(response);
+
+        assertThat(orcidClient.getName(orcid), is(givenNames));
+    }
+
+    @Test
+    @DisplayName("Should return family name only when given names is null")
+    public void fetchNameWithNullGivenNames() {
+        final var orcid = "https://sandbox.orcid.org/0009-0009-5506-7601";
+        final var familyName = "_family-name";
+
+        final var personalDetails = PersonalDetails.builder()
+                .name(OrcidName.builder()
+                        .givenNames(null)
+                        .familyName(OrcidStringValue.builder().value(familyName).build())
+                        .build())
+                .build();
+
+        final var requestEntity = RequestEntity.get("").build();
+        final var response = new ResponseEntity<>(personalDetails, HttpStatusCode.valueOf(200));
+
+        when(requestEntityFactory.createGetPersonalDetailsRequest(orcid)).thenReturn(requestEntity);
+        when(restTemplate.exchange(requestEntity, PersonalDetails.class)).thenReturn(response);
+
+        assertThat(orcidClient.getName(orcid), is(familyName));
+    }
+
+    @Test
+    @DisplayName("Should return empty string when both given names and family name are null")
+    public void fetchNameWithBothNull() {
+        final var orcid = "https://sandbox.orcid.org/0009-0009-5506-7601";
+
+        final var personalDetails = PersonalDetails.builder()
+                .name(OrcidName.builder()
+                        .givenNames(null)
+                        .familyName(null)
+                        .build())
+                .build();
+
+        final var requestEntity = RequestEntity.get("").build();
+        final var response = new ResponseEntity<>(personalDetails, HttpStatusCode.valueOf(200));
+
+        when(requestEntityFactory.createGetPersonalDetailsRequest(orcid)).thenReturn(requestEntity);
+        when(restTemplate.exchange(requestEntity, PersonalDetails.class)).thenReturn(response);
+
+        assertThat(orcidClient.getName(orcid), is(""));
+    }
+
+    @Test
     @DisplayName("exists method should return true for existing ORCID")
     public void existsReturnsTrue() {
         final var orcid = "https://orcid.org/0009-0002-5128-5184";

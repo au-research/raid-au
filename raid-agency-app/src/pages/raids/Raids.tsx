@@ -9,6 +9,7 @@ import {
 import { Container, Stack, Box } from "@mui/material";
 
 export const Raids = () => {
+  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
   const breadcrumbs: Breadcrumb[] = [
     {
       label: "Home",
@@ -23,7 +24,7 @@ export const Raids = () => {
   ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 216px)' }}> 
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - ' + (isProduction ? '168px' : '216px') + ')' }}> 
       <Container maxWidth="lg" sx={{ flex: 1, mb: 5 }}>
         <Stack gap={2}>
           <BreadcrumbsBar breadcrumbs={breadcrumbs} />

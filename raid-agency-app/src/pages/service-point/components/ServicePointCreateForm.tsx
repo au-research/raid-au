@@ -198,6 +198,7 @@ const onSubmit = (item: CreateServicePointRequest) => {
                           defaultValue={selectedValue?.id || ""}
                           styles={{ width: '100%' }}
                           resetValue={selectedValue}
+                          required={true}
                         />
                         <FormHelperText error>
                           {form.formState.errors?.servicePointCreateRequest?.identifierOwner?.message}

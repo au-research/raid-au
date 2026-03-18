@@ -102,6 +102,7 @@ interface CustomizedInputBaseProps {
   defaultValue?: string;
   styles?: React.CSSProperties;
   resetValue?: { id: string; name?: string } | null;
+  required?: boolean;
 }
 
 export default function CustomizedInputBase({
@@ -109,7 +110,8 @@ export default function CustomizedInputBase({
   name,
   defaultValue,
   styles = { width: '400px' },
-  resetValue
+  resetValue,
+  required = false
 }: CustomizedInputBaseProps) {
   const [searchText, clearSearchText] = React.useState(false);
   const [inputText, setInputText] = React.useState(defaultValue || '');
@@ -218,7 +220,7 @@ export default function CustomizedInputBase({
         {<span style={{ height: "40px", margin:"-1px", marginRight:"8px" }} ref={inputRef}></span>}{getStatusIcon()}
         <InputBase
           sx={{ ml: 1, flex: 1 }}
-          placeholder="Search Text or lookup ROR ID"
+          placeholder={`Search Text or lookup ROR ID ${required ? '*' : ''}`}
           inputProps={{ 'aria-label': 'Search Text or lookup ROR ID' }}
           value={inputText}
           onChange={(e) => {setInputText(e.target.value),clearSearchText(true)}}
@@ -227,6 +229,7 @@ export default function CustomizedInputBase({
               handleSearch(e);
             }
           }}
+          required={required}
         />
         {searchText && <CloseRoundedIcon onClick={() => {clearSearchText(false), setInputText('')}} />}
         <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />

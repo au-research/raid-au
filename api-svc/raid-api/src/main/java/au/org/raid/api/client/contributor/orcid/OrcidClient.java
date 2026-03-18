@@ -1,6 +1,7 @@
 package au.org.raid.api.client.contributor.orcid;
 
 import au.org.raid.api.client.contributor.ContributorClient;
+import au.org.raid.api.dto.orcid.OrcidStringValue;
 import au.org.raid.api.dto.orcid.PersonalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -8,6 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -44,9 +50,15 @@ public class OrcidClient implements ContributorClient {
     public String getName(final String orcid) {
         final var personalDetails = getPersonalDetails(orcid);
 
-        final var givenNames =  personalDetails.getName().getGivenNames().getValue();
-        final var familyName =  personalDetails.getName().getFamilyName().getValue();
+        final var givenNames = Optional.ofNullable(personalDetails.getName().getGivenNames())
+                .map(OrcidStringValue::getValue)
+                .orElse(null);
+        final var familyName = Optional.ofNullable(personalDetails.getName().getFamilyName())
+                .map(OrcidStringValue::getValue)
+                .orElse(null);
 
-        return "%s %s".formatted(givenNames, familyName);
+        return Stream.of(givenNames, familyName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" "));
     }
 }

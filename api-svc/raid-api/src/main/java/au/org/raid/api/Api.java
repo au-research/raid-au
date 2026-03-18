@@ -1,7 +1,9 @@
 package au.org.raid.api;
 
+import au.org.raid.api.service.RaidMetadataBackfillService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.servers.Server;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -40,6 +42,12 @@ public class Api {
 
         restTemplate.setMessageConverters(converters);
         return restTemplate;
+    }
+
+    // TODO: Remove after 2.8.0 release — one-time backfill of metadata column
+    @Bean
+    public ApplicationRunner backfillMetadata(RaidMetadataBackfillService backfillService) {
+        return args -> backfillService.backfill();
     }
 
     public static void main(String[] args) {

@@ -74,7 +74,7 @@ export const fetchServicePointsWithMembers = async ({
 
   // Fetch members for each service point that has a groupId
   for (const servicePoint of servicePoints) {
-    if (servicePoint.groupId) {
+    if (servicePoint.groupId && servicePoint.groupId.trim() !== "") {
       const servicePointMembersResponse = await authService.fetchWithAuth(
         `${servicePointMembersUrl}?groupId=${servicePoint.groupId}`,
         {
@@ -85,6 +85,7 @@ export const fetchServicePointsWithMembers = async ({
           },
         }
       );
+
       const servicePointMembers = await servicePointMembersResponse.json();
       members.set(
         servicePoint.groupId,
@@ -222,7 +223,7 @@ export const createServicePoint = async ({
   let groupId;
   const url = new URL(API_CONSTANTS.SERVICE_POINT.ALL);
   const groupUrl = `${kcUrl}/realms/${kcRealm}/group/create`;
-  
+
   try {
     // First API call - Create group
     const group = await authService.fetchWithAuth(groupUrl.toString(), {
@@ -265,6 +266,10 @@ export const createServicePoint = async ({
 
   } catch (error) {
     console.error('Error in createServicePoint:', error);
+    // Only delete the group if it was successfully created
+    if (groupId) {
+      await deleteServicePointGroup(groupId, token);
+    }
     throw error; // Re-throw to let calling code handle it
   }
 };
@@ -477,4 +482,39 @@ export const fetchServicePointMembersWithGroupId = async ({
     throw new Error(`Failed to fetch service point members`);
   }
   return response.json();
+};
+
+/**
+ * Deletes a service point group from Keycloak
+ * 
+ * @param groupId - The group ID to delete
+ * @param token - Authentication token
+ * @returns Promise resolving when the group is deleted
+ */
+export const deleteServicePointGroup = async (
+  groupId: string | undefined,
+  token: string
+): Promise<void> => {
+  if (!groupId) {
+    return;
+  }
+
+  const deleteUrl = `${kcUrl}/realms/${kcRealm}/group/delete?groupId=${encodeURIComponent(groupId)}`;
+
+  try {
+    const response = await authService.fetchWithAuth(deleteUrl, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const responseText = await response.text();
+    console.log(`Delete group response: ${response.status} ${response.statusText} - ${responseText}`);
+    if (!response.ok) {
+      console.error(`Failed to delete group: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("Error deleting service point group:", error);
+  }
 };
