@@ -119,32 +119,34 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 
 Note that client credentials tokens do not include a `refresh_token`. When the access token expires, request a new one using the same client credentials request.
 
-## Which flow should I use?
+## Which client type should I create?
 
-When configuring a client for an external party, choose the flow that matches how they will interact with the RAiD API:
+When configuring a client for an external party, choose the type that matches their application architecture:
 
 **Create a Client Credentials client** (this guide) when the external client:
 
 - Runs an automated service or script that calls the RAiD API without user interaction
 - Authenticates as the application itself rather than on behalf of individual users
-- Needs a simple token request without browser redirects
 - Operates a system-to-system integration (e.g. a data ingest pipeline, a reporting service, or a scheduled job)
 
-**Create an [Authorization Code client](authorization-code-flow-client.md)** when the external client:
+**Create a [confidential client](authorization-code-flow-client.md)** when the external client:
 
-- Operates a web application where their users log in through a browser
-- Needs to identify individual users making requests (e.g. to associate RAiDs with a specific person)
-- Requires refresh tokens to maintain long-lived user sessions
-- Will redirect users to Keycloak for authentication and receive a callback
+- Operates a server-side web application (e.g. Spring Boot, Django, Rails) that can securely store a `client_secret` on its backend
+- Exchanges the authorization code for tokens on the server side, not in the browser
+
+**Create a [public client](authorization-code-flow-public-client.md)** when the external client:
+
+- Operates a browser-based single-page application (SPA) that cannot securely store a secret
+- Uses a JavaScript framework (e.g. React, Angular, Vue) that runs entirely in the browser
+- Will use PKCE (Proof Key for Code Exchange) instead of a client secret
 
 ### Comparison
 
-| | Authorization Code | Client Credentials |
-|---|---|---|
-| **Use case** | User-facing web applications | Machine-to-machine / API integrations |
-| **User login** | Yes — user authenticates via browser | No — client authenticates directly |
-| **Standard flow** | Enabled | Not required |
-| **Service account roles** | Not required | Enabled |
-| **Redirect URIs** | Required | Not required |
-| **Refresh tokens** | Yes | No |
-| **Token represents** | A specific user | The application itself |
+| | Confidential (Auth Code) | Public (Auth Code + PKCE) | Client Credentials |
+|---|---|---|---|
+| **Use case** | Server-side web applications | Browser-based SPAs | Machine-to-machine |
+| **Client authentication** | On (has `client_secret`) | Off (no secret) | On (has `client_secret`) |
+| **Security mechanism** | Client secret | PKCE | Client secret |
+| **User login** | Yes | Yes | No |
+| **Redirect URIs** | Required | Required | Not required |
+| **Token represents** | A specific user | A specific user | The application itself |
