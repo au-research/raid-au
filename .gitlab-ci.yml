@@ -38,12 +38,45 @@ other-version:
       when: always       # never run the job when the condition is met
 
 
-build-frontend-npm:
+build-frontend-dev:
   stage: build
   image: node
   script:
     - cd raid-agency-app
     - npm install
+    - npm run build:dev
+  artifacts:
+    paths:
+      - "raid-agency-app/dist/"
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+    paths:
+      - raid-agency-app/node_modules/
+
+build-frontend-acc:
+  stage: build
+  image: node
+  script:
+    - cd raid-agency-app
+    - npm install
+    - npm run build:acc
+  artifacts:
+    paths:
+      - "raid-agency-app/dist/"
+  cache:
+    key: "$CI_PROJECT_ID"
+    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+    paths:
+      - raid-agency-app/node_modules/
+
+build-frontend-prod:
+  stage: build
+  image: node
+  script:
+    - cd raid-agency-app
+    - npm install
+    - npm run build
   artifacts:
     paths:
       - "raid-agency-app/dist/"
@@ -59,9 +92,9 @@ docker-frontend-dev:
   dependencies:
     - other-version
     - tag-version
-    - build-frontend-npm
+    - build-frontend-dev
   needs:
-    - build-frontend-npm
+    - build-frontend-dev
     - job: other-version
       optional: true
     - job: tag-version
@@ -78,7 +111,6 @@ docker-frontend-dev:
     - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-dev
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
-    - npm run build:dev
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
 
@@ -88,9 +120,9 @@ docker-frontend-acc:
   dependencies:
     - other-version
     - tag-version
-    - build-frontend-npm
+    - build-frontend-acc
   needs:
-    - build-frontend-npm
+    - build-frontend-acc
     - job: other-version
       optional: true
     - job: tag-version
@@ -107,7 +139,6 @@ docker-frontend-acc:
     - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-acc
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
-    - npm run build:dev
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
 
@@ -117,9 +148,9 @@ docker-frontend-prod:
   dependencies:
     - other-version
     - tag-version
-    - build-frontend-npm
+    - build-frontend-prod
   needs:
-    - build-frontend-npm
+    - build-frontend-prod
     - job: other-version
       optional: true
     - job: tag-version
@@ -136,10 +167,8 @@ docker-frontend-prod:
     - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-prod
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd raid-agency-app
-    - npm run build:dev
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
-
 #
 #test-frontend:
 #  stage: test
