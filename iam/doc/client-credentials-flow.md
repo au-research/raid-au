@@ -118,3 +118,33 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 ```
 
 Note that client credentials tokens do not include a `refresh_token`. When the access token expires, request a new one using the same client credentials request.
+
+## Which flow should I use?
+
+When configuring a client for an external party, choose the flow that matches how they will interact with the RAiD API:
+
+**Create a Client Credentials client** (this guide) when the external client:
+
+- Runs an automated service or script that calls the RAiD API without user interaction
+- Authenticates as the application itself rather than on behalf of individual users
+- Needs a simple token request without browser redirects
+- Operates a system-to-system integration (e.g. a data ingest pipeline, a reporting service, or a scheduled job)
+
+**Create an [Authorization Code client](authorization-code-flow-client.md)** when the external client:
+
+- Operates a web application where their users log in through a browser
+- Needs to identify individual users making requests (e.g. to associate RAiDs with a specific person)
+- Requires refresh tokens to maintain long-lived user sessions
+- Will redirect users to Keycloak for authentication and receive a callback
+
+### Comparison
+
+| | Authorization Code | Client Credentials |
+|---|---|---|
+| **Use case** | User-facing web applications | Machine-to-machine / API integrations |
+| **User login** | Yes — user authenticates via browser | No — client authenticates directly |
+| **Standard flow** | Enabled | Not required |
+| **Service account roles** | Not required | Enabled |
+| **Redirect URIs** | Required | Not required |
+| **Refresh tokens** | Yes | No |
+| **Token represents** | A specific user | The application itself |
