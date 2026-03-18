@@ -7,6 +7,9 @@ import "@fontsource/figtree";
 
 import GoogleAnalytics from '@/components/google-analytics.astro';
 import Banner from "@/components/raid-components/banner.astro";
+import { getSiteConfig } from "@/config";
+
+const { topBar } = getSiteConfig().header;
 
 interface Props {
   title: string;
@@ -36,14 +39,13 @@ const shouldRender = !isProduction;
     </style>
     <GoogleAnalytics />
   </head>
-  <body class="min-h-dvh flex flex-col bg-[#c6d9f0] dark:bg-[#1b3e60]">
+  <body class=`${topBar.show && "min-h-dvh" } flex flex-col bg-[#c6d9f0] dark:bg-[#1b3e60]`>
     <!-- ARDC Top Bar (only renders when USE_CUSTOM_CONFIG=true) -->
     <TopBar />
 
     <!-- Main Content Card -->
     <div
-      class="m-7 mx-auto max-w-7xl flex-1 rounded-md border border-gray-300 bg-white shadow-md"
-      style={{margin: "40px"}}
+      class="m-7 w-full mx-auto max-w-7xl flex-1 rounded-md border border-gray-300 bg-white shadow-md"
     >
       <Navbar />
       {shouldRender && (

@@ -34,7 +34,7 @@ const { show, main, links, copyright } = getSiteConfig().footer;
 
     <!-- Description -->
     <div class="ardc-footer-description">
-      <p>
+      <p style={{textWrap: "pretty"}}>
         {main.text.join(" ")}
       </p>
     </div>
@@ -55,7 +55,7 @@ const { show, main, links, copyright } = getSiteConfig().footer;
 
     <!-- Acknowledgement of Country -->
     <div class="ardc-footer-acknowledgement">
-      <p>{copyright}</p>
+      <p style={{textWrap: "pretty"}}>{copyright}</p>
     </div>
   </footer>
 )}
