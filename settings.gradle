@@ -6,7 +6,6 @@ include ':api-svc:testFixtures'
 include ":api-svc:db"
 include ":api-svc:testFixtures"
 include ":api-svc:datamodel"
-include ":app-client"
 include ":iam"
 
 dependencyResolutionManagement{
