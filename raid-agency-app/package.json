@@ -21,7 +21,7 @@
     "@mui/x-data-grid": "6.20.4",
     "@mui/x-tree-view": "^8.21.0",
     "@react-keycloak/web": "^3.4.0",
-    "@tanstack/react-query": "5.91.0",
+    "@tanstack/react-query": "5.91.2",
     "@tanstack/react-query-devtools": "5.91.3",
     "dayjs": "1.11.10",
     "dotenv": "16.4.5",
