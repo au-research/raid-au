@@ -7,15 +7,13 @@ repositories {
 
 dependencies {
     implementation gradleApi()
-    implementation 'org.apache.jena:jena-arq:5.4.0'
-    implementation 'org.postgresql:postgresql:42.5.4'
+    implementation libs.jena.arq
+    implementation libs.postgresql
+    implementation libs.commons.compress
+    runtimeOnly( libs.jackson.databind)
     implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2'
     implementation 'org.apache.jena:jena-rdfconnection:5.4.0'
     implementation 'org.apache.httpcomponents:httpcore:4.4.13'
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-}
-
-build {
-
 }

@@ -30,7 +30,7 @@ println "Project version: $version"
 // to upgrade the wrapper, change the version and run this task
 tasks.named('wrapper') {
   distributionType = Wrapper.DistributionType.ALL
-  gradleVersion = '8.13'
+  gradleVersion = '9.2.1'
 }
 
 repositories {

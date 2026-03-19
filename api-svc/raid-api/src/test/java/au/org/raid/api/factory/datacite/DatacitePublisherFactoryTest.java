@@ -34,6 +34,8 @@ class DatacitePublisherFactoryTest {
 
         when(rorClient.getOrganisationName(id)).thenReturn(name);
 
+        when(rorClient.getOrganisationName(id)).thenReturn(name);
+
         final var result = publisherFactory.create(owner);
 
         assertThat(result.getSchemeUri(), is(schemaUriEnum.getValue()));
