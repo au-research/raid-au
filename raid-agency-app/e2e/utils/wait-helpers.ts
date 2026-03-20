@@ -40,6 +40,16 @@ export function extractHandleFromUrl(url: string): string {
 }
 
 /**
+ * Generate an embargo expiry date N months in the future (YYYY-MM-DD).
+ * The API enforces a maximum of 18 months, so default to 12 months.
+ */
+export function futureDate(monthsAhead = 12): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() + monthsAhead);
+  return d.toISOString().split("T")[0];
+}
+
+/**
  * Extract prefix and suffix separately from the current page URL.
  * Returns [prefix, suffix], e.g. ["10378.1", "123456"].
  */
