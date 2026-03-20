@@ -20,10 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Reset npm to public registry
-        run: |
-          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
-          npm cache clean --force
       - run: npm ci
       - run: npm run build
       - run: npm test -- --run
