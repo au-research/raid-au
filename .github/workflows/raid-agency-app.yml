@@ -20,14 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Debug npm config source
-        run: |
-          npm config list --json 2>&1 | grep -i auth || true
-          npm config get _auth 2>&1 || true
-          npm config get globalconfig
-          npm config get userconfig
-          cat "$(npm config get globalconfig)" 2>/dev/null || echo "no globalconfig file"
-          cat "$(npm config get prefix)/etc/npmrc" 2>/dev/null || echo "no prefix npmrc"
-      - run: npm ci --loglevel verbose 2>&1 | head -50 || true
+      - run: npm ci --registry https://registry.npmjs.org/
       - run: npm run build
       - run: npm test -- --run
