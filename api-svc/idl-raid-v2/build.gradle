@@ -141,9 +141,8 @@ openApiGenerate {
           delegatePattern      : "false",
           removeOperationIdPrefix: "true",
           removeOperationIdSuffix: "true",
-          /* Disable Bean Validation annotations (@Valid and JSR 303 annotations) */
-          useBeanValidation    : "false",
-          performBeanValidation: "false",
+          useBeanValidation    : "true",
+          performBeanValidation: "true",
   ]
 }
 tasks.openApiGenerate{
