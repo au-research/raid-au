@@ -1,0 +1,398 @@
+{
+    "$defs": {
+        "AlternativeIdentifierPropertyEnum": {
+            "description": "",
+            "enum": [
+                "https://datamodel.raid.org/core/alternativeIdentifier"
+            ],
+            "title": "AlternativeIdentifierPropertyEnum",
+            "type": "string"
+        },
+        "DefinedTerm": {
+            "additionalProperties": false,
+            "description": "A term from a controlled vocabulary",
+            "properties": {
+                "@id": {
+                    "description": "URI identifier for the term",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@type": {
+                    "description": "The schema.org type",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inDefinedTermSet": {
+                    "description": "The vocabulary/taxonomy this term belongs to",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable name of the term",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "@id"
+            ],
+            "title": "DefinedTerm",
+            "type": "object"
+        },
+        "Member": {
+            "additionalProperties": false,
+            "description": "A person or organization involved in the research project",
+            "properties": {
+                "@id": {
+                    "description": "Identifier for the member (ORCID for persons, ROR for organizations)",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@type": {
+                    "description": "The schema.org type (Person or Organization)",
+                    "type": "string"
+                },
+                "identifier": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/PropertyValue"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Structured identifier with type information"
+                }
+            },
+            "required": [
+                "@type",
+                "@id"
+            ],
+            "title": "Member",
+            "type": "object"
+        },
+        "Organization": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "@id": {
+                    "description": "The ROR of the organization",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@type": {
+                    "description": "The schema.org type",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "$ref": "#/$defs/PropertyValue",
+                    "description": "Extended identifier information"
+                },
+                "name": {
+                    "description": "Name of the organization",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "identifier"
+            ],
+            "title": "Organization",
+            "type": "object"
+        },
+        "Place": {
+            "additionalProperties": false,
+            "description": "Geographic location",
+            "properties": {
+                "@id": {
+                    "description": "GeoNames or other geographic identifier",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@type": {
+                    "description": "The schema.org type",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "Additional type information",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Name of the place",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "@id"
+            ],
+            "title": "Place",
+            "type": "object"
+        },
+        "PropertyIDEnum": {
+            "description": "",
+            "enum": [
+                "https://datamodel.raid.org/core/traditionalKnowledgeLabel",
+                "https://datamodel.raid.org/core/registrationAgency",
+                "https://datamodel.raid.org/core/owner"
+            ],
+            "title": "PropertyIDEnum",
+            "type": "string"
+        },
+        "PropertyValue": {
+            "additionalProperties": false,
+            "description": "A property-value pair for additional metadata",
+            "properties": {
+                "@type": {
+                    "description": "The schema.org type",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Property name",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "propertyID": {
+                    "description": "Property identifier",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "value": {
+                    "description": "Property value",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "PropertyValue",
+            "type": "object"
+        },
+        "ResearchProject": {
+            "additionalProperties": false,
+            "description": "A research project with contributors and organizational relationships",
+            "properties": {
+                "@context": {
+                    "description": "The schema.org context",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@id": {
+                    "description": "The RAiD identifier",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@type": {
+                    "description": "The schema.org type",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Description of the research project",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "dissolutionDate": {
+                    "description": "When the research project was completed",
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "foundingDate": {
+                    "description": "When the research project was established",
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "funder": {
+                    "description": "Organizations that fund the project",
+                    "items": {
+                        "$ref": "#/$defs/ResearchProjectRole"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "$ref": "#/$defs/PropertyValue"
+                },
+                "keywords": {
+                    "description": "Keywords associated with the project",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "knowsAbout": {
+                    "description": "Research subjects/domains the project covers",
+                    "items": {
+                        "$ref": "#/$defs/DefinedTerm"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "location": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Place"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Geographic location of the project"
+                },
+                "member": {
+                    "description": "Roles of people and organizations in the project",
+                    "items": {
+                        "$ref": "#/$defs/ResearchProjectRole"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "The title/name of the research project",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "parentOrganization": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Organization"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The RAiD identifier owner"
+                }
+            },
+            "required": [
+                "@id",
+                "identifier"
+            ],
+            "title": "ResearchProject",
+            "type": "object"
+        },
+        "ResearchProjectRole": {
+            "additionalProperties": false,
+            "description": "A role held by a person or organization in the project",
+            "properties": {
+                "@id": {
+                    "description": "Identifier for the role (position ID or CRediT role URI)",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "@type": {
+                    "description": "The schema.org type",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "endDate": {
+                    "description": "When the role ended (if applicable)",
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "member": {
+                    "$ref": "#/$defs/Member",
+                    "description": "The person or organization holding this role"
+                },
+                "roleName": {
+                    "description": "Name of the role",
+                    "type": "string"
+                },
+                "startDate": {
+                    "description": "When the role started",
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "@id",
+                "roleName",
+                "member"
+            ],
+            "title": "ResearchProjectRole",
+            "type": "object"
+        },
+        "RoleType": {
+            "description": "Types of roles in research projects",
+            "enum": [
+                "position",
+                "leadership",
+                "contact",
+                "credit"
+            ],
+            "title": "RoleType",
+            "type": "string"
+        }
+    },
+    "$id": "https://example.org/raid-schema-org",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": true,
+    "metamodel_version": "1.7.0",
+    "title": "raid-schema-org",
+    "type": "object",
+    "version": null
+}
