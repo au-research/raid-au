@@ -380,7 +380,7 @@ async function main() {
     const raidData = await fetchRaidData(bearerToken);
     
     // Step 3: Add citations to RAID data
-   /*  const enrichedData = await addCitationsToRaidData(raidData);
+    const enrichedData = await addCitationsToRaidData(raidData);
     // Step 4: Add ORCID info to RAID data
     const enrichedWithOrcid = await addOrcidInfoToRaidData(
       enrichedData, 
@@ -395,11 +395,11 @@ async function main() {
       makeRequestWithRetry,
       config,
       stats
-    ); */
+    );
 
     // Step 6: Add service point names to RAID data  <-- NEW
     const enrichedWithServicePoint = await addServicePointNameToRaidData(
-      raidData,
+      enrichedWithRor,
       makeRequestWithRetry,
       config,
       stats

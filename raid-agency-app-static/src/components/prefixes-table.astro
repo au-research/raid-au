@@ -1,5 +1,6 @@
 ---
-const { prefixes } = Astro.props;
+const { prefixes, raids } = Astro.props;
+console.log("prefix", prefixes)
 ---
 
 <div class="mt-8 flow-root">
@@ -18,6 +19,11 @@ const { prefixes } = Astro.props;
               class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
               ># of RAiDs</th
             >
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >Service Point</th
+            >
             <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
               <span class="sr-only">Edit</span>
             </th>
@@ -25,7 +31,7 @@ const { prefixes } = Astro.props;
         </thead>
         <tbody class="bg-white">
           {
-            [...prefixes.entries()].map((prefix: [string, number]) => {
+            [...prefixes.entries()].map((prefix: [string, number], index) => {
               return (
                 <tr class="even:bg-gray-50">
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
@@ -33,6 +39,9 @@ const { prefixes } = Astro.props;
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     {prefix[1]}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {raids[index].identifier.owner.servicePointName}
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
                     <a
