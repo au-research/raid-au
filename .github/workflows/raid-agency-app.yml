@@ -20,6 +20,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Debug npm auth
+        run: |
+          echo "NODE_AUTH_TOKEN set: ${NODE_AUTH_TOKEN:+yes}"
+          echo "NPM_TOKEN set: ${NPM_TOKEN:+yes}"
+          npm config list -l 2>&1 | grep -i "auth\|token\|registry" || true
+          npm config get registry
+          cat /home/runner/.npmrc 2>/dev/null || echo "no /home/runner/.npmrc"
+          cat /etc/npmrc 2>/dev/null || echo "no /etc/npmrc"
+          ls -la /home/runner/work/_temp/.npmrc 2>/dev/null || echo "no temp .npmrc"
+          env | grep -i "npm\|node_auth\|token" | sed 's/=.*/=***/' || true
       - run: npm ci
       - run: npm run build
       - run: npm test -- --run
