@@ -25,46 +25,6 @@ public class AccessTypeValidator {
     public List<ValidationFailure> validate(final AccessType accessType) {
         final var failures = new ArrayList<ValidationFailure>();
 
-        if (accessType == null) {
-            return List.of(new ValidationFailure()
-                    .fieldId("access.type")
-                    .errorType(NOT_SET_TYPE)
-                    .message(NOT_SET_MESSAGE)
-            );
-        }
-
-        if (isBlank(accessType.getId())) {
-            failures.add(new ValidationFailure()
-                    .fieldId("access.type.id")
-                    .errorType(NOT_SET_TYPE)
-                    .message(NOT_SET_MESSAGE)
-            );
-        }
-
-        if (isBlank(accessType.getSchemaUri())) {
-            failures.add(new ValidationFailure()
-                    .fieldId("access.type.schemaUri")
-                    .errorType(NOT_SET_TYPE)
-                    .message(NOT_SET_MESSAGE)
-            );
-        } else {
-            final var accessTypeScheme =
-                    accessTypeSchemaRepository.findActiveByUri(accessType.getSchemaUri());
-
-            if (accessTypeScheme.isEmpty()) {
-                failures.add(new ValidationFailure()
-                        .fieldId("access.type.schemaUri")
-                        .errorType(INVALID_VALUE_TYPE)
-                        .message(INVALID_SCHEMA));
-            } else if (!isBlank(accessType.getId()) &&
-                    accessTypeRepository.findByUriAndSchemaId(accessType.getId(), accessTypeScheme.get().getId()).isEmpty()) {
-                failures.add(new ValidationFailure()
-                        .fieldId("access.type.id")
-                        .errorType(INVALID_VALUE_TYPE)
-                        .message(INVALID_ID_FOR_SCHEMA));
-            }
-        }
-
         return failures;
     }
 }

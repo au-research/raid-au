@@ -26,38 +26,16 @@ public class LanguageValidator {
             return failures;
         }
 
-        if (isBlank(language.getId())) {
+        final var languageScheme = languageSchemaRepository.findActiveByUri(language.getSchemaUri().getValue());
+        if (!isBlank(language.getId()) &&
+                languageRepository.findByIdAndSchemaId(language.getId(), languageScheme.get().getId()).isEmpty()) {
             failures.add(new ValidationFailure()
                     .fieldId("%s.language.id".formatted(parent))
-                    .errorType(NOT_SET_TYPE)
-                    .message(NOT_SET_MESSAGE)
+                    .errorType(INVALID_VALUE_TYPE)
+                    .message(INVALID_ID_FOR_SCHEMA)
             );
-        }
-        if (isBlank(language.getSchemaUri())) {
-            failures.add(new ValidationFailure()
-                    .fieldId("%s.language.schemaUri".formatted(parent))
-                    .errorType(NOT_SET_TYPE)
-                    .message(NOT_SET_MESSAGE)
-            );
-        } else {
-            final var languageScheme = languageSchemaRepository.findActiveByUri(language.getSchemaUri());
-
-            if (languageScheme.isEmpty()) {
-                failures.add(new ValidationFailure()
-                        .fieldId("%s.language.schemaUri".formatted(parent))
-                        .errorType(INVALID_VALUE_TYPE)
-                        .message(INVALID_SCHEMA)
-                );
-            } else if (!isBlank(language.getId()) &&
-                    languageRepository.findByIdAndSchemaId(language.getId(), languageScheme.get().getId()).isEmpty()) {
-                failures.add(new ValidationFailure()
-                        .fieldId("%s.language.id".formatted(parent))
-                        .errorType(INVALID_VALUE_TYPE)
-                        .message(INVALID_ID_FOR_SCHEMA)
-                );
 
 
-            }
         }
 
         return failures;

@@ -1,19 +1,14 @@
 package au.org.raid.api.util;
 
+import au.org.raid.idl.raidv2.model.RaidIdentifierSchemaURIEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum SchemaValues {
-    ARKS_SCHEMA("https://arks.org/"),
-    ISBN_SCHEMA("https://www.isbn-international.org/"),
-    RRID_SCHEMA("https://scicrunch.org/resolver/"),
-    ARCHIVE_ORG_SCHEMA("https://archive.org/"),
-    DOI_SCHEMA("https://doi.org/"),
+    /*
     ROR_SCHEMA_URI("https://ror.org/"),
     ORCID_SCHEMA_URI("https://orcid.org/"),
-    GEONAMES_SCHEMA_URI("https://www.geonames.org/"),
-    SUBJECT_SCHEMA_URI("https://vocabs.ardc.edu.au/viewById/316"),
     ACCESS_TYPE_OPEN("https://vocabularies.coar-repositories.org/access_rights/c_abf2/"),
     ACCESS_TYPE_EMBARGOED("https://vocabularies.coar-repositories.org/access_rights/c_f1cf/"),
     ACCESS_TYPE_SCHEMA("https://vocabularies.coar-repositories.org/access_rights/"),
@@ -25,7 +20,7 @@ public enum SchemaValues {
     TITLE_TYPE_SCHEMA("https://vocabulary.raid.org/title.type.schema/376"),
     PRINCIPAL_INVESTIGATOR_CONTRIBUTOR_POSITION_ROLE("https://vocabulary.raid.org/contributor.position.schema/307"),
     CONTRIBUTOR_POSITION_SCHEMA_URI("https://vocabulary.raid.org/contributor.position.schema/305"),
-    CONTRIBUTOR_ROLE_SCHEMA_URI("https://credit.niso.org"),
+    CONTRIBUTOR_ROLE_SCHEMA_URI("https://credit.niso.org/"),
     LEAD_RESEARCH_ORGANISATION_ROLE("https://vocabulary.raid.org/organisation.role.schema/182"),
     OTHER_RESEARCH_ORGANISATION_ROLE("https://vocabulary.raid.org/organisation.role.schema/183"),
     PARTNER_ORGANISATION_ROLE("https://vocabulary.raid.org/organisation.role.schema/184"),
@@ -69,10 +64,23 @@ public enum SchemaValues {
     OUTPUT_RELATED_OBJECT_CATEGORY("https://vocabulary.raid.org/relatedObject.category.id/190"),
     INPUT_RELATED_OBJECT_CATEGORY("https://vocabulary.raid.org/relatedObject.category.id/191"),
     INTERNAL_PROCESS_DOCUMENT_RELATED_OBJECT_CATEGORY("https://vocabulary.raid.org/relatedObject.category.id/192"),
+*/
+
+    GEONAMES_SCHEMA_URI("https://www.geonames.org/"),
+
+
+    ARKS_SCHEMA("https://arks.org/"),
+    ISBN_SCHEMA("https://www.isbn-international.org/"),
+    RRID_SCHEMA("https://scicrunch.org/resolver/"),
+    ARCHIVE_ORG_SCHEMA("https://archive.org/"),
+    DOI_SCHEMA("http://doi.org/"),
+
+    SUBJECT_SCHEMA_URI("https://vocabs.ardc.edu.au/viewById/316"),
 
     SUBJECT_ID_PREFIX("https://linked.data.gov.au/def/anzsrc-for/2020/"),
 
     ;
+
 
     private final String uri;
 }

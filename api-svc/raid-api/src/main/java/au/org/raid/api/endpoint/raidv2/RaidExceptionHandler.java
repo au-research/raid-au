@@ -3,15 +3,21 @@ package au.org.raid.api.endpoint.raidv2;
 import au.org.raid.api.exception.*;
 import au.org.raid.idl.raidv2.model.ClosedRaid;
 import au.org.raid.idl.raidv2.model.FailureResponse;
+import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.idl.raidv2.model.ValidationFailureResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.exception.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.List;
+
+import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 
 @Slf4j
 @ControllerAdvice
@@ -22,7 +28,7 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
         final var raid = e.getRaid();
 
         final var body = new ClosedRaid()
-                .identifier(raid.getIdentifier())
+                .id(raid.getIdentifier().getId())
                 .access(raid.getAccess());
 
         return ResponseEntity.status(403).body(body);
@@ -214,5 +220,30 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(400)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body);
+    }
+
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ValidationFailureResponse response = new ValidationFailureResponse();
+        response.setDetail(ex.getBody().getDetail());
+        List<ValidationFailure> failures = ex.getFieldErrors().stream().map(fe -> {
+            if(List.of("NotNull", "NotEmpty", "NotBlank").contains(fe.getCode())) {
+                return fieldNotSet(fe.getField());
+            }
+            else if("Pattern".equals(fe.getCode())) {
+                return new ValidationFailure(fe.getField(), INVALID_VALUE_TYPE, INVALID_VALUE_MESSAGE + " - " + fe.getDefaultMessage());
+            }
+            else {
+                return new ValidationFailure(fe.getField(), fe.getCode(), fe.getDefaultMessage());
+            }
+
+        }).toList();
+        ValidationException vex = new ValidationException(failures);
+        response.setDetail(vex.getDetail());
+        response.setInstance(vex.getInstance());
+        response.setType(vex.getType());
+        response.setStatus(vex.getStatus());
+        response.setTitle(vex.getTitle());
+        response.setFailures(failures);
+        return new ResponseEntity<Object>(response, null, HttpStatus.BAD_REQUEST);
     }
 }

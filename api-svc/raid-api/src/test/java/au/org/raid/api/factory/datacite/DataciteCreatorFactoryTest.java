@@ -3,6 +3,7 @@ package au.org.raid.api.factory.datacite;
 import au.org.raid.api.client.contributor.isni.IsniClient;
 import au.org.raid.api.client.contributor.orcid.OrcidClient;
 import au.org.raid.idl.raidv2.model.Contributor;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ public class DataciteCreatorFactoryTest {
     void createWithContributorORCID() {
         final var id = "_id";
         final var name = "_name";
-        final var schemaUri = "https://orcid.org/";
+        final var schemaUri = ContributorSchemaUriEnum.HTTPS_ORCID_ORG_;
 
         final var contributor = new Contributor()
                 .id(id)
@@ -59,7 +60,7 @@ public class DataciteCreatorFactoryTest {
         final var contributor = new Contributor()
                 .id(id)
                 .status("AUTHENTICATED")
-                .schemaUri(schemaUri);
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_);
 
         when(isniClient.getName(id)).thenReturn(name);
 

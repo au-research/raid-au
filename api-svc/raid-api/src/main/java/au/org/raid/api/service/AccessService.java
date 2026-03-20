@@ -27,11 +27,11 @@ public class AccessService {
         final var accessTypeSchemaUri = access.getType().getSchemaUri();
         final var accessTypeUri = access.getType().getId();
 
-        final var accessTypeSchemaRecord = accessTypeSchemaRepository.findByUri(accessTypeSchemaUri)
-                .orElseThrow(() -> new AccessTypeSchemaNotFoundException(accessTypeSchemaUri));
+        final var accessTypeSchemaRecord = accessTypeSchemaRepository.findByUri(accessTypeSchemaUri.getValue())
+                .orElseThrow(() -> new AccessTypeSchemaNotFoundException(accessTypeSchemaUri.getValue()));
 
-        final var accessTypeRecord = accessTypeRepository.findByUriAndSchemaId(accessTypeUri, accessTypeSchemaRecord.getId())
-                .orElseThrow(() -> new AccessTypeNotFoundException(accessTypeUri, accessTypeSchemaUri));
+        final var accessTypeRecord = accessTypeRepository.findByUriAndSchemaId(accessTypeUri.getValue(), accessTypeSchemaRecord.getId())
+                .orElseThrow(() -> new AccessTypeNotFoundException(accessTypeUri.getValue(), accessTypeSchemaUri.getValue()));
 
         return accessTypeRecord.getId();
     }

@@ -57,13 +57,13 @@ public class ContributorRoleService {
         }
 
         for (final var contributorRole : roles) {
-            final var roleSchema = contributorRoleSchemaRepository.findByUri(contributorRole.getSchemaUri())
+            final var roleSchema = contributorRoleSchemaRepository.findByUri(contributorRole.getSchemaUri().getValue())
                     .orElseThrow(() ->
-                            new ContributorRoleSchemaNotFoundException(contributorRole.getSchemaUri()));
+                            new ContributorRoleSchemaNotFoundException(contributorRole.getSchemaUri().getValue()));
 
-            final var role = contributorRoleRepository.findByUriAndSchemaId(contributorRole.getId(), roleSchema.getId())
+            final var role = contributorRoleRepository.findByUriAndSchemaId(contributorRole.getId().getValue(), roleSchema.getId())
                     .orElseThrow(() ->
-                            new ContributorRoleNotFoundException(contributorRole.getId(), contributorRole.getSchemaUri()));
+                            new ContributorRoleNotFoundException(contributorRole.getId().getValue(), contributorRole.getSchemaUri().getValue()));
 
             final var raidContributorRoleRecord = raidContributorRoleRecordFactory.create(
                     raidContributorId, role.getId());

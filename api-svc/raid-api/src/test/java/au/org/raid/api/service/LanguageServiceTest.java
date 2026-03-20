@@ -8,6 +8,7 @@ import au.org.raid.api.repository.LanguageSchemaRepository;
 import au.org.raid.db.jooq.tables.records.LanguageRecord;
 import au.org.raid.db.jooq.tables.records.LanguageSchemaRecord;
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +42,7 @@ class LanguageServiceTest {
         final var id = 123;
         final var code = "_code";
         final var schemaId = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var language = new Language()
                 .id(code)
@@ -49,12 +50,12 @@ class LanguageServiceTest {
 
         final var languageSchemaRecord = new LanguageSchemaRecord()
                 .setId(schemaId)
-                .setUri(schemaUri);
+                .setUri(schemaUri.getValue());
 
         final var languageRecord = new LanguageRecord()
                 .setId(id);
 
-        when(languageSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(languageSchemaRecord));
+        when(languageSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(languageSchemaRecord));
         when(languageRepository.findByIdAndSchemaId(code, schemaId)).thenReturn(Optional.of(languageRecord));
 
         final var result = languageService.findLanguageId(language);
@@ -74,13 +75,13 @@ class LanguageServiceTest {
     @Test
     @DisplayName("findLanguageId() throws LanguageSchemaNotFoundException")
     void findLanguageIdThrowsLanguageSchemaNotFoundException() {
-        final var schemaUri = "schema-uri";
+        final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var language = new Language()
                 .id("eng")
                 .schemaUri(schemaUri);
 
-        when(languageSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
+        when(languageSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.empty());
 
         assertThrows(LanguageSchemaNotFoundException.class, () -> languageService.findLanguageId(language));
 
@@ -92,7 +93,7 @@ class LanguageServiceTest {
     void findLanguageIdThrowsLanguageNotFoundException() {
         final var code = "_code";
         final var schemaId = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var language = new Language()
                 .id(code)
@@ -100,9 +101,9 @@ class LanguageServiceTest {
 
         final var languageSchemaRecord = new LanguageSchemaRecord()
                 .setId(schemaId)
-                .setUri(schemaUri);
+                .setUri(schemaUri.getValue());
 
-        when(languageSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(languageSchemaRecord));
+        when(languageSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(languageSchemaRecord));
         when(languageRepository.findByIdAndSchemaId(code, schemaId)).thenReturn(Optional.empty());
 
         assertThrows(LanguageNotFoundException.class, () -> languageService.findLanguageId(language));
@@ -180,7 +181,7 @@ class LanguageServiceTest {
     @DisplayName("findLanguageId() returns null when language has null id and set schemaUri")
     void findLanguageIdReturnsNullForNullIdWithSchemaUri() {
         final var language = new Language()
-                .schemaUri("https://www.iso.org/standard/74575.html");
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         assertThat(languageService.findLanguageId(language), nullValue());
 

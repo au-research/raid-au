@@ -41,7 +41,7 @@ public class RaidRecordFactory {
 
         return new RaidRecord()
                 .setHandle(handle.toString())
-                .setServicePointId(raid.getIdentifier().getOwner().getServicePoint())
+                .setServicePointId(raid.getIdentifier().getOwner().getServicePoint().longValue())
                 .setMetadataSchema(Metaschema.raido_metadata_schema_v2)
                 .setDateCreated(LocalDateTime.now(clock))
                 .setVersion(raid.getIdentifier().getVersion())
@@ -52,7 +52,7 @@ public class RaidRecordFactory {
                 .setEmbargoExpiry(raid.getAccess().getEmbargoExpiry())
                 .setAccessStatement(accessStatement)
                 .setAccessStatementLanguageId(accessStatementLanguageId)
-                .setSchemaUri(raid.getIdentifier().getSchemaUri())
+                .setSchemaUri(raid.getIdentifier().getSchemaUri().getValue())
                 .setRegistrationAgencyOrganisationId(registrationAgencyOrganisationId)
                 .setOwnerOrganisationId(ownerOrganisationId);
     }

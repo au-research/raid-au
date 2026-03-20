@@ -4,6 +4,7 @@ import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
+import au.org.raid.idl.raidv2.model.RegistrationAgencySchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,9 +79,9 @@ class RaidIngestServiceTest {
         when(accessService.findAccessTypeId(RAID_DTO.getAccess())).thenReturn(accessTypeId);
         when(languageService.findLanguageId(RAID_DTO.getAccess().getStatement().getLanguage()))
                 .thenReturn(accessStatementLanguageId);
-        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, ROR_SCHEMA_URI))
+        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
                 .thenReturn(registrationAgencyOrganisationId);
-        when(organisationService.findOrCreate(OWNER_ID, ROR_SCHEMA_URI))
+        when(organisationService.findOrCreate(OWNER_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
                 .thenReturn(ownerOrganisationId);
 
         when(raidRecordFactory.create(RAID_DTO, accessTypeId, accessStatementLanguageId, registrationAgencyOrganisationId, ownerOrganisationId))
@@ -162,9 +163,9 @@ class RaidIngestServiceTest {
 
         when(accessService.findAccessTypeId(ACCESS)).thenReturn(accessTypeId);
         when(languageService.findLanguageId(LANGUAGE)).thenReturn(accessStatementLanguageId);
-        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, ROR_SCHEMA_URI))
+        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
                 .thenReturn(registrationAgencyOrganisationId);
-        when(organisationService.findOrCreate(OWNER_ID, ROR_SCHEMA_URI))
+        when(organisationService.findOrCreate(OWNER_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
                 .thenReturn(ownerOrganisationId);
 
         when(raidRecordFactory.create(RAID_DTO, accessTypeId, accessStatementLanguageId,

@@ -80,8 +80,8 @@ public class AbstractIntegrationTest {
 
     public Contributor isniContributor(
             final String isni,
-            final String position,
-            final String role,
+            final ContributorPositionIdEnum position,
+            final ContributorRoleIdEnum role,
             final LocalDate startDate,
             final String status
     ) {

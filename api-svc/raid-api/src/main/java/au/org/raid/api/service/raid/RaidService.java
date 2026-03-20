@@ -108,7 +108,7 @@ public class RaidService {
     @SneakyThrows
     @Transactional
     public RaidDto update(final RaidUpdateRequest raid, final long userServicePointId) {
-        final var raidServicePointId = raid.getIdentifier().getOwner().getServicePoint();
+        final var raidServicePointId = raid.getIdentifier().getOwner().getServicePoint().longValue();
 
         if (!TokenUtil.hasRole(OPERATOR_ROLE) && raidServicePointId != userServicePointId) {
             throw new IllegalAccessException("User service point id (%d) does not match raid service point id (%d)"
@@ -117,7 +117,7 @@ public class RaidService {
 
         final var servicePointRecord =
                 servicePointRepository.findById(raidServicePointId).orElseThrow(() ->
-                        new UnknownServicePointException(raid.getIdentifier().getOwner().getServicePoint()));
+                        new UnknownServicePointException(raidServicePointId));
 
         final Integer version = raid.getIdentifier().getVersion();
 
@@ -161,8 +161,8 @@ public class RaidService {
 
         final var servicePointId = raid.getIdentifier().getOwner().getServicePoint();
 
-        final var servicePointRecord = servicePointRepository.findById(servicePointId)
-                .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
+        final var servicePointRecord = servicePointRepository.findById(servicePointId.longValue())
+                .orElseThrow(() -> new ServicePointNotFoundException(servicePointId.toString()));
 
         orcidIntegrationService.setContributorStatus(contributors);
         raid.setContributor(contributors);
@@ -199,7 +199,7 @@ public class RaidService {
 
         var servicePointMatch = false;
         var canWrite = false;
-        var canRead = raidOptional.get().getAccess().getType().getId().equals(SchemaValues.ACCESS_TYPE_OPEN.getUri());
+        var canRead = raidOptional.get().getAccess().getType().getId().equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_);
 
         final var token = ((JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getToken();
 
@@ -212,7 +212,7 @@ public class RaidService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        if (raidOptional.get().getIdentifier().getOwner().getServicePoint().equals(servicePoint.getId())) {
+        if (raidOptional.get().getIdentifier().getOwner().getServicePoint().longValue() == servicePoint.getId()) {
             servicePointMatch = true;
         }
 
@@ -349,7 +349,7 @@ public class RaidService {
 
         //TODO: Check prefix
 
-        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint();
+        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValue();
 
         final var servicePointRecord = servicePointRepository.findById(servicePointId)
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));

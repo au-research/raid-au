@@ -1,0 +1,29 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: raid-client
+            authorization-grant-type: authorization_code
+            scope: openid
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            user-name-attribute: preferred_username
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://mock-keycloak:8080/realms/raid-dev/protocol/openid-connect/certs
+          issuer-uri: http://mock-keycloak:8080/realms/raid-dev
+
+raid:
+  handle:
+    prefix: 10378.1
+  iam:
+    realm-uri: http://mock-keycloak:8080/realms/raid-dev
+
+# This is a mock service for testing
+services:
+  raid-service:
+    handle:
+      url: http://mock-service:8080

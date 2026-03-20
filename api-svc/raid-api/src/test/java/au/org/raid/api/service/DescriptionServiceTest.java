@@ -11,9 +11,7 @@ import au.org.raid.db.jooq.tables.RaidDescription;
 import au.org.raid.db.jooq.tables.records.DescriptionTypeRecord;
 import au.org.raid.db.jooq.tables.records.DescriptionTypeSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidDescriptionRecord;
-import au.org.raid.idl.raidv2.model.Description;
-import au.org.raid.idl.raidv2.model.DescriptionType;
-import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,13 +45,13 @@ class DescriptionServiceTest {
     void create() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3;
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320;
         final var descriptionTypeSchemaId = 123;
         final var descriptionTypeId = 234;
         final var languageId = 345;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri =LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var type = new DescriptionType()
                 .id(descriptionTypeUri)
@@ -76,10 +74,10 @@ class DescriptionServiceTest {
 
         final var raidDescriptionRecord = new RaidDescriptionRecord();
 
-        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri))
+        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri.getValue()))
                 .thenReturn(Optional.of(descriptionTypeSchemaRecord));
 
-        when(descriptionTypeRepository.findByUriAndSchemaId(descriptionTypeUri, descriptionTypeSchemaId))
+        when(descriptionTypeRepository.findByUriAndSchemaId(descriptionTypeUri.getValue(), descriptionTypeSchemaId))
                 .thenReturn(Optional.of(descriptionTypeRecord));
 
         when(languageService.findLanguageId(language)).thenReturn(languageId);
@@ -115,10 +113,10 @@ class DescriptionServiceTest {
     void createThrowsDescriptionTypeSchemaNotFoundException() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3;
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri =LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var type = new DescriptionType()
                 .id(descriptionTypeUri)
@@ -133,7 +131,7 @@ class DescriptionServiceTest {
                 .type(type)
                 .language(language);
 
-        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri))
+        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri.getValue()))
                 .thenReturn(Optional.empty());
 
         assertThrows(DescriptionTypeSchemaNotFoundException.class,
@@ -150,11 +148,11 @@ class DescriptionServiceTest {
     void createThrowsDescriptionTypeNotFoundException() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3;
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320;
         final var descriptionTypeSchemaId = 123;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri =LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var type = new DescriptionType()
                 .id(descriptionTypeUri)
@@ -172,10 +170,10 @@ class DescriptionServiceTest {
         final var descriptionTypeSchemaRecord = new DescriptionTypeSchemaRecord()
                 .setId(descriptionTypeSchemaId);
 
-        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri))
+        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri.getValue()))
                 .thenReturn(Optional.of(descriptionTypeSchemaRecord));
 
-        when(descriptionTypeRepository.findByUriAndSchemaId(descriptionTypeUri, descriptionTypeSchemaId))
+        when(descriptionTypeRepository.findByUriAndSchemaId(descriptionTypeUri.getValue(), descriptionTypeSchemaId))
                 .thenReturn(Optional.empty());
 
         assertThrows(DescriptionTypeNotFoundException.class,
@@ -289,13 +287,13 @@ class DescriptionServiceTest {
     void update() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3;
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320;
         final var descriptionTypeSchemaId = 123;
         final var descriptionTypeId = 234;
         final var languageId = 345;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri =LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML;
 
         final var type = new DescriptionType()
                 .id(descriptionTypeUri)
@@ -318,10 +316,10 @@ class DescriptionServiceTest {
 
         final var raidDescriptionRecord = new RaidDescriptionRecord();
 
-        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri))
+        when(descriptionTypeSchemaRepository.findByUri(descriptionTypeSchemaUri.getValue()))
                 .thenReturn(Optional.of(descriptionTypeSchemaRecord));
 
-        when(descriptionTypeRepository.findByUriAndSchemaId(descriptionTypeUri, descriptionTypeSchemaId))
+        when(descriptionTypeRepository.findByUriAndSchemaId(descriptionTypeUri.getValue(), descriptionTypeSchemaId))
                 .thenReturn(Optional.of(descriptionTypeRecord));
 
         when(languageService.findLanguageId(language)).thenReturn(languageId);

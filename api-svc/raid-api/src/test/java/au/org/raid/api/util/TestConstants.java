@@ -72,7 +72,7 @@ public class TestConstants {
     public static final String RELATED_OBJECT_CATEGORY_SCHEMA_URI =
             "https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/category/v1";
 
-    public static final String VALID_DOI = "https://doi.org/10.000/00000";
+    public static final String VALID_DOI = "http://doi.org/10.000/00000";
 
     public static final String HTTPS_DOI_ORG = "https://doi.org/";
 

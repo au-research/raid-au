@@ -10,10 +10,7 @@ import au.org.raid.api.util.TestRaid;
 import au.org.raid.db.jooq.tables.records.AccessTypeRecord;
 import au.org.raid.db.jooq.tables.records.AccessTypeSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
-import au.org.raid.idl.raidv2.model.Access;
-import au.org.raid.idl.raidv2.model.AccessStatement;
-import au.org.raid.idl.raidv2.model.AccessType;
-import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,9 +72,9 @@ class AccessServiceTest {
 
         final var accessTypeSchemaRecord = new AccessTypeSchemaRecord().setId(accessTypeSchemaId);
 
-        when(accessTypeSchemaRepository.findByUri(TestRaid.ACCESS_TYPE_SCHEMA_URI))
+        when(accessTypeSchemaRepository.findByUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_.getValue()))
                 .thenReturn(Optional.of(accessTypeSchemaRecord));
-        when(accessTypeRepository.findByUriAndSchemaId(TestRaid.ACCESS_TYPE_ID, accessTypeSchemaId))
+        when(accessTypeRepository.findByUriAndSchemaId(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_.getValue(), accessTypeSchemaId))
                 .thenReturn(Optional.empty());
 
         assertThrows(AccessTypeNotFoundException.class, () -> accessService.findAccessTypeId(access));
@@ -89,7 +86,7 @@ class AccessServiceTest {
     void throwsAccessTypeSchemaNotFoundException() {
         final var access = TestRaid.RAID_DTO.getAccess();
 
-        when(accessTypeSchemaRepository.findByUri(TestRaid.ACCESS_TYPE_SCHEMA_URI))
+        when(accessTypeSchemaRepository.findByUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_.getValue()))
                 .thenReturn(Optional.empty());
 
         assertThrows(AccessTypeSchemaNotFoundException.class, () -> accessService.findAccessTypeId(access));

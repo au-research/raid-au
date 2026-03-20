@@ -2,6 +2,7 @@ package au.org.raid.api.factory.datacite;
 
 import au.org.raid.idl.raidv2.model.Description;
 import au.org.raid.idl.raidv2.model.DescriptionType;
+import au.org.raid.idl.raidv2.model.DescriptionTypeIdEnum;
 import au.org.raid.idl.raidv2.model.Language;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/318"))
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318))
                 .language(new Language()
                         .id("eng"));
 
@@ -36,7 +37,7 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/319"))
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_319))
                 .language(new Language()
                         .id("eng"));
 
@@ -53,7 +54,7 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/3"));
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3));
 
         final var result = dataciteDescriptionFactory.create(description);
 
@@ -68,7 +69,7 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/9"));
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_9));
 
         final var result = dataciteDescriptionFactory.create(description);
 
@@ -82,7 +83,7 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/8"));
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_8));
 
         final var result = dataciteDescriptionFactory.create(description);
 
@@ -97,12 +98,12 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/7"));
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_7));
 
         final var result = dataciteDescriptionFactory.create(description);
 
-        assertEquals(result.getDescription(), text);
-        assertEquals(result.getDescriptionType(), "Other");
+        assertEquals(text, result.getDescription());
+        assertEquals("Other", result.getDescriptionType());
     }
 
     @Test
@@ -112,7 +113,7 @@ public class DataciteDescriptionFactoryTest {
 
         final var description = new Description()
                 .text(text)
-                .type(new DescriptionType().id("https://vocabulary.raid.org/description.type.schema/6"));
+                .type(new DescriptionType().id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_6));
 
         final var result = dataciteDescriptionFactory.create(description);
 

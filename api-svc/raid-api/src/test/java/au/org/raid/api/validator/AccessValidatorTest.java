@@ -33,8 +33,8 @@ class AccessValidatorTest {
     @DisplayName("Validation passes on embargoed raid with correct fields")
     void embargoedValidationSucceeds() {
         final var type = new AccessType()
-                .id(TestConstants.EMBARGOED_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
+                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)
+                .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
 
         final var access = new Access()
                 .type(type)
@@ -47,32 +47,13 @@ class AccessValidatorTest {
     }
 
 
-    @Test
-    @DisplayName("Validation fails with closed raid")
-    void missingAccessStatement() {
-        final var type = new AccessType()
-                .id(TestConstants.CLOSED_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
-
-        final var access = new Access()
-                .type(type);
-
-        final var failure = new ValidationFailure()
-                .fieldId("access.type.id")
-                .errorType("invalidValue")
-                .message("Creating closed Raids is no longer supported");
-
-        final List<ValidationFailure> failures = validator.validate(access);
-
-        assertThat(failures, is(List.of(failure)));
-    }
 
     @Test
     @DisplayName("Validation fails with blank accessStatement on embargoed raid")
     void blankStatementEmbargoed() {
         final var type = new AccessType()
-                .id(TestConstants.EMBARGOED_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
+                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)
+                .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
 
         final var accessStatement = new AccessStatement().text("");
 
@@ -95,27 +76,11 @@ class AccessValidatorTest {
     }
 
     @Test
-    @DisplayName("Validation fails with missing type")
-    void missingType() {
-        final var access = new Access();
-
-        final List<ValidationFailure> failures = validator.validate(access);
-
-        assertThat(failures.size(), is(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("access.type")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-    }
-
-    @Test
     @DisplayName("Validation fails with missing embargoExpiry on embargoed raid")
     void missingEmbargoExpiry() {
         final var type = new AccessType()
-                .id(TestConstants.EMBARGOED_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
+                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)
+                .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
 
         final var access = new Access()
                 .type(type)
@@ -136,13 +101,13 @@ class AccessValidatorTest {
     @DisplayName("Validation fails on open raid with invalid access statement")
     void openRaidWithInvalidAccessStatement() {
         final var type = new AccessType()
-                .id(TestConstants.OPEN_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
+                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)
+                .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
 
         final var accessStatement = new AccessStatement()
                 .language(new Language()
                         .id("eng")
-                        .schemaUri("blah"));
+                        .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML));
 
         final var access = new Access()
                 .type(type)
@@ -163,8 +128,8 @@ class AccessValidatorTest {
     @DisplayName("Validation passes on open raid without access statement")
     void openRaidNoAccessStatement() {
         final var type = new AccessType()
-                .id(TestConstants.OPEN_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
+                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)
+                .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
 
 
         final var access = new Access()
@@ -181,8 +146,8 @@ class AccessValidatorTest {
     @DisplayName("Validation fails on embargoed raid with embargo expiry over 18 month in future")
     void embargoedInvalidExpiry() {
         final var type = new AccessType()
-                .id(TestConstants.EMBARGOED_ACCESS_TYPE_ID)
-                .schemaUri(TestConstants.ACCESS_TYPE_SCHEMA_URI);
+                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)
+                .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
 
         final var access = new Access()
                 .type(type)

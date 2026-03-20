@@ -11,7 +11,7 @@ export const Home = () => {
   const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
   return (
     <>
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - ' + (isProduction ? '168px' : '216px') + ')' }}> 
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - ' + (isProduction ? '168px' : '216px') + ')' }}>
     <Container sx={{ flex: 1, mb: 5 }}>
       <Stack gap={2}>
         {((hasServicePointGroup && isServicePointUser) || isOperator)  && (

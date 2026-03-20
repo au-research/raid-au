@@ -22,15 +22,11 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Book' resource type")
     public void bookResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.BOOK_OBJECT_TYPE.getUri();
-
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -44,15 +40,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Output Management Plan' resource type")
     public void outputManagementPlanResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.ARKS_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.OUTPUT_MANAGEMENT_PLAN_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_ARKS_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -66,15 +59,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Conference Poster' resource type")
     public void conferencePosterResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.ISBN_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.CONFERENCE_POSTER_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WWW_ISBN_INTERNATIONAL_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_248))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -88,15 +78,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Workfloe' resource type")
     public void workflowResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.RRID_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.WORKFLOW_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_SCICRUNCH_ORG_RESOLVER_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_249))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -110,15 +97,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Journal Article' resource type")
     public void journalArticleResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.ARCHIVE_ORG_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.JOURNAL_ARTICLE_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_ARCHIVE_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_250))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -131,15 +115,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Standard' resource type")
     public void standardResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.OUTPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.STANDARD_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_251))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -152,15 +133,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Report' resource type")
     public void reportResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INTERNAL_PROCESS_DOCUMENT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.REPORT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_252))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_192)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -173,15 +151,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Dissertation' resource type")
     public void dissertationResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.DISSERTATION_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_253))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -194,15 +169,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Preprint' resource type")
     public void preprintResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.PREPRINT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_254))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -215,15 +187,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Data Paper' resource type")
     public void dataPaperResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.DATA_PAPER_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_255))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -236,15 +205,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Computational Notebook' resource type")
     public void computationalNotebookResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.COMPUTATIONAL_NOTEBOOK_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_256))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -257,15 +223,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Image' resource type")
     public void imageResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.IMAGE_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_257))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -278,15 +241,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Software' resource type")
     public void softwareResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.SOFTWARE_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_259))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -299,15 +259,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Event' resource type")
     public void eventResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.EVENT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_260))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -320,15 +277,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Sound' resource type")
     public void soundResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.SOUND_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_261))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -341,15 +295,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Conference Proceeding' resource type")
     public void conferenceProceedingResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.CONFERENCE_PROCEEDING_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_262))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -362,15 +313,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Model' resource type")
     public void modelResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.MODEL_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_263))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -383,15 +331,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Conference Paper' resource type")
     public void conferencePaperResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.CONFERENCE_PAPER_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_264))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -404,15 +349,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Text' resource type")
     public void textResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.TEXT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_265))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -425,15 +367,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Instrument' resource type")
     public void instrumentResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.INSTRUMENT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_266))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -446,15 +385,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Learning Object' resource type")
     public void learningObjectResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.LEARNING_OBJECT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_267))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -467,15 +403,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Prize' resource type")
     public void prizeResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.PRIZE_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_268))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -488,15 +421,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Dataset' resource type")
     public void datasetResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.DATASET_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_269))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -509,15 +439,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Physical Object' resource type")
     public void physicalObjectResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.PHYSICAL_OBJECT_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_270))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -530,15 +457,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Book Chapter' resource type")
     public void bookChapterResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.BOOK_CHAPTER_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_271))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -551,15 +475,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Funding' resource type")
     public void fundingResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.FUNDING_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -572,15 +493,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Audiovisual' resource type")
     public void audiovisualResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.AUDIO_VISUAL_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_273))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -593,15 +511,12 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create related identifier with 'Service' resource type")
     public void serviceResourceType() {
         final var id = "_id";
-        final var schemaUri = SchemaValues.DOI_SCHEMA.getUri();
-        final var categoryId = SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri();
-        final var typeId = SchemaValues.SERVICE_OBJECT_TYPE.getUri();
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(schemaUri)
-                .type(new RelatedObjectType().id(typeId))
-                .category(List.of(new RelatedObjectCategory().id(categoryId)));
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_274))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
@@ -636,7 +551,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_204));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
@@ -654,7 +569,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_203));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
@@ -671,7 +586,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_202));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
@@ -689,7 +604,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_201));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
@@ -707,7 +622,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_200));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
@@ -725,7 +640,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_199));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
@@ -738,7 +653,7 @@ public class DataciteRelatedIdentifierFactoryTest {
     @DisplayName("Create from related raid with 'Obsoletes' type")
     void relatedRaidObsoletes() {
         final var id = "_id";
-        final var typeId = RelatedRaidType.OBSOLETES.getUri();
+        final var typeId = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198;
 
         final var relatedRaid = new RelatedRaid()
                 .id(id)
@@ -761,7 +676,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var relatedRaid = new RelatedRaid()
                 .id(id)
                 .type(new au.org.raid.idl.raidv2.model.RelatedRaidType()
-                        .id(typeId));
+                        .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_205));
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));

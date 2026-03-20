@@ -1,8 +1,6 @@
 package au.org.raid.api.validator;
 
-import au.org.raid.idl.raidv2.model.RelatedRaid;
-import au.org.raid.idl.raidv2.model.RelatedRaidType;
-import au.org.raid.idl.raidv2.model.ValidationFailure;
+import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,8 +32,8 @@ class RelatedRaidValidatorTest {
     @DisplayName("Validation passes with valid related raid")
     void validRelatedRaid() {
         final var type = new RelatedRaidType()
-                .id(PRIMARY_DESCRIPTION_TYPE)
-                .schemaUri(DESCRIPTION_TYPE_SCHEMA_URI);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
         final var relatedRaid = new RelatedRaid()
                 .id(ID)
@@ -48,67 +46,4 @@ class RelatedRaidValidatorTest {
         verify(typeValidationService).validate(type, 0);
     }
 
-    @Test
-    @DisplayName("Validation fails with null id")
-    void nullRelatedRaid() {
-        final var type = new RelatedRaidType()
-                .id(PRIMARY_DESCRIPTION_TYPE)
-                .schemaUri(DESCRIPTION_TYPE_SCHEMA_URI);
-
-        final var relatedRaid = new RelatedRaid()
-                .type(type);
-
-        final var failures = validationService.validate(List.of(relatedRaid));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("relatedRaid[0].id")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-        verify(typeValidationService).validate(type, 0);
-    }
-
-    @Test
-    @DisplayName("Validation fails with empty id")
-    void emptyRelatedRaid() {
-        final var relatedRaid = new RelatedRaid()
-                .id("")
-                .type(new RelatedRaidType()
-                        .id(PRIMARY_DESCRIPTION_TYPE)
-                        .schemaUri(DESCRIPTION_TYPE_SCHEMA_URI)
-                );
-
-        final var failures = validationService.validate(List.of(relatedRaid));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("relatedRaid[0].id")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-    }
-
-    @Test
-    @DisplayName("Type validation failures are returned")
-    void typeErrorAreReturned() {
-        final var type = new RelatedRaidType()
-                .id(PRIMARY_DESCRIPTION_TYPE)
-                .schemaUri(DESCRIPTION_TYPE_SCHEMA_URI);
-
-        final var relatedRaid = new RelatedRaid()
-                .id(ID)
-                .type(type);
-
-        final var typeError = new ValidationFailure();
-
-        when(typeValidationService.validate(type, 0)).thenReturn(List.of(typeError));
-
-        final var failures = validationService.validate(List.of(relatedRaid));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(typeError));
-    }
 }

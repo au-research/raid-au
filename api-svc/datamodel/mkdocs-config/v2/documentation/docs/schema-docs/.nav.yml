@@ -1,0 +1,17 @@
+nav:
+  - Core:
+      - 1. Id: classes/Id.md
+      - 2. Date: classes/Date.md
+      - 3. Title: classes/Title.md
+      - 4. Description: classes/Description.md
+      - 5. Contributor: classes/Contributor.md
+      - 6. Organisation: classes/Organisation.md
+      - 7. RelatedObject: classes/RelatedObject.md
+      - 8. AlternateIdentifier: classes/AlternateIdentifier.md
+      - 9. AlternateUrl: classes/AlternateUrl.md
+      - 10. RelatedRaid: classes/RelatedRaid.md
+      - 11. Access: classes/Access.md
+  - Extended:
+      - 12. Subject: classes/Subject.md
+      - 13. SpatialCoverage: classes/SpatialCoverage.md
+      - 14. TraditionalKnowledgeLabel: classes/TraditionalKnowledgeLabel.md

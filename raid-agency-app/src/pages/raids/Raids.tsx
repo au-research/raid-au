@@ -24,7 +24,7 @@ export const Raids = () => {
   ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - ' + (isProduction ? '168px' : '216px') + ')' }}> 
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - ' + (isProduction ? '168px' : '216px') + ')' }}>
       <Container maxWidth="lg" sx={{ flex: 1, mb: 5 }}>
         <Stack gap={2}>
           <BreadcrumbsBar breadcrumbs={breadcrumbs} />

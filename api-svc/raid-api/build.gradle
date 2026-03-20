@@ -85,6 +85,8 @@ dependencies{
   implementation libs.jakarta.xml.bind.api
   implementation libs.jaxb.runtime
 
+  implementation libs.jena.arq
+
   testImplementation libs.bundles.springboot.test
 
   testImplementation testFixtures(project(':api-svc:testFixtures'))
@@ -143,16 +145,21 @@ testing{
     }
   }
 }
+
+
+clean {
+
+}
 tasks.intTest.description = "don't run this, it's just a Gradle default"
 
-// compile intTest classes - but don't run by default (needs DDB migration)
+//compile intTest classes - but don't run by default (needs DDB migration)
 tasks.build.dependsOn intTestClasses
 
 test {
   useJUnitPlatform()
   systemProperties defaultSysProps
   testLogging.showStandardStreams =
-    System.getenv("RAIDO_UNIT_TEST_OUTPUT")?.toBoolean()
+          System.getenv("RAIDO_UNIT_TEST_OUTPUT")?.toBoolean()
 }
 
 intTest {

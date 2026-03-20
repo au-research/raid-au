@@ -14,8 +14,8 @@ public class DataciteTitleFactory {
                 .setTitle(title.getText());
 
         // Don't set title type of raid title type is primary
-        if (TITLE_TYPE_MAP.containsKey(title.getType().getId())) {
-            dataciteTitle.setTitleType(TITLE_TYPE_MAP.get(title.getType().getId()));
+        if (TITLE_TYPE_MAP.containsKey(title.getType().getId().getValue())) {
+            dataciteTitle.setTitleType(TITLE_TYPE_MAP.get(title.getType().getId().getValue()));
         }
 
         if (title.getLanguage() != null) {

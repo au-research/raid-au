@@ -4,6 +4,7 @@ import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.client.ror.dto.Name;
 import au.org.raid.api.client.ror.dto.RorSchemaV21;
 import au.org.raid.idl.raidv2.model.Organisation;
+import au.org.raid.idl.raidv2.model.OrganizationSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,20 +30,20 @@ class DataciteFundingReferenceFactoryTest {
     @DisplayName("Create sets all fields")
     void setAllFields() {
         final var id = "_id";
-        final var schemaUri = "schema-uri";
+        final var schemaUriEnum = OrganizationSchemaUriEnum.HTTPS_ROR_ORG_;
         final var organisationName = "organisation-name";
 
         when(rorClient.getOrganisationName(id)).thenReturn(organisationName);
 
         final var organisation = new Organisation()
                 .id(id)
-                .schemaUri(schemaUri);
+                .schemaUri(schemaUriEnum);
 
         final var result = fundingReferenceFactory.create(organisation);
 
         assertThat(result.getFunderName(), is(organisationName));
         assertThat(result.getFunderIdentifier(), is(id));
         assertThat(result.getFunderIdentifierType(), is("ROR"));
-        assertThat(result.getSchemeUri(), is(schemaUri));
+        assertThat(result.getSchemeUri(), is(schemaUriEnum.getValue()));
     }
 }

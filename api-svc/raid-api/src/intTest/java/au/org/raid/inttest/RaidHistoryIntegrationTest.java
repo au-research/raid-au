@@ -125,7 +125,7 @@ public class RaidHistoryIntegrationTest extends AbstractIntegrationTest {
 
     private String getPrimaryTitleText(final LinkedHashMap<?, ?> raid) {
         final var primaryTitle = ((List<LinkedHashMap<?,?>>) raid.get("title")).stream()
-                .filter(title -> ((LinkedHashMap<?,?>)title.get("type")).get("id").equals(PRIMARY_TITLE_TYPE))
+                .filter(title -> ((LinkedHashMap<?,?>)title.get("type")).get("id").equals(PRIMARY_TITLE_TYPE.getValue()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No primary title :("));
 

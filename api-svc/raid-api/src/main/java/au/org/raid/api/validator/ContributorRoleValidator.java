@@ -26,43 +26,6 @@ public class ContributorRoleValidator {
             final ContributorRole role, final int contributorIndex, final int roleIndex) {
         final var failures = new ArrayList<ValidationFailure>();
 
-        if (isBlank(role.getId())) {
-            failures.add(
-                    new ValidationFailure()
-                            .fieldId("contributor[%d].role[%d].id".formatted(contributorIndex, roleIndex))
-                            .errorType(NOT_SET_TYPE)
-                            .message(NOT_SET_MESSAGE));
-        }
-
-        if (isBlank(role.getSchemaUri())) {
-            failures.add(
-                    new ValidationFailure()
-                            .fieldId("contributor[%d].role[%d].schemaUri".formatted(contributorIndex, roleIndex))
-                            .errorType(NOT_SET_TYPE)
-                            .message(NOT_SET_MESSAGE)
-            );
-        } else {
-            final var roleScheme =
-                    contributorRoleSchemaRepository.findActiveByUri(role.getSchemaUri());
-
-            if (roleScheme.isEmpty()) {
-                failures.add(
-                        new ValidationFailure()
-                                .fieldId("contributor[%d].role[%d].schemaUri".formatted(contributorIndex, roleIndex))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_SCHEMA)
-                );
-            } else if (!isBlank(role.getId()) &&
-                    contributorRoleRepository.findByUriAndSchemaId(role.getId(), roleScheme.get().getId()).isEmpty()) {
-                failures.add(
-                        new ValidationFailure()
-                                .fieldId("contributor[%d].role[%d].id".formatted(contributorIndex, roleIndex))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_ID_FOR_SCHEMA)
-                );
-            }
-        }
-
         return failures;
     }
 }

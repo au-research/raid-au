@@ -110,7 +110,7 @@ export const RaidEdit = () => {
   ]);
 
   const updateMutation = useMutation({
-    mutationFn: async (raid: RaidDto) => {
+    mutationFn: async (raid: RaidCreateRequest) => {
       return await raidService.update(raid, `${prefix}/${suffix}`)
     },
     onSuccess: () => {

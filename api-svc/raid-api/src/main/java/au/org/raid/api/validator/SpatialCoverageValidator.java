@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.idl.raidv2.model.SpatialCoverage;
+import au.org.raid.idl.raidv2.model.SpatialCoverageSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ import static au.org.raid.api.util.StringUtil.isBlank;
 @RequiredArgsConstructor
 public class SpatialCoverageValidator {
     private final SpatialCoveragePlaceValidator placeValidator;
-    private final Map<String, BiFunction<String, String, List<ValidationFailure>>> spatialCoverageUriValidatorMap;
+    private final Map<SpatialCoverageSchemaUriEnum, BiFunction<String, String, List<ValidationFailure>>> spatialCoverageUriValidatorMap;
 
     public List<ValidationFailure> validate(final List<SpatialCoverage> spatialCoverages) {
         final var failures = new ArrayList<ValidationFailure>();
@@ -37,7 +38,7 @@ public class SpatialCoverageValidator {
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
                     }
-                    if (isBlank(spatialCoverage.getSchemaUri())) {
+                    if (spatialCoverage.getSchemaUri() == null || isBlank(spatialCoverage.getSchemaUri().getValue())) {
                         failures.add(new ValidationFailure()
                                 .fieldId(String.format("spatialCoverage[%d].schemaUri", i))
                                 .errorType(NOT_SET_TYPE)
@@ -46,12 +47,13 @@ public class SpatialCoverageValidator {
                         final var uriValidatorFunction = spatialCoverageUriValidatorMap.get(spatialCoverage.getSchemaUri());
 
                         failures.addAll(uriValidatorFunction.apply(spatialCoverage.getId(), "spatialCoverage[%d].id".formatted(i)));
-                    } else {
-                        failures.add(new ValidationFailure()
-                                .fieldId(String.format("spatialCoverage[%d].schemaUri", i))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_SCHEMA));
                     }
+//                    else {
+//                        failures.add(new ValidationFailure()
+//                                .fieldId(String.format("spatialCoverage[%d].schemaUri", i))
+//                                .errorType(INVALID_VALUE_TYPE)
+//                                .message(INVALID_SCHEMA));
+//                    }
                     failures.addAll(placeValidator.validate(spatialCoverage.getPlace(), i));
                 });
 

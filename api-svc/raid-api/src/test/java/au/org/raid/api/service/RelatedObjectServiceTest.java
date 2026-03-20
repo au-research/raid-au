@@ -9,9 +9,7 @@ import au.org.raid.api.factory.record.RaidRelatedObjectRecordFactory;
 import au.org.raid.api.factory.record.RelatedObjectRecordFactory;
 import au.org.raid.api.repository.*;
 import au.org.raid.db.jooq.tables.records.*;
-import au.org.raid.idl.raidv2.model.RelatedObject;
-import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
-import au.org.raid.idl.raidv2.model.RelatedObjectType;
+import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,11 +56,11 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeSchemaId = 345;
-        final var typeUri = "type-uri";
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
         final var typeId = 456;
         final var category = new RelatedObjectCategory();
         final var raidRelatedObjectId = 567;
@@ -93,12 +91,12 @@ class RelatedObjectServiceTest {
         final var savedRaidRelatedObjectRecord = new RaidRelatedObjectRecord()
                 .setId(raidRelatedObjectId);
 
-        when(relatedObjectSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(relatedObjectSchemaRecord));
+        when(relatedObjectSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(relatedObjectSchemaRecord));
         when(relatedObjectRecordFactory.create(uri, schemaId)).thenReturn(relatedObjectRecord);
         when(relatedObjectRepository.findOrCreate(relatedObjectRecord)).thenReturn(savedRelatedObjectRecord);
-        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri))
+        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri.getValue()))
                 .thenReturn(Optional.of(relatedObjectTypeSchemaRecord));
-        when(relatedObjectTypeRepository.findByUriAndSchemaId(typeUri, typeSchemaId))
+        when(relatedObjectTypeRepository.findByUriAndSchemaId(typeUri.getValue(), typeSchemaId))
                 .thenReturn(Optional.of(relatedObjectTypeRecord));
         when(raidRelatedObjectRecordFactory.create(handle, id, typeId)).thenReturn(raidRelatedObjectRecord);
         when(raidRelatedObjectRepository.create(raidRelatedObjectRecord)).thenReturn(savedRaidRelatedObjectRecord);
@@ -113,9 +111,9 @@ class RelatedObjectServiceTest {
     void createThrowsRelatedObjectSchemaNotFoundException() {
         final var handle = "_handle";
         final var uri = "_uri";
-        final var schemaUri = "schema-uri";
-        final var typeSchemaUri = "type-schema-uri";
-        final var typeUri = "type-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
         final var category = new RelatedObjectCategory();
 
         final var relatedObject = new RelatedObject()
@@ -126,7 +124,7 @@ class RelatedObjectServiceTest {
                         .schemaUri(typeSchemaUri))
                 .category(List.of(category));
 
-        when(relatedObjectSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
+        when(relatedObjectSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.empty());
 
         assertThrows(RelatedObjectSchemaNotFoundException.class,
                 () -> relatedObjectService.create(List.of(relatedObject), handle));
@@ -146,10 +144,10 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
-        final var typeUri = "type-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
         final var category = new RelatedObjectCategory();
 
         final var relatedObject = new RelatedObject()
@@ -168,10 +166,10 @@ class RelatedObjectServiceTest {
         final var savedRelatedObjectRecord = new RelatedObjectRecord()
                 .setId(id);
 
-        when(relatedObjectSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(relatedObjectSchemaRecord));
+        when(relatedObjectSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(relatedObjectSchemaRecord));
         when(relatedObjectRecordFactory.create(uri, schemaId)).thenReturn(relatedObjectRecord);
         when(relatedObjectRepository.findOrCreate(relatedObjectRecord)).thenReturn(savedRelatedObjectRecord);
-        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri)).thenReturn(Optional.empty());
+        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri.getValue())).thenReturn(Optional.empty());
 
         assertThrows(RelatedObjectTypeSchemaNotFoundException.class,
                 () -> relatedObjectService.create(List.of(relatedObject), handle));
@@ -188,11 +186,11 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeSchemaId = 345;
-        final var typeUri = "type-uri";
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
         final var category = new RelatedObjectCategory();
 
         final var relatedObject = new RelatedObject()
@@ -214,13 +212,13 @@ class RelatedObjectServiceTest {
         final var relatedObjectTypeSchemaRecord = new RelatedObjectTypeSchemaRecord()
                 .setId(typeSchemaId);
 
-        when(relatedObjectSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(relatedObjectSchemaRecord));
+        when(relatedObjectSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(relatedObjectSchemaRecord));
         when(relatedObjectRecordFactory.create(uri, schemaId)).thenReturn(relatedObjectRecord);
         when(relatedObjectRepository.findOrCreate(relatedObjectRecord)).thenReturn(savedRelatedObjectRecord);
-        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri))
+        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri.getValue()))
                 .thenReturn(Optional.of(relatedObjectTypeSchemaRecord));
 
-        when(relatedObjectTypeRepository.findByUriAndSchemaId(typeUri, typeSchemaId))
+        when(relatedObjectTypeRepository.findByUriAndSchemaId(typeUri.getValue(), typeSchemaId))
                 .thenReturn(Optional.empty());
 
         assertThrows(RelatedObjectTypeNotFoundException.class,
@@ -328,11 +326,11 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_;
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
         final var typeSchemaId = 345;
-        final var typeUri = "type-uri";
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
         final var typeId = 456;
         final var category = new RelatedObjectCategory();
         final var raidRelatedObjectId = 567;
@@ -363,12 +361,12 @@ class RelatedObjectServiceTest {
         final var savedRaidRelatedObjectRecord = new RaidRelatedObjectRecord()
                 .setId(raidRelatedObjectId);
 
-        when(relatedObjectSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(relatedObjectSchemaRecord));
+        when(relatedObjectSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(relatedObjectSchemaRecord));
         when(relatedObjectRecordFactory.create(uri, schemaId)).thenReturn(relatedObjectRecord);
         when(relatedObjectRepository.findOrCreate(relatedObjectRecord)).thenReturn(savedRelatedObjectRecord);
-        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri))
+        when(relatedObjectTypeSchemaRepository.findByUri(typeSchemaUri.getValue()))
                 .thenReturn(Optional.of(relatedObjectTypeSchemaRecord));
-        when(relatedObjectTypeRepository.findByUriAndSchemaId(typeUri, typeSchemaId))
+        when(relatedObjectTypeRepository.findByUriAndSchemaId(typeUri.getValue(), typeSchemaId))
                 .thenReturn(Optional.of(relatedObjectTypeRecord));
         when(raidRelatedObjectRecordFactory.create(handle, id, typeId)).thenReturn(raidRelatedObjectRecord);
         when(raidRelatedObjectRepository.create(raidRelatedObjectRecord)).thenReturn(savedRaidRelatedObjectRecord);

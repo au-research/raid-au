@@ -3,6 +3,7 @@ package au.org.raid.api.validator;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.AccessStatement;
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class AccessStatementValidatorTest {
     void validAccessStatement() {
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         when(languageValidator.validate(language, "access.statement"))
                 .thenReturn(Collections.emptyList());
@@ -66,7 +67,7 @@ class AccessStatementValidatorTest {
     void nullStatement() {
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         when(languageValidator.validate(language, "access.statement"))
                 .thenReturn(Collections.emptyList());
@@ -89,7 +90,7 @@ class AccessStatementValidatorTest {
     void invalidLanguage() {
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var failure = new ValidationFailure()
                 .fieldId("access.statement.language.id")
@@ -129,7 +130,7 @@ class AccessStatementValidatorTest {
     @DisplayName("Validates language when id is null but schemaUri is set")
     void nullLanguageId() {
         final var language = new Language()
-                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var failure = new ValidationFailure()
                 .fieldId("access.statement.language.id")
@@ -154,7 +155,7 @@ class AccessStatementValidatorTest {
     void blankLanguageId() {
         final var language = new Language()
                 .id("")
-                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var failure = new ValidationFailure()
                 .fieldId("access.statement.language.id")
@@ -174,7 +175,6 @@ class AccessStatementValidatorTest {
         verify(languageValidator).validate(language, "access.statement");
     }
 
-    // With:
     @Test
     @DisplayName("Validates language when language is empty object")
     void emptyLanguageObject() {
@@ -196,5 +196,5 @@ class AccessStatementValidatorTest {
 
         assertThat(failures, is(List.of(failure)));
         verify(languageValidator).validate(language, "access.statement");
-    };
+    }
 }

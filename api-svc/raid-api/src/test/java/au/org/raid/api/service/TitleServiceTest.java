@@ -10,9 +10,7 @@ import au.org.raid.api.repository.TitleTypeSchemaRepository;
 import au.org.raid.db.jooq.tables.records.RaidTitleRecord;
 import au.org.raid.db.jooq.tables.records.TitleTypeRecord;
 import au.org.raid.db.jooq.tables.records.TitleTypeSchemaRecord;
-import au.org.raid.idl.raidv2.model.Language;
-import au.org.raid.idl.raidv2.model.Title;
-import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -131,9 +129,9 @@ class TitleServiceTest {
     @DisplayName("create() saves titles for raid")
     void create() {
         final var handle = "_handle";
-        final var uri = "_uri";
+        final var uri = TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4;
         final var id = 456;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376;
         final var schemaId = 123;
         final var languageId = 234;
 
@@ -155,8 +153,8 @@ class TitleServiceTest {
 
         final var raidTitleRecord = new RaidTitleRecord();
 
-        when(titleTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(titleTypeSchemaRecord));
-        when(titleTypeRepository.findByUriAndSchemaId(uri, schemaId)).thenReturn(Optional.of(titleTypeRecord));
+        when(titleTypeSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(titleTypeSchemaRecord));
+        when(titleTypeRepository.findByUriAndSchemaId(uri.getValue(), schemaId)).thenReturn(Optional.of(titleTypeRecord));
         when(languageService.findLanguageId(language)).thenReturn(languageId);
         when(raidTitleRecordFactory.create(title, handle, id, languageId)).thenReturn(raidTitleRecord);
 
@@ -165,71 +163,14 @@ class TitleServiceTest {
         verify(raidTitleRepository).create(raidTitleRecord);
     }
 
-    @Test
-    @DisplayName("create() throws TitleTypeSchemaNotFoundException")
-    void createThrowsTitleTypeSchemaNotFoundException() {
-        final var handle = "_handle";
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
-
-        final var language = new Language();
-
-        final var type = new TitleType()
-                .schemaUri(schemaUri)
-                .id(uri);
-
-        final var title = new Title()
-                .type(type)
-                .language(language);
-
-        when(titleTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
-
-        assertThrows(TitleTypeSchemaNotFoundException.class, () -> titleService.create(List.of(title), handle));
-
-        verifyNoInteractions(titleTypeRepository);
-        verifyNoInteractions(languageService);
-        verifyNoInteractions(raidTitleRecordFactory);
-        verifyNoInteractions(raidTitleRepository);
-    }
-
-    @Test
-    @DisplayName("create() throws TitleTypeNotFoundException")
-    void createThrowsTitleTypeNotFoundException() {
-        final var handle = "_handle";
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
-        final var schemaId = 123;
-
-        final var language = new Language();
-
-        final var type = new TitleType()
-                .schemaUri(schemaUri)
-                .id(uri);
-
-        final var title = new Title()
-                .type(type)
-                .language(language);
-
-        final var titleTypeSchemaRecord = new TitleTypeSchemaRecord()
-                .setId(schemaId);
-
-        when(titleTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(titleTypeSchemaRecord));
-        when(titleTypeRepository.findByUriAndSchemaId(uri, schemaId)).thenReturn(Optional.empty());
-
-        assertThrows(TitleTypeNotFoundException.class, () -> titleService.create(List.of(title), handle));
-
-        verifyNoInteractions(languageService);
-        verifyNoInteractions(raidTitleRecordFactory);
-        verifyNoInteractions(raidTitleRepository);
-    }
 
     @Test
     @DisplayName("update() deletes and re-inserts raid titles")
     void update() {
         final var handle = "_handle";
-        final var uri = "_uri";
+        final var uri = TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4;
         final var id = 456;
-        final var schemaUri = "schema-uri";
+        final var schemaUri =TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376;
         final var schemaId = 123;
         final var languageId = 234;
 
@@ -251,8 +192,8 @@ class TitleServiceTest {
 
         final var raidTitleRecord = new RaidTitleRecord();
 
-        when(titleTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(titleTypeSchemaRecord));
-        when(titleTypeRepository.findByUriAndSchemaId(uri, schemaId)).thenReturn(Optional.of(titleTypeRecord));
+        when(titleTypeSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(titleTypeSchemaRecord));
+        when(titleTypeRepository.findByUriAndSchemaId(uri.getValue(), schemaId)).thenReturn(Optional.of(titleTypeRecord));
         when(languageService.findLanguageId(language)).thenReturn(languageId);
         when(raidTitleRecordFactory.create(title, handle, id, languageId)).thenReturn(raidTitleRecord);
 

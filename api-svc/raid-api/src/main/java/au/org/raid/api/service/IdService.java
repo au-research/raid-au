@@ -2,12 +2,12 @@ package au.org.raid.api.service;
 
 import au.org.raid.api.config.properties.IdentifierProperties;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
-import au.org.raid.idl.raidv2.model.Id;
-import au.org.raid.idl.raidv2.model.Owner;
-import au.org.raid.idl.raidv2.model.RegistrationAgency;
+import au.org.raid.idl.raidv2.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -24,15 +24,15 @@ public class IdService {
 
         return new Id()
                 .id(String.format("%s%s",identifierProperties.getNamePrefix(), record.getHandle()))
-                .schemaUri(record.getSchemaUri())
+                .schemaUri(RaidIdentifierSchemaURIEnum.fromValue(record.getSchemaUri()))
                 .registrationAgency(new RegistrationAgency()
                         .id(identifierProperties.getRegistrationAgencyIdentifier())
-                        .schemaUri(registrationAgencySchemaUri)
+                        .schemaUri(RegistrationAgencySchemaURIEnum.fromValue(registrationAgencySchemaUri))
                 )
                 .owner(new Owner()
                         .id(ownerUri)
-                        .schemaUri(ownerSchemaUri)
-                        .servicePoint(record.getServicePointId())
+                        .schemaUri(RegistrationAgencySchemaURIEnum.fromValue(ownerSchemaUri))
+                        .servicePoint(new BigDecimal(record.getServicePointId()))
                 )
                 .license(record.getLicense())
                 .version(record.getVersion())

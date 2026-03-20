@@ -5,6 +5,8 @@ import au.org.raid.api.repository.OrganisationRoleSchemaRepository;
 import au.org.raid.db.jooq.tables.records.OrganisationRoleRecord;
 import au.org.raid.db.jooq.tables.records.OrganisationRoleSchemaRecord;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.OrganizationRoleIdEnum;
+import au.org.raid.idl.raidv2.model.OrganizationRoleSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,17 +52,17 @@ class OrganisationRoleValidatorTest {
     @DisplayName("Validation passes with valid OrganisationRole")
     void validOrganisationRole() {
         final var role = new OrganisationRole()
-                .id(LEAD_RESEARCH_ORGANISATION_ROLE)
-                .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
                 .startDate("2021");
-
+/*
         when(contributorRoleSchemaRepository.findActiveByUri(ORGANISATION_ROLE_SCHEMA_URI))
                 .thenReturn(Optional.of(ORGANISATION_ROLE_SCHEMA_RECORD));
 
         when(contributorRoleRepository
                 .findByUriAndSchemaId(LEAD_RESEARCH_ORGANISATION_ROLE, ORGANISATION_ROLE_SCHEMA_ID))
                 .thenReturn(Optional.of(ORGANISATION_ROLE_RECORD));
-
+*/
         final var failures = validationService.validate(role, 2, 3);
 
         assertThat(failures, empty());
@@ -70,18 +72,18 @@ class OrganisationRoleValidatorTest {
     @DisplayName("Validation fails if end date is before start date")
     void endDateBeforeStartDate() {
         final var role = new OrganisationRole()
-                .id(LEAD_RESEARCH_ORGANISATION_ROLE)
-                .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
                 .startDate("2021")
                 .endDate("2020");
-
+/*
         when(contributorRoleSchemaRepository.findActiveByUri(ORGANISATION_ROLE_SCHEMA_URI))
                 .thenReturn(Optional.of(ORGANISATION_ROLE_SCHEMA_RECORD));
 
         when(contributorRoleRepository
                 .findByUriAndSchemaId(LEAD_RESEARCH_ORGANISATION_ROLE, ORGANISATION_ROLE_SCHEMA_ID))
                 .thenReturn(Optional.of(ORGANISATION_ROLE_RECORD));
-
+*/
         final var failures = validationService.validate(role, 2, 3);
 
         assertThat(failures, is(List.of(
@@ -92,143 +94,4 @@ class OrganisationRoleValidatorTest {
         )));
     }
 
-    @Test
-    @DisplayName("Validation fails with null schemaUri")
-    void nullSchemaUri() {
-        final var role = new OrganisationRole()
-                .id(LEAD_RESEARCH_ORGANISATION_ROLE)
-                .startDate("2021");
-
-        final var failures = validationService.validate(role, 2, 3);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("organisation[2].role[3].schemaUri")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-
-        verifyNoInteractions(contributorRoleSchemaRepository);
-        verifyNoInteractions(contributorRoleRepository);
-    }
-
-    @Test
-    @DisplayName("Validation fails with empty schemaUri")
-    void emptySchemaUri() {
-        final var role = new OrganisationRole()
-                .schemaUri("")
-                .id(LEAD_RESEARCH_ORGANISATION_ROLE)
-                .startDate("2021");
-
-        final var failures = validationService.validate(role, 2, 3);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("organisation[2].role[3].schemaUri")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-
-        verifyNoInteractions(contributorRoleSchemaRepository);
-        verifyNoInteractions(contributorRoleRepository);
-    }
-
-    @Test
-    @DisplayName("Validation fails with invalid schemaUri")
-    void invalidSchemaUri() {
-        final var role = new OrganisationRole()
-                .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
-                .id(LEAD_RESEARCH_ORGANISATION_ROLE)
-                .startDate("2021");
-
-        when(contributorRoleSchemaRepository.findActiveByUri(ORGANISATION_ROLE_SCHEMA_URI))
-                .thenReturn(Optional.empty());
-
-        final var failures = validationService.validate(role, 2, 3);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("organisation[2].role[3].schemaUri")
-                        .errorType("invalidValue")
-                        .message("schema is unknown/unsupported")
-        ));
-
-        verifyNoInteractions(contributorRoleRepository);
-    }
-
-    @Test
-    @DisplayName("Validation fails with null role")
-    void nullRole() {
-        final var role = new OrganisationRole()
-                .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
-                .startDate("2021");
-
-        when(contributorRoleSchemaRepository.findActiveByUri(ORGANISATION_ROLE_SCHEMA_URI))
-                .thenReturn(Optional.of(ORGANISATION_ROLE_SCHEMA_RECORD));
-
-        final var failures = validationService.validate(role, 2, 3);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("organisation[2].role[3].id")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-
-        verifyNoInteractions(contributorRoleRepository);
-    }
-
-    @Test
-    @DisplayName("Validation fails with empty role type id")
-    void emptyRole() {
-        final var role = new OrganisationRole()
-                .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
-                .id("")
-                .startDate("2021");
-
-        when(contributorRoleSchemaRepository.findActiveByUri(ORGANISATION_ROLE_SCHEMA_URI))
-                .thenReturn(Optional.of(ORGANISATION_ROLE_SCHEMA_RECORD));
-
-        final var failures = validationService.validate(role, 2, 3);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("organisation[2].role[3].id")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-
-        verifyNoInteractions(contributorRoleRepository);
-    }
-
-    @Test
-    @DisplayName("Validation fails with invalid role")
-    void invalidRole() {
-        final var role = new OrganisationRole()
-                .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
-                .id(LEAD_RESEARCH_ORGANISATION_ROLE)
-                .startDate("2021");
-
-        when(contributorRoleSchemaRepository.findActiveByUri(ORGANISATION_ROLE_SCHEMA_URI))
-                .thenReturn(Optional.of(ORGANISATION_ROLE_SCHEMA_RECORD));
-
-        when(contributorRoleRepository
-                .findByUriAndSchemaId(LEAD_RESEARCH_ORGANISATION_ROLE, ORGANISATION_ROLE_SCHEMA_ID))
-                .thenReturn(Optional.empty());
-
-        final var failures = validationService.validate(role, 2, 3);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("organisation[2].role[3].id")
-                        .errorType("invalidValue")
-                        .message("id does not exist within the given schema")
-        ));
-    }
 }

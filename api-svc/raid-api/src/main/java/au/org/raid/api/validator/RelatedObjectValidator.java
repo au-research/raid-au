@@ -49,32 +49,9 @@ public class RelatedObjectValidator {
 
                     
                     System.out.println("relatedObject" + relatedObject);
-
-
-                    if (isBlank(relatedObject.getId())) {
-                        failures.add(new ValidationFailure()
-                                .fieldId(String.format("relatedObject[%d].id", index))
-                                .errorType(NOT_SET_TYPE)
-                                .message(NOT_SET_MESSAGE));
-                    }  else {
-                        failures.addAll(
-                                doiService.validate(relatedObject.getId(), String.format("relatedObject[%d].id", index))
-                        );
-                    }
-
-                    System.out.println("relatedObject.getSchemaUri()" + relatedObject.getSchemaUri());
-
-                    if (isBlank(relatedObject.getSchemaUri())) {
-                        failures.add(new ValidationFailure()
-                                .fieldId(String.format("relatedObject[%d].schemaUri", index))
-                                .errorType(NOT_SET_TYPE)
-                                .message(NOT_SET_MESSAGE));
-                    } else if (!RELATED_OBJECT_SCHEMA_URI.contains(relatedObject.getSchemaUri())) {
-                        failures.add(new ValidationFailure()
-                                .fieldId(String.format("relatedObject[%d].schemaUri", index))
-                                .errorType("invalid")
-                                .message(String.format("Only %s is supported.", RELATED_OBJECT_SCHEMA_URI)));
-                    }
+                    failures.addAll(
+                            doiService.validate(relatedObject.getId(), String.format("relatedObject[%d].id", index))
+                    );
 
                     failures.addAll(typeValidationService.validate(relatedObject.getType(), index));
                     failures.addAll(categoryValidationService.validate(relatedObject.getCategory(), index));

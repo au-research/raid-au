@@ -14,6 +14,7 @@ import au.org.raid.db.jooq.tables.records.RaidContributorRecord;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
 import au.org.raid.idl.raidv2.model.ContributorRole;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +58,7 @@ class ContributorServiceTest {
     void create() {
         final var handle = "_handle";
         final var schemaId = 123;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = ContributorSchemaUriEnum.HTTPS_ORCID_ORG_;
         final var id = 234;
         final var uri = "_uri";
         final var raidContributorId = 345;
@@ -80,7 +81,7 @@ class ContributorServiceTest {
         final var savedRaidContributorRecord = new RaidContributorRecord()
                 .setId(raidContributorId);
 
-        when(contributorSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(contributorSchemaRecord));
+        when(contributorSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(contributorSchemaRecord));
         when(contributorRecordFactory.create(contributor, schemaId)).thenReturn(contributorRecordForCreate);
         when(contributorRepository.updateOrCreate(contributorRecordForCreate)).thenReturn(savedContributorRecord);
 
@@ -117,7 +118,7 @@ class ContributorServiceTest {
     @DisplayName("create() throws ContributorSchemaNotFoundException")
     void createThrowsContributorSchemaNotFoundException() {
         final var handle = "_handle";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = ContributorSchemaUriEnum.HTTPS_ORCID_ORG_;
         final var uri = "_uri";
         final var positions = List.of(new ContributorPosition());
         final var roles = List.of(new ContributorRole());
@@ -128,7 +129,7 @@ class ContributorServiceTest {
                 .position(positions)
                 .role(roles);
 
-        when(contributorSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
+        when(contributorSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.empty());
 
         assertThrows(ContributorSchemaNotFoundException.class,
                 () -> contributorService.create(List.of(contributor), handle));
@@ -259,7 +260,7 @@ class ContributorServiceTest {
     void update() {
         final var handle = "_handle";
         final var schemaId = 123;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = ContributorSchemaUriEnum.HTTPS_ORCID_ORG_;
         final var id = 234;
         final var uri = "_uri";
         final var raidContributorId = 345;
@@ -282,7 +283,7 @@ class ContributorServiceTest {
         final var savedRaidContributorRecord = new RaidContributorRecord()
                 .setId(raidContributorId);
 
-        when(contributorSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(contributorSchemaRecord));
+        when(contributorSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(contributorSchemaRecord));
         when(contributorRecordFactory.create(contributor, schemaId)).thenReturn(contributorRecordForCreate);
         when(contributorRepository.updateOrCreate(contributorRecordForCreate)).thenReturn(savedContributorRecord);
 

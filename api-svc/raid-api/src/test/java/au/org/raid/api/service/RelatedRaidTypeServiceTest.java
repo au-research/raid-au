@@ -8,6 +8,8 @@ import au.org.raid.api.repository.RelatedRaidTypeSchemaRepository;
 import au.org.raid.db.jooq.tables.records.RelatedRaidTypeRecord;
 import au.org.raid.db.jooq.tables.records.RelatedRaidTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.RelatedRaidType;
+import au.org.raid.idl.raidv2.model.RelatedRaidTypeIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedRaidTypeSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,12 +40,12 @@ class RelatedRaidTypeServiceTest {
     @DisplayName("findById() returns related raid type")
     void findById() {
         final var id = 123;
-        final var uri = "_uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198;
         final var schemaId = 234;
         final var schemaUri = "schema-uri";
 
         final var relatedRaidTypeRecord = new RelatedRaidTypeRecord()
-                .setUri(uri)
+                .setUri(uri.getValue())
                 .setSchemaId(schemaId);
 
         final var relatedRaidTypeSchemaRecord = new RelatedRaidTypeSchemaRecord()
@@ -54,7 +56,7 @@ class RelatedRaidTypeServiceTest {
 
         when(relatedRaidTypeRepository.findById(id)).thenReturn(Optional.of(relatedRaidTypeRecord));
         when(relatedRaidTypeSchemaRepository.findById(schemaId)).thenReturn(Optional.of(relatedRaidTypeSchemaRecord));
-        when(relatedRaidTypeFactory.create(uri, schemaUri)).thenReturn(relatedRaidType);
+        when(relatedRaidTypeFactory.create(uri.getValue(), schemaUri)).thenReturn(relatedRaidType);
 
         assertThat(relatedRaidTypeService.findById(id), is(relatedRaidType));
     }
@@ -94,8 +96,8 @@ class RelatedRaidTypeServiceTest {
     @Test
     @DisplayName("findId() returns id of related raid type")
     void findId() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198;
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367;
         final var schemaId = 123;
         final var id = 234;
 
@@ -109,8 +111,8 @@ class RelatedRaidTypeServiceTest {
         final var relatedRaidTypeRecord = new RelatedRaidTypeRecord()
                 .setId(id);
 
-        when(relatedRaidTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(relatedRaidTypeSchemaRecord));
-        when(relatedRaidTypeRepository.findByUriAndSchemaId(uri, schemaId)).thenReturn(Optional.of(relatedRaidTypeRecord));
+        when(relatedRaidTypeSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(relatedRaidTypeSchemaRecord));
+        when(relatedRaidTypeRepository.findByUriAndSchemaId(uri.getValue(), schemaId)).thenReturn(Optional.of(relatedRaidTypeRecord));
 
         assertThat(relatedRaidTypeService.findId(relatedRaidType), is(id));
     }
@@ -118,14 +120,14 @@ class RelatedRaidTypeServiceTest {
     @Test
     @DisplayName("findId() throws RelatedRaidTypeSchemaNotFoundException")
     void findIdThrowsRelatedRaidTypeSchemaNptFoundException() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198;
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367;
 
         final var relatedRaidType = new RelatedRaidType()
                 .id(uri)
                 .schemaUri(schemaUri);
 
-        when(relatedRaidTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
+        when(relatedRaidTypeSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.empty());
 
         assertThrows(RelatedRaidTypeSchemaNotFoundException.class, () -> relatedRaidTypeService.findId(relatedRaidType));
 
@@ -135,8 +137,8 @@ class RelatedRaidTypeServiceTest {
     @Test
     @DisplayName("findId() throws RelatedRaidTypeNotFoundException")
     void findIdThrowsRelatedRaidTypeNotFoundException() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198;
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367;
         final var schemaId = 123;
 
         final var relatedRaidType = new RelatedRaidType()
@@ -146,8 +148,8 @@ class RelatedRaidTypeServiceTest {
         final var relatedRaidTypeSchemaRecord = new RelatedRaidTypeSchemaRecord()
                 .setId(schemaId);
 
-        when(relatedRaidTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(relatedRaidTypeSchemaRecord));
-        when(relatedRaidTypeRepository.findByUriAndSchemaId(uri, schemaId)).thenReturn(Optional.empty());
+        when(relatedRaidTypeSchemaRepository.findByUri(schemaUri.getValue())).thenReturn(Optional.of(relatedRaidTypeSchemaRecord));
+        when(relatedRaidTypeRepository.findByUriAndSchemaId(uri.getValue(), schemaId)).thenReturn(Optional.empty());
 
         assertThrows(RelatedRaidTypeNotFoundException.class, () -> relatedRaidTypeService.findId(relatedRaidType));
     }

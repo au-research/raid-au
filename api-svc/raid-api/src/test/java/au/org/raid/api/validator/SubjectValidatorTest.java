@@ -7,6 +7,7 @@ import au.org.raid.db.jooq.tables.records.SubjectTypeRecord;
 import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Subject;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
+import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubjectValidatorTest {
+    private static final SubjectSchemaURIEnum SCHEMA_URI = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316;
+
     @Mock
     private SubjectTypeRepository subjectTypeRepository;
 
@@ -49,7 +52,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SCHEMA_URI)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -82,7 +85,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -113,7 +116,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -163,10 +166,11 @@ class SubjectValidatorTest {
                         .errorType("notSet")
                         .message("field must be set")
         )));
+
     }
 
     @Test
-    void addsFailureWithInvalidInvalidSubjectSchemeUri() {
+    void addsFailureWithMissingSubjectSchemeUri2() {
         final var idStartsWith = "https://linked.data.gov.au/def/anzsrc-for/2020/";
         final var subjectId = "222222";
         final var id = idStartsWith.concat(subjectId);
@@ -175,7 +179,6 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri("invalid")
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -189,8 +192,8 @@ class SubjectValidatorTest {
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 
         assertThat(validationFailures.size(), is(1));
-        assertThat(validationFailures.get(0).getMessage(), is("must be https://vocabs.ardc.edu.au/viewById/316."));
-        assertThat(validationFailures.get(0).getErrorType(), is("invalidValue"));
+        assertThat(validationFailures.get(0).getMessage(), is("field must be set"));
+        assertThat(validationFailures.get(0).getErrorType(), is("notSet"));
         assertThat(validationFailures.get(0).getFieldId(), is("subject[0].schemaUri"));
     }
 
@@ -205,7 +208,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SCHEMA_URI)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();

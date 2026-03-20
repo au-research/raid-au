@@ -1,4 +1,4 @@
-import {RaidDto} from "@/generated/raid";
+import {RaidCreateRequest, RaidDto} from "@/generated/raid";
 import {authService} from "@/services/auth-service.ts";
 import {RaidHistoryType} from "@/pages/raid-history";
 import {transformBeforeUpdate} from "@/services/raid.ts";
@@ -49,7 +49,7 @@ export const raidService = {
         }
         return await response.json() as RaidDto;
     },
-    create: async (raid: RaidDto) => {
+    create: async (raid: RaidCreateRequest) => {
         const url = API_CONSTANTS.RAID.ALL;
         const response = await authService.fetchWithAuth(url, {
             method: "POST",
@@ -62,7 +62,7 @@ export const raidService = {
 
         return await response.json() as RaidDto;
     },
-    update: async (data: RaidDto, handle: string) => {
+    update: async (data: RaidCreateRequest, handle: string) => {
         const raidToBeUpdated = transformBeforeUpdate(data);
         const url = API_CONSTANTS.RAID.BY_HANDLE(handle);
         const response = await authService.fetchWithAuth(url, {

@@ -3,6 +3,7 @@ package au.org.raid.api.service;
 import au.org.raid.api.exception.SubjectTypeNotFoundException;
 import au.org.raid.api.exception.SubjectTypeSchemaNotFoundException;
 import au.org.raid.api.factory.SubjectFactory;
+import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.factory.record.RaidSubjectKeywordRecordFactory;
 import au.org.raid.api.factory.record.RaidSubjectRecordFactory;
 import au.org.raid.api.repository.RaidSubjectKeywordRepository;
@@ -16,6 +17,7 @@ import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Language;
 import au.org.raid.idl.raidv2.model.Subject;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
+import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SubjectServiceTest {
+    private static final SubjectSchemaURIEnum SCHEMA_URI = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316;
     @Mock
     private LanguageService languageService;
     @Mock
@@ -62,14 +65,16 @@ class SubjectServiceTest {
         final var uri = "/" + id;
         final var subjectTypeId = "subject-type-id";
         final var raidSubjectId = 123;
+        final var subjectId = 234;
         final var languageId = 234;
         final var text = "_text";
-        final var schemaUri = "schema-uri";
+        final var schemaUriEnum = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316;
+        final var schemaDbUri = SchemaValues.SUBJECT_SCHEMA_URI.getUri();
         final var schemaId = 3;
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord()
                 .setId(schemaId)
-                .setUri(schemaUri);
+                .setUri(schemaDbUri);
 
         final var subjectTypeRecord = new SubjectTypeRecord()
                 .setId(subjectTypeId);
@@ -87,11 +92,11 @@ class SubjectServiceTest {
         final var subject = new Subject()
                 .keyword(List.of(keyword))
                 .id(uri)
-                .schemaUri(schemaUri);
+                .schemaUri(schemaUriEnum);
 
         final var raidSubjectKeywordRecord = new RaidSubjectKeywordRecord();
 
-        when(subjectTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(subjectTypeSchemaRecord));
+        when(subjectTypeSchemaRepository.findByUri(schemaDbUri)).thenReturn(Optional.of(subjectTypeSchemaRecord));
 
         when(subjectTypeRepository.findByIdAndSchemaId(id, schemaId)).thenReturn(Optional.of(subjectTypeRecord));
 
@@ -127,15 +132,16 @@ class SubjectServiceTest {
         final var handle = "_handle";
         final var id = "_id";
         final var schemaId = 99;
-        final var schemaUri = "schema-uri";
+        final var schemaUriEnum = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316;
+        final var schemaDbUri = SchemaValues.SUBJECT_SCHEMA_URI.getUri();
         final var uri = "/" + id;
         final var subject = new Subject()
                 .id(uri)
-                .schemaUri(schemaUri);
+                .schemaUri(schemaUriEnum);
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord().setId(schemaId);
 
-        when(subjectTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(subjectTypeSchemaRecord));
+        when(subjectTypeSchemaRepository.findByUri(schemaDbUri)).thenReturn(Optional.of(subjectTypeSchemaRecord));
         when(subjectTypeRepository.findByIdAndSchemaId(id, schemaId)).thenReturn(Optional.empty());
 
         assertThrows(SubjectTypeNotFoundException.class, () -> subjectService.create(List.of(subject), handle));
@@ -155,6 +161,7 @@ class SubjectServiceTest {
         final var schemaId = 123;
         final var schemaUri = "schema-uri";
         final var raidSubjectId = 234;
+        final var subjectId = 345;
 
         final var raidSubjectRecord = new RaidSubjectRecord()
                 .setId(raidSubjectId)
@@ -236,17 +243,19 @@ class SubjectServiceTest {
         final var handle = "_handle";
         final var id = "_id";
         final var uri = "/" + id;
+        final var subjectId = 3;
         final var subjectTypeId = "subject-type-id";
         final var raidSubjectId = 123;
         final var languageId = 234;
         final var text = "_text";
 
-        final var schemaUri = "schema-uri";
+        final var schemaUriEnum = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316;
+        final var schemaDbUri = SchemaValues.SUBJECT_SCHEMA_URI.getUri();
         final var schemaId = 3;
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord()
                 .setId(schemaId)
-                .setUri(schemaUri);
+                .setUri(schemaDbUri);
 
         final var subjectTypeRecord = new SubjectTypeRecord()
                 .setId(subjectTypeId);
@@ -264,12 +273,12 @@ class SubjectServiceTest {
         final var subject = new Subject()
                 .keyword(List.of(keyword))
                 .id(uri)
-                .schemaUri(schemaUri);
+                .schemaUri(schemaUriEnum);
 
         final var raidSubjectKeywordRecord = new RaidSubjectKeywordRecord();
 
         when(subjectTypeRepository.findByIdAndSchemaId(id, schemaId)).thenReturn(Optional.of(subjectTypeRecord));
-        when(subjectTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.of(subjectTypeSchemaRecord));
+        when(subjectTypeSchemaRepository.findByUri(schemaDbUri)).thenReturn(Optional.of(subjectTypeSchemaRecord));
 
         when(raidSubjectRecordFactory.create(handle, subjectTypeId, schemaId)).thenReturn(raidSubjectRecord);
         when(raidSubjectRepository.create(raidSubjectRecord)).thenReturn(saved);

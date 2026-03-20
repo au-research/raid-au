@@ -35,13 +35,14 @@ public class APIFixtures {
 
         final var identifier = new Id()
                 .id("https://raid.org/xxx.yyy/zzz")
-                .schemaUri("https://raid.org")
+                .schemaUri(RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_)
                 .registrationAgency(new RegistrationAgency()
                         .id("https://ror.org/02stey378")
-                        .schemaUri("https://ror.org"))
+                        .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_))
                 .owner(new Owner()
                         .id("https://ror.org/02stey378")
-                        .schemaUri("https://ror.org"))
+                        .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_)
+                        .servicePoint(DEFAULT_SERVICE_POINT_ID))
                 .license("Creative Commons CC-0")
                 .version(16);
         return new RaidUpdateRequest()
@@ -86,11 +87,11 @@ public class APIFixtures {
                 .subject(List.of(
                         new Subject()
                                 .id("https://linked.data.gov.au/def/anzsrc-for/2020/3702")
-                                .schemaUri("https://vocabs.ardc.edu.au/viewById/316")
+                                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                                 .keyword(List.of(new SubjectKeyword()
                                         .language(new Language()
                                                 .id("eng")
-                                                .schemaUri("https://www.iso.org/standard/74575.html"))
+                                                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML))
                                         .text("ENES")
                                 ))));
     }
@@ -156,18 +157,18 @@ public class APIFixtures {
                 .subject(List.of(
                         new Subject()
                                 .id("https://linked.data.gov.au/def/anzsrc-for/2020/3702")
-                                .schemaUri("https://vocabs.ardc.edu.au/viewById/316")
+                                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                                 .keyword(List.of(new SubjectKeyword()
                                         .language(new Language()
                                                 .id("eng")
-                                                .schemaUri("https://www.iso.org/standard/74575.html"))
+                                                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML))
                                         .text("ENES")
                                 ))));
     }
     public static Contributor orcidContributor(
             final String orcid,
-            final String position,
-            final String role,
+            final ContributorPositionIdEnum position,
+            final ContributorRoleIdEnum role,
             final LocalDate startDate,
             final String email
     ) {
@@ -188,7 +189,7 @@ public class APIFixtures {
 
     public static Organisation organisation(
             String ror,
-            String role,
+            OrganizationRoleIdEnum role,
             LocalDate today
     ) {
         return new Organisation()

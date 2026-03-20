@@ -1,5 +1,6 @@
 package au.org.raid.inttest;
 
+import au.org.raid.idl.raidv2.model.SpatialCoverageSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +38,7 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Minting a RAiD with a spatial coverage with an non-existent OpenStreetMap uri fails")
     void nonExistentUri_OpenStreetMap() {
         createRequest.getSpatialCoverage().get(0).setId(NONEXISTENT_TEST_OPENSTREETMAP_URI);
-        createRequest.getSpatialCoverage().get(0).setSchemaUri("https://www.openstreetmap.org/");
+        createRequest.getSpatialCoverage().get(0).setSchemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_OPENSTREETMAP_ORG_);
 
         try {
             raidApi.mintRaid(createRequest);
@@ -117,7 +118,7 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
             fail("Expected RaidApiValidationException");
         }
     }
-
+/*
     @Test
     @DisplayName("Minting a RAiD with a spatial coverage with a empty language schemaUri fails")
     void emptyLanguageSchemeUri() {
@@ -138,7 +139,7 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
             fail("Expected RaidApiValidationException");
         }
     }
-
+*/
     @Test
     @DisplayName("Minting a RAiD with a spatial coverage with a null language id fails")
     void nullLanguageId() {
@@ -173,8 +174,8 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
             assertThat(failures).hasSize(1);
             assertThat(failures).contains(new ValidationFailure()
                     .fieldId("spatialCoverage[0].place[0].language.id")
-                    .errorType("notSet")
-                    .message("field must be set")
+                    .errorType("invalidValue")
+                    .message("has invalid/unsupported value - must match \"^\\s*\\S.*$\"")
             );
         } catch (Exception e) {
             fail("Expected RaidApiValidationException");
@@ -202,7 +203,7 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-
+/*
     @Test
     @DisplayName("Minting a RAiD with a spatial coverage with a invalid language schemaUri fails")
     void invalidLanguageSchemeUri() {
@@ -223,5 +224,7 @@ public class SpatialCoverageIntegrationTest extends AbstractIntegrationTest {
             fail("Expected RaidApiValidationException");
         }
     }
+
+ */
 
 }

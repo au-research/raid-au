@@ -1,0 +1,59 @@
+{% if not level -%}
+{% set level = 1 -%}
+{% endif -%}
+{% if not parent -%}
+{% set parent = '' -%}
+{% endif -%}
+
+{{ "#"|safe*level*1 }}{{parent}}.{{element.name}}
+
+**Description**:
+
+{{element.description}}
+
+**Requirement**:
+{% if slot.required -%}
+mandatory
+{% else -%}
+optional
+{% endif %}
+
+**Cardinality**:
+{{ gen.cardinality(slot) }}
+
+{%-for a in element.annotations %}
+{% if a|string|first != '_' %}
+ **{{a}}**:
+{{ element.annotations[a].value }}
+
+{%- endif -%}
+{%- endfor -%}
+
+{% if gen.example_object_blobs(element.name) -%}
+**Examples**
+{% for name, blob in gen.example_object_blobs(element.name) -%}
+```json
+{{ blob }}
+```
+{% endfor %}
+{% endif %}
+
+{% if gen.get_direct_slots(element)|length > 0 %}
+{%- for slot in gen.get_direct_slots(element) -%}
+{% if slot.range in schemaview.all_classes().keys() -%}
+
+{{slot.range}}
+{% with element= schemaview.get_class(slot.range), parent=parent ~ '.' ~ element.name, level=level + 1 %}
+{% include "nestedclass.md.jinja2" %}
+ {% endwith %}
+
+
+{% else %}
+
+{% with element=slot, parent=parent~'.'~element.name, level=level + 1 %}
+{% include "slot.md.jinja2" %}
+ {% endwith %}
+
+{% endif %}
+{% endfor -%}
+{% endif -%}

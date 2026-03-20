@@ -1,6 +1,7 @@
 package au.org.raid.api.factory;
 
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.OrganizationSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,10 +18,10 @@ class OrganisationFactoryTest {
     void setsAllFields() {
 
         final var id = "_id";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationSchemaUriEnum.HTTPS_ROR_ORG_;
         final var roles = List.of(new OrganisationRole());
 
-        final var result = factory.create(id, schemaUri, roles);
+        final var result = factory.create(id, schemaUri.getValue(), roles);
 
         assertThat(result.getId(), is(id));
         assertThat(result.getSchemaUri(), is(schemaUri));

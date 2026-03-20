@@ -2,6 +2,7 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.endpoint.message.ValidationMessage;
 import au.org.raid.idl.raidv2.model.Access;
+import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,10 +17,6 @@ import static au.org.raid.api.util.StringUtil.isBlank;
 @Component
 @RequiredArgsConstructor
 public class AccessValidator {
-    private static final String ACCESS_TYPE_EMBARGOED =
-            "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/embargoed.json";
-    private static final String ACCESS_TYPE_OPEN =
-            "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/open.json";
     private static final String ACCESS_TYPE_CLOSED =
             "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/closed.json";
 
@@ -31,29 +28,12 @@ public class AccessValidator {
     ) {
         var failures = new ArrayList<ValidationFailure>();
 
-        if (access == null) {
-            failures.add(ValidationMessage.ACCESS_NOT_SET);
-        } else if (access.getType() == null) {
-            failures.add(
-                    new ValidationFailure()
-                            .errorType(NOT_SET_TYPE)
-                            .fieldId("access.type")
-                            .message(NOT_SET_MESSAGE)
-            );
-        } else {
             failures.addAll(typeValidationService.validate(access.getType()));
 
-            if (!isBlank(access.getType().getId())) {
+            if (!isBlank(access.getType().getId().getValue())) {
                 final var typeId = access.getType().getId();
 
-                if (typeId.equals(ACCESS_TYPE_CLOSED)) {
-                    failures.add(new ValidationFailure()
-                            .fieldId("access.type.id")
-                            .errorType(INVALID_VALUE_TYPE)
-                            .message("Creating closed Raids is no longer supported"));
-                }
-
-                if (typeId.equals(ACCESS_TYPE_EMBARGOED)) {
+                if (typeId.equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)) {
                     if (access.getStatement() == null) {
                         failures.add(new ValidationFailure()
                                 .fieldId("access.statement")
@@ -78,7 +58,7 @@ public class AccessValidator {
                         accessStatementValidator.validate(access.getStatement())
                 );
             }
-        }
+
 
         return failures;
     }

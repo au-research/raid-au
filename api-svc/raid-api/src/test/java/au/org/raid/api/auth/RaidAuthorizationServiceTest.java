@@ -2,7 +2,6 @@ package au.org.raid.api.auth;
 
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.ServicePointService;
-import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +19,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +50,7 @@ class RaidAuthorizationServiceTest {
 
     private static final String TEST_HANDLE = "test/handle";
     private static final String TEST_GROUP_ID = "test-group-id";
-    private static final Long TEST_SERVICE_POINT_ID = 1L;
+    private static final BigDecimal TEST_SERVICE_POINT_ID = BigDecimal.ONE;
 
     @BeforeEach
     void setUp() {
@@ -109,7 +109,9 @@ class RaidAuthorizationServiceTest {
 
         var access = new Access();
         var accessType = new AccessType();
-        accessType.setId(embargoed ? SchemaValues.ACCESS_TYPE_EMBARGOED.getUri() : "open");
+        accessType.setId(embargoed
+                ? AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_
+                : AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_);
         access.setType(accessType);
         raid.setAccess(access);
 
@@ -118,7 +120,7 @@ class RaidAuthorizationServiceTest {
 
     private ServicePoint createTestServicePoint() {
         var servicePoint = new ServicePoint();
-        servicePoint.setId(TEST_SERVICE_POINT_ID);
+        servicePoint.setId(TEST_SERVICE_POINT_ID.longValue());
         return servicePoint;
     }
 

@@ -3,6 +3,7 @@ package au.org.raid.api.service;
 import au.org.raid.api.exception.SubjectTypeNotFoundException;
 import au.org.raid.api.exception.SubjectTypeSchemaNotFoundException;
 import au.org.raid.api.factory.SubjectFactory;
+import au.org.raid.api.util.SubjectSchemaUriMapper;
 import au.org.raid.api.factory.record.RaidSubjectKeywordRecordFactory;
 import au.org.raid.api.factory.record.RaidSubjectRecordFactory;
 import au.org.raid.api.repository.RaidSubjectKeywordRepository;
@@ -37,7 +38,10 @@ public class SubjectService {
         }
 
         for (final var subject : subjects) {
-            final var schemaUri = subject.getSchemaUri();
+            final var schemaUri = SubjectSchemaUriMapper.toDbUri(subject.getSchemaUri());
+            if (schemaUri == null) {
+                throw new SubjectTypeSchemaNotFoundException(subject.getSchemaUri().getValue());
+            }
 
             final var subjectTypeSchemaRecord = subjectTypeSchemaRepository.findByUri(schemaUri)
                     .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(schemaUri));
@@ -51,16 +55,18 @@ public class SubjectService {
 
             final var raidSubject = raidSubjectRepository.create(raidSubjectRecord);
 
-            for (final var keyword : subject.getKeyword()) {
-                Integer languageId = null;
-                if (keyword.getLanguage() != null) {
-                    languageId = languageService.findLanguageId(keyword.getLanguage());
+            if (subject.getKeyword() != null) {
+                for (final var keyword : subject.getKeyword()) {
+                    Integer languageId = null;
+                    if (keyword.getLanguage() != null) {
+                        languageId = languageService.findLanguageId(keyword.getLanguage());
+                    }
+
+                    final var raidSubjectKeywordRecord =
+                            raidSubjectKeywordRecordFactory.create(raidSubject.getId(), keyword.getText(), languageId);
+
+                    raidSubjectKeywordRepository.create(raidSubjectKeywordRecord);
                 }
-
-                final var raidSubjectKeywordRecord =
-                        raidSubjectKeywordRecordFactory.create(raidSubject.getId(), keyword.getText(), languageId);
-
-                raidSubjectKeywordRepository.create(raidSubjectKeywordRecord);
             }
         }
     }
@@ -73,14 +79,12 @@ public class SubjectService {
             final var typeRecord = subjectTypeRepository.findByIdAndSchemaId(record.getSubjectTypeId(), record.getSubjectTypeSchemaId())
                     .orElseThrow(() -> new SubjectTypeNotFoundException(record.getSubjectTypeId()));
 
-            final var schemaId = typeRecord.getSchemaId();
-
-            final var typeSchemaRecord = subjectTypeSchemaRepository.findById(schemaId)
-                    .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(schemaId));
+            final var schemaRecord = subjectTypeSchemaRepository.findById(typeRecord.getSchemaId())
+                    .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(typeRecord.getSchemaId()));
 
             final var keywords = subjectKeywordService.findAllByRaidSubjectId(record.getId());
 
-            subjects.add(subjectFactory.create(typeRecord.getId(), typeSchemaRecord.getUri(), keywords));
+            subjects.add(subjectFactory.create(typeRecord.getId(), schemaRecord.getUri(), keywords));
         }
         return subjects;
     }

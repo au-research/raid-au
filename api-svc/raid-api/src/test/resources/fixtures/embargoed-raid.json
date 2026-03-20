@@ -88,12 +88,12 @@
       ],
       "role": [
         {
-          "schemaUri": "https://credit.niso.org",
-          "id": "https://credit.niso.org/contributor-roles/formal-analysis/"
+          "schemaUri": "https://credit.niso.org/",
+          "id": "https://credit.niso.org/contributor-role/formal-analysis/"
         },
         {
-          "schemaUri": "https://credit.niso.org",
-          "id": "https://credit.niso.org/contributor-roles/investigation/"
+          "schemaUri": "https://credit.niso.org/",
+          "id": "https://credit.niso.org/contributor-role/investigation/"
         }
       ]
     },
@@ -109,8 +109,8 @@
       ],
       "role": [
         {
-          "schemaUri": "https://credit.niso.org",
-          "id": "https://credit.niso.org/contributor-roles/project-administration/"
+          "schemaUri": "https://credit.niso.org/",
+          "id": "https://credit.niso.org/contributor-role/project-administration/"
         }
       ]
     }
@@ -197,7 +197,7 @@
           "text": "Digital Archeology",
           "language": {
             "id": "eng",
-            "schemaUri": "https://www.iso.org/standard/39534.html"
+            "schemaUri": "https://www.iso.org/standard/74575.html"
           }
         }
       ]
