@@ -65,11 +65,15 @@ See the [Keycloak Import/Export documentation](https://www.keycloak.org/server/i
 
 ## Related Documentation
 
+### Client Management
+
+- [Authorization Code Flow — Confidential Client](doc/authorization-code-flow-client.md) — Setting up a server-side web application client that can securely store a `client_secret`
+- [Authorization Code Flow — Public Client](doc/authorization-code-flow-public-client.md) — Setting up a browser-based SPA client using PKCE (no client secret)
+- [Client Credentials Flow](doc/client-credentials-flow.md) — Setting up machine-to-machine authentication with `client_id` and `client_secret`
+
+### General
+
 - [Authorization Code Flow](doc/authorization-code-flow.md)
-- [Authorization Code Flow — Client](doc/authorization-code-flow-client.md)
-- [Authorization Code Flow — Public Client](doc/authorization-code-flow-public-client.md)
-- [Client Credentials Flow](doc/client-credentials-flow.md)
 - [Tokens](doc/tokens.md)
 - [Role Permissions](doc/role-permissions.md)
 - [Service Point Group ID](doc/service-point-group-id.md)
-- [activeGroupId to Service Point Group ID Mapping](doc/activeGroupId-to-service-point-group-id-mapping.md)
