@@ -1,8 +1,6 @@
-# IAM — Keycloak SPIs
+# Keycloak Documentation
 
-This module contains custom Keycloak Service Provider Interfaces (SPIs) and configuration for the RAiD identity and access management layer.
-
-## Documentation
+## Development
 
 - [SPIs](doc/spis.md) — Custom `RealmResourceProvider` endpoints for group management and per-RAiD access control
 - [Local Development](doc/local-development.md) — Running Keycloak locally with Docker Compose, test users, and exporting realm changes
