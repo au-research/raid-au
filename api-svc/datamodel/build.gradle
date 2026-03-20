@@ -126,5 +126,11 @@ tasks.register('generateAllV2') {
 }
 
 clean {
-  delete './generated'
+  // Delete everything in generated/ except the committed JSON schema files
+  // that CI needs (Docker/LinkML is not available in CodeBuild to regenerate them).
+  delete fileTree(dir: './generated', excludes: [
+    'v2/raid-jsonschema.json',
+    'v2/raid-strict-jsonschema.json',
+    'v2/researchproject.json',
+  ])
 }
