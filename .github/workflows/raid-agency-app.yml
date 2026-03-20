@@ -20,6 +20,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci --registry https://registry.npmjs.org/
+      - name: Reset npm to public registry
+        run: echo "registry=https://registry.npmjs.org/" > "$(npm config get globalconfig)"
+      - run: npm ci
       - run: npm run build
       - run: npm test -- --run
