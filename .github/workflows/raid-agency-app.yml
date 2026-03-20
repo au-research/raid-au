@@ -19,22 +19,7 @@ jobs:
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          cache-dependency-path: raid-agency-app/package-lock.json
           node-version: 22
-          cache: 'npm'
-      - name: Remove auto-generated .npmrc auth
-        run: |
-          echo "=== ~/.npmrc ==="
-          cat ~/.npmrc 2>/dev/null || echo "(not found)"
-          echo "=== .npmrc ==="
-          cat .npmrc 2>/dev/null || echo "(not found)"
-          echo "=== npm config list ==="
-          npm config list
-          for f in ~/.npmrc .npmrc; do
-            if [ -f "$f" ]; then
-              sed -i '/_authToken/d' "$f"
-            fi
-          done
       - run: npm ci
       - run: npm run build
       - run: npm test -- --run
