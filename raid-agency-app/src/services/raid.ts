@@ -4,7 +4,7 @@
  * This module provides functions for interacting with the RAID (Research Activity Identifier) API.
  * It handles fetching, creating, and updating RAIDs, as well as managing RAID history.
  */
-import { RaidDto } from "@/generated/raid";
+import { RaidCreateRequest, RaidDto } from "@/generated/raid";
 import { RaidHistoryType } from "@/pages/raid-history";
 import { API_CONSTANTS } from "@/constants/apiConstants";
 
@@ -167,7 +167,7 @@ export const updateOneRaid = async ({
  * @param raid - The RAID data to transform
  * @returns The transformed RAID data ready for API submission
  */
-export const transformBeforeUpdate = (raid: RaidDto): RaidDto => {
+export const transformBeforeUpdate = (raid: RaidCreateRequest): RaidCreateRequest => {
   // set all endDates to `undefined` if the value is an empty string
   if (raid?.date?.endDate === "") {
     raid.date.endDate = undefined;
