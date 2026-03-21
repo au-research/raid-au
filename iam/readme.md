@@ -1,12 +1,19 @@
-When running locally with Docker Compose, the `raid` realm should be added automatically when the container starts.
+# Keycloak Documentation
 
-The realm includes 2 test users `raid-test-user` and `uq-test-user`, each belonging to different service points. They 
-both have the `service-point-user` role necessary to mint RAiDs. Both have the password 'password'. 
+## Development
 
-If you make any changes to the realm and want to save them to the configuration, run the command...
-```
-docker exec -it [container-id] bin/kc.sh export --realm raid --file /opt/keycloak/data/import/local-raid-realm.json
-```
-and commit the changes.
+- [SPIs](doc/spis.md) — Custom `RealmResourceProvider` endpoints for group management and per-RAiD access control
+- [Local Development](doc/local-development.md) — Running Keycloak locally with Docker Compose, test users, and exporting realm changes
 
-See https://www.keycloak.org/server/importExport
+### Client Configuration
+
+- [Authorization Code Flow — Confidential Client](doc/authorization-code-flow-client.md) — Setting up a server-side web application client that can securely store a `client_secret`
+- [Authorization Code Flow — Public Client](doc/authorization-code-flow-public-client.md) — Setting up a browser-based SPA client using PKCE (no client secret)
+- [Client Credentials Flow](doc/client-credentials-flow.md) — Setting up machine-to-machine authentication with `client_id` and `client_secret`
+
+### Concepts
+
+- [Authorization Code Flow](doc/authorization-code-flow.md) — How the OAuth2 authorization code flow works
+- [Tokens](doc/tokens.md) — Token structure and usage
+- [Role Permissions](doc/role-permissions.md) — Role-based access control model
+- [Service Point Group ID](doc/service-point-group-id.md) — How service point groups are identified

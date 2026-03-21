@@ -1,5 +1,13 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
+# 2.8.1
+## App-client UI
+* Implemented automatic group rollback in Keycloak when Service Point creation fails after
+  the group has already been created.
+* Fixed the notification banner to display only in non-production environments.
+* Added ARDC branding and mega menu to the static landing pages, with support for an
+  external configuration file that can be updated without redeploying the application.
+
 # 2.8.0
 ## API
 * Fix NPE in IsniClient when personalName.nameUse is null
