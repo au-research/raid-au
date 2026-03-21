@@ -1,7 +1,6 @@
 package au.org.raid.api.factory.record;
 
 import au.org.raid.idl.raidv2.model.Contributor;
-import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ class ContributorRecordFactoryTest {
 
         final var contributor = new Contributor()
                 .id(pid)
-                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
+                .schemaUri(schemaUri);
 
         final var result = contributorRecordFactory.create(contributor, schemaId);
 

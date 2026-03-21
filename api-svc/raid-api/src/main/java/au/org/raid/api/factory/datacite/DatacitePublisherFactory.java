@@ -19,6 +19,6 @@ public class DatacitePublisherFactory {
                 .setName(name)
                 .setPublisherIdentifier(owner.getId())
                 .setPublisherIdentifierScheme(PUBLISHER_IDENTIFIER_SCHEME)
-                .setSchemeUri(owner.getSchemaUri().getValue());
+                .setSchemeUri(owner.getSchemaUri());
     }
 }

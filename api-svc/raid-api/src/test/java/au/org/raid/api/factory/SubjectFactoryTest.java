@@ -2,7 +2,6 @@ package au.org.raid.api.factory;
 
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
-import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,14 +17,13 @@ class SubjectFactoryTest {
     @DisplayName("Sets all fields")
     void setsAllFields() {
         final var id = "_id";
-        // factory.create() expects a DB URI (not the enum label)
-        final var dbSchemaUri = SchemaValues.SUBJECT_SCHEMA_URI.getUri();
+        final var schemaUri = "schema-uri";
         final var keywords = List.of(new SubjectKeyword());
 
-        final var result = factory.create(id, dbSchemaUri, keywords);
+        final var result = factory.create(id, schemaUri, keywords);
 
         assertThat(result.getId(), is(SchemaValues.SUBJECT_ID_PREFIX.getUri() + id));
-        assertThat(result.getSchemaUri(), is(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316));
+        assertThat(result.getSchemaUri(), is(schemaUri));
         assertThat(result.getKeyword(), is(keywords));
     }
 }

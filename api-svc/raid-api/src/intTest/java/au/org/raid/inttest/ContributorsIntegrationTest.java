@@ -2,12 +2,7 @@ package au.org.raid.inttest;
 
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
-import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
-import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ContributorRole;
-import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
-import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
-import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.factory.RaidPatchRequestFactory;
 import au.org.raid.inttest.factory.RaidUpdateRequestFactory;
@@ -155,7 +150,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         void emptyIdentifierSchemeUri() {
             createRequest.setContributor(List.of(
                     new Contributor()
-                            .schemaUri((ContributorSchemaUriEnum) null)
+                            .schemaUri("")
                             .contact(true)
                             .leader(true)
                             .id(REAL_TEST_ORCID)
@@ -589,7 +584,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Minting a RAiD with invalid position schemaUri fails")
             void invalidPositionSchemeUri() {
                 createRequest.setContributor(List.of(
@@ -602,7 +596,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                                .schemaUri((ContributorPositionSchemaUriEnum) null)
+                                                .schemaUri("https://github.com/au-research/raid-metadata/tree/main/scheme/contributor/position/v2")
                                                 .id(OTHER_PARTICIPANT_POSITION)
                                 ))
                                 .role(List.of(
@@ -628,7 +622,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Minting a RAiD with invalid position type for schema fails")
             void invalidPositionTypeForScheme() {
                 createRequest.setContributor(List.of(
@@ -642,7 +635,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                         new ContributorPosition()
                                                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                                                 .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                                .id((ContributorPositionIdEnum) null)
+                                                .id("https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/unknown.json")
                                 ))
                                 .role(List.of(
                                         new ContributorRole()
@@ -682,7 +675,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                                 .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
                                                 .startDate(LocalDate.now().minusYears(2).format(DateTimeFormatter.ISO_LOCAL_DATE)),
                                         new ContributorPosition()
-                                                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_308)
+                                                .id("https://vocabulary.raid.org/contributor.position.schema/308")
                                                 .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
                                                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                                 ))
@@ -788,7 +781,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Minting a RAiD with invalid role schemaUri fails")
             void invalidPositionSchemeUri() {
                 createRequest.setContributor(List.of(
@@ -806,7 +798,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 ))
                                 .role(List.of(
                                         new ContributorRole()
-                                                .schemaUri((ContributorRoleSchemaUriEnum) null)
+                                                .schemaUri("unknown")
                                                 .id(SOFTWARE_CONTRIBUTOR_ROLE)
                                 ))
                 ));
@@ -827,7 +819,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Minting a RAiD with invalid type for role schema fails")
             void invalidPositionTypeForScheme() {
                 createRequest.setContributor(List.of(
@@ -846,7 +837,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .role(List.of(
                                         new ContributorRole()
                                                 .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                                .id((ContributorRoleIdEnum) null)
+                                                .id("unknown")
                                 ))
                 ));
 
@@ -1034,9 +1025,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 assertThat(failures, hasSize(1));
                 assertThat(failures, contains(
                         new ValidationFailure()
-                                .fieldId("contributor[0].position")
+                                .fieldId("contributor[0]")
                                 .errorType("notSet")
-                                .message("field must be set")
+                                .message("A contributor must have a position")
                 ));
             }
         }
@@ -1099,7 +1090,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getPosition().get(0).id((ContributorPositionIdEnum) null);
+                raidDto.getContributor().get(0).getPosition().get(0).id("");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1117,7 +1108,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Updating a RAiD with invalid position schemaUri fails")
             void invalidPositionSchemeUri() {
                 final var createResponse = raidApi.mintRaid(createRequest);
@@ -1125,7 +1115,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
                 raidDto.getContributor().get(0).getPosition().get(0)
-                        .schemaUri((ContributorPositionSchemaUriEnum) null);
+                        .schemaUri("https://github.com/au-research/raid-metadata/tree/main/scheme/contributor/position/v2");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1143,7 +1133,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Updating a RAiD with invalid position type for schema fails")
             void invalidPositionTypeForScheme() {
                 final var createResponse = raidApi.mintRaid(createRequest);
@@ -1151,7 +1140,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
                 raidDto.getContributor().get(0).getPosition().get(0)
-                        .id((ContributorPositionIdEnum) null);
+                        .id("https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/unknown.json");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1181,7 +1170,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
                                 .startDate(LocalDate.now().minusYears(2).format(DateTimeFormatter.ISO_LOCAL_DATE)),
                         new ContributorPosition()
-                                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_308)
+                                .id("https://vocabulary.raid.org/contributor.position.schema/308")
                                 .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
                                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                 ));
@@ -1236,7 +1225,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).schemaUri((ContributorRoleSchemaUriEnum) null);
+                raidDto.getContributor().get(0).getRole().get(0).schemaUri("");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1284,7 +1273,7 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).id((ContributorRoleIdEnum) null);
+                raidDto.getContributor().get(0).getRole().get(0).id("");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1302,14 +1291,13 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Updating a RAiD with invalid role id fails")
             void invalidRoleId() {
                 final var createResponse = raidApi.mintRaid(createRequest);
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).id((ContributorRoleIdEnum) null);
+                raidDto.getContributor().get(0).getRole().get(0).id("invalid");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
@@ -1327,14 +1315,13 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Disabled("Cannot send invalid enum values via typed Feign client — use raw HTTP test instead")
             @DisplayName("Updating a RAiD with invalid role schemaUri fails")
             void invalidPositionSchemeUri() {
                 final var createResponse = raidApi.mintRaid(createRequest);
                 final var raidDto = createResponse.getBody();
                 final var handle = new Handle(raidDto.getIdentifier().getId());
 
-                raidDto.getContributor().get(0).getRole().get(0).schemaUri((ContributorRoleSchemaUriEnum) null);
+                raidDto.getContributor().get(0).getRole().get(0).schemaUri("unknown");
 
                 try {
                     raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));

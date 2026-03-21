@@ -8,7 +8,6 @@ import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +103,7 @@ public class IdentifierParser {
 
         URL url = null;
         try {
-            url = URI.create(urlTemp).toURL();
+            url = new URL(urlTemp);
         } catch (MalformedURLException e) {
             // so far when tested the exception shows the input used
             return new ParseProblems("Identifier is not an URL - " + e.getMessage());

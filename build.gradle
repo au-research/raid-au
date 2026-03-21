@@ -1,3 +1,5 @@
+import raido.TimingListener
+
 plugins {
   id 'base'
 }
@@ -44,3 +46,6 @@ dependencies {
 
 clean {
 }
+
+// prints out timings for task execution, just for observability
+gradle.addListener new TimingListener()

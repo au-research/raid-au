@@ -29,12 +29,12 @@ public class OrganisationRoleService {
 
     public void create(final OrganisationRole organisationRole, final int raidOrganisationId) {
         final var organisationRoleSchemaRecord =
-                organisationRoleSchemaRepository.findByUri(organisationRole.getSchemaUri().getValue())
-                        .orElseThrow(() -> new OrganisationRoleSchemaNotFoundException(organisationRole.getSchemaUri().getValue()));
+                organisationRoleSchemaRepository.findByUri(organisationRole.getSchemaUri())
+                        .orElseThrow(() -> new OrganisationRoleSchemaNotFoundException(organisationRole.getSchemaUri()));
 
-        final var organisationRoleRecord = organisationRoleRepository.findByUriAndSchemaId(organisationRole.getId().getValue(), organisationRoleSchemaRecord.getId())
+        final var organisationRoleRecord = organisationRoleRepository.findByUriAndSchemaId(organisationRole.getId(), organisationRoleSchemaRecord.getId())
                 .orElseThrow(() ->
-                        new OrganisationRoleNotFoundException(organisationRole.getId().getValue(), organisationRole.getSchemaUri().getValue()));
+                        new OrganisationRoleNotFoundException(organisationRole.getId(), organisationRole.getSchemaUri()));
 
         final var raidOrganisationRoleRecord = raidOrganisationRoleRecordFactory.create(
                 raidOrganisationId,

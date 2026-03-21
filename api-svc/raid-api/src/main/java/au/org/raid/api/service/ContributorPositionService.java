@@ -58,12 +58,12 @@ public class ContributorPositionService {
         }
 
         for (final var position : positions) {
-            final var positionSchema = contributorPositionSchemaRepository.findByUri(position.getSchemaUri().getValue())
-                    .orElseThrow(() -> new ContributorPositionSchemaNotFoundException(position.getSchemaUri().getValue()));
+            final var positionSchema = contributorPositionSchemaRepository.findByUri(position.getSchemaUri())
+                    .orElseThrow(() -> new ContributorPositionSchemaNotFoundException(position.getSchemaUri()));
 
-            final var contributorPosition = contributorPositionRepository.findByUriAndSchemaId(position.getId().getValue(), positionSchema.getId())
+            final var contributorPosition = contributorPositionRepository.findByUriAndSchemaId(position.getId(), positionSchema.getId())
                     .orElseThrow(() ->
-                            new ContributorPositionNotFoundException(position.getId().getValue(), position.getSchemaUri().getValue()));
+                            new ContributorPositionNotFoundException(position.getId(), position.getSchemaUri()));
 
             final var raidContributorPositionRecord = raidContributorPositionRecordFactory.create(
                     position, raidContributorId, contributorPosition.getId());

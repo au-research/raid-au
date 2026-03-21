@@ -1,7 +1,7 @@
 import {useErrorDialog} from "@/components/error-dialog";
 import {RaidForm} from "@/components/raid-form";
 import {RaidFormErrorMessage} from "@/components/raid-form-error-message";
-import {RaidCreateRequest, RaidDto} from "@/generated/raid";
+import {RaidDto} from "@/generated/raid";
 import {newRaid, raidRequest} from "@/utils/data-utils";
 import {Container, Stack} from "@mui/material";
 

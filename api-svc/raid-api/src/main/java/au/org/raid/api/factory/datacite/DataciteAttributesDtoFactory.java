@@ -46,7 +46,7 @@ public class DataciteAttributesDtoFactory {
     public DataciteAttributesDto create(RaidCreateRequest request, String handle) {
         final var url = identifierProperties.getLandingPrefix() + handle;
 
-        final var event = request.getAccess().getType().getId().equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_) ?
+        final var event = request.getAccess().getType().getId().equals(SchemaValues.ACCESS_TYPE_OPEN.getUri()) ?
                 "publish" : "register";
 
         final var contributors = new ArrayList<DataciteContributor>();
@@ -60,7 +60,7 @@ public class DataciteAttributesDtoFactory {
         if (request.getOrganisation() != null) {
             contributors.addAll(request.getOrganisation().stream()
                             .filter(organisation -> !organisation.getRole().stream()
-                                    .filter(r -> !r.getId().equals(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186))
+                                    .filter(r -> !r.getId().equals(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri()))
                                     .toList()
                                     .isEmpty()// Any organisation that contains a role that is not 'Funder'
                             )
@@ -71,7 +71,7 @@ public class DataciteAttributesDtoFactory {
                     .filter(organisation -> organisation.getRole().stream()
                             .map(OrganisationRole::getId)
                             .toList()
-                            .contains(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186)
+                            .contains(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri())
 
                     )
                     .map(fundingReferenceFactory::create)
@@ -85,14 +85,14 @@ public class DataciteAttributesDtoFactory {
         final var titles = new ArrayList<DataciteTitle>();
 
         final var primaryTitle = request.getTitle().stream()
-                .filter(t -> t.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(t -> t.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .findFirst()
                 .orElseThrow();
 
         titles.add(titleFactory.create(primaryTitle));
 
         titles.addAll(request.getTitle().stream()
-                .filter(t -> !t.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(t -> !t.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .map(titleFactory::create)
                 .toList());
 
@@ -113,9 +113,9 @@ public class DataciteAttributesDtoFactory {
                             .filter(relatedObject -> !(relatedObject.getCategory().stream()
                                     .map(RelatedObjectCategory::getId)
                                     .toList()
-                                    .contains(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)
+                                    .contains(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())
                                     &&
-                                    relatedObject.getType().getId().equals(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                                    relatedObject.getType().getId().equals(SchemaValues.FUNDING_OBJECT_TYPE.getUri()))
                             )
                     .map(relatedIdentifierFactory::create)
                     .toList());
@@ -169,7 +169,7 @@ public class DataciteAttributesDtoFactory {
     public DataciteAttributesDto create(RaidUpdateRequest request, String handle) {
         final var url = identifierProperties.getLandingPrefix() + handle;
 
-        final var event = request.getAccess().getType().getId().equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_) ?
+        final var event = request.getAccess().getType().getId().equals(SchemaValues.ACCESS_TYPE_OPEN.getUri()) ?
                 "publish" : "register";
         final var contributors = new ArrayList<DataciteContributor>();
 
@@ -182,7 +182,7 @@ public class DataciteAttributesDtoFactory {
         if (request.getOrganisation() != null) {
             contributors.addAll(request.getOrganisation().stream()
                     .filter(organisation -> !organisation.getRole().stream()
-                            .filter(r -> !r.getId().equals(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186))
+                            .filter(r -> !r.getId().equals(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri()))
                             .toList()
                             .isEmpty()// Any organisation that contains a role that is not 'Funder'
                     )
@@ -193,7 +193,7 @@ public class DataciteAttributesDtoFactory {
                     .filter(organisation -> organisation.getRole().stream()
                             .map(OrganisationRole::getId)
                             .toList()
-                            .contains(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186)
+                            .contains(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri())
 
                     )
                     .map(fundingReferenceFactory::create)
@@ -207,14 +207,14 @@ public class DataciteAttributesDtoFactory {
         final var titles = new ArrayList<DataciteTitle>();
 
         final var primaryTitle = request.getTitle().stream()
-                .filter(t -> t.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(t -> t.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .findFirst()
                 .orElseThrow();
 
         titles.add(titleFactory.create(primaryTitle));
 
         titles.addAll(request.getTitle().stream()
-                .filter(t -> !t.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(t -> !t.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .map(titleFactory::create)
                 .toList());
 
@@ -235,9 +235,9 @@ public class DataciteAttributesDtoFactory {
                     .filter(relatedObject -> !(relatedObject.getCategory().stream()
                             .map(RelatedObjectCategory::getId)
                             .toList()
-                            .contains(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)
+                            .contains(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())
                             &&
-                            relatedObject.getType().getId().equals(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                            relatedObject.getType().getId().equals(SchemaValues.FUNDING_OBJECT_TYPE.getUri()))
                     )
                     .map(relatedIdentifierFactory::create)
                     .toList());
@@ -291,7 +291,7 @@ public class DataciteAttributesDtoFactory {
     public DataciteAttributesDto create(RaidDto request, String handle) {
         final var url = identifierProperties.getLandingPrefix() + handle;
 
-        final var event = request.getAccess().getType().getId().equals(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_) ?
+        final var event = request.getAccess().getType().getId().equals(SchemaValues.ACCESS_TYPE_OPEN.getUri()) ?
                 "publish" : "register";
         final var contributors = new ArrayList<DataciteContributor>();
 
@@ -304,7 +304,7 @@ public class DataciteAttributesDtoFactory {
         if (request.getOrganisation() != null) {
             contributors.addAll(request.getOrganisation().stream()
                     .filter(organisation -> !organisation.getRole().stream()
-                            .filter(r -> !r.getId().equals(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186))
+                            .filter(r -> !r.getId().equals(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri()))
                             .toList()
                             .isEmpty()// Any organisation that contains a role that is not 'Funder'
                     )
@@ -315,7 +315,7 @@ public class DataciteAttributesDtoFactory {
                     .filter(organisation -> organisation.getRole().stream()
                             .map(OrganisationRole::getId)
                             .toList()
-                            .contains(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186)
+                            .contains(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri())
 
                     )
                     .map(fundingReferenceFactory::create)
@@ -329,14 +329,14 @@ public class DataciteAttributesDtoFactory {
         final var titles = new ArrayList<DataciteTitle>();
 
         final var primaryTitle = request.getTitle().stream()
-                .filter(t -> t.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(t -> t.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .findFirst()
                 .orElseThrow();
 
         titles.add(titleFactory.create(primaryTitle));
 
         titles.addAll(request.getTitle().stream()
-                .filter(t -> !t.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(t -> !t.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .map(titleFactory::create)
                 .toList());
 
@@ -358,9 +358,9 @@ public class DataciteAttributesDtoFactory {
                     .filter(relatedObject -> !(relatedObject.getCategory().stream()
                             .map(RelatedObjectCategory::getId)
                             .toList()
-                            .contains(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)
+                            .contains(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())
                             &&
-                            relatedObject.getType().getId().equals(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                            relatedObject.getType().getId().equals(SchemaValues.FUNDING_OBJECT_TYPE.getUri()))
                     )
                     .map(relatedIdentifierFactory::create)
                     .toList());

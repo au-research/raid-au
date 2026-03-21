@@ -11,8 +11,6 @@ import au.org.raid.db.jooq.tables.records.RaidRelatedObjectCategoryRecord;
 import au.org.raid.db.jooq.tables.records.RelatedObjectCategoryRecord;
 import au.org.raid.db.jooq.tables.records.RelatedObjectCategorySchemaRecord;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
-import au.org.raid.idl.raidv2.model.RelatedObjectCategoryIdEnum;
-import au.org.raid.idl.raidv2.model.RelatedObjectCategorySchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,9 +43,9 @@ class RaidRelatedObjectCategoryServiceTest {
     @Test
     @DisplayName("create() saves related object categories")
     void create() {
-        final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190;
+        final var uri = "_uri";
         final var id = 123;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
+        final var schemaUri = "schema-uri";
         final var schemaId = 234;
         final var raidRelatedObjectId = 456;
 
@@ -63,10 +61,10 @@ class RaidRelatedObjectCategoryServiceTest {
 
         final var raidRelatedObjectCategoryRecord = new RaidRelatedObjectCategoryRecord();
 
-        when(relatedObjectCategorySchemaRepository.findByUri(schemaUri.getValue()))
+        when(relatedObjectCategorySchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.of(schemaRecord));
 
-        when(relatedObjectCategoryRepository.findByUriAndSchemaId(uri.getValue(), schemaId))
+        when(relatedObjectCategoryRepository.findByUriAndSchemaId(uri, schemaId))
                 .thenReturn(Optional.of(categoryRecord));
 
         when(raidRelatedObjectCategoryRecordFactory.create(raidRelatedObjectId, id))
@@ -79,15 +77,15 @@ class RaidRelatedObjectCategoryServiceTest {
     @Test
     @DisplayName("create() throws RelatedObjectCategorySchemaNotFoundException")
     void createThrowsRelatedObjectCategorySchemaNotFoundException() {
-        final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
+        final var uri = "_uri";
+        final var schemaUri = "schema-uri";
         final var raidRelatedObjectId = 456;
 
         final var category = new RelatedObjectCategory()
                 .id(uri)
                 .schemaUri(schemaUri);
 
-        when(relatedObjectCategorySchemaRepository.findByUri(schemaUri.getValue()))
+        when(relatedObjectCategorySchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.empty());
 
         assertThrows(RelatedObjectCategorySchemaNotFoundException.class,
@@ -100,8 +98,8 @@ class RaidRelatedObjectCategoryServiceTest {
     @Test
     @DisplayName("create() throws RelatedObjectCategoryNotFoundException")
     void createThrowsRelatedObjectCategoryNotFoundException() {
-        final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190;
-        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386;
+        final var uri = "_uri";
+        final var schemaUri = "schema-uri";
         final var schemaId = 234;
         final var raidRelatedObjectId = 456;
 
@@ -112,10 +110,10 @@ class RaidRelatedObjectCategoryServiceTest {
         final var schemaRecord = new RelatedObjectCategorySchemaRecord()
                 .setId(schemaId);
 
-        when(relatedObjectCategorySchemaRepository.findByUri(schemaUri.getValue()))
+        when(relatedObjectCategorySchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.of(schemaRecord));
 
-        when(relatedObjectCategoryRepository.findByUriAndSchemaId(uri.getValue(), schemaId))
+        when(relatedObjectCategoryRepository.findByUriAndSchemaId(uri, schemaId))
                 .thenReturn(Optional.empty());
 
         assertThrows(RelatedObjectCategoryNotFoundException.class,

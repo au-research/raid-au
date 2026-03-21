@@ -2,7 +2,9 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.util.TestConstants;
-import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.Organisation;
+import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,14 +37,14 @@ class OrganisationValidatorTest {
     @DisplayName("Validation passes with valid organisation")
     void validOrganisation() {
         final var role = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
-                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .schemaUri(TestConstants.HTTPS_ROR_ORG)
                 .role(List.of(role));
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
@@ -57,14 +59,14 @@ class OrganisationValidatorTest {
     @DisplayName("Validation fails with duplicate organisations")
     void duplicateOrganisation() {
         final var role = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
-                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .schemaUri(TestConstants.HTTPS_ROR_ORG)
                 .role(List.of(role));
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
@@ -88,8 +90,8 @@ class OrganisationValidatorTest {
                 .id(TestConstants.VALID_ROR)
                 .role(List.of(
                         new OrganisationRole()
-                                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 ));
@@ -112,10 +114,11 @@ class OrganisationValidatorTest {
     void emptyIdentifierSchemeUri() {
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
+                .schemaUri("")
                 .role(List.of(
                         new OrganisationRole()
-                                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 ));
@@ -137,14 +140,14 @@ class OrganisationValidatorTest {
     @DisplayName("Role validation failures are returned")
     void roleValidationFailuresReturned() {
         final var role = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
-                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .schemaUri(TestConstants.HTTPS_ROR_ORG)
                 .role(List.of(role));
 
         final var roleError = new ValidationFailure()
@@ -169,14 +172,14 @@ class OrganisationValidatorTest {
     @DisplayName("Validation fails with non-existent ROR")
     void existsReturnsFalse() {
         final var role = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
-                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .schemaUri(TestConstants.HTTPS_ROR_ORG)
                 .role(List.of(role));
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(false);
@@ -196,16 +199,17 @@ class OrganisationValidatorTest {
     }
 
     @Test
-    @DisplayName("Validation fails with missing schemaUri (second case)")
+    @DisplayName("Validation fails with invalid schemaUri (not ROR)")
     void invalidSchemaUri() {
         final var role = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
+                .schemaUri("https://invalid-schema.org/")
                 .role(List.of(role));
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
@@ -216,8 +220,8 @@ class OrganisationValidatorTest {
         assertThat(failures, hasItem(
                 new ValidationFailure()
                         .fieldId("organisation[0].schemaUri")
-                        .errorType(NOT_SET_TYPE)
-                        .message(NOT_SET_MESSAGE)
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE)
         ));
     }
 
@@ -225,20 +229,20 @@ class OrganisationValidatorTest {
     @DisplayName("Validation fails when organisation roles have overlapping dates")
     void overlappingOrganisationRoles() {
         final var role1 = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate("2023-01-01")
                 .endDate("2023-12-31");
 
         final var role2 = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate("2023-06-01")
                 .endDate("2024-06-30");
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
-                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .schemaUri(TestConstants.HTTPS_ROR_ORG)
                 .role(List.of(role1, role2));
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
@@ -258,20 +262,20 @@ class OrganisationValidatorTest {
     @DisplayName("Validation passes when organisation roles have non-overlapping dates")
     void nonOverlappingOrganisationRoles() {
         final var role1 = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate("2022-01-01")
                 .endDate("2022-12-31");
 
         final var role2 = new OrganisationRole()
-                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
-                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(TestConstants.ORGANISATION_ROLE_SCHEMA_URI)
+                .id(TestConstants.LEAD_RESEARCH_ORGANISATION_ROLE)
                 .startDate("2023-01-01")
                 .endDate("2023-12-31");
 
         final var organisation = new Organisation()
                 .id(TestConstants.VALID_ROR)
-                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .schemaUri(TestConstants.HTTPS_ROR_ORG)
                 .role(List.of(role1, role2));
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);

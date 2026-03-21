@@ -3,7 +3,6 @@ package au.org.raid.api.validator;
 import au.org.raid.api.util.DateUtil;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.Title;
-import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -76,7 +75,7 @@ public class TitleValidator {
 
     public List<Title> getPrimaryTitles(List<Title> titles) {
         return titles.stream().filter(title ->
-                title.getType().getId() != null && title.getType().getId().equals(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                title.getType().getId() != null && title.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
         ).toList();
     }
 
@@ -85,7 +84,7 @@ public class TitleValidator {
         final var today = LocalDate.now();
 
         var primaryTitles = titles.stream()
-                .filter(title -> title.getType().getId().equals( TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
+                .filter(title -> title.getType().getId().equals(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
                 .sorted((o1, o2) -> {
                     if (o1.getStartDate().equals(o2.getStartDate())) {
                         final var o1EndDate = o1.getEndDate() == null ? LocalDate.now() : DateUtil.parseDate(o1.getEndDate());

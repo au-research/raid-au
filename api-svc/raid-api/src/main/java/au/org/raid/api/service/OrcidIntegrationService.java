@@ -63,7 +63,7 @@ public class OrcidIntegrationService {
     }
 
     public void updateOrcidRecord(final RaidDto raid) {
-        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValue();
+        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint();
 
         final var servicePoint = servicePointService.findById(servicePointId)
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));

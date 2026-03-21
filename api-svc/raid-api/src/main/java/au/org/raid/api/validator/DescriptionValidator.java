@@ -2,7 +2,6 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.Description;
-import au.org.raid.idl.raidv2.model.DescriptionTypeIdEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class DescriptionValidator {
         final var primaryDescriptions = descriptions.stream()
                 .filter(description -> description.getType() != null)
                 .filter(description -> description.getType().getId() != null)
-                .filter(description -> description.getType().getId().equals(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318))
+                .filter(description -> description.getType().getId().equals(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri()))
                 .toList();
 
         if (primaryDescriptions.isEmpty()) {
@@ -52,7 +51,7 @@ public class DescriptionValidator {
                     .forEach(i -> {
                         final var description = descriptions.get(i);
                         if (description.getType() != null &&
-                                description.getType().getId().equals(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)) {
+                                description.getType().getId().equals(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri())) {
                             primaryPositions.add("description[%d].type.id".formatted(i));
                         }
                     });

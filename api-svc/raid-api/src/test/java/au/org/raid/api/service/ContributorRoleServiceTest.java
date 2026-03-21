@@ -11,8 +11,6 @@ import au.org.raid.db.jooq.tables.records.ContributorRoleRecord;
 import au.org.raid.db.jooq.tables.records.ContributorRoleSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidContributorRoleRecord;
 import au.org.raid.idl.raidv2.model.ContributorRole;
-import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
-import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -154,8 +152,8 @@ class ContributorRoleServiceTest {
     @DisplayName("create() saves all contributor roles")
     void create() {
         final var raidContributorId = 123;
-        final var uri = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_;
-        final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
+        final var uri = "_uri";
+        final var schemaUri = "schema-uri";
         final var schemaId = 234;
         final var contributorRole = new ContributorRole()
                 .id(uri)
@@ -170,10 +168,10 @@ class ContributorRoleServiceTest {
 
         final var raidContributorRoleRecord = new RaidContributorRoleRecord();
 
-        when(contributorRoleSchemaRepository.findByUri(schemaUri.getValue()))
+        when(contributorRoleSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.of(contributorRoleSchemaRecord));
 
-        when(contributorRoleRepository.findByUriAndSchemaId(uri.getValue(), schemaId))
+        when(contributorRoleRepository.findByUriAndSchemaId(uri, schemaId))
                 .thenReturn(Optional.of(contributorRoleRecord));
 
         when(raidContributorRoleRecordFactory.create(raidContributorId, contributorRoleId))
@@ -201,11 +199,11 @@ class ContributorRoleServiceTest {
     @DisplayName("create() throws ContributorRoleSchemaNotFoundException")
     void createThrowsContributorRoleSchemaNotFoundException() {
         final var raidContributorId = 123;
-        final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
+        final var schemaUri = "schema-uri";
         final var contributorRole = new ContributorRole()
                 .schemaUri(schemaUri);
 
-        when(contributorRoleSchemaRepository.findByUri(schemaUri.getValue()))
+        when(contributorRoleSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.empty());
 
         assertThrows(ContributorRoleSchemaNotFoundException.class, () ->
@@ -220,8 +218,8 @@ class ContributorRoleServiceTest {
     @DisplayName("create() throws ContributorRoleNotFoundException")
     void createThrowsContributorRoleNotFoundException() {
         final var raidContributorId = 123;
-        final var uri = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_;
-        final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
+        final var uri = "_uri";
+        final var schemaUri = "schema-uri";
         final var schemaId = 234;
         final var contributorRole = new ContributorRole()
                 .id(uri)
@@ -230,10 +228,10 @@ class ContributorRoleServiceTest {
         final var contributorRoleSchemaRecord = new ContributorRoleSchemaRecord()
                 .setId(schemaId);
 
-        when(contributorRoleSchemaRepository.findByUri(schemaUri.getValue()))
+        when(contributorRoleSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.of(contributorRoleSchemaRecord));
 
-        when(contributorRoleRepository.findByUriAndSchemaId(uri.getValue(), schemaId))
+        when(contributorRoleRepository.findByUriAndSchemaId(uri, schemaId))
                 .thenReturn(Optional.empty());
 
         assertThrows(ContributorRoleNotFoundException.class,

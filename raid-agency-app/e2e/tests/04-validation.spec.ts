@@ -39,7 +39,6 @@ import { TitleSection } from "../page-objects/sections/TitleSection";
 import { DateSection } from "../page-objects/sections/DateSection";
 import { AccessSection } from "../page-objects/sections/AccessSection";
 import { ContributorSection } from "../page-objects/sections/ContributorSection";
-import { futureDate } from "../utils/wait-helpers";
 
 // Shared constants
 const VALID_START_DATE = "2024-01-15";
@@ -49,7 +48,7 @@ const VALID_TITLE = "E2E Validation Test";
 // we only need the ORCID field to pass client-side validation.
 const VALID_ORCID = "https://orcid.org/0000-0000-0000-0000";
 const EMBARGOED_LABEL = "Embargoed Access";
-const VALID_EMBARGO_EXPIRY = futureDate(12);
+const VALID_EMBARGO_EXPIRY = "2030-01-01";
 const VALID_ACCESS_STATEMENT = "Embargoed for e2e validation testing";
 
 test.describe("Validation: title text is required", () => {

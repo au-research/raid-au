@@ -35,13 +35,13 @@ public class DescriptionService {
             final var descriptionType = description.getType();
 
             final var descriptionTypeSchemaRecord = descriptionTypeSchemaRepository
-                    .findByUri(descriptionType.getSchemaUri().getValue())
-                    .orElseThrow(() -> new DescriptionTypeSchemaNotFoundException(descriptionType.getSchemaUri().getValue()));
+                    .findByUri(descriptionType.getSchemaUri())
+                    .orElseThrow(() -> new DescriptionTypeSchemaNotFoundException(descriptionType.getSchemaUri()));
 
             final var descriptionTypeRecord = descriptionTypeRepository
-                    .findByUriAndSchemaId(descriptionType.getId().getValue(), descriptionTypeSchemaRecord.getId())
+                    .findByUriAndSchemaId(descriptionType.getId(), descriptionTypeSchemaRecord.getId())
                     .orElseThrow(() -> new DescriptionTypeNotFoundException(
-                            descriptionType.getId().getValue(), descriptionType.getSchemaUri().getValue()));
+                            descriptionType.getId(), descriptionType.getSchemaUri()));
 
             final var languageId = languageService.findLanguageId(description.getLanguage());
 
