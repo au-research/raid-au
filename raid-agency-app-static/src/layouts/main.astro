@@ -1,10 +1,15 @@
 ---
 import Navbar from "@/components/navbar.astro";
+import TopBar from "@/components/top-bar.astro";
+import Footer from "@/components/footer.astro";
 
 import "@fontsource/figtree";
 
 import GoogleAnalytics from '@/components/google-analytics.astro';
 import Banner from "@/components/raid-components/banner.astro";
+import { getSiteConfig } from "@/config";
+
+const { topBar } = getSiteConfig().header;
 
 interface Props {
   title: string;
@@ -12,7 +17,6 @@ interface Props {
 
 const { title } = Astro.props;
 // Only show banner in non-production environments
-// Check RAID_ENV environment variable
 const raidEnv = import.meta.env.RAID_ENV;
 const isProduction = raidEnv === 'prod';
 const shouldRender = !isProduction;
@@ -35,9 +39,13 @@ const shouldRender = !isProduction;
     </style>
     <GoogleAnalytics />
   </head>
-  <body class="h-full bg-[#c6d9f0] dark:bg-[#1b3e60]">
+  <body class=`${topBar.show && "min-h-dvh" } flex flex-col bg-[#c6d9f0] dark:bg-[#1b3e60]`>
+    <!-- ARDC Top Bar (only renders when USE_CUSTOM_CONFIG=true) -->
+    <TopBar />
+
+    <!-- Main Content Card -->
     <div
-      class="m-7 mx-auto max-w-7xl rounded-md border border-gray-300 bg-white shadow-md"
+      class="m-7 w-full mx-auto max-w-7xl flex-1 rounded-md border border-gray-300 bg-white shadow-md"
     >
       <Navbar />
       {shouldRender && (
@@ -51,5 +59,8 @@ const shouldRender = !isProduction;
         <slot />
       </main>
     </div>
+
+    <!-- ARDC Footer (only renders when USE_CUSTOM_CONFIG=true) -->
+    <Footer />
   </body>
 </html>

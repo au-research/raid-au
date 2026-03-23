@@ -1,49 +1,94 @@
-In order for a user to be able to mint raids they must be a member of a group in Keycloak and have access to repository in Datacite. In Raid, a Service Point connects the Keycloak group to a Datacite repository. In order for the API to identify the correct service point the access token must include the `service_point_group_id` claim. The user must also have the `service-point-user` role.
+# Service Point Group ID
 
-A user can belong to many Keycloak groups but when minting a Raid, the API needs to know which Datacite repository to store the Raid in. For this reason we have the concept of an 'active group'. This is the group that will map to a service point that is presented to the API at the point of minting. For users that belong to more than one group, the active group can be set in the Raid UI. Behind the scenes this sets the `activeGroupId` user attribute which is mapped to the `service_point_group_id` scope and sets the claim in the token.
+In order for a user to mint RAiDs they must be a member of a group in Keycloak and have access to a repository in DataCite. In RAiD, a Service Point connects the Keycloak group to a DataCite repository. For the API to identify the correct service point, the access token must include the `service_point_group_id` claim. The user must also have the `service-point-user` role.
 
-To set set this up in Keycloak follow these steps...
+A user can belong to many Keycloak groups, but when minting a RAiD the API needs to know which DataCite repository to store it in. For this reason we have the concept of an "active group" — the group that maps to a service point presented to the API at the point of minting. For users that belong to more than one group, the active group can be set in the RAiD UI. Behind the scenes this sets the `activeGroupId` user attribute, which is mapped to the `service_point_group_id` token claim.
 
-## Create a group
-* Click on 'Groups' then click on 'Create group'
-* Enter a name for the group and click 'Create' ![image](images/create-group.png)
-* Click on the newly created group and select the 'Attributes' tab.
-* Enter 'groupId' as the key and the id of the group (the UUID found in the URL in the address bar of your browser) as the value. Click 'Save' ![image](images/add-group-id.png)
-
-## Create the client scope
-* Click 'Client scopes' and click 'Create client scope'
-* Enter 'service_point_group_id' in the 'Name' field and click save
-* Select the 'Mappers' tab and click 'Configure a new mapper'
-* Click 'User Attribute'
-* In the 'Name' field type 'Service Point Group ID'
-* In the 'User Attribute' field type 'activeGroupId'
-* In the 'Token Claim Name' type 'service_point_group_id'. Click 'Save' ![image](images/group-id-mapper.png)
-
-## Create a client (skip if you already have a client)
-* Click on 'Clients' and click the 'Create client' button.
-* Enter an id in the 'Client ID' field. Click 'Next'
-* On the following screen accept all the default values and click 'Next'
-* On the following screen leave the fields blank and click 'Save'
-
-## Add the client scope to a client
-* Click on 'Clients' then click on your client
-* Select the 'Client scopes' tab then click on 'Add client scope'
-* Select the checkbox next to 'service_point_group_id' and click 'Add' ![image](images/add-client-scope.png)
-
-## Add your user to the group
-* Click on 'Users' and select your user.
-* Select the 'Groups' tag and click the 'Join Group' button
-* Select the group and click 'Join' ![image](images/join-group.png)
-
-## Set active group
-* Click 'Users' and select your user
-* Select the 'Attributes' tab
-* Click 'Add attributes'
-* In the 'Key' field enter 'activeGroupId', in the value field enter the id of the group. Click 'Save'
-
-## Request an access token
-You can now request a token with the following command (replace values as necessary)
 ```
+User attribute: activeGroupId  →  Token claim: service_point_group_id  →  API: ServicePointService.findByGroupId()
+```
+
+## Prerequisites
+
+- Access to the Keycloak admin console (e.g. `http://localhost:8001/admin`)
+- Admin privileges on the target realm (e.g. `raid`)
+
+## Step 1: Create a Group
+
+1. Click on **Groups** then click **Create group**
+2. Enter a name for the group and click **Create** ![image](images/create-group.png)
+3. Click on the newly created group and select the **Attributes** tab
+4. Enter `groupId` as the key and the id of the group (the UUID found in the URL in the address bar of your browser) as the value. Click **Save** ![image](images/add-group-id.png)
+
+## Step 2: Create the Client Scope
+
+1. Navigate to **Client scopes** in the left sidebar
+2. Click the **Create client scope** button ![Client scopes list](images/client-scopes-list.png)
+3. Fill in the form:
+   - **Name**: `service_point_group_id`
+   - **Description**: (optional) e.g. "Maps the user's active group ID to a token claim for RAiD service point resolution"
+   - **Type**: `None`
+   - **Protocol**: `OpenID Connect`
+4. Click **Save** ![Create client scope form](images/create-client-scope.png)
+
+## Step 3: Add a User Attribute Mapper
+
+After saving the client scope, you will be taken to the scope detail page.
+
+1. Click the **Mappers** tab ![Scope settings page](images/scope-settings.png)
+2. Click the **Add mapper** dropdown and select **By configuration** ![Add mapper dropdown](images/add-mapper-dropdown.png)
+3. Select **User Attribute** ![Mapper type selection](images/mapper-type-selection.png)
+4. Configure the mapper with these values:
+
+| Field | Value |
+|---|---|
+| **Name** | `Group ID` (or any descriptive name) |
+| **User Attribute** | `activeGroupId` |
+| **Token Claim Name** | `service_point_group_id` |
+| **Claim JSON Type** | `String` |
+| **Add to ID token** | `On` |
+| **Add to access token** | `On` |
+| **Add to userinfo** | `On` |
+| **Add to token introspection** | `On` |
+
+![Mapper detail — top section](images/mapper-detail-top.png)
+![Mapper detail — toggle settings](images/mapper-detail-bottom.png)
+
+5. Click **Save**
+
+## Step 4: Create a Client (skip if you already have one)
+
+1. Click on **Clients** and click the **Create client** button
+2. Enter an id in the **Client ID** field. Click **Next**
+3. On the following screen accept all the default values and click **Next**
+4. On the following screen leave the fields blank and click **Save**
+
+## Step 5: Add the Client Scope to a Client
+
+1. Navigate to **Clients** and select the client that your application uses (e.g. `raid`)
+2. Go to the **Client scopes** tab
+3. Click **Add client scope**
+4. Select `service_point_group_id` and click **Add** (as Default or Optional) ![Add client scope to client](images/add-client-scope.png)
+
+## Step 6: Add Your User to the Group
+
+1. Click on **Users** and select your user
+2. Select the **Groups** tab and click the **Join Group** button
+3. Select the group and click **Join** ![image](images/join-group.png)
+
+## Step 7: Set the User's Active Group
+
+Each user who needs to mint RAiDs must have the `activeGroupId` attribute set to the UUID of their Keycloak group.
+
+1. Navigate to **Users** and select the user
+2. Go to the **Attributes** tab
+3. Add an attribute with key `activeGroupId` and value set to the group's UUID ![Set active group ID](images/set-active-group-id.png)
+
+## Verification
+
+Request an access token (replace values as necessary):
+
+```bash
 curl --location 'https://[your keycloak host]/realms/[your realm]/protocol/openid-connect/token' \
 --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode 'client_id=[your client id]' \
@@ -53,10 +98,20 @@ curl --location 'https://[your keycloak host]/realms/[your realm]/protocol/openi
 --data-urlencode 'client_secret=[your client secret]'
 ```
 
-You should be able to see 'service_point_group_id' claim in the token ![image](images/token.png)
+Decode the token (e.g. at [jwt.io](https://jwt.io)). You should see the `service_point_group_id` claim:
 
-## Create a service point with the Keycloak group id
+```json
+{
+  "service_point_group_id": "8abfa013-ad0c-40d4-8ca5-9b28a657253b",
+  ...
+}
 ```
+
+![Token with service_point_group_id claim](images/token.png)
+
+## Create a Service Point with the Keycloak Group ID
+
+```bash
 curl --location --globoff '{{scheme}}://{{host}}/service-point/' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {{token}}' \
@@ -70,6 +125,14 @@ curl --location --globoff '{{scheme}}://{{host}}/service-point/' \
     "techEmail": "someone@example.org",
     "enabled": true,
     "appWritesEnabled": true,
-    "groupId": "8abfa013-ad0c-40d4-8ca5-9b28a657253b" // Kneycloak group id
+    "groupId": "8abfa013-ad0c-40d4-8ca5-9b28a657253b"
 }'
 ```
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `403 Service point not found` with `"No service point exists for group null"` | `service_point_group_id` claim is missing from the token | Ensure the client scope is added to the client AND the user has the `activeGroupId` attribute set |
+| `403 Service point not found` with a valid UUID | The `activeGroupId` value doesn't match any service point's `groupId` | Verify the service point exists with a matching `groupId` in the `service_point` table |
+| Claim not appearing in token | Client scope not assigned to the client, or mapper misconfigured | Check that the scope is listed under the client's "Client scopes" tab and the mapper has "Add to access token" enabled |

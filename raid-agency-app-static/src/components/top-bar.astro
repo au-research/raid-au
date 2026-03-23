@@ -1,0 +1,66 @@
+---
+// ArdcTopBar.astro
+// Renders the "Explore ARDC" bar above the main navbar.
+// Only shown when USE_CUSTOM_CONFIG=true and header.topBar.show=true
+import { getSiteConfig } from "@/config";
+
+const { topBar } = getSiteConfig().header;
+---
+
+{topBar.show && (
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <a href={topBar.href} class="explore-link" target="_blank" rel="noopener noreferrer">
+        {topBar.label}
+        <svg class="explore-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+)}
+
+<style>
+  .top-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .top-bar-inner {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1.75rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .explore-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333;
+    text-decoration: none;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    line-height: 1.5
+  }
+
+  .explore-link:hover {
+    color: #000000;
+  }
+
+  .explore-chevron {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+  }
+</style>

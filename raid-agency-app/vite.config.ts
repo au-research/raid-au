@@ -1,25 +1,33 @@
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 
 /**
  * Vite 8 (Rolldown) has a CJS interop issue where default imports from
- * @mui/icons-material deep paths (e.g. '@mui/icons-material/Close') resolve
- * to the CJS module object { __esModule: true, default: Component } instead
- * of the component itself. This plugin rewrites those import specifiers to
- * point at the ESM versions which are bundled correctly.
+ * @mui packages using deep paths (e.g. '@mui/icons-material/Close',
+ * '@mui/system/createStyled') resolve to the CJS module object instead
+ * of the actual export. This plugin rewrites import specifiers to point
+ * at ESM versions which are bundled correctly.
+ *
+ * Affected packages have an esm/ subdirectory mirroring the CJS layout
+ * but no per-subpath package.json with a "module" field:
+ * - @mui/icons-material (icon components)
+ * - @mui/system (createStyled, createTheme, etc.)
+ *
+ * Not affected: @mui/utils (each subpath has its own package.json with
+ * a "module" field, so Vite resolves ESM automatically).
  */
-function muiIconsEsmPlugin() {
-  const iconImportRe = /(from\s+['"])@mui\/icons-material\/(?!esm)([\w]+)(['"])/g;
+function muiEsmPlugin(): Plugin {
+  const muiDeepPathRe =
+    /(from\s+['"])@mui\/(icons-material|system)\/(?!esm)([\w]+)(['"])/g;
   return {
-    name: "mui-icons-esm",
-    enforce: "pre" as const,
-    transform(code: string, id: string) {
-      if (!code.includes("@mui/icons-material/")) return;
-      if (id.includes("node_modules")) return;
+    name: "mui-esm-redirect",
+    enforce: "pre",
+    transform(code, id) {
+      if (!code.includes("@mui/")) return;
       const transformed = code.replace(
-        iconImportRe,
-        "$1@mui/icons-material/esm/$2$3"
+        muiDeepPathRe,
+        "$1@mui/$2/esm/$3$4"
       );
       if (transformed !== code) return transformed;
     },
@@ -27,7 +35,7 @@ function muiIconsEsmPlugin() {
 }
 
 export default defineConfig({
-  plugins: [muiIconsEsmPlugin(), react()],
+  plugins: [muiEsmPlugin(), react()],
   base: "/.",
   resolve: {
     alias: {

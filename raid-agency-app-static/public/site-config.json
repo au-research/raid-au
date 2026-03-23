@@ -1,0 +1,50 @@
+{
+  "header": {
+    "topBar": {
+      "show": true,
+      "label": "Explore ARDC",
+      "href": "https://ardc.edu.au"
+    }
+  },
+  "footer": {
+    "show": true,
+    "main": {
+      "logos": [
+        {
+          "src": "/RAiD-Strapline.svg",
+          "alt": "App Logo",
+          "height": 80,
+          "link": "https://www.raid.org.au"
+        },
+        {
+          "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ardc-logo.svg",
+          "alt": "",
+          "height": 80,
+          "link": "https://www.ardc.edu.au"
+        },
+        {
+          "src": "/combined-logos.svg",
+          "alt": "Australian Government & NCRIS Logo",
+          "height": 80,
+          "link": "https://www.australia.gov.au"
+        }
+      ],
+      "text": [
+        "RAiD global is run by an international consortium led by the Australian Research Data Commons (ARDC).",
+        "The ARDC is enabled by the Australian Government's National Collaborative Research Infrastructure Strategy (NCRIS).",
+        "A global network of partners deliver RAiD services within their regions, including the Australian Research Data Commons for Australia."
+      ]
+    },
+    "links": [
+      { "label": "contact@raid.org", "path": "mailto:contact@raid.org" },
+      { "label": "Terms of use", "path": "https://ardc.edu.au/terms-and-conditions/" },
+      { "label": "Accessibility", "path": "https://ardc.edu.au/accessibility-statement-for-ardc/" },
+      { "label": "Privacy policy", "path": "https://ardc.edu.au/privacy-policy/" }
+    ],
+    "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
+    "showSocialLinks": true,
+    "socialLinks": [
+      { "platform": "github", "url": "https://github.com/au-research" }
+    ]
+  }
+}
