@@ -35,7 +35,14 @@ function FieldGrid({
       label: el.value,
     }));
   return (
-    <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
+    <Grid
+      container
+      spacing={2}
+      sx={{
+        opacity: isRowHighlighted ? 0.4 : 1,
+        transition: "opacity 0.2s",
+      }}
+    >
       <TextInputField
         name={`title.${index}.text`}
         label="Text"
