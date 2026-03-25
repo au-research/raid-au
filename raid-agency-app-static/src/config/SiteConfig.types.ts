@@ -27,6 +27,7 @@ export interface TopBarConfig {
   show: boolean;
   label: string;
   href: string;
+  height: string;
 }
 
 export interface FooterMainConfig {
