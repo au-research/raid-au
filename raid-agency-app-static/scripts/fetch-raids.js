@@ -62,6 +62,7 @@ import {fetchCitation} from './fetch-citation.js'
 import {extractHandles} from './fetch-handles.js';
 import { addOrcidInfoToRaidData } from './fetch-orcidData.js';
 import { addRorDetailsToRaidData } from './fetch-ror.js';
+import { addServicePointNameToRaidData } from './fetch-sp.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -90,6 +91,10 @@ const config = {
   orcidEnv: process.env.RAID_ENV || 'prod',
   concurrentRorRequests: parseInt(process.env.CONCURRENT_ROR_REQUESTS) || 5,
   rorRequestDelay: parseInt(process.env.ROR_REQUEST_DELAY) || 100,
+
+  // Service point cache settings
+  concurrentServicePointRequests: parseInt(process.env.CONCURRENT_SP_REQUESTS) || 5,
+  servicePointRequestDelay: parseInt(process.env.SP_REQUEST_DELAY) || 100,
 };
 
 // Simple in-memory cache for DOI citations
@@ -112,6 +117,10 @@ const stats = {
   totalRorIds: 0,
   successfulRorFetches: 0,
   failedRorFetches: 0,
+  // Service point cache settings
+  totalServicePoints: 0,
+  successfulServicePointFetches: 0,
+  failedServicePointFetches: 0,
 };
 
 // Validate required environment variables
@@ -366,7 +375,7 @@ async function main() {
     
     // Step 1: Get bearer token
     const bearerToken = await getBearerToken();
-    
+    config.bearerToken = bearerToken; 
     // Step 2: Fetch RAID data
     const raidData = await fetchRaidData(bearerToken);
     
@@ -388,12 +397,20 @@ async function main() {
       stats
     );
 
-    // Step 6: Save enriched RAID data with ORCID info
+    // Step 6: Add service point names to RAID data  <-- NEW
+    const enrichedWithServicePoint = await addServicePointNameToRaidData(
+      enrichedWithRor,
+      makeRequestWithRetry,
+      config,
+      stats
+    );
+
+    // Step 7: Save enriched RAID data with ORCID info
     const outputFile = path.join(config.dataDir, 'raids.json');
-    await fs.writeFile(outputFile, JSON.stringify(enrichedWithRor, null, 2));
+    await fs.writeFile(outputFile, JSON.stringify(enrichedWithServicePoint, null, 2));
     console.log(`Data successfully saved to ${outputFile}`);
     
-    // Step 7: Extract and save handles
+    // Step 8: Extract and save handles
     const handles = await extractHandles(raidData);
     const handlesFile = path.join(config.dataDir, 'handles.json');
     await fs.writeFile(handlesFile, JSON.stringify(handles, null, 2));
@@ -413,6 +430,9 @@ async function main() {
     console.log(`- Authenticated but Private: ${stats.authenticatedButPrivate}`);
     console.log(`- Not Authenticated: ${stats.notAuthenticatedOrcids}`);
     console.log(`- Failed ORCID lookups: ${stats.failedOrcidNames}`);
+    console.log(`- Total unique service points: ${stats.totalServicePoints}`);
+    console.log(`- Successful service point lookups: ${stats.successfulServicePointFetches}`);
+    console.log(`- Failed service point lookups: ${stats.failedServicePointFetches}`);
     if (config.enableCaching) {
       console.log(`- Cached citations used: ${stats.cachedCitations}`);
     }
@@ -437,5 +457,7 @@ export {
   fetchRaidData,
   addCitationsToRaidData,
   fetchCitation,
-  addOrcidInfoToRaidData
+  addOrcidInfoToRaidData,
+  addRorDetailsToRaidData,
+  addServicePointNameToRaidData,
 };
