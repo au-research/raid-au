@@ -10,7 +10,7 @@ stages:
   - before
   - build
   - test
-#  - release
+  - release
 
 tag-version:
   stage: before
@@ -38,18 +38,18 @@ other-version:
     - if: $CI_COMMIT_BRANCH  # Run job ONLY if a tag is present (tag push event)
       when: always       # never run the job when the condition is met
 
-#release_job:
-#  stage: release
-#  image: cr.surf.nl/proxy-docker/library/ubuntu:24.04@sha256:186072bba1b2f436cbb91ef2567abca677337cfc786c86e107d25b7072feef0c
-#  needs:
-#    - job: other-version
-#      optional: true
-#    - job: tag-version
-#      optional: true
-#  script:
-#    - echo "Create release"
-#    - git tag $$DOCKER_TAG_VERSION
-#    - git push --tags
+release_job:
+  stage: release
+  needs:
+    - job: other-version
+      optional: true
+    - job: tag-version
+      optional: true
+  script:
+    - apk add --no-cache git glab
+    - echo "Create release"
+    - git tag $$DOCKER_TAG_VERSION
+    - git push --tags
 
 
 build-frontend-dev:
