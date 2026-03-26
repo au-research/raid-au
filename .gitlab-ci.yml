@@ -40,7 +40,7 @@ other-version:
 
 release_job:
   stage: release
-  image: ubuntu:24.04
+  image: cr.surf.nl/proxy-docker/library/ubuntu:24.04@sha256:186072bba1b2f436cbb91ef2567abca677337cfc786c86e107d25b7072feef0c
   needs:
     - job: other-version
       optional: true
