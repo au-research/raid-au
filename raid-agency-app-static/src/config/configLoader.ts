@@ -2,9 +2,9 @@
  * Config loader for the Astro static site.
  *
  * How it works:
- *   - If USE_CUSTOM_CONFIG=true → reads public/site-config.json
+ *   - If PUBLIC_USE_CUSTOM_CONFIG=true → reads public/site-config.json
  *     and deep-merges it with defaultConfig.
- *   - If USE_CUSTOM_CONFIG is not set → uses defaultConfig as-is
+ *   - If PUBLIC_USE_CUSTOM_CONFIG is not set → uses defaultConfig as-is
  *     (no branding, top bar and footer hidden).
  *
  * This mirrors the React app's configLoader.ts pattern.
@@ -60,7 +60,7 @@ function deepMerge<T extends Record<string, any>>(
  * Called once at build time — the result is baked into static HTML.
  */
 function loadConfig(): SiteConfig {
-  const useCustomConfig = import.meta.env.USE_CUSTOM_CONFIG === "true";
+  const useCustomConfig = import.meta.env.PUBLIC_USE_CUSTOM_CONFIG === "true";
 
   if (!useCustomConfig) {
     return defaultConfig;
