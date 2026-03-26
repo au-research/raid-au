@@ -40,7 +40,7 @@ const shouldRender = !isProduction;
     <GoogleAnalytics />
   </head>
   <body class=`${topBar.show && "min-h-dvh" } flex flex-col bg-[#c6d9f0] dark:bg-[#1b3e60]`>
-    <!-- ARDC Top Bar (only renders when USE_CUSTOM_CONFIG=true) -->
+    <!-- ARDC Top Bar (only renders when PUBLIC_USE_CUSTOM_CONFIG=true) -->
     <TopBar />
 
     <!-- Main Content Card -->
@@ -60,7 +60,7 @@ const shouldRender = !isProduction;
       </main>
     </div>
 
-    <!-- ARDC Footer (only renders when USE_CUSTOM_CONFIG=true) -->
+    <!-- ARDC Footer (only renders when PUBLIC_USE_CUSTOM_CONFIG=true) -->
     <Footer />
   </body>
 </html>
