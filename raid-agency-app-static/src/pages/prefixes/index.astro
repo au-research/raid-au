@@ -4,11 +4,26 @@ import PrefixesTable from "@/components/prefixes-table.astro";
 import Layout from "@/layouts/main.astro";
 import { raids } from "@/store/raids";
 
-const prefixRaidCount = new Map<string, number>();
+interface OwnerWithServicePointName {
+  servicePointName?: string;
+  [key: string]: unknown;
+}
+
+const prefixData = new Map<string, { count: number; servicePointName: string }>();
+
 for (const el of raids) {
   const [_, prefix] = new URL(el.identifier.id).pathname.split("/");
-  const counter = prefixRaidCount.get(prefix) || 0;
-  prefixRaidCount.set(prefix, counter + 1);
+  const existing = prefixData.get(prefix);
+  const owner = el.identifier.owner as unknown as OwnerWithServicePointName;
+
+  if (existing) {
+    existing.count++;
+  } else {
+    prefixData.set(prefix, {
+      count: 1,
+      servicePointName: owner?.servicePointName || "Unknown",
+    });
+  }
 }
 ---
 
@@ -24,7 +39,7 @@ for (const el of raids) {
           <p class="mt-2 text-sm text-gray-700">A list of all the prefixes</p>
         </div>
       </div>
-      <PrefixesTable prefixes={prefixRaidCount} />
+      <PrefixesTable prefixes={prefixData} />
     </div>
   </div>
 </Layout>

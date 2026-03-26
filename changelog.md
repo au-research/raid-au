@@ -1,5 +1,16 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
+
+# 2.8.2
+## App-client UI
+* Fixed the "Add Title" button flickering issue (RAiD-559).
+* Fixed the RAiD logo size and corrected the Tasmania SVG path on static landing pages.
+* Fixed the layout and Service Point rendering on static landing pages (RAiD-551).
+* Added a Service Point name fetch module and fixed the URL rendering on the RAiD header
+for static landing pages (RAiD-551).
+* Added Service Point to the prefixes table on static landing pages (RAiD-551).
+* Fixed type casting issues on static landing pages (RAiD-551).
+
 # 2.8.1
 ## App-client UI
 * Implemented automatic group rollback in Keycloak when Service Point creation fails after

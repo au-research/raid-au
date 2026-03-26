@@ -5,46 +5,59 @@ const { prefixes } = Astro.props;
 <div class="mt-8 flow-root">
   <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
     <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-      <table class="min-w-full divide-y divide-gray-300">
+      <table class="min-w-full table-fixed divide-y divide-gray-300">
         <thead>
           <tr>
             <th
               scope="col"
-              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+              class="w-1/4 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
               >Prefix</th
             >
             <th
               scope="col"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              class="w-1/4 px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
               ># of RAiDs</th
             >
-            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+            <th
+              scope="col"
+              class="w-1/4 px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >Service Point</th
+            >
+            <th scope="col" class="w-1/4 relative py-3.5 pl-3 pr-4 sm:pr-3">
               <span class="sr-only">Edit</span>
             </th>
           </tr>
         </thead>
         <tbody class="bg-white">
           {
-            [...prefixes.entries()].map((prefix: [string, number]) => {
-              return (
-                <tr class="even:bg-gray-50">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
-                    {prefix[0]}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    {prefix[1]}
-                  </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
-                    <a
-                      href={`/raids/${prefix[0]}`}
-                      class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                    >
-                      Open<span class="sr-only">, {prefix[0]}</span>
-                    </a>
-                  </td>
-                </tr>
-              );
-            })
+            [...prefixes.entries()].map(
+              ([prefix, { count, servicePointName }]: [
+                string,
+                { count: number; servicePointName: string },
+              ]) => {
+                return (
+                  <tr class="even:bg-gray-50">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                      {prefix}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {count}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {servicePointName}
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                      <a
+                        href={`/raids/${prefix}`}
+                        class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      >
+                        Open<span class="sr-only">, {prefix}</span>
+                      </a>
+                    </td>
+                  </tr>
+                );
+              }
+            )
           }
         </tbody>
       </table>
