@@ -3,7 +3,7 @@ services:
   raid-iam-db:
     image: postgres:16.2
     ports:
-      - 5432:5432
+      - 8432:5432
     environment:
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak
@@ -11,7 +11,8 @@ services:
   raid-iam:
     depends_on:
       - raid-iam-db
-    build: .
+#    build: .
+    image: iam1
     ports:
       - 8001:8080
       - 9443:8443
@@ -20,11 +21,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 50
-    command: [ 'start-dev', '--import-realm', '--debug' ]
-    volumes:
-      - './realms:/opt/keycloak/data/import'
-      - './themes/raid-custom:/opt/keycloak/themes/raid-custom'
-      - './themes/ardc-branding:/opt/keycloak/themes/ardc-branding'
+    command: [ 'start-dev', '--import-realm', '--debug', '--verbose' ]
+#    volumes:
+#      - './realms:/opt/keycloak/data/import'
+#      - './themes/raid-custom:/opt/keycloak/themes/raid-custom'
+#      - './themes/ardc-branding:/opt/keycloak/themes/ardc-branding'
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
