@@ -37,6 +37,17 @@ other-version:
     - if: $CI_COMMIT_BRANCH  # Run job ONLY if a tag is present (tag push event)
       when: always       # never run the job when the condition is met
 
+create-git-tag:
+  stage: build
+  needs:
+    - job: other-version
+      optional: true
+    - job: tag-version
+      optional: true
+  script:
+    - source version.txt
+    - git tag $DOCKER_TAG_VERSION -f
+    - git push --tags
 
 build-frontend-dev:
   stage: build
