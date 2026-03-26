@@ -39,6 +39,7 @@ other-version:
 
 create-git-tag:
   stage: build
+  image: git
   needs:
     - job: other-version
       optional: true
