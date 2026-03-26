@@ -10,6 +10,7 @@ stages:
   - before
   - build
   - test
+  - release
 
 tag-version:
   stage: before
@@ -37,8 +38,8 @@ other-version:
     - if: $CI_COMMIT_BRANCH  # Run job ONLY if a tag is present (tag push event)
       when: always       # never run the job when the condition is met
 
-create-git-tag:
-  stage: build
+release_job:
+  stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
     - job: other-version
