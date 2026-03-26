@@ -14,6 +14,7 @@ const defaultConfig: SiteConfig = {
       show: false,
       label: "",
       href: "",
+      height: ""
     },
   },
   footer: {
