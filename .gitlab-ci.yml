@@ -38,8 +38,11 @@ other-version:
     - if: $CI_COMMIT_BRANCH  # Run job ONLY if a tag is present (tag push event)
       when: always       # never run the job when the condition is met
 
-release_job:
+create-git-tag:
   stage: release
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
   needs:
     - job: other-version
       optional: true
@@ -51,12 +54,10 @@ release_job:
     - git config --global user.name ${GITLAB_USER_NAME}
     - #git remote set-url origin https://oauth2:${GITLAB_TOKEN}@${CI_PROJECT_URL}.git
       git remote set-url --push origin "https://oauth:${GITLAB_TOKEN}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git"
-
   script:
     - source version.txt
     - echo "Create release $DOCKER_TAG_VERSION"
     - git tag -f "$DOCKER_TAG_VERSION"
-#    - git remote set-url --push origin "https://oauth:${testtoken}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git"
     - git push -f https://oauth:$testtoken@$CI_SERVER_HOST/$CI_PROJECT_PATH.git $DOCKER_TAG_VERSION
 
 #
