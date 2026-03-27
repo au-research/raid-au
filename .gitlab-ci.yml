@@ -52,7 +52,7 @@ release_job:
     - git remote set-url origin https://oauth2:${GITLAB_TOKEN}@${CI_PROJECT_URL#https://}.git
   script:
     - echo "Create releas2e"
-    - git tag $$DOCKER_TAG_VERSION
+    - git tag -f $DOCKER_TAG_VERSION
     - git push --tags
 
 #
