@@ -56,9 +56,9 @@ release_job:
     - source version.txt
     - echo "Create release $DOCKER_TAG_VERSION"
     - git tag -f $DOCKER_TAG_VERSION
-    - git remote set-url --push origin "https://oauth:${GITLAB_TOKEN}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git" --tags
+    - git remote set-url --push origin "https://oauth:${GITLAB_TOKEN}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git"
 
-#    - git push --tags
+    - git push --tags
 
 #
 #build-frontend-dev:
