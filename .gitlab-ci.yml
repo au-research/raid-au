@@ -46,7 +46,7 @@ release_job:
     - job: tag-version
       optional: true
   script:
-    - apk add --no-cache git glab
+    - apt-get install git glab
     - echo "Create release"
     - git tag $$DOCKER_TAG_VERSION
     - git push --tags
