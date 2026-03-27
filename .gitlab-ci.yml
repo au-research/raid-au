@@ -47,7 +47,7 @@ release_job:
       optional: true
   script:
     - apt-get update
-    - apt-get install git glab
+    - apt-get install -y git glab
     - echo "Create release"
     - git tag $$DOCKER_TAG_VERSION
     - git push --tags
