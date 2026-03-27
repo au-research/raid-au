@@ -49,7 +49,7 @@ release_job:
     - apt-get update && apt-get install -y git >/dev/null
     - git config --global user.email ${GITLAB_USER_EMAIL}
     - git config --global user.name ${GITLAB_USER_NAME}
-    - git remote set-url origin https://oauth2:${AUTOMATION_ACCESS_TOKEN}@${CI_PROJECT_URL#https://}.git
+    - git remote set-url origin https://oauth2:${GITLAB_TOKEN}@${CI_PROJECT_URL#https://}.git
   script:
     - echo "Create release"
     - git tag $$DOCKER_TAG_VERSION
