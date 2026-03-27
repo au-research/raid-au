@@ -57,7 +57,7 @@ release_job:
     - echo "Create release $DOCKER_TAG_VERSION"
     - git tag -f "$DOCKER_TAG_VERSION"
 #    - git remote set-url --push origin "https://oauth:${testtoken}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git"
-    - git push https://oauth:$testtoken@$CI_SERVER_HOST/$CI_PROJECT_PATH.git $DOCKER_TAG_VERSION
+    - git push -f https://oauth:$testtoken@$CI_SERVER_HOST/$CI_PROJECT_PATH.git $DOCKER_TAG_VERSION
 
 #
 #build-frontend-dev:
