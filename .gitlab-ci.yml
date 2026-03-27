@@ -43,6 +43,7 @@ create-git-tag:
   rules:
     - if: $CI_COMMIT_TAG
       when: never
+    - when: on_success
   needs:
     - job: other-version
       optional: true
