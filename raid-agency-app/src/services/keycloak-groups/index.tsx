@@ -132,7 +132,6 @@ export async function fetchCurrentUserRor({
   }
 }
 
-// In your keycloak-groups service (or a new service file)
 export const fetchKeycloakLocalization = async ({
   token,
   key,
