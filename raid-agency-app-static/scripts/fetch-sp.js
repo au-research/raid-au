@@ -39,7 +39,9 @@ export async function fetchServicePointName({
   }
 
   const url = `${config.apiEndpoint}/service-point/${servicePointId}`;
-
+  console.log(`\n  SP request: ${url}`);
+  console.log(`  Token present: ${!!config.bearerToken}`);
+  console.log(`  Valid token: ${!!config.bearerToken}`);
   try {
     const response = await makeRequestWithRetry(url, {
       method: 'GET',
