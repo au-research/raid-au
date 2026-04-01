@@ -1,7 +1,7 @@
 import { relatedObjectCategoryValidationSchema } from "@/entities/related-object-category/validation-schema/related-object-category-validation-schema";
 import { z } from "zod";
 
-const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/[^\s]+$/;
+const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/.+$/;
 const webArchiveRegex =
   /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
 

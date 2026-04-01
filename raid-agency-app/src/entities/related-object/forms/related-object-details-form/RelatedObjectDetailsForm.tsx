@@ -27,9 +27,9 @@ function FieldGrid({
     <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
       <TextInputField
         name={`relatedObject.${index}.id`}
-        label="DOI URL"
-        helperText="Enter full DOI URL, e.g. https://doi.org/10.abc123/xyz456"
-        errorText="Invalid. Enter full DOI URL, e.g. https://doi.org/10.abc123/xyz456"
+        label="URL"
+        helperText="Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL(https://web.archive.org/web/20220101000000/https://example.com)"
+        errorText="Invalid. Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL(https://web.archive.org/web/20220101000000/https://example.com)"
       />
       <TextSelectField
         options={relatedObjectTypeOptions}
