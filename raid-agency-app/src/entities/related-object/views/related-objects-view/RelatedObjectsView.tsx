@@ -81,6 +81,11 @@ const RelatedObjectsView = memo(({ data }: { data: RelatedObject[] }) => {
       const fetchPromises = validObjects.map(async (obj) => {
         const id = obj.id!;
         const url = constructDOIUrl(id);
+        // If the related object doesn't have a valid DOI URL, we can skip fetching and return an error immediately
+        // Later we can enhance this to handle non-DOI related objects if needed
+        if(!url) {
+          return { id, citation: null, error: null };
+        }
         try {
           const citation = await fetchDetailedDOICitation(url, { 
             timeout: 8000,
