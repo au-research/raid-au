@@ -152,6 +152,7 @@ export async function makeRequestWithRetry(url, options = {}, retries = config.m
       if (config.verboseLogging) {
         console.log(`  Retry ${attempt}/${retries} for ${url}`);
       }
+      console.error(` raids node module - Full error:`, error);
       // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
     }
