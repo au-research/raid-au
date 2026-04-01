@@ -1,17 +1,19 @@
 import { relatedObjectCategoryValidationSchema } from "@/entities/related-object-category/validation-schema/related-object-category-validation-schema";
 import { z } from "zod";
 
+const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/[^\s]+$/;
+const webArchiveRegex =
+  /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
+
 const relatedObjectIdSchema = z
   .string()
   .trim()
   .url()
   .refine(
-    (url) =>
-      url.startsWith("https://doi.org") ||
-      url.startsWith("https://web.archive.org"),
+    (url) => doiRegex.test(url) || webArchiveRegex.test(url),
     {
       message:
-        "URL must start with https://doi.org or https://web.archive.org",
+        "URL must be a valid DOI (https://doi.org/10.xxxx/...) or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
     }
   );
 
