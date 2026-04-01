@@ -39,7 +39,9 @@ export async function fetchServicePointName({
   }
 
   const url = `${config.apiEndpoint}/service-point/${servicePointId}`;
-
+  console.log(`\n  SP request: ${url}`);
+  console.log("Service point ID:", config.bearerToken);
+  console.log(`  Token present: ${!!config.bearerToken}`);
   try {
     const response = await makeRequestWithRetry(url, {
       method: 'GET',
@@ -63,6 +65,8 @@ export async function fetchServicePointName({
     return name;
   } catch (error) {
     stats.failedServicePointFetches++;
+    console.error(`\n  Failed SP ${servicePointId}: ${error.message}`);
+    console.error(`  Full error:`, error);
     console.error(
       `\n  Failed to fetch service point ${servicePointId}: ${error.message}`
     );
