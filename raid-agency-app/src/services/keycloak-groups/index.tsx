@@ -131,3 +131,24 @@ export async function fetchCurrentUserRor({
     throw new Error(errorMessage);
   }
 }
+
+export const fetchKeycloakLocalization = async ({
+  token,
+  key,
+  locale = "en",
+}: {
+  token: string | undefined;
+  key: string;
+  locale?: string;
+}) => {
+  const response = await fetch(
+    `${keycloakGroupEndpoint}/localization?key=${key}&locale=${locale}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!response.ok) throw new Error("Failed to fetch localization");
+  return response.json();
+};
