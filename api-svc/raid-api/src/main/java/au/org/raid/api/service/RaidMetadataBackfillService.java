@@ -26,24 +26,29 @@ public class RaidMetadataBackfillService {
         log.info("Starting raid metadata backfill for {} v2 raids", allV2Records.size());
 
         for (final var record : allV2Records) {
-            if (hasValidMaterialisedMetadata(record.getMetadata() != null ? record.getMetadata().data() : null)) {
-                skippedCount++;
-                continue;
-            }
+            try {
+                if (hasValidMaterialisedMetadata(record.getMetadata() != null ? record.getMetadata().data() : null)) {
+                    skippedCount++;
+                    continue;
+                }
 
-            final var raidDtoOptional = raidHistoryService.findByHandle(record.getHandle());
-            if (raidDtoOptional.isEmpty()) {
-                log.warn("Could not reconstruct RaidDto for handle {}, skipping backfill", record.getHandle());
-                skippedCount++;
-                continue;
-            }
+                final var raidDtoOptional = raidHistoryService.findByHandle(record.getHandle());
+                if (raidDtoOptional.isEmpty()) {
+                    log.warn("Could not reconstruct RaidDto for handle {}, skipping backfill", record.getHandle());
+                    skippedCount++;
+                    continue;
+                }
 
-            final var json = objectMapper.writeValueAsString(raidDtoOptional.get());
-            final var rowsUpdated = raidRepository.updateMetadata(record.getHandle(), json);
-            if (rowsUpdated == 0) {
-                log.warn("Failed to materialise metadata for handle {}: no matching raid record", record.getHandle());
-            } else {
-                backfilledCount++;
+                final var json = objectMapper.writeValueAsString(raidDtoOptional.get());
+                final var rowsUpdated = raidRepository.updateMetadata(record.getHandle(), json);
+                if (rowsUpdated == 0) {
+                    log.warn("Failed to materialise metadata for handle {}: no matching raid record", record.getHandle());
+                } else {
+                    backfilledCount++;
+                }
+            } catch (final Exception e) {
+                log.warn("Failed to backfill handle {}: {}", record.getHandle(), e.getMessage());
+                skippedCount++;
             }
         }
 
