@@ -4,6 +4,7 @@ import { API_CONSTANTS } from "@/constants/apiConstants";
 const kcUrl = import.meta.env.VITE_KEYCLOAK_URL as string;
 const kcRealm = import.meta.env.VITE_KEYCLOAK_REALM as string;
 const keycloakGroupEndpoint = `${kcUrl}/realms/${kcRealm}/group`;
+const keycloaklocalizationEndpoint = `${kcUrl}/realms/${kcRealm}/localization`;
 
 export async function joinKeycloakGroup({
   token,
@@ -142,7 +143,7 @@ export const fetchKeycloakLocalization = async ({
   locale?: string;
 }) => {
   const response = await fetch(
-    `${keycloakGroupEndpoint}/localization?key=${encodeURIComponent(key)}&locale=${encodeURIComponent(locale)}`,
+    `${keycloaklocalizationEndpoint}?key=${encodeURIComponent(key)}&locale=${encodeURIComponent(locale)}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
