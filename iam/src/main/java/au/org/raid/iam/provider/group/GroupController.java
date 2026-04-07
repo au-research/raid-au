@@ -586,10 +586,4 @@ public class GroupController {
                     .build();
         }
     }
-
-    @OPTIONS
-    @Path("/localization")
-    public Response localizationPreflight() {
-        return cors.buildOptionsResponse("GET", "OPTIONS");
-    }
 }
