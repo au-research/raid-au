@@ -592,44 +592,4 @@ public class GroupController {
     public Response localizationPreflight() {
         return cors.buildOptionsResponse("GET", "OPTIONS");
     }
-
-    @GET
-    @Path("/localization")
-    @Produces(MediaType.APPLICATION_JSON)
-    @SneakyThrows
-    public Response getLocalizationMessage(@QueryParam("key") String key,
-                                           @QueryParam("locale") @DefaultValue("en") String locale) {
-        log.debug("Fetching localization for key: {}, locale: {}", key, locale);
-
-        if (this.auth == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        if (key == null || key.trim().isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\": \"key parameter is required\"}")
-                    .build();
-        }
-
-        final var realm = session.getContext().getRealm();
-
-        // Access localization messages directly from the realm
-        var localizationTexts = realm.getRealmLocalizationTextsByLocale(locale);
-
-        var value = localizationTexts.get(key);
-
-        if (value == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("{\"error\": \"Localization key not found\"}")
-                    .build();
-        }
-
-        var responseBody = new HashMap<String, String>();
-        responseBody.put("key", key);
-        responseBody.put("value", value);
-        responseBody.put("locale", locale);
-
-        return cors.buildCorsResponse("GET",
-                Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
-    }
 }
