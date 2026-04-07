@@ -92,9 +92,6 @@ const config = {
   concurrentRorRequests: parseInt(process.env.CONCURRENT_ROR_REQUESTS) || 5,
   rorRequestDelay: parseInt(process.env.ROR_REQUEST_DELAY) || 100,
 
-  // Service point cache settings
-  concurrentServicePointRequests: parseInt(process.env.CONCURRENT_SP_REQUESTS) || 5,
-  servicePointRequestDelay: parseInt(process.env.SP_REQUEST_DELAY) || 100,
 };
 
 // Simple in-memory cache for DOI citations
@@ -117,7 +114,6 @@ const stats = {
   totalRorIds: 0,
   successfulRorFetches: 0,
   failedRorFetches: 0,
-  // Service point cache settings
   totalServicePoints: 0,
   successfulServicePointFetches: 0,
   failedServicePointFetches: 0,
