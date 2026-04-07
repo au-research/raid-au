@@ -135,6 +135,9 @@ export const GroupSelector = memo(() => {
     return <ErrorAlertComponent error="Keycloak groups could not be fetched" />;
   }
 
+  if (localizationQuery.isError) {
+    console.warn("Failed to fetch localization, using default text:", localizationQuery.error);
+  }
 
   return (
     <>
@@ -142,10 +145,17 @@ export const GroupSelector = memo(() => {
         <CardContent>
           <Stack gap={2}>
            <Alert severity="error">
+            {/*
+            * Localization values are configured by admins in Keycloak's realm settings
+            * and may contain HTML formatting (e.g. <br/>, <b>, <a>). DOMPurify
+            * sanitizes the HTML to prevent XSS while preserving safe formatting tags.
+            */}
             <span
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(
-                  localizationQuery.data?.value ?? "Default message"
+                  localizationQuery.isError || localizationQuery.isPending
+                  ? "To use RAiD you must belong to a 'Service Point'; please request access to the appropriate Service Point in the list below."
+                  : localizationQuery.data?.value || "To use RAiD you must belong to a 'Service Point'; please request access to the appropriate Service Point in the list below."
                 ),
               }}
             />

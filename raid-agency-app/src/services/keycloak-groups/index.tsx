@@ -142,7 +142,7 @@ export const fetchKeycloakLocalization = async ({
   locale?: string;
 }) => {
   const response = await fetch(
-    `${keycloakGroupEndpoint}/localization?key=${key}&locale=${locale}`,
+    `${keycloakGroupEndpoint}/localization?key=${encodeURIComponent(key)}&locale=${encodeURIComponent(locale)}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
