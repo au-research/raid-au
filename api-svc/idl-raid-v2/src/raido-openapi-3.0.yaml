@@ -217,6 +217,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationFailureResponse'
+        402:
+          description: Bad request. There was a problem with the message sent to the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetFailureResponse'
     patch:
       security:
         - bearerAuth: [ ]
@@ -1053,6 +1059,13 @@ components:
         fieldId: { type: string }
         errorType: { type: string }
         message: { type: string }
+    BudgetFailure:
+      type: object
+      required: [ fieldId, errorType, message ]
+      properties:
+        fieldId: { type: string }
+        errorType: { type: string }
+        message: { type: string }
     FailureResponse:
       type: object
       required: [ type, title, status, detail, instance ]
@@ -1071,6 +1084,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationFailure'
+    BudgetFailureResponse:
+      allOf:
+        - $ref: '#/components/schemas/FailureResponse'
+      required: [ failures ]
+      properties:
+        failures:
+          type: array
+          items:
+            $ref: '#/components/schemas/BudgetFailure'
     RaidCountResponse:
       type: object
       required: [ count ]
