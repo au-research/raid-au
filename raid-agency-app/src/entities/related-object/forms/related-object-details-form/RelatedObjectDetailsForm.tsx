@@ -3,7 +3,7 @@ import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 function FieldGrid({
@@ -13,6 +13,8 @@ function FieldGrid({
   index: number;
   isRowHighlighted: boolean;
 }) {
+  const { setValue, watch, trigger } = useFormContext();
+  const key = "relatedObject";
   const relatedObjectTypeOptions = useMemo(
     () =>
       generalMapping
@@ -23,6 +25,18 @@ function FieldGrid({
         })),
     []
   );
+
+const idValue = watch(`relatedObject.${index}.id`);
+
+useEffect(() => {
+  if (idValue?.includes("doi.org")) {
+    setValue(`${key}.${index}.schemaUri`, "https://doi.org/");
+  } else {
+    setValue(`${key}.${index}.schemaUri`, "https://web.archive.org/");
+  }
+  trigger(key)
+}, [idValue, index, setValue]);
+
   return (
     <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
       <TextInputField
@@ -54,7 +68,7 @@ export function RelatedObjectDetailsForm({
   const label = "Related Object";
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
-  const { getValues } = useFormContext();
+  const { getValues, watch } = useFormContext();
 
   const handleMouseEnter = () => setIsRowHighlighted(true);
   const handleMouseLeave = () => setIsRowHighlighted(false);
@@ -98,3 +112,4 @@ export function RelatedObjectDetailsForm({
     </Stack>
   );
 }
+

@@ -13,7 +13,7 @@ const relatedObjectTypeGenerator = (): RelatedObjectType => {
 export const relatedObjectDataGenerator = (): RelatedObject => {
   return {
     id: "",
-    schemaUri: "https://doi.org/",
+    schemaUri: "",
     type: relatedObjectTypeGenerator(),
     category: [relatedObjectCategoryDataGenerator()],
   };
