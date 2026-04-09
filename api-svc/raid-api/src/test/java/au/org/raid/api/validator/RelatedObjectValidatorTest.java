@@ -358,4 +358,36 @@ class RelatedObjectValidatorTest {
                         .message("Only [https://doi.org/, https://web.archive.org/] is supported.")
         ));
     }
+
+    @Test
+    @DisplayName("Fails validation when web archive URL has empty inner URL")
+    void webArchiveUrlWithEmptyInnerUrl() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id("https://web.archive.org/web/20220101000000/https://")
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("invalid")
+                        .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
+        ));
+    }
 }

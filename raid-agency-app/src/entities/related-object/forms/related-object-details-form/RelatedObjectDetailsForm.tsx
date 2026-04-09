@@ -26,16 +26,19 @@ function FieldGrid({
     []
   );
 
-const idValue = watch(`relatedObject.${index}.id`);
+  const idValue = watch(`relatedObject.${index}.id`);
 
-useEffect(() => {
-  if (idValue?.includes("doi.org")) {
-    setValue(`${key}.${index}.schemaUri`, "https://doi.org/");
-  } else {
-    setValue(`${key}.${index}.schemaUri`, "https://web.archive.org/");
-  }
-  trigger(key)
-}, [idValue, index, setValue]);
+  useEffect(() => {
+    if (!idValue) return;
+
+    if (idValue.includes("doi.org")) {
+      setValue(`${key}.${index}.schemaUri`, "https://doi.org/");
+      trigger(`${key}.${index}.schemaUri`);
+    } else if (idValue.includes("web.archive.org")) {
+      setValue(`${key}.${index}.schemaUri`, "https://web.archive.org/");
+      trigger(`${key}.${index}.schemaUri`);
+    }
+  }, [idValue, index, setValue, trigger]);
 
   return (
     <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
@@ -68,7 +71,7 @@ export function RelatedObjectDetailsForm({
   const label = "Related Object";
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
-  const { getValues, watch } = useFormContext();
+  const { getValues } = useFormContext();
 
   const handleMouseEnter = () => setIsRowHighlighted(true);
   const handleMouseLeave = () => setIsRowHighlighted(false);
