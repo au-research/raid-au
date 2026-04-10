@@ -10,6 +10,8 @@ import {
   CardHeader,
   Divider,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { Fragment, useState, useContext } from "react";
@@ -23,6 +25,9 @@ import { RelatedObjectDetailsForm } from "@/entities/related-object/forms/relate
 import { MetadataContext } from "@/components/raid-form/RaidForm";
 import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { UploadIcon } from "lucide-react";
+
+type EntryMode = "manual" | "bulk";
 
 export function RelatedObjectsForm({
   control,
@@ -40,15 +45,31 @@ export function RelatedObjectsForm({
   const DetailsForm = RelatedObjectDetailsForm;
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
+  const [entryMode, setEntryMode] = useState<EntryMode>("manual");
   const { fields, append, remove } = useFieldArray({ control, name: key });
   const errorMessage = errors[key]?.message;
 
   const handleAddItem = () => {
+    setEntryMode("manual");
     append(generator());
     trigger(key);
   };
   const metadata = useContext(MetadataContext);
   const tooltip = metadata?.[key]?.tooltip;
+
+  const handleModeChange = (
+    _event: React.MouseEvent<HTMLElement>,
+    newMode: EntryMode | null
+  ) => {
+    // MUI ToggleButtonGroup can return null if the same button is clicked
+    if (newMode !== null) {
+      setEntryMode(newMode);
+    }
+  };
+
+  const showBulkUploadSection = () => {
+    setEntryMode("bulk");
+  }
 
   return (
     <Card
@@ -103,10 +124,19 @@ export function RelatedObjectsForm({
                 />
               </Fragment>
             ))}
+            {entryMode === "bulk" && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                textAlign="center"
+              >
+                Bulk upload functionality goes here
+              </Typography>
+            )}
+            
           </Stack>
         </Stack>
       </CardContent>
-
       <CardActions>
         <Button
           variant="outlined"
@@ -117,8 +147,19 @@ export function RelatedObjectsForm({
           onClick={handleAddItem}
           onMouseEnter={() => setIsRowHighlighted(true)}
           onMouseLeave={() => setIsRowHighlighted(false)}
+          
         >
           Add {label}
+        </Button>
+        <Button
+          variant="outlined"
+          color="success"
+          size="small"
+          startIcon={<AddBox />}
+          sx={{ textTransform: "none", mt: 3 }}
+          onClick={showBulkUploadSection}
+        >
+          Upload Bulk {labelPlural}
         </Button>
       </CardActions>
     </Card>
