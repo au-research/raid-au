@@ -211,8 +211,8 @@ def is_contact: . == "https://github.com/au-research/raid-metadata/blob/main/sch
 def default_other_position($pos):
   { id: "https://vocabulary.raid.org/contributor.position.schema/311",
     schemaUri: "https://vocabulary.raid.org/contributor.position.schema/305",
-    startDate: ($pos.startDate // ""),
-    endDate: ($pos.endDate // "") };
+    startDate: $pos.startDate
+  } + (if $pos.endDate then { endDate: $pos.endDate } else {} end);
 
 # --- Apply all replacements ---
 
@@ -251,7 +251,21 @@ def default_other_position($pos):
             ))
           end
       else . end)
-  ) else . end)
+  )
+  # Ensure at least one contributor is flagged as leader
+  | if (.contributor | any(.leader == true)) then . else .contributor[0].leader = true end
+  # Ensure at least one contributor is flagged as contact
+  | if (.contributor | any(.contact == true)) then . else .contributor[0].contact = true end
+  else . end)
+
+# Access statement - ensure text is set
+| (if .access.statement then
+    if (.access.statement.text == null or .access.statement.text == "") then
+      .access.statement.text = "This RAiD is open access."
+    else . end
+  else
+    .access.statement = { text: "This RAiD is open access.", language: { id: "eng", schemaUri: "https://iso639-3.sil.org" } }
+  end)
 
 # Organisations
 | (if .organisation then .organisation |= map(

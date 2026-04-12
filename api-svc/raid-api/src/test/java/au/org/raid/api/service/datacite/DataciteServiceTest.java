@@ -18,8 +18,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import au.org.raid.idl.raidv2.model.RaidDto;
+import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DataciteServiceTest {
@@ -37,11 +39,11 @@ public class DataciteServiceTest {
     private DataciteService dataciteService;
 
     @Test
-    @DisplayName("Sends Datacite request on mint")
+    @DisplayName("Sends Datacite request on mint for DOI handle")
     void mint() {
         final var repositoryId = "repository-id";
         final var password = "_password";
-        final var handle = "_handle";
+        final var handle = "10.12345/abcde";
         final var endpoint = "_endpoint";
         final var raidRequest = new RaidCreateRequest();
 
@@ -56,5 +58,73 @@ public class DataciteServiceTest {
         dataciteService.mint(raidRequest, handle, repositoryId, password);
 
         verify(restTemplate).exchange(endpoint, HttpMethod.POST, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Skips Datacite mint for non-DOI handle")
+    void mintSkipsNonDoiHandle() {
+        dataciteService.mint(new RaidCreateRequest(), "102.100.100/447187", "repo", "pass");
+
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    @DisplayName("Sends Datacite request on update (RaidUpdateRequest) for DOI handle")
+    void updateRaidUpdateRequest() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidUpdateRequest();
+
+        final var headers = new HttpHeaders();
+        final var dataciteRequest = new DataciteRequest();
+        final var entity = new HttpEntity<>(dataciteRequest, headers);
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.update(request, handle, repositoryId, password);
+
+        verify(restTemplate).exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Skips Datacite update (RaidUpdateRequest) for non-DOI handle")
+    void updateRaidUpdateRequestSkipsNonDoiHandle() {
+        dataciteService.update(new RaidUpdateRequest(), "102.100.100/447187", "repo", "pass");
+
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    @DisplayName("Sends Datacite request on update (RaidDto) for DOI handle")
+    void updateRaidDto() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidDto();
+
+        final var headers = new HttpHeaders();
+        final var dataciteRequest = new DataciteRequest();
+        final var entity = new HttpEntity<>(dataciteRequest, headers);
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.update(request, handle, repositoryId, password);
+
+        verify(restTemplate).exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Skips Datacite update (RaidDto) for non-DOI handle")
+    void updateRaidDtoSkipsNonDoiHandle() {
+        dataciteService.update(new RaidDto(), "10378.1/1700205", "repo", "pass");
+
+        verifyNoInteractions(restTemplate);
     }
 }
