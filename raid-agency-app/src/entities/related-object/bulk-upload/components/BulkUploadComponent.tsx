@@ -10,18 +10,31 @@ import { CloudUpload as UploadIcon } from "@mui/icons-material";
 
 import { useBulkUpload } from "../hooks/useBulkUpload";
 import type { ParsedRelatedObject } from "../hooks/useBulkUpload";
+import { useBulkUploadVocabulary } from "../hooks/useBulkuploadvocabulary";
+import type { BulkUploadVocabulary } from "../types";
 import { FileDropZone } from "./Filedropzone";
 import { TemplateDownloader } from "./TemplateDownloader";
 import { ValidationErrorDisplay } from "./Validationerrordisplay";
 
+// Import the RAiD vocabulary JSON. Adjust this path to wherever the
+// shared vocabulary file lives in your app.
+import rawVocabulary from "@/mapping/data/general-mapping.json";
+
 interface BulkUploadComponentProps {
-  /** The same function used by the manual add form to persist a related object. */
+  /** Optional override — if not provided, the component loads the vocab itself. */
+  vocabulary?: BulkUploadVocabulary;
+  /** The same function used by the manual add form to persist one related object. */
   addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>;
 }
 
 export function BulkUploadComponent({
+  vocabulary: vocabularyOverride,
   addRelatedObject,
 }: BulkUploadComponentProps) {
+  // Load from the shared vocab file if no override is provided
+  const loadedVocabulary = useBulkUploadVocabulary(rawVocabulary);
+  const vocabulary = vocabularyOverride ?? loadedVocabulary;
+
   const {
     status,
     file,
@@ -33,42 +46,48 @@ export function BulkUploadComponent({
     reset,
     isConfirmDisabled,
     isUploading,
-  } = useBulkUpload();
+    isVocabularyReady,
+  } = useBulkUpload(vocabulary);
+
+  // Vocabulary is still loading — show a spinner instead of the form
+  if (!isVocabularyReady || !vocabulary) {
+    return (
+      <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+        <CircularProgress size={18} />
+        <Typography variant="body2" color="text.secondary">
+          Loading vocabulary…
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ mt: 2 }}>
-      {/* ---- Step 1: Template downloads ---- */}
       <Stack spacing={2}>
         <Typography variant="body2" color="text.secondary">
           Download a template, fill in your related objects, then upload the
           completed file.
         </Typography>
 
-        <TemplateDownloader />
+        <TemplateDownloader vocabulary={vocabulary} />
 
-        {/* ---- Step 2: File drop zone ---- */}
         <FileDropZone
           onFileSelected={handleFileUpload}
           disabled={status === "submitting"}
           currentFileName={file?.name ?? null}
         />
 
-        {/* ---- Loading indicator ---- */}
         {isUploading && (
           <Stack direction="row" alignItems="center" spacing={1}>
             <CircularProgress size={18} />
             <Typography variant="body2" color="text.secondary">
-              {status === "parsing"
-                ? "Parsing file…"
-                : "Validating rows…"}
+              {status === "parsing" ? "Parsing file…" : "Validating rows…"}
             </Typography>
           </Stack>
         )}
 
-        {/* ---- Validation errors ---- */}
         <ValidationErrorDisplay errors={errors} />
 
-        {/* ---- Success summary ---- */}
         {status === "valid" && (
           <Alert severity="success">
             {parsedRows.length} related object
@@ -76,21 +95,16 @@ export function BulkUploadComponent({
           </Alert>
         )}
 
-        {/* ---- Submission error ---- */}
-        {submissionError && (
-          <Alert severity="error">{submissionError}</Alert>
-        )}
+        {submissionError && <Alert severity="error">{submissionError}</Alert>}
 
-        {/* ---- Done ---- */}
         {status === "done" && (
           <Alert severity="success">
             All related objects have been added successfully.
           </Alert>
         )}
 
-        {/* ---- Action buttons ---- */}
         <Stack direction="row" spacing={1} justifyContent="flex-end">
-          {(status !== "idle" && status !== "done") && (
+          {status !== "idle" && status !== "done" && (
             <Button
               variant="outlined"
               size="small"
@@ -120,9 +134,7 @@ export function BulkUploadComponent({
             disabled={isConfirmDisabled || status === "submitting"}
             onClick={() => handleConfirm(addRelatedObject)}
           >
-            {status === "submitting"
-              ? "Uploading…"
-              : "Confirm upload"}
+            {status === "submitting" ? "Uploading…" : "Confirm upload"}
           </Button>
         </Stack>
       </Stack>

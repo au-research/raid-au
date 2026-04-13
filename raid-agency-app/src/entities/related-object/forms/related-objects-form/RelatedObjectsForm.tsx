@@ -56,6 +56,7 @@ export function RelatedObjectsForm({
   };
 
   const handleBulkAddItem = async (obj: ParsedRelatedObject) => {
+    console.log("Adding from bulk upload:", obj);
     append(obj);
     trigger(key);
   };

@@ -26,6 +26,7 @@
     "dayjs": "1.11.10",
     "dompurify": "^3.4.0",
     "dotenv": "16.4.5",
+    "exceljs": "^4.4.0",
     "keycloak-js": "26.2.3",
     "lucide-react": "^0.577.0",
     "psl": "^1.15.0",

@@ -1,13 +1,13 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { z } from "zod";
 
-/**
- * Bulk upload status state machine:
- *
- *   idle → parsing → validating → valid → submitting → done
- *                                ↘ invalid → (user re-uploads) → parsing ...
- *                                           ↗
- */
+import {
+  type BulkUploadVocabulary,
+  type VocabularyEntry,
+  buildLabelLookup,
+  splitVocabularyKey,
+} from "../types";
+
 export type BulkUploadStatus =
   | "idle"
   | "parsing"
@@ -24,6 +24,9 @@ export interface ValidationError {
   message: string;
 }
 
+/**
+ * Shape expected by the existing addRelatedObject() API handler.
+ */
 export interface ParsedRelatedObject {
   id: string;
   schemaUri: string;
@@ -37,8 +40,10 @@ export interface ParsedRelatedObject {
   }>;
 }
 
+const DOI_SCHEMA_URI = "https://doi.org/";
+
 // ------------------------------------------------------------------
-// Validation schema — reuses the same regex rules as the manual form
+// Validation schema (structural — vocab validity is checked in the mapper)
 // ------------------------------------------------------------------
 
 const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/[^\s]+$/;
@@ -49,45 +54,56 @@ const bulkRelatedObjectRowSchema = z.object({
   id: z
     .string()
     .trim()
-    .url()
+    .min(1, "DOI URL is required")
     .refine((url) => doiRegex.test(url) || webArchiveRegex.test(url), {
       message:
-        "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
+        "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
     }),
-  schemaUri: z.string().min(1, "Schema URI is required"),
   type: z.object({
-    id: z.string().min(1, "Type ID is required"),
-    schemaUri: z.string().min(1, "Type schema URI is required"),
+    id: z.string().min(1, "Type is required"),
+    schemaUri: z.string().min(1),
   }),
   category: z
     .array(
       z.object({
-        id: z.string().min(1, "Category ID is required"),
-        schemaUri: z.string().min(1, "Category schema URI is required"),
+        id: z.string().min(1),
+        schemaUri: z.string().min(1),
       })
     )
     .min(1, "At least one category is required"),
+  schemaUri: z.string().min(1),
 });
 
 // ------------------------------------------------------------------
-// File parsing utilities
+// CSV parsing
 // ------------------------------------------------------------------
 
-/**
- * Parses a CSV string into an array of row objects.
- * Assumes the first row is a header row.
- */
 function parseCsvToRows(csvText: string): Record<string, string>[] {
-  const lines = csvText
-    .split(/\r?\n/)
-    .filter((line) => line.trim().length > 0);
-
+  const lines = csvText.split(/\r?\n/).filter((line) => line.trim().length > 0);
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map((h) => h.trim());
+  const parseLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    for (const char of line) {
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === "," && !inQuotes) {
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const headers = parseLine(lines[0]);
 
   return lines.slice(1).map((line) => {
-    const values = line.split(",").map((v) => v.trim());
+    const values = parseLine(line);
     const row: Record<string, string> = {};
     headers.forEach((header, i) => {
       row[header] = values[i] ?? "";
@@ -96,29 +112,75 @@ function parseCsvToRows(csvText: string): Record<string, string>[] {
   });
 }
 
-/**
- * Maps a flat row from the spreadsheet/CSV into the nested shape
- * expected by the Zod schema and the API.
- *
- * Template columns:
- *   id | schemaUri | type.id | type.schemaUri | category.id | category.schemaUri
- */
+// ------------------------------------------------------------------
+// Row mapper — uses the runtime vocabulary lookups
+// ------------------------------------------------------------------
+
 function mapRowToRelatedObject(
-  row: Record<string, string>
-): ParsedRelatedObject {
+  row: Record<string, string>,
+  rowIndex: number,
+  typeLookup: Map<string, VocabularyEntry>,
+  categoryLookup: Map<string, VocabularyEntry>
+): { data: ParsedRelatedObject | null; errors: ValidationError[] } {
+  const errors: ValidationError[] = [];
+
+  const doiUrl = (row["DOI URL"] ?? "").trim();
+  const typeLabel = (row["Type"] ?? "").trim();
+  const categoriesRaw = (row["Categories"] ?? "").trim();
+
+  // ---- Look up type ----
+  let typeUri = "";
+  if (typeLabel) {
+    const entry = typeLookup.get(typeLabel.toLowerCase());
+    if (!entry) {
+      errors.push({
+        row: rowIndex,
+        field: "Type",
+        message: `Unknown type "${typeLabel}". Please use a value from the dropdown.`,
+      });
+    } else {
+      typeUri = entry.key;
+    }
+  }
+
+  // ---- Split and look up categories (multi-select support) ----
+  const categoryLabels = categoriesRaw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  const categories: Array<{ id: string; schemaUri: string }> = [];
+  for (const label of categoryLabels) {
+    const entry = categoryLookup.get(label.toLowerCase());
+    if (!entry) {
+      const allowed = Array.from(categoryLookup.values())
+        .map((e) => e.value)
+        .join(", ");
+      errors.push({
+        row: rowIndex,
+        field: "Categories",
+        message: `Unknown category "${label}". Allowed values: ${allowed}.`,
+      });
+    } else {
+      const { id, schemaUri } = splitVocabularyKey(entry.key);
+      categories.push({ id, schemaUri });
+    }
+  }
+
+  if (errors.length > 0) {
+    return { data: null, errors };
+  }
+
+  const { id: typeId, schemaUri: typeSchemaUri } = splitVocabularyKey(typeUri);
+
   return {
-    id: row["id"] ?? "",
-    schemaUri: row["schemaUri"] ?? "",
-    type: {
-      id: row["type.id"] ?? "",
-      schemaUri: row["type.schemaUri"] ?? "",
+    data: {
+      id: doiUrl,
+      schemaUri: DOI_SCHEMA_URI,
+      type: { id: typeId, schemaUri: typeSchemaUri },
+      category: categories,
     },
-    category: [
-      {
-        id: row["category.id"] ?? "",
-        schemaUri: row["category.schemaUri"] ?? "",
-      },
-    ],
+    errors: [],
   };
 }
 
@@ -126,14 +188,29 @@ function mapRowToRelatedObject(
 // Hook
 // ------------------------------------------------------------------
 
-export function useBulkUpload() {
+export function useBulkUpload(vocabulary: BulkUploadVocabulary | undefined) {
   const [status, setStatus] = useState<BulkUploadStatus>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedRelatedObject[]>([]);
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-  // ---- Reset everything back to idle ----
+  // Build lookups once per vocabulary change. Safe against `undefined`
+  // or partially-loaded vocabulary (e.g. async fetch still in flight).
+  const typeLookup = useMemo(
+    () => buildLabelLookup(vocabulary?.relatedObjectTypes ?? []),
+    [vocabulary?.relatedObjectTypes]
+  );
+  const categoryLookup = useMemo(
+    () => buildLabelLookup(vocabulary?.relatedObjectCategories ?? []),
+    [vocabulary?.relatedObjectCategories]
+  );
+
+  const isVocabularyReady =
+    !!vocabulary &&
+    vocabulary.relatedObjectTypes.length > 0 &&
+    vocabulary.relatedObjectCategories.length > 0;
+
   const reset = useCallback(() => {
     setStatus("idle");
     setFile(null);
@@ -142,60 +219,114 @@ export function useBulkUpload() {
     setSubmissionError(null);
   }, []);
 
-  // ---- Parse uploaded file ----
-  const parseFile = useCallback(async (file: File): Promise<Record<string, string>[]> => {
-    const extension = file.name.split(".").pop()?.toLowerCase();
+  const parseFile = useCallback(
+    async (file: File): Promise<Record<string, string>[]> => {
+      const extension = file.name.split(".").pop()?.toLowerCase();
 
-    if (extension === "csv") {
-      const text = await file.text();
-      return parseCsvToRows(text);
-    }
+      if (extension === "csv") {
+        const text = await file.text();
+        return parseCsvToRows(text);
+      }
 
-    if (extension === "xlsx" || extension === "xls") {
-      // Dynamic import to keep bundle size down — xlsx is large
-      const XLSX = await import("xlsx");
-      const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array" });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      return XLSX.utils.sheet_to_json<Record<string, string>>(firstSheet, {
-        defval: "",
-      });
-    }
+      if (extension === "xlsx" || extension === "xls") {
+        const ExcelJS = (await import("exceljs")).default;
+        const workbook = new ExcelJS.Workbook();
+        const buffer = await file.arrayBuffer();
+        await workbook.xlsx.load(buffer);
 
-    throw new Error(`Unsupported file type: .${extension}`);
-  }, []);
+        const sheet =
+          workbook.getWorksheet("Related Objects") ?? workbook.worksheets[0];
+        if (!sheet) return [];
 
-  // ---- Validate parsed rows ----
-  const validateRows = useCallback(
-    (rows: ParsedRelatedObject[]): ValidationError[] => {
-      const validationErrors: ValidationError[] = [];
+        const rows: Record<string, string>[] = [];
+        const headers: string[] = [];
 
-      rows.forEach((row, index) => {
-        const result = bulkRelatedObjectRowSchema.safeParse(row);
-        if (!result.success) {
-          result.error.errors.forEach((zodError) => {
-            validationErrors.push({
-              row: index + 1, // 1-indexed for user display
-              field: zodError.path.join("."),
-              message: zodError.message,
+        sheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) {
+            row.eachCell((cell, colNumber) => {
+              headers[colNumber - 1] = String(cell.value ?? "").trim();
             });
-          });
-        }
-      });
+          } else {
+            const rowObj: Record<string, string> = {};
+            row.eachCell((cell, colNumber) => {
+              const header = headers[colNumber - 1];
+              if (header) {
+                rowObj[header] = String(cell.value ?? "").trim();
+              }
+            });
+            if (Object.values(rowObj).some((v) => v.length > 0)) {
+              rows.push(rowObj);
+            }
+          }
+        });
 
-      return validationErrors;
+        return rows;
+      }
+
+      throw new Error(`Unsupported file type: .${extension}`);
     },
     []
   );
 
-  // ---- Main handler: upload → parse → validate ----
+  const validateRows = useCallback(
+    (
+      rawRows: Record<string, string>[]
+    ): { validRows: ParsedRelatedObject[]; errors: ValidationError[] } => {
+      const allErrors: ValidationError[] = [];
+      const validRows: ParsedRelatedObject[] = [];
+
+      rawRows.forEach((rawRow, index) => {
+        const rowNumber = index + 1;
+
+        const { data, errors: mapErrors } = mapRowToRelatedObject(
+          rawRow,
+          rowNumber,
+          typeLookup,
+          categoryLookup
+        );
+
+        if (mapErrors.length > 0) {
+          allErrors.push(...mapErrors);
+          return;
+        }
+
+        if (!data) return;
+
+        const result = bulkRelatedObjectRowSchema.safeParse(data);
+        if (!result.success) {
+          result.error.errors.forEach((zodError) => {
+            const pathStr = zodError.path.join(".");
+            const fieldName =
+              pathStr === "id"
+                ? "DOI URL"
+                : pathStr.startsWith("type")
+                  ? "Type"
+                  : pathStr.startsWith("category")
+                    ? "Categories"
+                    : pathStr;
+
+            allErrors.push({
+              row: rowNumber,
+              field: fieldName,
+              message: zodError.message,
+            });
+          });
+        } else {
+          validRows.push(data);
+        }
+      });
+
+      return { validRows, errors: allErrors };
+    },
+    [typeLookup, categoryLookup]
+  );
+
   const handleFileUpload = useCallback(
     async (uploadedFile: File) => {
       setFile(uploadedFile);
       setErrors([]);
       setSubmissionError(null);
 
-      // Parse
       setStatus("parsing");
       let rawRows: Record<string, string>[];
       try {
@@ -217,38 +348,34 @@ export function useBulkUpload() {
 
       if (rawRows.length === 0) {
         setErrors([
-          { row: 0, field: "file", message: "The uploaded file has no data rows." },
+          {
+            row: 0,
+            field: "file",
+            message: "The uploaded file has no data rows.",
+          },
         ]);
         setStatus("invalid");
         return;
       }
 
-      // Map flat rows → nested objects
-      const mapped = rawRows.map(mapRowToRelatedObject);
-
-      // Validate
       setStatus("validating");
-      const validationErrors = validateRows(mapped);
+      const { validRows, errors: validationErrors } = validateRows(rawRows);
 
       if (validationErrors.length > 0) {
-        setParsedRows(mapped);
+        setParsedRows(validRows);
         setErrors(validationErrors);
         setStatus("invalid");
         return;
       }
 
-      // All good
-      setParsedRows(mapped);
+      setParsedRows(validRows);
       setStatus("valid");
     },
     [parseFile, validateRows]
   );
 
-  // ---- Submit confirmed rows ----
   const handleConfirm = useCallback(
-    async (
-      addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>
-    ) => {
+    async (addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>) => {
       setStatus("submitting");
       setSubmissionError(null);
 
@@ -267,27 +394,20 @@ export function useBulkUpload() {
     [parsedRows]
   );
 
-  // ---- Derived state ----
-  const isConfirmDisabled =
-    status !== "valid" || parsedRows.length === 0;
-
+  const isConfirmDisabled = status !== "valid" || parsedRows.length === 0;
   const isUploading = status === "parsing" || status === "validating";
 
   return {
-    // State
     status,
     file,
     parsedRows,
     errors,
     submissionError,
-
-    // Actions
     handleFileUpload,
     handleConfirm,
     reset,
-
-    // Derived
     isConfirmDisabled,
     isUploading,
+    isVocabularyReady,
   };
 }
