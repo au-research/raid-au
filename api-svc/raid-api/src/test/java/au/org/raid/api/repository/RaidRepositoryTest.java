@@ -56,4 +56,12 @@ class RaidRepositoryTest {
 
         verify(dslContext).selectFrom(RAID);
     }
+
+    @Test
+    @DisplayName("findAllIncludingWithoutHistory() queries RAID table directly without RAID_HISTORY join")
+    void findAllIncludingWithoutHistory() {
+        raidRepository.findAllIncludingWithoutHistory();
+
+        verify(dslContext).selectFrom(RAID);
+    }
 }
