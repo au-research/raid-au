@@ -180,6 +180,14 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllNonLegacy());
     }
 
+    @GetMapping(value="/raid/all")
+    public ResponseEntity<List<RaidDto>> findAllRaidsIncludingWithoutHistory() {
+        if (!TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(raidIngestService.findAllIncludingWithoutHistory());
+    }
+
     @Override
     public ResponseEntity<RaidCountResponse> countRaids(
             final Long servicePointId,

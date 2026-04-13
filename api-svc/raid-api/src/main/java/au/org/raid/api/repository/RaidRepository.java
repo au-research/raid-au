@@ -142,6 +142,13 @@ public class RaidRepository {
                 .fetchInto(RaidRecord.class);
     }
 
+    public List<RaidRecord> findAllIncludingWithoutHistory() {
+        return dslContext.selectFrom(RAID)
+                .where(RAID.METADATA_SCHEMA.ne(Metaschema.legacy_metadata_schema_v1))
+                .orderBy(RAID.DATE_CREATED.desc())
+                .fetch();
+    }
+
     public List<RaidRecord> findAllByContributorOrcid(final String orcid) {
         return dslContext.select()
                 .from(RAID)

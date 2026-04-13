@@ -5,6 +5,7 @@ See the [Changelog audience](#changelog-audience) section for info about
 ## API
 * Skip DataCite API calls for non-DOI handles — legacy handles (102.100.100/*, 10378.1/*) were
   never registered with DataCite and caused 500 errors on update (RAID-575).
+* Add operator-only GET /raid/all endpoint to return all raids without RAID_HISTORY join limitation (RAID-575).
 * Add web.archive.org as a valid related object schema URI (RAID-572).
 
 ## App-client UI
