@@ -95,4 +95,14 @@ public class TestConstants {
     public static final String GEONAMES_SCHEMA_URI = "https://www.geonames.org/";
 
     public static final String CONTRIBUTOR_EMAIL = "authenticated@test.raid.org.au";
+
+    public static final String RELATED_OBJECT_TYPE_SCHEMA_URI =
+            "https://vocabulary.raid.org/relatedObject.type.schema/329";
+    public static final String BOOK_CHAPTER_RELATED_OBJECT_TYPE =
+            "https://vocabulary.raid.org/relatedObject.type.schema/248";
+
+    public static final String WEB_ARCHIVE_SCHEMA_URI = "https://web.archive.org/";
+    public static final String VALID_WEB_ARCHIVE_URL =
+            "https://web.archive.org/web/20220101000000/https://example.com";
+    public static final String INVALID_WEB_ARCHIVE_URL = "https://web.archive.org/foo/bar";
 }
