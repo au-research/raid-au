@@ -16,8 +16,6 @@ import { FileDropZone } from "./Filedropzone";
 import { TemplateDownloader } from "./TemplateDownloader";
 import { ValidationErrorDisplay } from "./Validationerrordisplay";
 
-// Import the RAiD vocabulary JSON. Adjust this path to wherever the
-// shared vocabulary file lives in your app.
 import rawVocabulary from "@/mapping/data/general-mapping.json";
 
 interface BulkUploadComponentProps {
@@ -25,11 +23,18 @@ interface BulkUploadComponentProps {
   vocabulary?: BulkUploadVocabulary;
   /** The same function used by the manual add form to persist one related object. */
   addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>;
+  /**
+   * Optional: the same data generator the manual add flow uses (e.g.
+   * `relatedObjectDataGenerator`). Parsed rows are merged on top of the
+   * generator's output so react-hook-form gets every field it expects.
+   */
+  generator?: () => Partial<ParsedRelatedObject>;
 }
 
 export function BulkUploadComponent({
   vocabulary: vocabularyOverride,
   addRelatedObject,
+  generator,
 }: BulkUploadComponentProps) {
   // Load from the shared vocab file if no override is provided
   const loadedVocabulary = useBulkUploadVocabulary(rawVocabulary);
@@ -47,7 +52,7 @@ export function BulkUploadComponent({
     isConfirmDisabled,
     isUploading,
     isVocabularyReady,
-  } = useBulkUpload(vocabulary);
+  } = useBulkUpload(vocabulary, { generator });
 
   // Vocabulary is still loading — show a spinner instead of the form
   if (!isVocabularyReady || !vocabulary) {
@@ -69,7 +74,7 @@ export function BulkUploadComponent({
           completed file.
         </Typography>
 
-        <TemplateDownloader vocabulary={vocabulary} />
+        <TemplateDownloader />
 
         <FileDropZone
           onFileSelected={handleFileUpload}
