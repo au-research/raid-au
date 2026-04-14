@@ -46,6 +46,60 @@ const DOI_SCHEMA_URI = "https://doi.org/";
 // Validation schema (structural — vocab validity is checked in the mapper)
 // ------------------------------------------------------------------
 
+/**
+ * Coerces an `exceljs` cell value to a plain trimmed string.
+ *
+ * `cell.value` can be many shapes depending on what's in the cell:
+ *   - string / number / boolean / Date / null / undefined  → primitive
+ *   - { text, hyperlink, tooltip }                         → hyperlink (URLs)
+ *   - { richText: [{ text, font }, ...] }                  → rich-text run
+ *   - { formula, result }                                  → formula
+ *   - { error: '#NAME?' }                                  → error cell
+ *
+ * Without this helper, `String(cell.value)` returns `"[object Object]"`
+ * for hyperlink cells — which is what happens when a user pastes a URL
+ * into Excel and Excel auto-converts it into a hyperlink object.
+ */
+function readCellAsString(cell: { value: unknown }): string {
+  const v = cell.value;
+  if (v === null || v === undefined) return "";
+
+  // Primitive types — convert directly
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "number" || typeof v === "boolean") return String(v).trim();
+  if (v instanceof Date) return v.toISOString().trim();
+
+  // Object types — pick the right field for each shape
+  if (typeof v === "object") {
+    const obj = v as Record<string, unknown>;
+
+    // Hyperlink: prefer the visible text, fall back to the underlying URL
+    if (typeof obj.text === "string") return obj.text.trim();
+    if (typeof obj.hyperlink === "string") return obj.hyperlink.trim();
+
+    // Rich text: concatenate all the runs
+    if (Array.isArray(obj.richText)) {
+      return obj.richText
+        .map((run: unknown) => {
+          if (typeof run === "object" && run !== null) {
+            const r = run as Record<string, unknown>;
+            return typeof r.text === "string" ? r.text : "";
+          }
+          return "";
+        })
+        .join("")
+        .trim();
+    }
+
+    // Formula: prefer the calculated result
+    if ("result" in obj) {
+      return readCellAsString({ value: obj.result });
+    }
+  }
+
+  return "";
+}
+
 const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/[^\s]+$/;
 const webArchiveRegex =
   /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
@@ -398,7 +452,7 @@ export function useBulkUpload(
         let endRowIdx = -1;
 
         sheet.eachRow((row, rowNumber) => {
-          const colA = String(row.getCell(1).value ?? "").trim();
+          const colA = readCellAsString(row.getCell(1));
           if (colA === IMPORT_START_MARKER && startRowIdx === -1) {
             startRowIdx = rowNumber;
           } else if (colA === IMPORT_END_MARKER && startRowIdx !== -1 && endRowIdx === -1) {
@@ -418,7 +472,7 @@ export function useBulkUpload(
         const headers: string[] = [];
         const headerRow = sheet.getRow(headerRowIdx);
         headerRow.eachCell((cell, colNumber) => {
-          headers[colNumber - 1] = String(cell.value ?? "").trim();
+          headers[colNumber - 1] = readCellAsString(cell);
         });
 
         // ---- Read data rows ----
@@ -429,7 +483,7 @@ export function useBulkUpload(
           row.eachCell((cell, colNumber) => {
             const header = headers[colNumber - 1];
             if (header) {
-              rowObj[header] = String(cell.value ?? "").trim();
+              rowObj[header] = readCellAsString(cell);
             }
           });
           // Skip rows where every data column is empty
