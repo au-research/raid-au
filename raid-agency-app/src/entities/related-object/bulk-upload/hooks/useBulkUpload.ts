@@ -25,6 +25,27 @@ export interface ValidationError {
 }
 
 /**
+ * One row in the editable preview table. Holds the raw user-facing
+ * values (as the user sees and edits them) plus the per-field errors
+ * for that row. The row is converted to one or more ParsedRelatedObject
+ * records at submission time via `mapRowToRelatedObjects`.
+ */
+export interface EditableRow {
+  /** Stable identifier so React can track rows across edits and reorders */
+  id: string;
+  /** Raw spreadsheet column values, edited in-place by the user */
+  values: {
+    "DOI URL": string;
+    Type: string;
+    Categories: string;
+  };
+  /** Field-keyed errors for this row. Empty object = row is valid. */
+  errors: Partial<Record<"DOI URL" | "Type" | "Categories", string>>;
+}
+
+export type EditableRowField = keyof EditableRow["values"];
+
+/**
  * Shape expected by the existing addRelatedObject() API handler.
  */
 export interface ParsedRelatedObject {
@@ -378,6 +399,77 @@ function mapRowToRelatedObjects(
   return { data: expanded, errors: [] };
 }
 
+/**
+ * Validates a single editable row and returns:
+ *   - field-keyed errors (for highlighting cells in the preview table)
+ *   - the expanded ParsedRelatedObject[] if the row is valid (for submission)
+ *
+ * This runs the same mapper + Zod schema as `validateRows`, but produces
+ * errors in the per-field shape the preview table needs.
+ */
+function validateEditableRow(
+  values: EditableRow["values"],
+  typeLookup: Map<string, VocabularyEntry>,
+  categoryLookup: Map<string, VocabularyEntry>,
+  generator?: () => Partial<ParsedRelatedObject>
+): {
+  errors: EditableRow["errors"];
+  expanded: ParsedRelatedObject[];
+} {
+  const fieldErrors: EditableRow["errors"] = {};
+
+  // Reuse the existing mapper, but ignore its rowIndex since the preview
+  // table uses field names rather than row numbers for error placement.
+  const rawRow: Record<string, string> = {
+    "DOI URL": values["DOI URL"],
+    Type: values.Type,
+    Categories: values.Categories,
+  };
+
+  const { data: expanded, errors: mapErrors } = mapRowToRelatedObjects(
+    rawRow,
+    0,
+    typeLookup,
+    categoryLookup,
+    generator
+  );
+
+  // Convert mapper errors into the field-keyed shape
+  for (const err of mapErrors) {
+    const field = err.field as EditableRowField;
+    if (!fieldErrors[field]) {
+      fieldErrors[field] = err.message;
+    }
+  }
+
+  // Run Zod schema on each expanded object — should pass or fail together
+  for (const obj of expanded) {
+    const result = bulkRelatedObjectRowSchema.safeParse(obj);
+    if (!result.success) {
+      result.error.errors.forEach((zodError) => {
+        const pathStr = zodError.path.join(".");
+        const fieldName: EditableRowField =
+          pathStr === "id"
+            ? "DOI URL"
+            : pathStr.startsWith("type")
+              ? "Type"
+              : pathStr.startsWith("category")
+                ? "Categories"
+                : ("DOI URL" as EditableRowField);
+
+        if (!fieldErrors[fieldName]) {
+          fieldErrors[fieldName] = zodError.message;
+        }
+      });
+    }
+  }
+
+  return {
+    errors: fieldErrors,
+    expanded: Object.keys(fieldErrors).length === 0 ? expanded : [],
+  };
+}
+
 // ------------------------------------------------------------------
 // Hook
 // ------------------------------------------------------------------
@@ -400,8 +492,7 @@ export function useBulkUpload(
   const { generator } = options;
   const [status, setStatus] = useState<BulkUploadStatus>("idle");
   const [file, setFile] = useState<File | null>(null);
-  const [parsedRows, setParsedRows] = useState<ParsedRelatedObject[]>([]);
-  const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [editableRows, setEditableRows] = useState<EditableRow[]>([]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Build lookups once per vocabulary change. Safe against `undefined`
@@ -423,8 +514,7 @@ export function useBulkUpload(
   const reset = useCallback(() => {
     setStatus("idle");
     setFile(null);
-    setParsedRows([]);
-    setErrors([]);
+    setEditableRows([]);
     setSubmissionError(null);
   }, []);
 
@@ -500,64 +590,33 @@ export function useBulkUpload(
     []
   );
 
-  const validateRows = useCallback(
+  /**
+   * Builds an EditableRow from a raw spreadsheet row dict, running the
+   * single-row validator to compute initial errors.
+   */
+  const buildEditableRow = useCallback(
     (
-      rawRows: Record<string, string>[]
-    ): { validRows: ParsedRelatedObject[]; errors: ValidationError[] } => {
-      const allErrors: ValidationError[] = [];
-      const validRows: ParsedRelatedObject[] = [];
+      rawRow: Record<string, string>,
+      idx: number
+    ): EditableRow => {
+      const values: EditableRow["values"] = {
+        "DOI URL": rawRow["DOI URL"] ?? "",
+        Type: rawRow["Type"] ?? "",
+        Categories: rawRow["Categories"] ?? "",
+      };
 
-      rawRows.forEach((rawRow, index) => {
-        const rowNumber = index + 1;
+      const { errors } = validateEditableRow(
+        values,
+        typeLookup,
+        categoryLookup,
+        generator
+      );
 
-        // Mapper may return 0, 1, or N objects depending on how many
-        // types were selected in the Type column.
-        const { data: expandedObjects, errors: mapErrors } =
-          mapRowToRelatedObjects(
-            rawRow,
-            rowNumber,
-            typeLookup,
-            categoryLookup,
-            generator
-          );
-
-        if (mapErrors.length > 0) {
-          allErrors.push(...mapErrors);
-          return;
-        }
-
-        if (expandedObjects.length === 0) return;
-
-        // Run schema validation on each expanded object. All of them
-        // should pass or fail together since they share the same source
-        // row, but we validate individually to catch any edge cases.
-        for (const obj of expandedObjects) {
-          const result = bulkRelatedObjectRowSchema.safeParse(obj);
-          if (!result.success) {
-            result.error.errors.forEach((zodError) => {
-              const pathStr = zodError.path.join(".");
-              const fieldName =
-                pathStr === "id"
-                  ? "DOI URL"
-                  : pathStr.startsWith("type")
-                    ? "Type"
-                    : pathStr.startsWith("category")
-                      ? "Categories"
-                      : pathStr;
-
-              allErrors.push({
-                row: rowNumber,
-                field: fieldName,
-                message: zodError.message,
-              });
-            });
-          } else {
-            validRows.push(obj);
-          }
-        }
-      });
-
-      return { validRows, errors: allErrors };
+      return {
+        id: `row-${Date.now()}-${idx}`,
+        values,
+        errors,
+      };
     },
     [typeLookup, categoryLookup, generator]
   );
@@ -565,7 +624,6 @@ export function useBulkUpload(
   const handleFileUpload = useCallback(
     async (uploadedFile: File) => {
       setFile(uploadedFile);
-      setErrors([]);
       setSubmissionError(null);
 
       setStatus("parsing");
@@ -573,56 +631,114 @@ export function useBulkUpload(
       try {
         rawRows = await parseFile(uploadedFile);
       } catch (err) {
-        setErrors([
-          {
-            row: 0,
-            field: "file",
-            message:
-              err instanceof Error
-                ? err.message
-                : "Failed to parse the uploaded file.",
-          },
-        ]);
-        setStatus("invalid");
+        setEditableRows([]);
+        setStatus("error");
+        setSubmissionError(
+          err instanceof Error
+            ? err.message
+            : "Failed to parse the uploaded file."
+        );
         return;
       }
 
       if (rawRows.length === 0) {
-        setErrors([
-          {
-            row: 0,
-            field: "file",
-            message: "The uploaded file has no data rows.",
-          },
-        ]);
-        setStatus("invalid");
+        setEditableRows([]);
+        setStatus("error");
+        setSubmissionError("The uploaded file has no data rows.");
         return;
       }
 
       setStatus("validating");
-      const { validRows, errors: validationErrors } = validateRows(rawRows);
 
-      if (validationErrors.length > 0) {
-        setParsedRows(validRows);
-        setErrors(validationErrors);
-        setStatus("invalid");
-        return;
+      const rows = rawRows.map((rawRow, idx) => buildEditableRow(rawRow, idx));
+
+      setEditableRows(rows);
+      setStatus(rows.some((r) => Object.keys(r.errors).length > 0) ? "invalid" : "valid");
+    },
+    [parseFile, buildEditableRow]
+  );
+
+  /**
+   * Updates a single cell in the preview table and re-runs validation
+   * for that row. Other rows are not touched.
+   */
+  const updateRow = useCallback(
+    (rowIndex: number, field: EditableRowField, value: string) => {
+      setEditableRows((prev) => {
+        const next = [...prev];
+        const target = next[rowIndex];
+        if (!target) return prev;
+
+        const newValues = { ...target.values, [field]: value };
+        const { errors } = validateEditableRow(
+          newValues,
+          typeLookup,
+          categoryLookup,
+          generator
+        );
+
+        next[rowIndex] = { ...target, values: newValues, errors };
+
+        // Recompute global status based on whether any rows still have errors
+        const stillHasErrors = next.some(
+          (r) => Object.keys(r.errors).length > 0
+        );
+        setStatus(stillHasErrors ? "invalid" : "valid");
+
+        return next;
+      });
+    },
+    [typeLookup, categoryLookup, generator]
+  );
+
+  /**
+   * Removes a row from the preview entirely.
+   */
+  const removeRow = useCallback((rowIndex: number) => {
+    setEditableRows((prev) => {
+      const next = prev.filter((_, i) => i !== rowIndex);
+
+      if (next.length === 0) {
+        setStatus("idle");
+      } else {
+        const stillHasErrors = next.some(
+          (r) => Object.keys(r.errors).length > 0
+        );
+        setStatus(stillHasErrors ? "invalid" : "valid");
       }
 
-      setParsedRows(validRows);
-      setStatus("valid");
-    },
-    [parseFile, validateRows]
-  );
+      return next;
+    });
+  }, []);
 
   const handleConfirm = useCallback(
     async (addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>) => {
+      // Re-validate every row at submission time as a safety net, and
+      // collect the expanded ParsedRelatedObject[] for each valid row.
+      const allExpanded: ParsedRelatedObject[] = [];
+      for (const row of editableRows) {
+        const { errors, expanded } = validateEditableRow(
+          row.values,
+          typeLookup,
+          categoryLookup,
+          generator
+        );
+        if (Object.keys(errors).length > 0) {
+          // Shouldn't normally happen — UI should keep confirm disabled
+          setSubmissionError(
+            "Some rows still have validation errors. Please fix them before uploading."
+          );
+          return;
+        }
+        allExpanded.push(...expanded);
+      }
+
       setStatus("submitting");
       setSubmissionError(null);
 
       try {
-        for (const row of parsedRows) {
-          await addRelatedObject(row);
+        for (const obj of allExpanded) {
+          await addRelatedObject(obj);
         }
         setStatus("done");
       } catch (err) {
@@ -632,23 +748,44 @@ export function useBulkUpload(
         setStatus("error");
       }
     },
-    [parsedRows]
+    [editableRows, typeLookup, categoryLookup, generator]
   );
 
-  const isConfirmDisabled = status !== "valid" || parsedRows.length === 0;
+  // ---- Derived state ----
+
+  const totalErrorCount = editableRows.reduce(
+    (sum, row) => sum + Object.keys(row.errors).length,
+    0
+  );
+  const hasAnyRows = editableRows.length > 0;
+  const allRowsValid = hasAnyRows && totalErrorCount === 0;
+
+  const isConfirmDisabled =
+    !allRowsValid || status === "submitting" || status === "done";
   const isUploading = status === "parsing" || status === "validating";
 
   return {
+    // Status
     status,
     file,
-    parsedRows,
-    errors,
     submissionError,
-    handleFileUpload,
-    handleConfirm,
-    reset,
-    isConfirmDisabled,
     isUploading,
     isVocabularyReady,
+
+    // Preview data
+    editableRows,
+    totalErrorCount,
+    hasAnyRows,
+    allRowsValid,
+
+    // Actions
+    handleFileUpload,
+    updateRow,
+    removeRow,
+    handleConfirm,
+    reset,
+
+    // Derived
+    isConfirmDisabled,
   };
 }

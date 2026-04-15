@@ -6,7 +6,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { CloudUpload as UploadIcon } from "@mui/icons-material";
+import {
+  CloudUpload as UploadIcon,
+  RestartAlt as RestartIcon,
+} from "@mui/icons-material";
 
 import { useBulkUpload } from "../hooks/useBulkUpload";
 import type { ParsedRelatedObject } from "../hooks/useBulkUpload";
@@ -14,8 +17,10 @@ import { useBulkUploadVocabulary } from "../hooks/useBulkuploadvocabulary";
 import type { BulkUploadVocabulary } from "../types";
 import { FileDropZone } from "./Filedropzone";
 import { TemplateDownloader } from "./TemplateDownloader";
-import { ValidationErrorDisplay } from "./Validationerrordisplay";
+import { BulkUploadPreviewTable } from "./Bulkuploadpreviewtable";
 
+// Import the RAiD vocabulary JSON. Adjust this path to wherever the
+// shared vocabulary file lives in your app.
 import rawVocabulary from "@/mapping/data/general-mapping.json";
 
 interface BulkUploadComponentProps {
@@ -36,25 +41,27 @@ export function BulkUploadComponent({
   addRelatedObject,
   generator,
 }: BulkUploadComponentProps) {
-  // Load from the shared vocab file if no override is provided
   const loadedVocabulary = useBulkUploadVocabulary(rawVocabulary);
   const vocabulary = vocabularyOverride ?? loadedVocabulary;
 
   const {
     status,
     file,
-    parsedRows,
-    errors,
     submissionError,
+    isUploading,
+    isVocabularyReady,
+    editableRows,
+    totalErrorCount,
+    hasAnyRows,
     handleFileUpload,
+    updateRow,
+    removeRow,
     handleConfirm,
     reset,
     isConfirmDisabled,
-    isUploading,
-    isVocabularyReady,
   } = useBulkUpload(vocabulary, { generator });
 
-  // Vocabulary is still loading — show a spinner instead of the form
+  // ---- Vocabulary still loading ----
   if (!isVocabularyReady || !vocabulary) {
     return (
       <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
@@ -66,9 +73,13 @@ export function BulkUploadComponent({
     );
   }
 
+  const isSubmitting = status === "submitting";
+  const isDone = status === "done";
+
   return (
     <Box sx={{ mt: 2 }}>
       <Stack spacing={2}>
+        {/* ---- Intro + template download ---- */}
         <Typography variant="body2" color="text.secondary">
           Download a template, fill in your related objects, then upload the
           completed file.
@@ -76,12 +87,16 @@ export function BulkUploadComponent({
 
         <TemplateDownloader />
 
-        <FileDropZone
-          onFileSelected={handleFileUpload}
-          disabled={status === "submitting"}
-          currentFileName={file?.name ?? null}
-        />
+        {/* ---- Stage 1: file drop zone (shown until rows are loaded) ---- */}
+        {!hasAnyRows && !isDone && (
+          <FileDropZone
+            onFileSelected={handleFileUpload}
+            disabled={isSubmitting}
+            currentFileName={file?.name ?? null}
+          />
+        )}
 
+        {/* ---- Loading indicator ---- */}
         {isUploading && (
           <Stack direction="row" alignItems="center" spacing={1}>
             <CircularProgress size={18} />
@@ -91,56 +106,88 @@ export function BulkUploadComponent({
           </Stack>
         )}
 
-        <ValidationErrorDisplay errors={errors} />
-
-        {status === "valid" && (
-          <Alert severity="success">
-            {parsedRows.length} related object
-            {parsedRows.length !== 1 ? "s" : ""} ready to upload.
+        {/* ---- File-level error (parse failure, empty file, etc.) ---- */}
+        {submissionError && !hasAnyRows && (
+          <Alert severity="error" onClose={reset}>
+            {submissionError}
           </Alert>
         )}
 
-        {submissionError && <Alert severity="error">{submissionError}</Alert>}
+        {/* ---- Stage 2: preview table (shown once rows are loaded) ---- */}
+        {hasAnyRows && !isDone && (
+          <>
+            <BulkUploadPreviewTable
+              rows={editableRows}
+              vocabulary={vocabulary}
+              onUpdateRow={updateRow}
+              onRemoveRow={removeRow}
+              disabled={isSubmitting}
+            />
 
-        {status === "done" && (
+            {totalErrorCount > 0 && (
+              <Alert severity="warning">
+                Fix the highlighted errors before uploading. You can edit
+                cells directly in the table or remove rows you don't need.
+              </Alert>
+            )}
+
+            {submissionError && (
+              <Alert severity="error">{submissionError}</Alert>
+            )}
+          </>
+        )}
+
+        {/* ---- Stage 3: success state ---- */}
+        {isDone && (
           <Alert severity="success">
             All related objects have been added successfully.
           </Alert>
         )}
 
+        {/* ---- Action buttons ---- */}
         <Stack direction="row" spacing={1} justifyContent="flex-end">
-          {status !== "idle" && status !== "done" && (
+          {hasAnyRows && !isDone && (
             <Button
               variant="outlined"
               size="small"
+              startIcon={<RestartIcon />}
               onClick={reset}
-              disabled={status === "submitting"}
+              disabled={isSubmitting}
             >
-              Clear
+              Start over
             </Button>
           )}
 
-          {status === "done" && (
-            <Button variant="outlined" size="small" onClick={reset}>
+          {isDone && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<RestartIcon />}
+              onClick={reset}
+            >
               Upload more
             </Button>
           )}
 
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={
-              status === "submitting" ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : (
-                <UploadIcon />
-              )
-            }
-            disabled={isConfirmDisabled || status === "submitting"}
-            onClick={() => handleConfirm(addRelatedObject)}
-          >
-            {status === "submitting" ? "Uploading…" : "Confirm upload"}
-          </Button>
+          {hasAnyRows && !isDone && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <UploadIcon />
+                )
+              }
+              disabled={isConfirmDisabled}
+              onClick={() => handleConfirm(addRelatedObject)}
+            >
+              {isSubmitting
+                ? "Uploading…"
+                : `Confirm upload (${editableRows.length})`}
+            </Button>
+          )}
         </Stack>
       </Stack>
     </Box>
