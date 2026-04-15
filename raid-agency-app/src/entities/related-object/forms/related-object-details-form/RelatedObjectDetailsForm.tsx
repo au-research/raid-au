@@ -3,7 +3,7 @@ import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 function FieldGrid({
@@ -13,6 +13,8 @@ function FieldGrid({
   index: number;
   isRowHighlighted: boolean;
 }) {
+  const { setValue, watch, trigger } = useFormContext();
+  const key = "relatedObject";
   const relatedObjectTypeOptions = useMemo(
     () =>
       generalMapping
@@ -23,13 +25,28 @@ function FieldGrid({
         })),
     []
   );
+
+  const idValue = watch(`relatedObject.${index}.id`);
+
+  useEffect(() => {
+    if (!idValue) return;
+
+    if (idValue.includes("doi.org")) {
+      setValue(`${key}.${index}.schemaUri`, "https://doi.org/");
+      trigger(`${key}.${index}.schemaUri`);
+    } else if (idValue.includes("web.archive.org")) {
+      setValue(`${key}.${index}.schemaUri`, "https://web.archive.org/");
+      trigger(`${key}.${index}.schemaUri`);
+    }
+  }, [idValue, index, setValue, trigger]);
+
   return (
     <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
       <TextInputField
         name={`relatedObject.${index}.id`}
-        label="DOI URL"
-        helperText="Enter full DOI URL, e.g. https://doi.org/10.abc123/xyz456"
-        errorText="Invalid. Enter full DOI URL, e.g. https://doi.org/10.abc123/xyz456"
+        label="URL"
+        helperText="Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL(https://web.archive.org/web/20220101000000/https://example.com)"
+        errorText="Invalid. Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL(https://web.archive.org/web/20220101000000/https://example.com)"
       />
       <TextSelectField
         options={relatedObjectTypeOptions}
@@ -98,3 +115,4 @@ export function RelatedObjectDetailsForm({
     </Stack>
   );
 }
+

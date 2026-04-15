@@ -4,6 +4,7 @@ import { API_CONSTANTS } from "@/constants/apiConstants";
 const kcUrl = import.meta.env.VITE_KEYCLOAK_URL as string;
 const kcRealm = import.meta.env.VITE_KEYCLOAK_REALM as string;
 const keycloakGroupEndpoint = `${kcUrl}/realms/${kcRealm}/group`;
+const keycloaklocalizationEndpoint = `${kcUrl}/realms/${kcRealm}/localization`;
 
 export async function joinKeycloakGroup({
   token,
@@ -131,3 +132,24 @@ export async function fetchCurrentUserRor({
     throw new Error(errorMessage);
   }
 }
+
+export const fetchKeycloakLocalization = async ({
+  token,
+  key,
+  locale = "en",
+}: {
+  token: string | undefined;
+  key: string;
+  locale?: string;
+}) => {
+  const response = await fetch(
+    `${keycloaklocalizationEndpoint}?key=${encodeURIComponent(key)}&locale=${encodeURIComponent(locale)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!response.ok) throw new Error("Failed to fetch localization");
+  return response.json();
+};

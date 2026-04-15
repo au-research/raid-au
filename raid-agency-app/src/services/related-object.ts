@@ -159,7 +159,7 @@ function constructDOIUrl(identifier: string): string {
   }
   
   // Assume it's a bare DOI and construct URL
-  return `https://doi.org/${identifier}`;
+  return '';
 }
 // * Custom hook to fetch related object citations from localStorage
 const useRelatedObjectCitations = () => {

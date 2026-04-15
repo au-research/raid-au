@@ -49,6 +49,7 @@ export function RelatedObjectsForm({
   };
   const metadata = useContext(MetadataContext);
   const tooltip = metadata?.[key]?.tooltip;
+
   return (
     <Card
       sx={{

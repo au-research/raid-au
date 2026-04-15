@@ -1,8 +1,10 @@
+import DOMPurify from "dompurify";
 import { ErrorAlertComponent } from "@/components/error-alert-component";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { Loading } from "@/pages/loading";
 import {
   fetchAllKeycloakGroups,
+  fetchKeycloakLocalization,
   joinKeycloakGroup,
   setKeycloakUserAttribute,
 } from "@/services/keycloak-groups";
@@ -36,10 +38,10 @@ type KeycloakGroupSPI = {
   id: string;
 };
 
+
 export const GroupSelector = memo(() => {
   const { token, isInitialized } = useKeycloak();
   const [open, setOpen] = useState(false);
-  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
   const handleClose = () => {
     setOpen(false);
   };
@@ -75,6 +77,15 @@ export const GroupSelector = memo(() => {
     onError: () => {
       console.log("error");
     },
+  });
+  const localizationQuery = useQuery({
+    queryFn: () =>
+      fetchKeycloakLocalization({
+        token: token,
+        key: "groupSelectorAccessMessage",
+      }),
+    queryKey: ["localization", "groupSelectorAccessMessage"],
+    enabled: isInitialized,
   });
 
   const handleKeycloakGroupJoinRequest = async () => {
@@ -124,23 +135,31 @@ export const GroupSelector = memo(() => {
     return <ErrorAlertComponent error="Keycloak groups could not be fetched" />;
   }
 
+  if (localizationQuery.isError) {
+    console.warn("Failed to fetch localization, using default text:", localizationQuery.error);
+  }
+
   return (
     <>
       <Card>
         <CardContent>
           <Stack gap={2}>
-            <Alert severity="error">
-              To use RAiD you must belong to a 'Service Point'; please request
-              access to the appropriate Service Point in the list below.
-              <br />
-              {!isProduction && (
-                <span>
-                  If you haven't been assigned a Service Point yet, please use
-                  'RAiD sandbox'
-                </span>
-              )}
-            </Alert>
-
+           <Alert severity="error">
+            {/*
+            * Localization values are configured by admins in Keycloak's realm settings
+            * and may contain HTML formatting (e.g. <br/>, <b>, <a>). DOMPurify
+            * sanitizes the HTML to prevent XSS while preserving safe formatting tags.
+            */}
+            <span
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  localizationQuery.isError || localizationQuery.isPending
+                  ? "To use RAiD you must belong to a 'Service Point'; please request access to the appropriate Service Point in the list below."
+                  : localizationQuery.data?.value || "To use RAiD you must belong to a 'Service Point'; please request access to the appropriate Service Point in the list below."
+                ),
+              }}
+            />
+          </Alert>
             <>
               <FormControl>
                 <InputLabel id="group-selector-label" size="small">

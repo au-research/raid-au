@@ -206,4 +206,17 @@ public class RaidIngestService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public List<RaidDto> findAllIncludingWithoutHistory() {
+        return raidRepository.findAllIncludingWithoutHistory().stream()
+                .map(RaidRecord::getMetadata)
+                .map(metadata -> {
+                    try {
+                        return objectMapper.readValue(metadata.data(), RaidDto.class);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
 }

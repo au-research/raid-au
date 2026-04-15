@@ -1,12 +1,25 @@
 import { relatedObjectCategoryValidationSchema } from "@/entities/related-object-category/validation-schema/related-object-category-validation-schema";
 import { z } from "zod";
 
-const doiUrlSchema = z.string().trim().url().startsWith("https://doi.org", {
-  message: "URL must be a DOI link starting with https://doi.org",
-});
+const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/.+$/;
+const webArchiveRegex =
+  /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
+
+const relatedObjectIdSchema = z
+  .string()
+  .trim()
+  .url()
+  .refine(
+    (url) => doiRegex.test(url) || webArchiveRegex.test(url),
+    {
+      message:
+        "URL must be a valid DOI (https://doi.org/10.xxxx/...) or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
+    }
+  );
+
 export const relatedObjectValidationSchema = z.array(
   z.object({
-    id: doiUrlSchema,
+    id: relatedObjectIdSchema,
     schemaUri: z.string().min(1),
     type: z.object({
       id: z.string(),
