@@ -48,6 +48,7 @@ export function BulkUploadComponent({
     status,
     file,
     submissionError,
+    submissionProgress,
     isUploading,
     isVocabularyReady,
     editableRows,
@@ -183,9 +184,11 @@ export function BulkUploadComponent({
               disabled={isConfirmDisabled}
               onClick={() => handleConfirm(addRelatedObject)}
             >
-              {isSubmitting
-                ? "Uploading…"
-                : `Confirm upload (${editableRows.length})`}
+              {isSubmitting && submissionProgress
+                ? `Uploading ${submissionProgress.current} of ${submissionProgress.total}…`
+                : isSubmitting
+                  ? "Uploading…"
+                  : `Confirm upload (${editableRows.length})`}
             </Button>
           )}
         </Stack>

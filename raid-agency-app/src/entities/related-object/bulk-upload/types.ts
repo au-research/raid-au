@@ -47,6 +47,19 @@ export function splitVocabularyKey(key: string): {
 }
 
 /**
+ * Schema version URIs used in the type and category sub-objects of a
+ * ParsedRelatedObject. These are distinct from the vocabulary entry
+ * keys (which end with the item's own numeric ID) — they identify the
+ * schema version the backend expects.
+ *
+ * Update these here if the backend vocabulary schema version changes.
+ */
+export const TYPE_SCHEMA_URI =
+  "https://vocabulary.raid.org/relatedObject.type.schema/329";
+export const CATEGORY_SCHEMA_URI =
+  "https://vocabulary.raid.org/relatedObject.category.schemaUri/386";
+
+/**
  * Builds a label-to-entry lookup map from a vocabulary array.
  * Used by the parser to convert human-readable labels from the
  * spreadsheet back into their URI form for API submission.

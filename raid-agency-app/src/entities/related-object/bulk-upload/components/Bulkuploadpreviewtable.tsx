@@ -26,7 +26,7 @@ import type {
   EditableRow,
   EditableRowField,
 } from "../hooks/useBulkUpload";
-import type { BulkUploadVocabulary } from "../vocabulary/types";
+import type { BulkUploadVocabulary } from "../types";
 
 interface BulkUploadPreviewTableProps {
   rows: EditableRow[];

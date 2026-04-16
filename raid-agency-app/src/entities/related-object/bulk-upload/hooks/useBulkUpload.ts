@@ -5,7 +5,8 @@ import {
   type BulkUploadVocabulary,
   type VocabularyEntry,
   buildLabelLookup,
-  splitVocabularyKey,
+  TYPE_SCHEMA_URI,
+  CATEGORY_SCHEMA_URI,
 } from "../types";
 
 export type BulkUploadStatus =
@@ -289,11 +290,6 @@ function parseCsvToRows(csvText: string): Record<string, string>[] {
  * The `.id` is the full vocabulary key (straight from the vocab JSON).
  * The `.schemaUri` is a version identifier that the backend expects.
  */
-const TYPE_SCHEMA_URI =
-  "https://vocabulary.raid.org/relatedObject.type.schema/329";
-const CATEGORY_SCHEMA_URI =
-  "https://vocabulary.raid.org/relatedObject.category.schemaUri/386";
-
 /**
  * Maps a single spreadsheet row into one or more ParsedRelatedObject
  * records. When the Type column contains multiple comma-separated values,
@@ -494,6 +490,7 @@ export function useBulkUpload(
   const [file, setFile] = useState<File | null>(null);
   const [editableRows, setEditableRows] = useState<EditableRow[]>([]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [submissionProgress, setSubmissionProgress] = useState<{ current: number; total: number } | null>(null);
 
   // Build lookups once per vocabulary change. Safe against `undefined`
   // or partially-loaded vocabulary (e.g. async fetch still in flight).
@@ -516,6 +513,7 @@ export function useBulkUpload(
     setFile(null);
     setEditableRows([]);
     setSubmissionError(null);
+    setSubmissionProgress(null);
   }, []);
 
   const parseFile = useCallback(
@@ -735,11 +733,14 @@ export function useBulkUpload(
 
       setStatus("submitting");
       setSubmissionError(null);
+      setSubmissionProgress({ current: 0, total: allExpanded.length });
 
       try {
-        for (const obj of allExpanded) {
-          await addRelatedObject(obj);
+        for (let i = 0; i < allExpanded.length; i++) {
+          await addRelatedObject(allExpanded[i]);
+          setSubmissionProgress({ current: i + 1, total: allExpanded.length });
         }
+        setSubmissionProgress(null);
         setStatus("done");
       } catch (err) {
         setSubmissionError(
@@ -769,6 +770,7 @@ export function useBulkUpload(
     status,
     file,
     submissionError,
+    submissionProgress,
     isUploading,
     isVocabularyReady,
 

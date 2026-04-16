@@ -1,5 +1,6 @@
 import { Button, Stack } from "@mui/material";
 import { Download as DownloadIcon } from "@mui/icons-material";
+import { useSnackbar } from "@/components/snackbar/hooks/useSnackbar";
 
 /**
  * Both templates are static files stored in `public/templates/`.
@@ -22,6 +23,8 @@ const EXCEL_FILENAME = "related-objects-template.xlsx";
 const CSV_FILENAME = "related-objects-template.csv";
 
 export function TemplateDownloader() {
+  const { openSnackbar } = useSnackbar();
+
   const downloadFromPublic = async (url: string, filename: string) => {
     try {
       const response = await fetch(url);
@@ -34,9 +37,10 @@ export function TemplateDownloader() {
       triggerDownload(blob, filename);
     } catch (err) {
       console.error(`Template download failed for ${filename}:`, err);
-      // Swap for your toast / snackbar system in the real app
-      alert(
-        `Unable to download ${filename}. Please try again or contact support.`
+      openSnackbar(
+        `Unable to download ${filename}. Please try again or contact support.`,
+        6000,
+        "error"
       );
     }
   };
