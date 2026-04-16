@@ -22,15 +22,26 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class DataciteService {
+    private static final String DOI_PREFIX = "10.";
+
     private final DataciteProperties properties;
     private final RestTemplate restTemplate;
     private final DataciteRequestFactory dataciteRequestFactory;
     private final HttpEntityFactory httpEntityFactory;
     private final ObjectMapper objectMapper;
 
+    private boolean isDoi(final String handle) {
+        return handle != null && handle.startsWith(DOI_PREFIX);
+    }
+
     @SneakyThrows
     public void mint(final RaidCreateRequest request, final String handle,
                      String repositoryId, String password ){
+
+        if (!isDoi(handle)) {
+            log.debug("Skipping Datacite mint for non-DOI handle: {}", handle);
+            return;
+        }
 
         final DataciteRequest dataciteRequest = dataciteRequestFactory.create(request, handle);
 
@@ -50,6 +61,11 @@ public class DataciteService {
     public void update(RaidUpdateRequest request, String handle,
                        final String repositoryId, final String password) {
 
+        if (!isDoi(handle)) {
+            log.debug("Skipping Datacite update for non-DOI handle: {}", handle);
+            return;
+        }
+
         final var endpoint = "%s/%s".formatted(properties.getEndpoint(), handle);
 
         final DataciteRequest dataciteRequest = dataciteRequestFactory.create(request, handle);
@@ -68,6 +84,11 @@ public class DataciteService {
 
     public void update(RaidDto request, String handle,
                        final String repositoryId, final String password) {
+
+        if (!isDoi(handle)) {
+            log.debug("Skipping Datacite update for non-DOI handle: {}", handle);
+            return;
+        }
 
         final var endpoint = "%s/%s".formatted(properties.getEndpoint(), handle);
 

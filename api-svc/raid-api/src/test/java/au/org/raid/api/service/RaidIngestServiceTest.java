@@ -4,7 +4,8 @@ import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
-import au.org.raid.idl.raidv2.model.RegistrationAgencySchemaURIEnum;
+import au.org.raid.idl.raidv2.model.RaidDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,6 +62,8 @@ class RaidIngestServiceTest {
     RaidHistoryService raidHistoryService;
     @Mock
     RaidDtoReadService raidDtoReadService;
+    @Mock
+    ObjectMapper objectMapper;
     @InjectMocks
     RaidIngestService raidIngestService;
 
@@ -79,9 +82,9 @@ class RaidIngestServiceTest {
         when(accessService.findAccessTypeId(RAID_DTO.getAccess())).thenReturn(accessTypeId);
         when(languageService.findLanguageId(RAID_DTO.getAccess().getStatement().getLanguage()))
                 .thenReturn(accessStatementLanguageId);
-        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
+        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, ROR_SCHEMA_URI))
                 .thenReturn(registrationAgencyOrganisationId);
-        when(organisationService.findOrCreate(OWNER_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
+        when(organisationService.findOrCreate(OWNER_ID, ROR_SCHEMA_URI))
                 .thenReturn(ownerOrganisationId);
 
         when(raidRecordFactory.create(RAID_DTO, accessTypeId, accessStatementLanguageId, registrationAgencyOrganisationId, ownerOrganisationId))
@@ -163,9 +166,9 @@ class RaidIngestServiceTest {
 
         when(accessService.findAccessTypeId(ACCESS)).thenReturn(accessTypeId);
         when(languageService.findLanguageId(LANGUAGE)).thenReturn(accessStatementLanguageId);
-        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
+        when(organisationService.findOrCreate(REGISTRATION_AGENCY_ID, ROR_SCHEMA_URI))
                 .thenReturn(registrationAgencyOrganisationId);
-        when(organisationService.findOrCreate(OWNER_ID, RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_.getValue()))
+        when(organisationService.findOrCreate(OWNER_ID, ROR_SCHEMA_URI))
                 .thenReturn(ownerOrganisationId);
 
         when(raidRecordFactory.create(RAID_DTO, accessTypeId, accessStatementLanguageId,
@@ -185,4 +188,5 @@ class RaidIngestServiceTest {
         verify(subjectService).update(SUBJECTS, HANDLE);
         verify(spatialCoverageService).update(SPATIAL_COVERAGES, HANDLE);
     }
+
 }

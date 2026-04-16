@@ -37,9 +37,9 @@ public class OrganisationService {
         }
 
         for (final var organisation : organisations) {
-            final var organisationSchemaRecord = organisationSchemaRepository.findByUri(organisation.getSchemaUri().getValue())
+            final var organisationSchemaRecord = organisationSchemaRepository.findByUri(organisation.getSchemaUri())
                     .orElseThrow(() ->
-                            new OrganisationSchemaNotFoundException(organisation.getSchemaUri().getValue()));
+                            new OrganisationSchemaNotFoundException(organisation.getSchemaUri()));
 
             final var organisationRecord = organisationRecordFactory.create(organisation, organisationSchemaRecord.getId());
             final var savedOrganisation = organisationRepository.findOrCreate(organisationRecord);
@@ -120,9 +120,9 @@ public class OrganisationService {
         final Set<Integer> newOrganisationIds = new HashSet<>();
 
         for (final var organisation : organisations) {
-            final var organisationSchemaRecord = organisationSchemaRepository.findByUri(organisation.getSchemaUri().getValue())
+            final var organisationSchemaRecord = organisationSchemaRepository.findByUri(organisation.getSchemaUri())
                     .orElseThrow(() ->
-                            new OrganisationSchemaNotFoundException(organisation.getSchemaUri().getValue()));
+                            new OrganisationSchemaNotFoundException(organisation.getSchemaUri()));
 
             final var organisationRecord = organisationRecordFactory.create(
                     organisation,

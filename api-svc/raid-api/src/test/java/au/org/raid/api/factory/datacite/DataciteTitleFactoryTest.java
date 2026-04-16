@@ -2,7 +2,6 @@ package au.org.raid.api.factory.datacite;
 
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
-import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ public class DataciteTitleFactoryTest {
 
         final var title = new Title()
                 .text(text)
-                .type(new TitleType().id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4));
+                .type(new TitleType().id("https://vocabulary.raid.org/title.type.schema/4"));
 
         final var result = dataciteTitleFactory.create(title);
 
@@ -34,7 +33,7 @@ public class DataciteTitleFactoryTest {
 
         final var title = new Title()
                 .text(text)
-                .type(new TitleType().id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_157));
+                .type(new TitleType().id("https://vocabulary.raid.org/title.type.schema/157"));
 
         final var result = dataciteTitleFactory.create(title);
 
@@ -49,7 +48,7 @@ public class DataciteTitleFactoryTest {
 
         final var title = new Title()
                 .text(text)
-                .type(new TitleType().id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156));
+                .type(new TitleType().id("https://vocabulary.raid.org/title.type.schema/157"));
 
         final var result = dataciteTitleFactory.create(title);
 

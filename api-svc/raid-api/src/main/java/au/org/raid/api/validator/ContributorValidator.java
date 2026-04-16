@@ -6,7 +6,6 @@ import au.org.raid.api.repository.ContributorRepository;
 import au.org.raid.api.util.DateUtil;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
-import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +93,7 @@ public class ContributorValidator {
         if (contributor.getId() != null && contributor.getId().startsWith(validationProperties.getOrcid().getUrlPrefix())) {
             return true;
         }
-        if (contributor.getSchemaUri() == ContributorSchemaUriEnum.HTTPS_ORCID_ORG_) {
+        if (contributor.getSchemaUri() != null && contributor.getSchemaUri().equals(validationProperties.getOrcid().getSchemaUri())) {
             return true;
         }
         return false;
@@ -104,7 +103,7 @@ public class ContributorValidator {
         if (contributor.getId() != null && contributor.getId().startsWith(validationProperties.getIsni().getUrlPrefix())) {
             return true;
         }
-        if (contributor.getSchemaUri() == ContributorSchemaUriEnum.HTTPS_ISNI_ORG_) {
+        if (contributor.getSchemaUri() != null && contributor.getSchemaUri().equals(validationProperties.getIsni().getSchemaUri())) {
             return true;
         }
         return false;

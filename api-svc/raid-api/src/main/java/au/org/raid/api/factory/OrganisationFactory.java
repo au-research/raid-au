@@ -2,7 +2,6 @@ package au.org.raid.api.factory;
 
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
-import au.org.raid.idl.raidv2.model.OrganizationSchemaUriEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +13,7 @@ public class OrganisationFactory {
     public Organisation create(final String pid, final String schemaUri, final List<OrganisationRole> roles) {
         return new Organisation()
                 .id(pid)
-                .schemaUri(OrganizationSchemaUriEnum.fromValue(schemaUri))
+                .schemaUri(schemaUri)
                 .role(roles);
     }
 }

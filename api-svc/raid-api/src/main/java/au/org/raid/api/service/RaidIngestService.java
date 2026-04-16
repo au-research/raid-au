@@ -56,12 +56,12 @@ public class RaidIngestService {
 
         final Integer registrationAgencyOrganisationId = organisationService.findOrCreate(
                 raid.getIdentifier().getRegistrationAgency().getId(),
-                raid.getIdentifier().getRegistrationAgency().getSchemaUri().getValue()
+                raid.getIdentifier().getRegistrationAgency().getSchemaUri()
         );
 
         final Integer ownerOrganisationId = organisationService.findOrCreate(
                 raid.getIdentifier().getOwner().getId(),
-                raid.getIdentifier().getOwner().getSchemaUri().getValue()
+                raid.getIdentifier().getOwner().getSchemaUri()
         );
 
         final var raidRecord = raidRecordFactory.create(raid, accessTypeId, accessStatementLanguageId,
@@ -150,12 +150,12 @@ public class RaidIngestService {
 
         final Integer registrationAgencyOrganisationId = organisationService.findOrCreate(
                 raid.getIdentifier().getRegistrationAgency().getId(),
-                raid.getIdentifier().getRegistrationAgency().getSchemaUri().getValue()
+                raid.getIdentifier().getRegistrationAgency().getSchemaUri()
         );
 
         final Integer ownerOrganisationId = organisationService.findOrCreate(
                 raid.getIdentifier().getOwner().getId(),
-                raid.getIdentifier().getOwner().getSchemaUri().getValue()
+                raid.getIdentifier().getOwner().getSchemaUri()
         );
 
         final var raidRecord = raidRecordFactory.create(raid, accessTypeId, accessStatementLanguageId,
@@ -206,4 +206,5 @@ public class RaidIngestService {
                 })
                 .collect(Collectors.toList());
     }
+
 }

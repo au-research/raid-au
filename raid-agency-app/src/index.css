@@ -16,14 +16,12 @@ body {
   position: relative;
   background: rgba(0, 150, 0, 0.5);
   border-radius: 0.3em;
-  padding: 20;
 }
 
 .remove {
   position: relative;
   background: rgba(150, 0, 0, 0.5);
   border-radius: 0.3em;
-  padding: 20;
 }
 
 .scroll {

@@ -11,8 +11,6 @@ import au.org.raid.db.jooq.tables.records.ContributorPositionRecord;
 import au.org.raid.db.jooq.tables.records.ContributorPositionSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidContributorPositionRecord;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
-import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
-import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -153,12 +151,12 @@ class ContributorPositionServiceTest {
     @DisplayName("create() saves all contributor positions")
     void create() {
         final var raidContributorId = 123;
-        final var uri = ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307;
-        final var schemaUri = ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305;
+        final var uri = "_uri";
+        final var schemaUri = "schema-uri";
         final var schemaId = 234;
         final var contributorPosition = new ContributorPosition()
-                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
-                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305);
+                .id(uri)
+                .schemaUri(schemaUri);
         final var contributorPositionId = 345;
 
         final var contributorPositionSchemaRecord = new ContributorPositionSchemaRecord()
@@ -169,10 +167,10 @@ class ContributorPositionServiceTest {
 
         final var raidContributorPositionRecord = new RaidContributorPositionRecord();
 
-        when(contributorPositionSchemaRepository.findByUri(schemaUri.getValue()))
+        when(contributorPositionSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.of(contributorPositionSchemaRecord));
 
-        when(contributorPositionRepository.findByUriAndSchemaId(uri.getValue(), schemaId))
+        when(contributorPositionRepository.findByUriAndSchemaId(uri, schemaId))
                 .thenReturn(Optional.of(contributorPositionRecord));
 
         when(raidContributorPositionRecordFactory.create(contributorPosition, raidContributorId, contributorPositionId))
@@ -200,11 +198,11 @@ class ContributorPositionServiceTest {
     @DisplayName("create() throws ContributorPositionSchemaNotFoundException")
     void createThrowsContributorPositionSchemaNotFoundException() {
         final var raidContributorId = 123;
-        final var schemaUri = ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305;
+        final var schemaUri = "schema-uri";
         final var contributorPosition = new ContributorPosition()
-                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305);
+                .schemaUri(schemaUri);
 
-        when(contributorPositionSchemaRepository.findByUri(schemaUri.getValue()))
+        when(contributorPositionSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.empty());
 
         assertThrows(ContributorPositionSchemaNotFoundException.class, () ->
@@ -219,21 +217,20 @@ class ContributorPositionServiceTest {
     @DisplayName("create() throws ContributorPositionNotFoundException")
     void createThrowsContributorPositionNotFoundException() {
         final var raidContributorId = 123;
-        final var uri = ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_311;
-        final var schemaUri =
-                ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305;
+        final var uri = "_uri";
+        final var schemaUri = "schema-uri";
         final var schemaId = 234;
         final var contributorPosition = new ContributorPosition()
-                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_311)
+                .id(uri)
                 .schemaUri(schemaUri);
 
         final var contributorPositionSchemaRecord = new ContributorPositionSchemaRecord()
                 .setId(schemaId);
 
-        when(contributorPositionSchemaRepository.findByUri(schemaUri.getValue()))
+        when(contributorPositionSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.of(contributorPositionSchemaRecord));
 
-        when(contributorPositionRepository.findByUriAndSchemaId(uri.getValue(), schemaId))
+        when(contributorPositionRepository.findByUriAndSchemaId(uri, schemaId))
                 .thenReturn(Optional.empty());
 
         assertThrows(ContributorPositionNotFoundException.class,

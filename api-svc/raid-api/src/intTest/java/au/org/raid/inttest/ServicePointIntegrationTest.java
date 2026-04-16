@@ -1,6 +1,7 @@
 package au.org.raid.inttest;
 
 import au.org.raid.idl.raidv2.api.ServicePointApi;
+import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
 import au.org.raid.inttest.dto.UserContext;
 import org.junit.jupiter.api.AfterEach;
@@ -11,15 +12,6 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ServicePointIntegrationTest extends AbstractIntegrationTest {
-
-    /**
-     * Service point 20000005 exists in both TEST and dev (via V38.1 migration).
-     * It has all fields populated including groupId, which is required by the
-     * ServicePointUpdateRequest bean validation (@NotNull).
-     * Service point 20000002 (UQ) has groupId=NULL in TEST, so it cannot be
-     * used for update tests.
-     */
-    private static final Long TEST_SERVICE_POINT_ID = 20000005L;
 
     private UserContext operatorContext;
     private ServicePointApi operatorServicePointApi;
@@ -48,11 +40,11 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Find service point by ID returns the correct service point")
     void findServicePointById() {
-        final var response = operatorServicePointApi.findServicePointById(TEST_SERVICE_POINT_ID);
+        final var response = operatorServicePointApi.findServicePointById(UQ_SERVICE_POINT_ID);
         final var servicePoint = response.getBody();
 
         assertThat(servicePoint).isNotNull();
-        assertThat(servicePoint.getId()).isEqualTo(TEST_SERVICE_POINT_ID);
+        assertThat(servicePoint.getId()).isEqualTo(UQ_SERVICE_POINT_ID);
         assertThat(servicePoint.getName()).isNotBlank();
     }
 
@@ -60,7 +52,7 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Update service point preserves DataCite fields not in update request")
     void updatePreservesDataCiteFields() {
         // Read the existing service point
-        final var existing = operatorServicePointApi.findServicePointById(TEST_SERVICE_POINT_ID).getBody();
+        final var existing = operatorServicePointApi.findServicePointById(UQ_SERVICE_POINT_ID).getBody();
         assertThat(existing).isNotNull();
 
         final var originalName = existing.getName();
@@ -90,7 +82,7 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Update service point changes editable fields")
     void updateChangesEditableFields() {
-        final var existing = operatorServicePointApi.findServicePointById(TEST_SERVICE_POINT_ID).getBody();
+        final var existing = operatorServicePointApi.findServicePointById(UQ_SERVICE_POINT_ID).getBody();
         assertThat(existing).isNotNull();
 
         final var originalAdminEmail = existing.getAdminEmail();

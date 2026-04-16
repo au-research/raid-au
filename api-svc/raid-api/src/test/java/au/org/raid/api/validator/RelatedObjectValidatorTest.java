@@ -2,7 +2,10 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.util.TestConstants;
-import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.RelatedObject;
+import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
+import au.org.raid.idl.raidv2.model.RelatedObjectType;
+import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,20 +44,176 @@ class RelatedObjectValidatorTest {
     // type and category errors are returned
 
     @Test
+    @DisplayName("Validation passes with valid related object")
+    void validaRelatedObject() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_DOI)
+                .schemaUri(TestConstants.HTTPS_DOI_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Passes validation with empty related objects")
+    void emptyRelatedObjects() {
+        final var failures = validationService.validateRelatedObjects(Collections.emptyList());
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Passes validation with null related objects")
+    void nullRelatedObjects() {
+        final var failures = validationService.validateRelatedObjects(null);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Fails validation with null related object id")
+    void nullId() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .schemaUri(TestConstants.HTTPS_DOI_ORG)
+                .type(type)
+                .category(categories);
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation with empty related object id")
+    void emptyId() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id("")
+                .schemaUri(TestConstants.HTTPS_DOI_ORG)
+                .type(type)
+                .category(categories);
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation with null schemaUri")
+    void nullSchemeUri() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_DOI)
+                .type(type)
+                .category(categories);
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].schemaUri")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation with empty schemaUri")
+    void emptySchemeUri() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_DOI)
+                .schemaUri("")
+                .type(type)
+                .category(categories);
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].schemaUri")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
     @DisplayName("Validation fails if DOI does not exist")
     void addsFailureIfDoiDoesNotExist() {
         final var fieldId = "relatedObject[0].id";
         final var type = new RelatedObjectType()
-                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
-                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
 
         final var categories = List.of(new RelatedObjectCategory()
-                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
-                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
 
         final var relatedObject = new RelatedObject()
                 .id(TestConstants.VALID_DOI)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
+                .schemaUri(TestConstants.HTTPS_DOI_ORG)
                 .type(type)
                 .category(categories);
 
@@ -73,4 +232,162 @@ class RelatedObjectValidatorTest {
         assertThat(failures, is(List.of(failure)));
     }
 
+    @Test
+    @DisplayName("Validation failures in type and category are returned")
+    void typeAndCategoryFailuresAreReturned() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_DOI)
+                .schemaUri(TestConstants.HTTPS_DOI_ORG)
+                .type(type)
+                .category(categories);
+
+        final var typeError = new ValidationFailure()
+                .fieldId("relatedObject[0].type.id")
+                .errorType(NOT_SET_TYPE)
+                .message(NOT_SET_MESSAGE);
+
+        final var categoryError = new ValidationFailure()
+                .fieldId("relatedObject[0].category.id")
+                .errorType(NOT_SET_TYPE)
+                .message(NOT_SET_MESSAGE);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(List.of(typeError));
+        when(categoryValidationService.validate(categories, 0)).thenReturn(List.of(categoryError));
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(2));
+        assertThat(failures, hasItems(typeError, categoryError));
+    }
+
+    @Test
+    @DisplayName("Validation passes with valid web archive URL")
+    void validWebArchiveRelatedObject() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_WEB_ARCHIVE_URL)
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Fails validation with malformed web archive URL")
+    void invalidWebArchiveUrl() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.INVALID_WEB_ARCHIVE_URL)
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("invalid")
+                        .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation with unsupported schemaUri")
+    void invalidSchemaUri() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_DOI)
+                .schemaUri("https://example.com/")
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].schemaUri")
+                        .errorType("invalid")
+                        .message("Only [https://doi.org/, https://web.archive.org/] is supported.")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation when web archive URL has empty inner URL")
+    void webArchiveUrlWithEmptyInnerUrl() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id("https://web.archive.org/web/20220101000000/https://")
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("invalid")
+                        .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
+        ));
+    }
 }

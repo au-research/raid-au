@@ -25,7 +25,7 @@ const { id, label } = Astro.props;
       <div class="flex items-center gap-x-6">
         <h1>
           <div class="text-sm leading-6 text-gray-500">
-            RAiD <span class="text-gray-700">{id}</span><CopyToClipboard text={`${getRAIDUrl}${id}`} />
+            RAiD <a href={`${getRAIDUrl}${id}`} target="_blank" class="text-gray-700 underline">{`${getRAIDUrl}${id}`}</a><CopyToClipboard text={`${getRAIDUrl}${id}`} />
           </div>
           <div class="mt-1 text-xl font-semibold leading-6 text-gray-900">
             {label}

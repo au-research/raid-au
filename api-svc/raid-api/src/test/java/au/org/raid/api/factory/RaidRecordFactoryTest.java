@@ -45,7 +45,7 @@ class RaidRecordFactoryTest {
         );
 
         assertThat(record.getHandle(), is(TestRaid.HANDLE));
-        assertThat(record.getServicePointId(), is(TestRaid.SERVICE_POINT_ID.longValue()));
+        assertThat(record.getServicePointId(), is(TestRaid.SERVICE_POINT_ID));
         assertThat(record.getMetadataSchema(), is(Metaschema.raido_metadata_schema_v2));
         assertThat(record.getDateCreated(), is(LocalDateTime.now(clock)));
         assertThat(record.getVersion(), is(TestRaid.VERSION));
@@ -56,7 +56,7 @@ class RaidRecordFactoryTest {
         assertThat(record.getEmbargoExpiry(), is(TestRaid.EMBARGO_EXPIRY));
         assertThat(record.getAccessStatement(), is(TestRaid.ACCESS_STATEMENT_TEXT));
         assertThat(record.getAccessStatementLanguageId(), is(accessStatementLanguageId));
-        assertThat(record.getSchemaUri(), is(TestRaid.RAID_DTO.getIdentifier().getSchemaUri().getValue()));
+        assertThat(record.getSchemaUri(), is(TestRaid.RAID_SCHEMA_URI));
         assertThat(record.getRegistrationAgencyOrganisationId(), is(registrationAgencyOrganisationId));
         assertThat(record.getOwnerOrganisationId(), is(ownerOrganisationId));
     }

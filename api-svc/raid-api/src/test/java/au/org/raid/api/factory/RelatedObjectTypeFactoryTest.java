@@ -1,7 +1,5 @@
 package au.org.raid.api.factory;
 
-import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
-import au.org.raid.idl.raidv2.model.RelatedObjectTypeSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,10 +12,10 @@ class RelatedObjectTypeFactoryTest {
     @Test
     @DisplayName("Sets all fields")
     void setsAllFields() {
-        final var id = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247;
-        final var schemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329;
+        final var id = "_id";
+        final var schemaUri = "schema-uri";
 
-        final var result = factory.create(id.getValue(), schemaUri.getValue());
+        final var result = factory.create(id, schemaUri);
 
         assertThat(result.getId(), is(id));
         assertThat(result.getSchemaUri(), is(schemaUri));

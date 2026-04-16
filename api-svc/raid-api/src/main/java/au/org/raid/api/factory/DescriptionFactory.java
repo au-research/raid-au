@@ -1,7 +1,9 @@
 package au.org.raid.api.factory;
 
 import au.org.raid.db.jooq.tables.records.RaidDescriptionRecord;
-import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.Description;
+import au.org.raid.idl.raidv2.model.DescriptionType;
+import au.org.raid.idl.raidv2.model.Language;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,8 +16,8 @@ public class DescriptionFactory {
         return new Description()
                 .text(record.getText())
                 .type(new DescriptionType()
-                        .id(DescriptionTypeIdEnum.fromValue(typeId))
-                        .schemaUri(DescriptionTypeSchemaURIEnum.fromValue(typeSchemaUri))
+                        .id(typeId)
+                        .schemaUri(typeSchemaUri)
                 )
                 .language(language);
     }

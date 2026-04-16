@@ -11,7 +11,7 @@ public class DataciteDescriptionFactory {
     public DataciteDescription create(final Description description) {
         final var dataciteDescription =  new DataciteDescription()
                         .setDescription(description.getText())
-                        .setDescriptionType(DESCRIPTION_TYP_MAP.get(description.getType().getId().getValue()));
+                        .setDescriptionType(DESCRIPTION_TYP_MAP.get(description.getType().getId()));
 
         if (description.getLanguage() != null) {
             dataciteDescription.setLang(description.getLanguage().getId());

@@ -14,6 +14,7 @@ import {
   AlternateUrl,
   Contributor,
   Description,
+  Id,
   ModelDate,
   Organisation,
   RaidCreateRequest,
@@ -134,9 +135,9 @@ export const displayItems = [
  * @param data - The source RAID data, which may be incomplete
  * @returns A complete RaidDto object with all required properties
  */
-export const raidRequest = (data: RaidDto): RaidCreateRequest => {
+export const raidRequest = (data: RaidDto): RaidDto => {
   return {
-    ...(data?.identifier ? { identifier: data.identifier } : {}),
+    identifier: data?.identifier || ({} as Id),
     description: data?.description || ([] as Description[]),
     title: data?.title || ([] as Title[]),
     access: data?.access || ({} as Access),

@@ -56,7 +56,7 @@
                                           </path>
                                     </svg>
                                 <#elseif p.alias == "aaf-saml">
-                                    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv"
+                                    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv "
                                          focusable="false"
                                          aria-hidden="true"
                                          viewBox="0 0 512 512">

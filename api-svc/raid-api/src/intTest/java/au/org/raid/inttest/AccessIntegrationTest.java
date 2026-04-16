@@ -36,7 +36,7 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-/*
+
     @Test
     @DisplayName("Mint with invalid language schemaUri fails")
     void invalidLanguageSchemeUri() {
@@ -57,11 +57,32 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-*/
+
     @Test
     @DisplayName("Mint with empty language schemaUri fails")
     void nullLanguageSchemeUri() {
         createRequest.getAccess().getStatement().getLanguage().schemaUri(null);
+
+        try {
+            raidApi.mintRaid(createRequest);
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(
+                    new ValidationFailure()
+                            .fieldId("access.statement.language.schemaUri")
+                            .errorType("notSet")
+                            .message("field must be set")
+            );
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Mint with empty language schemaUri fails")
+    void emptyLanguageSchemeUri() {
+        createRequest.getAccess().getStatement().getLanguage().schemaUri("");
 
         try {
             raidApi.mintRaid(createRequest);
@@ -92,8 +113,8 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             assertThat(failures).contains(
                     new ValidationFailure()
                             .fieldId("access.statement.language.id")
-                            .errorType("invalidValue")
-                            .message("has invalid/unsupported value - must match \"^\\s*\\S.*$\"")
+                            .errorType("notSet")
+                            .message("field must be set")
             );
         } catch (Exception e) {
             failOnError(e);
@@ -179,7 +200,7 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-/*
+
     @Test
     @DisplayName("Mint with closed access type fails")
     void blankAccessStatement() {
@@ -209,7 +230,7 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-*/
+
     @Test
     @DisplayName("Mint with open access type fails with missing schemaUri")
     void missingSchemeUri() {
@@ -233,7 +254,7 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-/*
+
     @Test
     @DisplayName("Mint with open access type fails with blank schemaUri")
     void blankSchemeUri() {
@@ -257,7 +278,7 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-*/
+
     @Test
     @DisplayName("Mint with open access type fails with missing type")
     void missingType() {
@@ -280,7 +301,7 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-/*
+
     @Test
     @DisplayName("Mint with open access type fails with blank type")
     void blankType() {
@@ -304,6 +325,4 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
             failOnError(e);
         }
     }
-
- */
 }

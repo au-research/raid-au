@@ -486,7 +486,7 @@ export const fetchServicePointMembersWithGroupId = async ({
 
 /**
  * Deletes a service point group from Keycloak
- *
+ * 
  * @param groupId - The group ID to delete
  * @param token - Authentication token
  * @returns Promise resolving when the group is deleted

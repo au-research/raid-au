@@ -185,18 +185,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RaidDto'
-            text/turtle:
-              schema:
-                type: string
-            application/n-triples:
-              schema:
-                type: string
-            application/rdf+xml:
-              schema:
-                type: string
-            application/ld+json:
-              schema:
-                type: object
         403:
           description: Closed or Embargoed raids return a 403 response with an access statement
           content:

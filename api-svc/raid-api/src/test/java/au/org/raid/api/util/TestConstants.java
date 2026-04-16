@@ -72,9 +72,15 @@ public class TestConstants {
     public static final String RELATED_OBJECT_CATEGORY_SCHEMA_URI =
             "https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/category/v1";
 
-    public static final String VALID_DOI = "http://doi.org/10.000/00000";
+    public static final String VALID_DOI = "https://doi.org/10.000/00000";
 
     public static final String HTTPS_DOI_ORG = "https://doi.org/";
+
+    public static final String HTTPS_WEB_ARCHIVE_ORG = "https://web.archive.org/";
+
+    public static final String VALID_WEB_ARCHIVE_URL = "https://web.archive.org/web/20220101000000/https://example.com";
+
+    public static final String INVALID_WEB_ARCHIVE_URL = "https://web.archive.org/foo/bar";
 
     public static final String PRIMARY_DESCRIPTION_TYPE =
             "https://github.com/au-research/raid-metadata/blob/main/scheme/description/type/v1/primary.json";

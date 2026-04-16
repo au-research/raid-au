@@ -3,7 +3,8 @@
     "topBar": {
       "show": true,
       "label": "Explore ARDC",
-      "href": "https://ardc.edu.au"
+      "href": "https://ardc.edu.au",
+      "height": "55px"
     }
   },
   "footer": {

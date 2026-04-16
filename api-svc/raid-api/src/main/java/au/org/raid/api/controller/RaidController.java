@@ -119,7 +119,11 @@ public class RaidController implements RaidApi {
             throw new ValidationException(failures);
         }
 
-        return ResponseEntity.ok(raidService.update(request, getServicePointId()));
+        final var servicePointId = TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)
+                ? request.getIdentifier().getOwner().getServicePoint()
+                : getServicePointId();
+
+        return ResponseEntity.ok(raidService.update(request, servicePointId));
     }
 
     @Override
@@ -170,6 +174,7 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllPublic());
     }
 
+    @Override
     public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids() {
         return ResponseEntity.ok(raidService.findAllEmbargoed());
     }

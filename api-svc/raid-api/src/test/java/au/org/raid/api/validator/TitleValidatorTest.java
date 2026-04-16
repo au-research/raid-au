@@ -2,7 +2,10 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TestConstants;
-import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.Title;
+import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,12 +36,12 @@ class TitleValidatorTest {
     @DisplayName("Validation passes")
     void validationPasses() {
         final var type = new TitleType()
-                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
-                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+                .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri());
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
 
         final var title = new Title()
                 .type(type)
@@ -58,12 +61,12 @@ class TitleValidatorTest {
     @DisplayName("Validation fails if end date is before start date")
     void endDateBeforeStartDate() {
         final var type = new TitleType()
-                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
-                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+                .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri());
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
 
         final var title = new Title()
                 .type(type)
@@ -88,13 +91,12 @@ class TitleValidatorTest {
     @DisplayName("Validation fails when primary title is duplicated")
     void duplicatePrimaryTitle() {
         final var type = new TitleType()
-                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
-                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+                .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri());
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
-
+                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
 
         final var title1 = new Title()
                 .type(type)
@@ -131,12 +133,12 @@ class TitleValidatorTest {
     @DisplayName("Validation fails when primary titles overlap")
     void PrimaryTitlesOverlap() {
         final var type = new TitleType()
-                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
-                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+                .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri());
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
 
         final var title1 = new Title()
                 .type(type)
@@ -179,8 +181,8 @@ class TitleValidatorTest {
     @DisplayName("Validation fails if primary title is missing")
     void missingPrimaryTitle() {
         final var type = new TitleType()
-                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4)
-                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+                .id(TestConstants.ALTERNATIVE_TITLE_TYPE)
+                .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri());
 
         final var title = new Title()
                 .type(type)
@@ -197,5 +199,82 @@ class TitleValidatorTest {
                         .message("at least one primaryTitle entry must be provided"))));
     }
 
+    @Test
+    @DisplayName("Validation fails if list of titles is null")
+    void nullTitles() {
+        final var failures = validationService.validate(null);
 
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("title")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Validation fails if title is null")
+    void nullTitle() {
+        final var title = new Title()
+                .type(new TitleType()
+                        .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                        .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri()))
+                .startDate(TestConstants.START_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(TestConstants.END_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var failures = validationService.validate(List.of(title));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("title[0].title")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+
+    @Test
+    @DisplayName("Validation fails if title is blank")
+    void blankTitle() {
+        final var title = new Title()
+                .type(new TitleType()
+                        .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                        .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri()))
+                .startDate(TestConstants.START_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(TestConstants.END_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .text("");
+
+        final var failures = validationService.validate(List.of(title));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("title[0].title")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Validation fails if start date is missing")
+    void missingStartDate() {
+        final var title = new Title()
+                .type(new TitleType()
+                        .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
+                        .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri()))
+                .text(TestConstants.TITLE)
+                .endDate(TestConstants.END_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var failures = validationService.validate(List.of(title));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("title[0].startDate")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
 }

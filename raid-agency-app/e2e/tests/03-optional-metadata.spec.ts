@@ -47,7 +47,6 @@ import { SpatialCoverageSection } from "../page-objects/sections/SpatialCoverage
 import {
   waitForSnackbar,
   extractPrefixSuffixFromUrl,
-  futureDate,
 } from "../utils/wait-helpers";
 
 // Unique title for this test run so the record is identifiable on the list page
@@ -57,7 +56,7 @@ const START_DATE = "2024-03-01";
 // Required access fields — Embargoed so the statement text field is visible
 const EMBARGOED_LABEL = "Embargoed Access";
 const ACCESS_STATEMENT = "Embargoed for optional metadata e2e testing";
-const EMBARGO_EXPIRY = futureDate(12);
+const EMBARGO_EXPIRY = "2030-06-01";
 
 // Contributor ORCID IDs accepted by the local mock server
 const ORCID_PRIMARY = "https://sandbox.orcid.org/0009-0002-5128-5184";

@@ -1,5 +1,51 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
+
+# 2.8.5
+## API
+* Fix stale metadata column for raids with legacy github.com/au-research/raid-metadata vocabulary
+  URIs — a Flyway migration nulls the stale entries and the existing backfill re-materialises them
+  from the already-correct normalised tables on startup (RAID-575).
+* Remove GET /raid/all endpoint — operator raid visibility is now handled by the existing
+  findAllViewable query with proper access control (RAID-575).
+
+# 2.8.4
+## API
+* Skip DataCite API calls for non-DOI handles — legacy handles (102.100.100/*, 10378.1/*) were
+  never registered with DataCite and caused 500 errors on update (RAID-575).
+* Allow operators to update raids across service points without a Keycloak group mapping (RAID-575).
+* Add operator-only GET /raid/all endpoint to return all raids without RAID_HISTORY join limitation (RAID-575).
+* Add web.archive.org as a valid related object schema URI (RAID-572).
+
+## App-client UI
+* Added web.archive.org as a valid related object with regex validation (RAID-572).
+* Added Keycloak localization support for custom first-login messages (RAID-553).
+
+## IAM
+* Added Keycloak SPI for localization key-value pairs to support custom UI messages (RAID-553).
+* Upgraded Keycloak from 26.5.7 to 26.6.0.
+
+## Static Landing Pages
+* Refactored service point fetch script to a single API call, replacing 12 individual batched
+  requests that were failing due to token expiry (RAID-573).
+
+## Scripts
+* Added vocabulary URI uplift script to migrate legacy raids from github.com/au-research/raid-metadata
+  URIs to vocabulary.raid.org / COAR equivalents (RAID-575).
+
+# 2.8.3
+* Dependency updates and Keycloak configuration fix. No user-facing changes.
+
+# 2.8.2
+## App-client UI
+* Fixed the "Add Title" button flickering issue (RAiD-559).
+* Fixed the RAiD logo size and corrected the Tasmania SVG path on static landing pages.
+* Fixed the layout and Service Point rendering on static landing pages (RAiD-551).
+* Added a Service Point name fetch module and fixed the URL rendering on the RAiD header
+for static landing pages (RAiD-551).
+* Added Service Point to the prefixes table on static landing pages (RAiD-551).
+* Fixed type casting issues on static landing pages (RAiD-551).
+
 # 2.8.1
 ## App-client UI
 * Implemented automatic group rollback in Keycloak when Service Point creation fails after
