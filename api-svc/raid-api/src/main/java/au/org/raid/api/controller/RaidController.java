@@ -119,7 +119,11 @@ public class RaidController implements RaidApi {
             throw new ValidationException(failures);
         }
 
-        return ResponseEntity.ok(raidService.update(request, getServicePointId()));
+        final var servicePointId = TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)
+                ? request.getIdentifier().getOwner().getServicePoint()
+                : getServicePointId();
+
+        return ResponseEntity.ok(raidService.update(request, servicePointId));
     }
 
     @Override
@@ -178,14 +182,6 @@ public class RaidController implements RaidApi {
     @GetMapping(value="/raid/non-legacy")
     public ResponseEntity<List<RaidDto>> findAllNonLegacy() {
         return ResponseEntity.ok(raidService.findAllNonLegacy());
-    }
-
-    @GetMapping(value="/raid/all")
-    public ResponseEntity<List<RaidDto>> findAllRaidsIncludingWithoutHistory() {
-        if (!TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)) {
-            return ResponseEntity.status(403).build();
-        }
-        return ResponseEntity.ok(raidIngestService.findAllIncludingWithoutHistory());
     }
 
     @Override

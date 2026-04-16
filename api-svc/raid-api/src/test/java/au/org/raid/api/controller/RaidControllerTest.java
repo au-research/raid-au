@@ -1051,33 +1051,30 @@ class RaidControllerTest {
     }
 
     @Test
-    @DisplayName("GET /raid/all returns 200 with all raids when user has operator role")
-    void findAllRaidsIncludingWithoutHistory_returnsOk() throws Exception {
-        final var raidDto = new RaidDto();
+    @DisplayName("PUT /raid/{prefix}/{suffix} uses raid's service point for operator role")
+    void updateRaid_usesRaidServicePointForOperator() throws Exception {
+        final var raidServicePointId = 20_000_099L;
+        final var input = APIFixtures.newUpdateRequest();
+        input.getIdentifier().getOwner().servicePoint(raidServicePointId);
+        final var output = createRaidForGet("test", LocalDate.now());
+
+        when(validationService.validateForUpdate(String.join("/", PREFIX, SUFFIX), input))
+                .thenReturn(Collections.emptyList());
+
+        when(raidService.update(input, raidServicePointId)).thenReturn(output);
 
         try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
             tokenUtil.when(() -> TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)).thenReturn(true);
-            when(raidIngestService.findAllIncludingWithoutHistory()).thenReturn(List.of(raidDto));
 
-            mockMvc.perform(get("/raid/all"))
+            mockMvc.perform(put(String.format("/raid/%s/%s", PREFIX, SUFFIX))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(input))
+                            .characterEncoding("utf-8"))
                     .andDo(print())
                     .andExpect(status().isOk());
 
-            verify(raidIngestService).findAllIncludingWithoutHistory();
-        }
-    }
-
-    @Test
-    @DisplayName("GET /raid/all returns 403 when user does not have operator role")
-    void findAllRaidsIncludingWithoutHistory_returnsForbidden() throws Exception {
-        try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
-            tokenUtil.when(() -> TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)).thenReturn(false);
-
-            mockMvc.perform(get("/raid/all"))
-                    .andDo(print())
-                    .andExpect(status().isForbidden());
-
-            verifyNoInteractions(raidIngestService);
+            verify(raidService).update(input, raidServicePointId);
+            verifyNoInteractions(servicePointService);
         }
     }
 }
