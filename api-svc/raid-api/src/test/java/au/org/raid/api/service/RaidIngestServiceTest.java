@@ -62,6 +62,8 @@ class RaidIngestServiceTest {
     RaidHistoryService raidHistoryService;
     @Mock
     RaidDtoReadService raidDtoReadService;
+    @Mock
+    ObjectMapper objectMapper;
     @InjectMocks
     RaidIngestService raidIngestService;
 

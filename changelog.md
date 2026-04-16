@@ -6,12 +6,15 @@ See the [Changelog audience](#changelog-audience) section for info about
 * Fix stale metadata column for raids with legacy github.com/au-research/raid-metadata vocabulary
   URIs — a Flyway migration nulls the stale entries and the existing backfill re-materialises them
   from the already-correct normalised tables on startup (RAID-575).
+* Remove GET /raid/all endpoint — operator raid visibility is now handled by the existing
+  findAllViewable query with proper access control (RAID-575).
 
 # 2.8.4
 ## API
 * Skip DataCite API calls for non-DOI handles — legacy handles (102.100.100/*, 10378.1/*) were
   never registered with DataCite and caused 500 errors on update (RAID-575).
 * Allow operators to update raids across service points without a Keycloak group mapping (RAID-575).
+* Add operator-only GET /raid/all endpoint to return all raids without RAID_HISTORY join limitation (RAID-575).
 * Add web.archive.org as a valid related object schema URI (RAID-572).
 
 ## App-client UI

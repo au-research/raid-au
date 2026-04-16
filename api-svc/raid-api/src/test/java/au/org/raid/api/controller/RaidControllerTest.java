@@ -1077,5 +1077,4 @@ class RaidControllerTest {
             verifyNoInteractions(servicePointService);
         }
     }
-
 }

@@ -69,6 +69,8 @@ raid:
       username: geonames
   history:
     baseline-interval: 50
+server:
+  forward-headers-strategy: native
 spring:
   jackson:
     default-property-inclusion: non_null
