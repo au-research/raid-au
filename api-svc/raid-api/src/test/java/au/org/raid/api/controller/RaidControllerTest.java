@@ -1049,4 +1049,33 @@ class RaidControllerTest {
             return null;
         };
     }
+
+    @Test
+    @DisplayName("PUT /raid/{prefix}/{suffix} uses raid's service point for operator role")
+    void updateRaid_usesRaidServicePointForOperator() throws Exception {
+        final var raidServicePointId = 20_000_099L;
+        final var input = APIFixtures.newUpdateRequest();
+        input.getIdentifier().getOwner().servicePoint(raidServicePointId);
+        final var output = createRaidForGet("test", LocalDate.now());
+
+        when(validationService.validateForUpdate(String.join("/", PREFIX, SUFFIX), input))
+                .thenReturn(Collections.emptyList());
+
+        when(raidService.update(input, raidServicePointId)).thenReturn(output);
+
+        try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
+            tokenUtil.when(() -> TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)).thenReturn(true);
+
+            mockMvc.perform(put(String.format("/raid/%s/%s", PREFIX, SUFFIX))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(input))
+                            .characterEncoding("utf-8"))
+                    .andDo(print())
+                    .andExpect(status().isOk());
+
+            verify(raidService).update(input, raidServicePointId);
+            verifyNoInteractions(servicePointService);
+        }
+    }
+
 }

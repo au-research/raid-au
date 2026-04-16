@@ -56,4 +56,5 @@ class RaidRepositoryTest {
 
         verify(dslContext).selectFrom(RAID);
     }
+
 }

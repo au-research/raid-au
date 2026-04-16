@@ -1,6 +1,32 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.8.4
+## API
+* Skip DataCite API calls for non-DOI handles — legacy handles (102.100.100/*, 10378.1/*) were
+  never registered with DataCite and caused 500 errors on update (RAID-575).
+* Allow operators to update raids across service points without a Keycloak group mapping (RAID-575).
+* Add web.archive.org as a valid related object schema URI (RAID-572).
+
+## App-client UI
+* Added web.archive.org as a valid related object with regex validation (RAID-572).
+* Added Keycloak localization support for custom first-login messages (RAID-553).
+
+## IAM
+* Added Keycloak SPI for localization key-value pairs to support custom UI messages (RAID-553).
+* Upgraded Keycloak from 26.5.7 to 26.6.0.
+
+## Static Landing Pages
+* Refactored service point fetch script to a single API call, replacing 12 individual batched
+  requests that were failing due to token expiry (RAID-573).
+
+## Scripts
+* Added vocabulary URI uplift script to migrate legacy raids from github.com/au-research/raid-metadata
+  URIs to vocabulary.raid.org / COAR equivalents (RAID-575).
+
+# 2.8.3
+* Dependency updates and Keycloak configuration fix. No user-facing changes.
+
 # 2.8.2
 ## App-client UI
 * Fixed the "Add Title" button flickering issue (RAiD-559).
