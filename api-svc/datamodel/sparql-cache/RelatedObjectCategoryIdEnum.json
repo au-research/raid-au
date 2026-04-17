@@ -1,1 +1,45 @@
-[ "https://vocabulary.raid.org/relatedObject.category.id/190", "https://vocabulary.raid.org/relatedObject.category.id/191", "https://vocabulary.raid.org/relatedObject.category.id/192" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.category.id/190"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Output"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.category.id/191"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Input"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.category.id/192"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Internal process document or artefact"
+        }
+      }
+    ]
+  }
+}

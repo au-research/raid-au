@@ -87,7 +87,7 @@ spring:
     default-schema: api_svc
     create-schemas: true
     baseline-version: 25
-    locations:  classpath:db/env/api_user,classpath:db/migration,classpath:db/env/${raid.environment}
+    locations:  classpath:db/env/api_user,classpath:db/migration,classpath:db/env/prod
   security:
     oauth2:
       resourceserver:

@@ -1,1 +1,33 @@
-[ "https://www.geonames.org/", "https://www.openstreetmap.org/" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://www.openstreetmap.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "Openstreetmap link"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://www.geonames.org/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Geonames document URI"
+        }
+      }
+    ]
+  }
+}

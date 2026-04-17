@@ -1,1 +1,23 @@
-[ "https://vocabulary.raid.org/title.type.schema/376" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/title.type.schema/376"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "RAiD title type scheme"
+        }
+      }
+    ]
+  }
+}

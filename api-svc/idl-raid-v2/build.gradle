@@ -1,10 +1,10 @@
 plugins {
   id 'java'
-  alias( libs.plugins.openapi.generator)
+  id "org.openapi.generator" version "7.12.0"
 }
 
 ext {
-  raidV2SpecFile = file("src/raido-openapi-3.0.yaml")
+  raidV2SpecFile = file("src/raid-openapi-strict-3.1.yaml")
   generateDirName = "src/main/generated"
   generateTsDirName = "../../app-client/src/Generated/Raidv2"
 //  templateDirName = "src/main/resources/template"
@@ -30,6 +30,19 @@ sourceSets{
     srcDirs += [generateDirName, ]
   }
 }
+import au.raid.org.api.*
+
+tasks.register('assembleOpenAPIV2Specs', AssembleOpenAPI) {
+  openAPITemplateFile = file("src/template-raid-openapi-3.1.yaml")
+  generatedSchemaFiles = [file("../datamodel/generated/v2/raid-jsonschema.json"), file("../datamodel/generated/v2/researchproject.json")]
+  outputFile = file("src/raid-openapi-3.1.yaml")
+}
+
+tasks.register('assembleOpenAPIV2InternalSpecs', AssembleOpenAPI) {
+  openAPITemplateFile = file("src/template-raid-openapi-3.1.yaml")
+  generatedSchemaFiles = [file("../datamodel/generated/v2/raid-strict-jsonschema.json"), file("../datamodel/generated/v2/researchproject.json")]
+  outputFile = file("src/raid-openapi-strict-3.1.yaml")
+}
 
 clean {
   // may have to stop any running api-svc server if errors about files in use 
@@ -43,18 +56,17 @@ openApiGenerate {
   generatorName = "spring"
   inputSpec = raidV2SpecFile.path
   outputDir = file(generateDirName).path
-  
+
   validateSpec =  true
   generateApiDocumentation = false
   generateApiTests = false
   generateModelDocumentation = false
   generateModelTests = false
-//  templateDir = file(templateDirName).path
-  
+
   modelPackage = "au.org.raid.idl.raidv2.model"
   apiPackage = "au.org.raid.idl.raidv2.api"
 
-  /* Setting globals seems to mean it only generates what you specify. 
+  /* Setting globals seems to mean it only generates what you specify.
   If no globalProps, it generates everything.*/
   globalProperties = [
     // blank means that it generates all models
@@ -76,14 +88,12 @@ openApiGenerate {
     Need ApiUtil for default interface implementations, but other stuff is
     SpringBoot specific - do not want. */
     supportingFiles: "ApiUtil.java",
-
   ]
 
   importMappings = [
     Date: "au.org.raid.idl.raidv2.model.Date"
   ]
   configOptions = [
-
           /* use outputDir instead of this, so that random supporting openapi files
           are written in `generated` (and .gitignore'd) instead of in project dir. */
           sourceFolder         : "",
@@ -128,12 +138,14 @@ openApiGenerate {
           delegatePattern      : "false",
           removeOperationIdPrefix: "true",
           removeOperationIdSuffix: "true",
-          /* Disable Bean Validation annotations (@Valid and JSR 303 annotations) */
-          useBeanValidation    : "false",
-          performBeanValidation: "false",
+          useBeanValidation    : "true",
+          performBeanValidation: "true",
   ]
 }
 tasks.openApiGenerate{
+  dependsOn "assembleOpenAPIV2Specs"
+  dependsOn "assembleOpenAPIV2InternalSpecs"
+
   // make sure task is re-run if templates are changed
 //  inputs.files templateDirName
   /* make sure task is re-run if reference files are changed, it appears 

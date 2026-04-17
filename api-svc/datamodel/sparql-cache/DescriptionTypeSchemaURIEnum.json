@@ -1,1 +1,22 @@
-[ "https://vocabulary.raid.org/description.type.schema/320" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/description.type.schema/320"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "RAiD description type schema"
+        }
+      }
+    ]
+  }
+}

@@ -1,1 +1,23 @@
-[ "https://vocabulary.raid.org/relatedObject.type.schema/329" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/329"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "RAiD related object type schema"
+        }
+      }
+    ]
+  }
+}

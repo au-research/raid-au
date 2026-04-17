@@ -1,1 +1,166 @@
-[ "https://credit.niso.org/contributor-roles/conceptualization/", "https://credit.niso.org/contributor-roles/data-curation/", "https://credit.niso.org/contributor-roles/formal-analysis/", "https://credit.niso.org/contributor-roles/funding-acquisition/", "https://credit.niso.org/contributor-roles/investigation/", "https://credit.niso.org/contributor-roles/methodology/", "https://credit.niso.org/contributor-roles/project-administration/", "https://credit.niso.org/contributor-roles/resources/", "https://credit.niso.org/contributor-roles/software/", "https://credit.niso.org/contributor-roles/supervision/", "https://credit.niso.org/contributor-roles/validation/", "https://credit.niso.org/contributor-roles/visualization/", "https://credit.niso.org/contributor-roles/writing-original-draft/", "https://credit.niso.org/contributor-roles/writing-review-editing/" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/conceptualization/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Conceptualization"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/visualization/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Visualization"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/data-curation/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Data curation"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/writing-original-draft/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Writing – original draft"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/formal-analysis/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Formal analysis"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/writing-review-editing/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Writing – review & editing"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/funding-acquisition/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Funding acquisition"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/investigation/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Investigation"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/methodology/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Methodology"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/project-administration/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Project administration"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/resources/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Resources"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/software/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Software"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/supervision/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Supervision"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/contributor-roles/validation/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Validation"
+        }
+      }
+    ]
+  }
+}

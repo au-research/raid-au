@@ -1,1 +1,34 @@
-[ "https://vocabularies.coar-repositories.org/access_rights/c_abf2/", "https://vocabularies.coar-repositories.org/access_rights/c_f1cf/" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabularies.coar-repositories.org/access_rights/c_abf2/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Open Access"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabularies.coar-repositories.org/access_rights/c_f1cf/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Embargoed Access"
+        }
+      }
+    ]
+  }
+}

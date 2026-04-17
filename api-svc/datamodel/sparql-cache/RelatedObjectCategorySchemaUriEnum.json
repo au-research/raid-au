@@ -1,1 +1,22 @@
-[ "https://vocabulary.raid.org/relatedObject.category.schemaUri/386" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.category.schemaUri/386"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "RAiD related object category schema"
+        }
+      }
+    ]
+  }
+}

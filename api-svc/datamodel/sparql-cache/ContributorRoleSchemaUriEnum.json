@@ -1,1 +1,22 @@
-[ "https://credit.niso.org/" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://credit.niso.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "RAiD contributor role schema"
+        }
+      }
+    ]
+  }
+}

@@ -1,1 +1,22 @@
-[ "https://vocabularies.coar-repositories.org/access_rights/" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabularies.coar-repositories.org/access_rights/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "RAiD access type schema"
+        }
+      }
+    ]
+  }
+}

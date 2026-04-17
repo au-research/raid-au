@@ -4,6 +4,7 @@ include ":api-svc:idl-raid-v2"
 include ':api-svc:raid-api'
 include ":api-svc:db"
 include ":api-svc:testFixtures"
+include ":api-svc:datamodel"
 include ":iam"
 
 dependencyResolutionManagement{

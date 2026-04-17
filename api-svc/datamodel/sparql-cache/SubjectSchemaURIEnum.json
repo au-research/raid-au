@@ -1,1 +1,56 @@
-[ "https://linked.data.gov.au/def/anzsrc-for/2020", "https://linked.data.gov.au/def/anzsrc-seo/2020", "https://vocabs.ardc.edu.au/viewById/316", "https://vocabs.ardc.edu.au/viewById/317" ]
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabs.ardc.edu.au/viewById/316"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Australian and New Zealand Standard Research Classification 2020: Fields of Research"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabs.ardc.edu.au/viewById/317"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Australian and New Zealand Standard Research Classification 2020: Socio-Economic Objectives"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://linked.data.gov.au/def/anzsrc-for/2020"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "1297.0 ANZSRC - Australian and New Zealand Standard Research Classification, 2020: Fields of Research (FoR)"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://linked.data.gov.au/def/anzsrc-seo/2020"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "1297.0 ANZSRC - Australian and New Zealand Standard Research Classification, 2020: Socio-Economic Objectives (SEO)"
+        }
+      }
+    ]
+  }
+}
