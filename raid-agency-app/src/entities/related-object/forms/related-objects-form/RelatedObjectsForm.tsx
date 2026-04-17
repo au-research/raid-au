@@ -25,7 +25,7 @@ import { RelatedObjectDetailsForm } from "@/entities/related-object/forms/relate
 import { MetadataContext } from "@/components/raid-form/RaidForm";
 import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { UploadIcon } from "lucide-react";
+import { BulkUploadComponent, ParsedRelatedObject } from "../../bulk-upload/Index";
 
 type EntryMode = "manual" | "bulk";
 
@@ -54,6 +54,12 @@ export function RelatedObjectsForm({
     append(generator());
     trigger(key);
   };
+
+  const handleBulkAddItem = async (obj: ParsedRelatedObject) => {
+    append(obj);
+    trigger(key);
+  };
+
   const metadata = useContext(MetadataContext);
   const tooltip = metadata?.[key]?.tooltip;
 
@@ -130,7 +136,7 @@ export function RelatedObjectsForm({
                 color="text.secondary"
                 textAlign="center"
               >
-                Bulk upload functionality goes here
+                <BulkUploadComponent addRelatedObject={handleBulkAddItem}/>
               </Typography>
             )}
             
