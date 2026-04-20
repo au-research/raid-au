@@ -1,25 +1,28 @@
 import { RelatedObjectCategoriesForm } from "@/entities/related-object-category/forms/related-object-categories-form";
 import { relatedObjectDataGenerator } from "@/entities/related-object/data-generator/related-object-data-generator";
 import { RaidDto } from "@/generated/raid";
-import { AddBox } from "@mui/icons-material";
+import { AddBox, ExpandMore } from "@mui/icons-material";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
-  Divider,
+  Chip,
   Stack,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { Fragment, useState, useContext } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import {
   Control,
   FieldErrors,
   UseFormTrigger,
   useFieldArray,
+  useFormContext,
 } from "react-hook-form";
 import { RelatedObjectDetailsForm } from "@/entities/related-object/forms/related-object-details-form";
 import { MetadataContext } from "@/components/raid-form/RaidForm";
@@ -28,6 +31,32 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { BulkUploadComponent, ParsedRelatedObject } from "../../bulk-upload/Index";
 
 type EntryMode = "manual" | "bulk";
+
+/**
+ * Reads the current DOI/URL value for a given index and displays it
+ * in the accordion summary. Uses useFormContext so it must be rendered
+ * inside a FormProvider.
+ */
+function RelatedObjectSummaryLabel({ index }: { index: number }) {
+  const { watch } = useFormContext();
+  const url: string = watch(`relatedObject.${index}.id`) ?? "";
+
+  return (
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      sx={{
+        ml: 1.5,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        maxWidth: 480,
+      }}
+    >
+      {url || "No URL set"}
+    </Typography>
+  );
+}
 
 export function RelatedObjectsForm({
   control,
@@ -46,37 +75,81 @@ export function RelatedObjectsForm({
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const [entryMode, setEntryMode] = useState<EntryMode>("manual");
+  const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
+
   const { fields, append, remove } = useFieldArray({ control, name: key });
+
+  /**
+   * IDs of accordions that are currently collapsed.
+   * - Initially loaded items are collapsed (seeded from fields at mount).
+   * - Bulk-added items are collapsed.
+   * - Manually added items start expanded.
+   * - User can toggle any item freely.
+   */
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(
+    () => new Set(fields.map((f) => f.id))
+  );
   const errorMessage = errors[key]?.message;
 
+  // Track the set of field IDs seen in the previous render so we can
+  // detect which fields are newly added after each append().
+  const prevFieldIdsRef = useRef<Set<string>>(new Set(fields.map((f) => f.id)));
+
+  // Bulk-added items start collapsed; manually added items start expanded.
+  useEffect(() => {
+    const prevIds = prevFieldIdsRef.current;
+    const newFields = fields.filter((f) => !prevIds.has(f.id));
+
+    if (newFields.length > 0 && entryMode === "bulk") {
+      setCollapsedIds((prev) => {
+        const next = new Set(prev);
+        newFields.forEach((f) => next.add(f.id));
+        return next;
+      });
+    }
+
+    prevFieldIdsRef.current = new Set(fields.map((f) => f.id));
+  }, [fields, entryMode]);
+
   const handleAddItem = () => {
-    setEntryMode("manual");
+    setEntryMode("manual"); // hide bulk upload panel if open
     append(generator());
     trigger(key);
   };
 
   const handleBulkAddItem = async (obj: ParsedRelatedObject) => {
-    console.log("Adding from bulk upload:", obj);
+    // entryMode is already "bulk" — the useEffect above will collapse the new item
     append(obj);
     trigger(key);
+  };
+
+  const handleRemoveItem = (fieldId: string, index: number) => {
+    remove(index);
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(fieldId);
+      return next;
+    });
+  };
+
+  const handleToggle = (fieldId: string) => {
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(fieldId)) {
+        next.delete(fieldId);
+      } else {
+        next.add(fieldId);
+      }
+      return next;
+    });
   };
 
   const metadata = useContext(MetadataContext);
   const tooltip = metadata?.[key]?.tooltip;
 
-  const handleModeChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newMode: EntryMode | null
-  ) => {
-    // MUI ToggleButtonGroup can return null if the same button is clicked
-    if (newMode !== null) {
-      setEntryMode(newMode);
-    }
-  };
-
   const showBulkUploadSection = () => {
     setEntryMode("bulk");
-  }
+  };
 
   return (
     <Card
@@ -87,18 +160,28 @@ export function RelatedObjectsForm({
       id={key}
     >
       <Stack direction="row" alignItems="center">
-        <CardHeader sx={{padding: "16px 0 16px 16px"}} title={labelPlural} />
+        <CardHeader
+          sx={{ padding: "16px 0 16px 16px" }}
+          title={
+            <Stack direction="row" alignItems="center" gap={1}>
+              {labelPlural}
+              {fields.length > 0 && (
+                <Chip label={fields.length} size="small" />
+              )}
+            </Stack>
+          }
+        />
         <CustomStyledTooltip
           title={label}
           content={tooltip || ""}
           variant="info"
           placement="top"
           tooltipIcon={<InfoOutlinedIcon />}
-        >
-        </CustomStyledTooltip>
+        />
       </Stack>
+
       <CardContent>
-        <Stack gap={2} className={isRowHighlighted ? "add" : ""}>
+        <Stack gap={2}>
           {errorMessage && (
             <Typography variant="body2" color="error" textAlign="center">
               {errorMessage}
@@ -115,46 +198,98 @@ export function RelatedObjectsForm({
             </Typography>
           )}
 
-          <Stack divider={<Divider />} gap={2} data-testid={`${key}-form`}>
+          <Stack gap={1} data-testid={`${key}-form`}>
             {fields.map((field, index) => (
-              <Fragment key={field.id}>
-                <DetailsForm
-                  key={field.id}
-                  handleRemoveItem={() => remove(index)}
-                  index={index}
-                />
-                <RelatedObjectCategoriesForm
-                  control={control}
-                  errors={errors}
-                  trigger={trigger}
-                  parentIndex={index}
-                />
-              </Fragment>
-            ))}
-            {entryMode === "bulk" && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                textAlign="center"
+              <Accordion
+                key={field.id}
+                expanded={!collapsedIds.has(field.id)}
+                onChange={() => handleToggle(field.id)}
+                disableGutters
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  "&:before": { display: "none" },
+                }}
               >
-                <BulkUploadComponent addRelatedObject={handleBulkAddItem}/>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    sx={{ width: "100%", overflow: "hidden", pr: 1 }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      noWrap
+                      sx={{
+                        textDecoration: highlightedFieldId === field.id ? "line-through" : "none",
+                        color: highlightedFieldId === field.id ? "error.main" : "inherit",
+                      }}
+                    >
+                      {label} #{index + 1}
+                    </Typography>
+                    {collapsedIds.has(field.id) && (
+                      <RelatedObjectSummaryLabel index={index} />
+                    )}
+                  </Stack>
+                </AccordionSummary>
+
+                <AccordionDetails>
+                  <Stack gap={2}>
+                    <DetailsForm
+                      key={field.id}
+                      handleRemoveItem={() => handleRemoveItem(field.id, index)}
+                      index={index}
+                      onHighlightChange={(highlighted) =>
+                        setHighlightedFieldId(highlighted ? field.id : null)
+                      }
+                    />
+                    <RelatedObjectCategoriesForm
+                      control={control}
+                      errors={errors}
+                      trigger={trigger}
+                      parentIndex={index}
+                    />
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Stack>
+
+          <Box
+            className={isRowHighlighted ? "add" : ""}
+            sx={{
+              minHeight: 40,
+              borderRadius: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {isRowHighlighted && (
+              <Typography variant="body2" color="success.dark">
+                New {label} will be added here
               </Typography>
             )}
-            
-          </Stack>
+          </Box>
+
+          {entryMode === "bulk" && (
+            <BulkUploadComponent addRelatedObject={handleBulkAddItem} />
+          )}
         </Stack>
       </CardContent>
-      <CardActions>
+
+      <CardActions sx={{ pt: 0 }}>
         <Button
           variant="outlined"
           color="success"
           size="small"
           startIcon={<AddBox />}
-          sx={{ textTransform: "none", mt: 3 }}
+          sx={{ textTransform: "none" }}
           onClick={handleAddItem}
           onMouseEnter={() => setIsRowHighlighted(true)}
           onMouseLeave={() => setIsRowHighlighted(false)}
-          
         >
           Add {label}
         </Button>
@@ -163,7 +298,7 @@ export function RelatedObjectsForm({
           color="success"
           size="small"
           startIcon={<AddBox />}
-          sx={{ textTransform: "none", mt: 3 }}
+          sx={{ textTransform: "none" }}
           onClick={showBulkUploadSection}
         >
           Upload Bulk {labelPlural}

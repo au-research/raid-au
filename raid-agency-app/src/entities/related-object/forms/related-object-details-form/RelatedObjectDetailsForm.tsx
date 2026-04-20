@@ -2,7 +2,7 @@ import { TextInputField } from "@/components/fields/TextInputField";
 import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
-import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { Grid, IconButton, Stack, Tooltip } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -63,32 +63,27 @@ function FieldGrid({
 export function RelatedObjectDetailsForm({
   index,
   handleRemoveItem,
+  onHighlightChange,
 }: {
   index: number;
   handleRemoveItem: (index: number) => void;
+  onHighlightChange?: (highlighted: boolean) => void;
 }) {
-  const key = "relatedObject";
   const label = "Related Object";
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
-  const { getValues } = useFormContext();
 
-  const handleMouseEnter = () => setIsRowHighlighted(true);
-  const handleMouseLeave = () => setIsRowHighlighted(false);
+  const handleMouseEnter = () => {
+    setIsRowHighlighted(true);
+    onHighlightChange?.(true);
+  };
+  const handleMouseLeave = () => {
+    setIsRowHighlighted(false);
+    onHighlightChange?.(false);
+  };
 
   return (
     <Stack gap={2}>
-      <Typography variant="body2">
-        <span
-          style={{ textDecoration: isRowHighlighted ? "line-through" : "" }}
-        >
-          {getValues(`${key}.${index}.text`)
-            ? getValues(`${key}.${index}.text`)
-            : `${label} # ${index + 1}`}
-        </span>
-        {isRowHighlighted && " (to be deleted)"}
-      </Typography>
-
       <Stack direction="row" alignItems="flex-start" gap={1}>
         <FieldGrid index={index} isRowHighlighted={isRowHighlighted} />
 
