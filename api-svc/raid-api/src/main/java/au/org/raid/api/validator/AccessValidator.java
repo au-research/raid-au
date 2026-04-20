@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 @RequiredArgsConstructor
@@ -43,8 +42,8 @@ public class AccessValidator {
         } else {
             failures.addAll(typeValidationService.validate(access.getType()));
 
-            if (!isBlank(access.getType().getId())) {
-                final var typeId = access.getType().getId();
+            if (access.getType().getId() != null) {
+                final var typeId = access.getType().getId().getValue();
 
                 if (typeId.equals(ACCESS_TYPE_CLOSED)) {
                     failures.add(new ValidationFailure()

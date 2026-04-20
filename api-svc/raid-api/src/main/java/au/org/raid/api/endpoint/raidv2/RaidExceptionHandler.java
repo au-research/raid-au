@@ -22,7 +22,7 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
         final var raid = e.getRaid();
 
         final var body = new ClosedRaid()
-                .identifier(raid.getIdentifier())
+                .id(raid.getIdentifier().getId())
                 .access(raid.getAccess());
 
         return ResponseEntity.status(403).body(body);

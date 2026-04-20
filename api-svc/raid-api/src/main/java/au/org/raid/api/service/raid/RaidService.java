@@ -108,7 +108,7 @@ public class RaidService {
     @SneakyThrows
     @Transactional
     public RaidDto update(final RaidUpdateRequest raid, final long userServicePointId) {
-        final var raidServicePointId = raid.getIdentifier().getOwner().getServicePoint();
+        final var raidServicePointId = raid.getIdentifier().getOwner().getServicePoint().longValueExact();
 
         if (!TokenUtil.hasRole(OPERATOR_ROLE) && raidServicePointId != userServicePointId) {
             throw new IllegalAccessException("User service point id (%d) does not match raid service point id (%d)"
@@ -117,7 +117,7 @@ public class RaidService {
 
         final var servicePointRecord =
                 servicePointRepository.findById(raidServicePointId).orElseThrow(() ->
-                        new UnknownServicePointException(raid.getIdentifier().getOwner().getServicePoint()));
+                        new UnknownServicePointException(raid.getIdentifier().getOwner().getServicePoint().longValueExact()));
 
         final Integer version = raid.getIdentifier().getVersion();
 
@@ -159,7 +159,7 @@ public class RaidService {
         final var raid = raidHistoryService.findByHandle(handle)
                 .orElseThrow(() -> new ResourceNotFoundException(handle));
 
-        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint();
+        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValueExact();
 
         final var servicePointRecord = servicePointRepository.findById(servicePointId)
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
@@ -349,7 +349,7 @@ public class RaidService {
 
         //TODO: Check prefix
 
-        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint();
+        final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValueExact();
 
         final var servicePointRecord = servicePointRepository.findById(servicePointId)
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));

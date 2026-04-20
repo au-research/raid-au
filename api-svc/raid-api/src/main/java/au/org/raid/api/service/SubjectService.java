@@ -37,7 +37,7 @@ public class SubjectService {
         }
 
         for (final var subject : subjects) {
-            final var schemaUri = subject.getSchemaUri();
+            final var schemaUri = subject.getSchemaUri().getValue();
 
             final var subjectTypeSchemaRecord = subjectTypeSchemaRepository.findByUri(schemaUri)
                     .orElseThrow(() -> new SubjectTypeSchemaNotFoundException(schemaUri));

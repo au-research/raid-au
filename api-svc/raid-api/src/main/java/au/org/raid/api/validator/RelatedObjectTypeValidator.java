@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 public class RelatedObjectTypeValidator {
@@ -26,14 +25,14 @@ public class RelatedObjectTypeValidator {
     public List<ValidationFailure> validate(final RelatedObjectType relatedObjectType, final int index) {
         var failures = new ArrayList<ValidationFailure>();
 
-        if (isBlank(relatedObjectType.getId())) {
+        if (relatedObjectType.getId() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("relatedObject[%d].type.id".formatted(index))
                     .errorType(NOT_SET_TYPE)
                     .message(NOT_SET_MESSAGE)
             );
         }
-        if (isBlank(relatedObjectType.getSchemaUri())) {
+        if (relatedObjectType.getSchemaUri() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("relatedObject[%d].type.schemaUri".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -41,7 +40,7 @@ public class RelatedObjectTypeValidator {
             );
         } else {
             final var relatedObjectTypeScheme =
-                    relatedObjectTypeSchemaRepository.findActiveByUri(relatedObjectType.getSchemaUri());
+                    relatedObjectTypeSchemaRepository.findActiveByUri(relatedObjectType.getSchemaUri().getValue());
 
             if (relatedObjectTypeScheme.isEmpty()) {
                 failures.add(new ValidationFailure()
@@ -49,8 +48,8 @@ public class RelatedObjectTypeValidator {
                         .errorType(INVALID_VALUE_TYPE)
                         .message(INVALID_SCHEMA)
                 );
-            } else if (!isBlank(relatedObjectType.getId()) &&
-                    relatedObjectTypeRepository.findByUriAndSchemaId(relatedObjectType.getId(), relatedObjectTypeScheme.get().getId()).isEmpty()) {
+            } else if (relatedObjectType.getId() != null &&
+                    relatedObjectTypeRepository.findByUriAndSchemaId(relatedObjectType.getId().getValue(), relatedObjectTypeScheme.get().getId()).isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("relatedObject[%d].type.id".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)

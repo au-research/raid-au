@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class DescriptionTypeValidator {
             );
         }
 
-        if (isBlank(descriptionType.getId())) {
+        if (descriptionType.getId() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("description[%d].type.id".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -38,7 +37,7 @@ public class DescriptionTypeValidator {
             );
         }
 
-        if (isBlank(descriptionType.getSchemaUri())) {
+        if (descriptionType.getSchemaUri() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("description[%d].type.schemaUri".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -46,15 +45,15 @@ public class DescriptionTypeValidator {
             );
         } else {
             final var descriptionTypeScheme =
-                    descriptionTypeSchemaRepository.findActiveByUri(descriptionType.getSchemaUri());
+                    descriptionTypeSchemaRepository.findActiveByUri(descriptionType.getSchemaUri().getValue());
 
             if (descriptionTypeScheme.isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("description[%d].type.schemaUri".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)
                         .message(INVALID_SCHEMA));
-            } else if (!isBlank(descriptionType.getId()) &&
-                    descriptionTypeRepository.findByUriAndSchemaId(descriptionType.getId(), descriptionTypeScheme.get().getId()).isEmpty()) {
+            } else if (descriptionType.getId() != null &&
+                    descriptionTypeRepository.findByUriAndSchemaId(descriptionType.getId().getValue(), descriptionTypeScheme.get().getId()).isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("description[%d].type.id".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)

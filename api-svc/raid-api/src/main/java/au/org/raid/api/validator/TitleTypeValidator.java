@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 public class TitleTypeValidator {
@@ -33,7 +32,7 @@ public class TitleTypeValidator {
             );
         }
 
-        if (isBlank(titleType.getId())) {
+        if (titleType.getId() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("title[%d].type.id".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -41,7 +40,7 @@ public class TitleTypeValidator {
             );
         }
 
-        if (isBlank(titleType.getSchemaUri())) {
+        if (titleType.getSchemaUri() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("title[%d].type.schemaUri".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -49,15 +48,15 @@ public class TitleTypeValidator {
             );
         } else {
             final var titleTypeScheme =
-                    titleTypeSchemaRepository.findActiveByUri(titleType.getSchemaUri());
+                    titleTypeSchemaRepository.findActiveByUri(titleType.getSchemaUri().getValue());
 
             if (titleTypeScheme.isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("title[%d].type.schemaUri".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)
                         .message(INVALID_SCHEMA));
-            } else if (!isBlank(titleType.getId()) &&
-                    titleTypeRepository.findByUriAndSchemaId(titleType.getId(), titleTypeScheme.get().getId()).isEmpty()) {
+            } else if (titleType.getId() != null &&
+                    titleTypeRepository.findByUriAndSchemaId(titleType.getId().getValue(), titleTypeScheme.get().getId()).isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("title[%d].type.id".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)

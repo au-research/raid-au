@@ -67,7 +67,7 @@ public class ContributorTypeValidator {
             );
         }
 
-        if (isBlank(contributor.getSchemaUri())) {
+        if (contributor.getSchemaUri() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("contributor[%d].schemaUri".formatted(index))
@@ -75,7 +75,7 @@ public class ContributorTypeValidator {
                             .message(NOT_SET_MESSAGE)
             );
         }
-        else if (!contributor.getSchemaUri().matches(validationProperties.getSchemaUri())) {
+        else if (!contributor.getSchemaUri().getValue().matches(validationProperties.getSchemaUri())) {
             failures.add(new ValidationFailure()
                     .fieldId("contributor[%d].schemaUri".formatted(index))
                     .errorType(INVALID_VALUE_TYPE)

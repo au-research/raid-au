@@ -31,12 +31,12 @@ public class RelatedRaidTypeService {
     }
 
     public Integer findId(final RelatedRaidType type) {
-        final var relatedRaidTypeSchemaRecord = relatedRaidTypeSchemaRepository.findByUri(type.getSchemaUri())
-                .orElseThrow(() -> new RelatedRaidTypeSchemaNotFoundException(type.getSchemaUri()));
+        final var relatedRaidTypeSchemaRecord = relatedRaidTypeSchemaRepository.findByUri(type.getSchemaUri().getValue())
+                .orElseThrow(() -> new RelatedRaidTypeSchemaNotFoundException(type.getSchemaUri().getValue()));
 
         final var relatedRaidTypeRecord = relatedRaidTypeRepository.findByUriAndSchemaId(
-                        type.getId(), relatedRaidTypeSchemaRecord.getId())
-                .orElseThrow(() -> new RelatedRaidTypeNotFoundException(type.getId(), type.getSchemaUri()));
+                        type.getId().getValue(), relatedRaidTypeSchemaRecord.getId())
+                .orElseThrow(() -> new RelatedRaidTypeNotFoundException(type.getId().getValue(), type.getSchemaUri().getValue()));
 
         return relatedRaidTypeRecord.getId();
     }

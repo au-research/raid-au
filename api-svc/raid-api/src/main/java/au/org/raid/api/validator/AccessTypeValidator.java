@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 public class AccessTypeValidator {
@@ -33,7 +32,7 @@ public class AccessTypeValidator {
             );
         }
 
-        if (isBlank(accessType.getId())) {
+        if (accessType.getId() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("access.type.id")
                     .errorType(NOT_SET_TYPE)
@@ -41,7 +40,7 @@ public class AccessTypeValidator {
             );
         }
 
-        if (isBlank(accessType.getSchemaUri())) {
+        if (accessType.getSchemaUri() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("access.type.schemaUri")
                     .errorType(NOT_SET_TYPE)
@@ -49,15 +48,15 @@ public class AccessTypeValidator {
             );
         } else {
             final var accessTypeScheme =
-                    accessTypeSchemaRepository.findActiveByUri(accessType.getSchemaUri());
+                    accessTypeSchemaRepository.findActiveByUri(accessType.getSchemaUri().getValue());
 
             if (accessTypeScheme.isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("access.type.schemaUri")
                         .errorType(INVALID_VALUE_TYPE)
                         .message(INVALID_SCHEMA));
-            } else if (!isBlank(accessType.getId()) &&
-                    accessTypeRepository.findByUriAndSchemaId(accessType.getId(), accessTypeScheme.get().getId()).isEmpty()) {
+            } else if (accessType.getId() != null &&
+                    accessTypeRepository.findByUriAndSchemaId(accessType.getId().getValue(), accessTypeScheme.get().getId()).isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("access.type.id")
                         .errorType(INVALID_VALUE_TYPE)
