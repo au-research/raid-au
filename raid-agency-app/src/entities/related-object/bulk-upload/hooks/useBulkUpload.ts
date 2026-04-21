@@ -36,12 +36,12 @@ export interface EditableRow {
   id: string;
   /** Raw spreadsheet column values, edited in-place by the user */
   values: {
-    "DOI URL": string;
+    URL: string;
     Type: string;
     Categories: string;
   };
   /** Field-keyed errors for this row. Empty object = row is valid. */
-  errors: Partial<Record<"DOI URL" | "Type" | "Categories", string>>;
+  errors: Partial<Record<"URL" | "Type" | "Categories", string>>;
 }
 
 export type EditableRowField = keyof EditableRow["values"];
@@ -130,7 +130,7 @@ const bulkRelatedObjectRowSchema = z.object({
   id: z
     .string()
     .trim()
-    .min(1, "DOI URL is required")
+    .min(1, "URL is required")
     .refine((url) => doiRegex.test(url) || webArchiveRegex.test(url), {
       message:
         "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
@@ -312,7 +312,7 @@ function mapRowToRelatedObjects(
 ): { data: ParsedRelatedObject[]; errors: ValidationError[] } {
   const errors: ValidationError[] = [];
 
-  const doiUrl = (row["DOI URL"] ?? "").trim();
+  const doiUrl = (row["URL"] ?? "").trim();
   const typesRaw = (row["Type"] ?? "").trim();
   const categoriesRaw = (row["Categories"] ?? "").trim();
 
@@ -417,7 +417,7 @@ function validateEditableRow(
   // Reuse the existing mapper, but ignore its rowIndex since the preview
   // table uses field names rather than row numbers for error placement.
   const rawRow: Record<string, string> = {
-    "DOI URL": values["DOI URL"],
+    URL: values["URL"],
     Type: values.Type,
     Categories: values.Categories,
   };
@@ -446,12 +446,12 @@ function validateEditableRow(
         const pathStr = zodError.path.join(".");
         const fieldName: EditableRowField =
           pathStr === "id"
-            ? "DOI URL"
+            ? "URL"
             : pathStr.startsWith("type")
               ? "Type"
               : pathStr.startsWith("category")
                 ? "Categories"
-                : ("DOI URL" as EditableRowField);
+                : ("URL" as EditableRowField);
 
         if (!fieldErrors[fieldName]) {
           fieldErrors[fieldName] = zodError.message;
@@ -598,7 +598,7 @@ export function useBulkUpload(
       idx: number
     ): EditableRow => {
       const values: EditableRow["values"] = {
-        "DOI URL": rawRow["DOI URL"] ?? "",
+        URL: rawRow["URL"] ?? "",
         Type: rawRow["Type"] ?? "",
         Categories: rawRow["Categories"] ?? "",
       };

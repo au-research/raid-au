@@ -95,7 +95,7 @@ export function BulkUploadPreviewTable({
           <TableHead>
             <TableRow>
               <TableCell sx={{ width: 40 }} />
-              <TableCell sx={{ minWidth: 280 }}>DOI URL</TableCell>
+              <TableCell sx={{ minWidth: 280 }}>URL</TableCell>
               <TableCell sx={{ minWidth: 220 }}>Type</TableCell>
               <TableCell sx={{ minWidth: 220 }}>Categories</TableCell>
               <TableCell sx={{ width: 60 }} align="center">
@@ -173,11 +173,11 @@ function PreviewRow({
       {/* DOI URL — free text with debounced commit on blur */}
       <TableCell>
         <DebouncedTextCell
-          value={row.values["DOI URL"]}
-          onCommit={(value) => onUpdate(rowIndex, "DOI URL", value)}
-          error={row.errors["DOI URL"]}
+          value={row.values["URL"]}
+          onCommit={(value) => onUpdate(rowIndex, "URL", value)}
+          error={row.errors["URL"]}
           disabled={disabled}
-          placeholder="https://doi.org/10.xxxx/..."
+          placeholder="https://doi.org/10.xxxx/... or https://web.archive.org/..."
         />
       </TableCell>
 
