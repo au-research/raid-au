@@ -81,10 +81,22 @@ export function BulkUploadComponent({
     <Box sx={{ mt: 2 }}>
       <Stack spacing={2}>
         {/* ---- Intro + template download ---- */}
-        <Typography variant="body2" color="text.secondary">
-          Download a template, fill in your related objects, then upload the
-          completed file.
-        </Typography>
+        <Stack spacing={0.5}>
+          {[
+            "Download a template below (Excel or CSV)",
+            "Fill in your Related Objects — one row per object",
+            "Upload the completed file using the drop zone below",
+          ].map((step, i) => (
+            <Stack key={i} direction="row" alignItems="flex-start" spacing={1}>
+              <Typography variant="body2" color="primary" fontWeight={700} sx={{ minWidth: 18 }}>
+                {i + 1}.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {step}
+              </Typography>
+            </Stack>
+          ))}
+        </Stack>
 
         <TemplateDownloader />
 

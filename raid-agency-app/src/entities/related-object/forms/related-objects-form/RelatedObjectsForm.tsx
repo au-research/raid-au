@@ -13,6 +13,8 @@ import {
   CardContent,
   CardHeader,
   Chip,
+  Divider,
+  Paper,
   Stack,
   Typography,
 } from "@mui/material";
@@ -275,7 +277,17 @@ export function RelatedObjectsForm({
           </Box>
 
           {entryMode === "bulk" && (
-            <BulkUploadComponent addRelatedObject={handleBulkAddItem} />
+            <>
+              <Divider>
+                <Chip label="Bulk Upload" size="small" variant="outlined" />
+              </Divider>
+              <Paper
+                variant="outlined"
+                sx={{ p: 2, borderRadius: 2, bgcolor: "background.default" }}
+              >
+                <BulkUploadComponent addRelatedObject={handleBulkAddItem} />
+              </Paper>
+            </>
           )}
         </Stack>
       </CardContent>
