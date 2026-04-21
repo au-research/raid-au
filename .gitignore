@@ -1,4 +1,5 @@
 .idea
+.claude/agent-memory/
 
 # temp directory that Gradle dumps in the repo root
 .gradle
