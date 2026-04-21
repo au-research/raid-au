@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.SpatialCoveragePlace;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static au.org.raid.api.util.TestConstants.LANGUAGE_SCHEMA_URI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -65,7 +65,7 @@ class SpatialCoveragePlaceValidatorTest {
     void callsLanguageValidator() {
         final var language = new Language()
                 .id("eng")
-                .schemaUri(LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var places = List.of(new SpatialCoveragePlace()
                 .text("place")

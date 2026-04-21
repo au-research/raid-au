@@ -3,6 +3,7 @@ package au.org.raid.fixtures;
 
 import au.org.raid.idl.raidv2.model.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -41,7 +42,8 @@ public class APIFixtures {
                         .schemaUri(RegistrationAgencySchemaURIEnum.fromValue("https://ror.org/")))
                 .owner(new Owner()
                         .id("https://ror.org/02stey378")
-                        .schemaUri(RegistrationAgencySchemaURIEnum.fromValue("https://ror.org/")))
+                        .schemaUri(RegistrationAgencySchemaURIEnum.fromValue("https://ror.org/"))
+                        .servicePoint(new BigDecimal(20000000)))
                 .license("Creative Commons CC-0")
                 .version(16);
         return new RaidUpdateRequest()

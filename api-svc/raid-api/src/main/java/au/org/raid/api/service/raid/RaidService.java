@@ -14,7 +14,6 @@ import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.api.service.*;
 import au.org.raid.api.service.datacite.DataciteService;
 import au.org.raid.api.service.keycloak.KeycloakService;
-import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
 import au.org.raid.idl.raidv2.model.*;
@@ -199,7 +198,7 @@ public class RaidService {
 
         var servicePointMatch = false;
         var canWrite = false;
-        var canRead = raidOptional.get().getAccess().getType().getId().equals(SchemaValues.ACCESS_TYPE_OPEN.getUri());
+        var canRead = raidOptional.get().getAccess().getType().getId() == AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_;
 
         final var token = ((JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getToken();
 
@@ -212,7 +211,7 @@ public class RaidService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        if (raidOptional.get().getIdentifier().getOwner().getServicePoint().equals(servicePoint.getId())) {
+        if (raidOptional.get().getIdentifier().getOwner().getServicePoint().longValueExact() == servicePoint.getId()) {
             servicePointMatch = true;
         }
 

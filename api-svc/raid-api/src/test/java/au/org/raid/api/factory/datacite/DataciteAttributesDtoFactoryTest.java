@@ -2,7 +2,6 @@ package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.config.properties.IdentifierProperties;
 import au.org.raid.api.model.datacite.doi.*;
-import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,12 +50,9 @@ class DataciteAttributesDtoFactoryTest {
     void setContributorsOnCreate_AwaitingAuthentication() {
         final var handle = "_handle";
         final var registrationAgencyId = "registration-agency-id";
-        final var registrationAgencySchemaUri = "registration-agency-schema-uri";
-        final var organisationSchemaUri = "organisation-schema-uri";
         final var organisationId = "organisation-id";
         final var funderId = "funder-id";
         final var ownerId = "owner-id";
-        final var ownerSchemaUri = "owner-schema-uri";
         final var primaryTitleText = "primary-title";
         final var alternativeTitleText = "alternative-title";
         final var languageId = "eng";
@@ -65,31 +61,31 @@ class DataciteAttributesDtoFactoryTest {
         final var primaryTitle = new Title()
                 .text(primaryTitleText)
                 .type(new TitleType()
-                        .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
+                        .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
                 .language(new Language().id(languageId));
 
         final var alternativeTitle = new Title()
                 .text(alternativeTitleText)
                 .type(new TitleType()
-                        .id(SchemaValues.ALTERNATIVE_TITLE_TYPE.getUri()));
+                        .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4));
 
         final var owner = new Owner()
                 .id(ownerId)
-                .schemaUri(ownerSchemaUri);
+                .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
 
         final var registrationAgency = new RegistrationAgency()
                 .id(registrationAgencyId)
-                .schemaUri(registrationAgencySchemaUri);
+                .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
 
         final var organisation = new Organisation()
                 .id(organisationId)
-                .schemaUri(organisationSchemaUri)
-                .role(List.of(new OrganisationRole().id(SchemaValues.LEAD_RESEARCH_ORGANISATION_ROLE.getUri())));
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(new OrganisationRole().id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)));
 
         final var funder = new Organisation()
                 .id(funderId)
-                .schemaUri(organisationSchemaUri)
-                .role(List.of(new OrganisationRole().id(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri())));
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(new OrganisationRole().id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186)));
 
         final var date = new Date().startDate("2020");
 
@@ -98,15 +94,15 @@ class DataciteAttributesDtoFactoryTest {
                 .status("AWAITING_AUTHENTICATION");
 
         final var relatedObject = new RelatedObject()
-                .type(new RelatedObjectType().id(SchemaValues.BOOK_OBJECT_TYPE.getUri()))
-                .category(List.of(new RelatedObjectCategory().id(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())));
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
         final var fundingRelatedObject = new RelatedObject()
-                .type(new RelatedObjectType().id(SchemaValues.FUNDING_OBJECT_TYPE.getUri()))
-                .category(List.of(new RelatedObjectCategory().id(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())));
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
         final var alternateIdentifier = new AlternateIdentifier();
         final var relatedRaid = new RelatedRaid();
         final var access = new Access()
-                .type(new AccessType().id(SchemaValues.ACCESS_TYPE_OPEN.getUri()));
+                .type(new AccessType().id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_));
 
         final var request = new RaidCreateRequest()
                 .identifier(new Id()
@@ -185,12 +181,9 @@ class DataciteAttributesDtoFactoryTest {
     void setContributorsOnCreate_Authenticated() {
         final var handle = "_handle";
         final var registrationAgencyId = "registration-agency-id";
-        final var registrationAgencySchemaUri = "registration-agency-schema-uri";
-        final var organisationSchemaUri = "organisation-schema-uri";
         final var organisationId = "organisation-id";
         final var funderId = "funder-id";
         final var ownerId = "owner-id";
-        final var ownerSchemaUri = "owner-schema-uri";
         final var primaryTitleText = "primary-title";
         final var alternativeTitleText = "alternative-title";
         final var languageId = "eng";
@@ -199,31 +192,31 @@ class DataciteAttributesDtoFactoryTest {
         final var primaryTitle = new Title()
                 .text(primaryTitleText)
                 .type(new TitleType()
-                        .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
+                        .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
                 .language(new Language().id(languageId));
 
         final var alternativeTitle = new Title()
                 .text(alternativeTitleText)
                 .type(new TitleType()
-                        .id(SchemaValues.ALTERNATIVE_TITLE_TYPE.getUri()));
+                        .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4));
 
         final var owner = new Owner()
                 .id(ownerId)
-                .schemaUri(ownerSchemaUri);
+                .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
 
         final var registrationAgency = new RegistrationAgency()
                 .id(registrationAgencyId)
-                .schemaUri(registrationAgencySchemaUri);
+                .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
 
         final var organisation = new Organisation()
                 .id(organisationId)
-                .schemaUri(organisationSchemaUri)
-                .role(List.of(new OrganisationRole().id(SchemaValues.LEAD_RESEARCH_ORGANISATION_ROLE.getUri())));
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(new OrganisationRole().id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)));
 
         final var funder = new Organisation()
                 .id(funderId)
-                .schemaUri(organisationSchemaUri)
-                .role(List.of(new OrganisationRole().id(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri())));
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(new OrganisationRole().id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186)));
 
         final var date = new Date().startDate("2020");
 
@@ -232,15 +225,15 @@ class DataciteAttributesDtoFactoryTest {
                 .status("AUTHENTICATED");
 
         final var relatedObject = new RelatedObject()
-                .type(new RelatedObjectType().id(SchemaValues.BOOK_OBJECT_TYPE.getUri()))
-                .category(List.of(new RelatedObjectCategory().id(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())));
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
         final var fundingRelatedObject = new RelatedObject()
-                .type(new RelatedObjectType().id(SchemaValues.FUNDING_OBJECT_TYPE.getUri()))
-                .category(List.of(new RelatedObjectCategory().id(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())));
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
         final var alternateIdentifier = new AlternateIdentifier();
         final var relatedRaid = new RelatedRaid();
         final var access = new Access()
-                .type(new AccessType().id(SchemaValues.ACCESS_TYPE_OPEN.getUri()));
+                .type(new AccessType().id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_));
 
         final var request = new RaidCreateRequest()
                 .identifier(new Id()
@@ -319,12 +312,9 @@ class DataciteAttributesDtoFactoryTest {
     void embargoedDoesNotPublish() {
         final var handle = "_handle";
         final var registrationAgencyId = "registration-agency-id";
-        final var registrationAgencySchemaUri = "registration-agency-schema-uri";
-        final var organisationSchemaUri = "organisation-schema-uri";
         final var organisationId = "organisation-id";
         final var funderId = "funder-id";
         final var ownerId = "owner-id";
-        final var ownerSchemaUri = "owner-schema-uri";
         final var primaryTitleText = "primary-title";
         final var alternativeTitleText = "alternative-title";
         final var languageId = "eng";
@@ -333,46 +323,46 @@ class DataciteAttributesDtoFactoryTest {
         final var primaryTitle = new Title()
                 .text(primaryTitleText)
                 .type(new TitleType()
-                        .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri()))
+                        .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5))
                 .language(new Language().id(languageId));
 
         final var alternativeTitle = new Title()
                 .text(alternativeTitleText)
                 .type(new TitleType()
-                        .id(SchemaValues.ALTERNATIVE_TITLE_TYPE.getUri()));
+                        .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_4));
 
         final var owner = new Owner()
                 .id(ownerId)
-                .schemaUri(ownerSchemaUri);
+                .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
 
         final var registrationAgency = new RegistrationAgency()
                 .id(registrationAgencyId)
-                .schemaUri(registrationAgencySchemaUri);
+                .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
 
         final var organisation = new Organisation()
                 .id(organisationId)
-                .schemaUri(organisationSchemaUri)
-                .role(List.of(new OrganisationRole().id(SchemaValues.LEAD_RESEARCH_ORGANISATION_ROLE.getUri())));
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(new OrganisationRole().id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)));
 
         final var funder = new Organisation()
                 .id(funderId)
-                .schemaUri(organisationSchemaUri)
-                .role(List.of(new OrganisationRole().id(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri())));
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(new OrganisationRole().id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_186)));
 
         final var date = new Date().startDate("2020");
 
         final var description = new Description();
         final var contributor = new Contributor().status("AUTHENTICATED");
         final var relatedObject = new RelatedObject()
-                .type(new RelatedObjectType().id(SchemaValues.BOOK_OBJECT_TYPE.getUri()))
-                .category(List.of(new RelatedObjectCategory().id(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())));
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
         final var fundingRelatedObject = new RelatedObject()
-                .type(new RelatedObjectType().id(SchemaValues.FUNDING_OBJECT_TYPE.getUri()))
-                .category(List.of(new RelatedObjectCategory().id(SchemaValues.INPUT_RELATED_OBJECT_CATEGORY.getUri())));
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_272))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
         final var alternateIdentifier = new AlternateIdentifier();
         final var relatedRaid = new RelatedRaid();
         final var access = new Access()
-                .type(new AccessType().id(SchemaValues.ACCESS_TYPE_EMBARGOED.getUri()));
+                .type(new AccessType().id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_));
 
         final var request = new RaidCreateRequest()
                 .identifier(new Id()

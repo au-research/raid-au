@@ -44,6 +44,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -573,7 +574,7 @@ class RaidControllerTest {
                     .andExpect(jsonPath("$.access.type.id", Matchers.is(SchemaValues.ACCESS_TYPE_EMBARGOED.getUri())))
                     .andExpect(jsonPath("$.access.statement.text", Matchers.is("This RAiD is embargoed")))
                     .andExpect(jsonPath("$.access.statement.language.id", Matchers.is("eng")))
-                    .andExpect(jsonPath("$.access.statement.language.schemaUri", Matchers.is("https://www.iso.org/standard/39534.html")))
+                    .andExpect(jsonPath("$.access.statement.language.schemaUri", Matchers.is("https://www.iso.org/standard/74575.html")))
                     .andReturn();
 
             verifyFindServicePointId.get();
@@ -611,7 +612,7 @@ class RaidControllerTest {
                     .andExpect(jsonPath("$.access.embargoExpiry", Matchers.is("2024-12-31")))
                     .andExpect(jsonPath("$.access.statement.text", Matchers.is("This RAiD is embargoed")))
                     .andExpect(jsonPath("$.access.statement.language.id", Matchers.is("eng")))
-                    .andExpect(jsonPath("$.access.statement.language.schemaUri", Matchers.is("https://www.iso.org/standard/39534.html")))
+                    .andExpect(jsonPath("$.access.statement.language.schemaUri", Matchers.is("https://www.iso.org/standard/74575.html")))
                     .andReturn();
 
             verifyFindServicePointId.get();
@@ -695,7 +696,7 @@ class RaidControllerTest {
         final var timestamp = LocalDateTime.now().atOffset(ZoneOffset.UTC);
 
         final var raid = createRaidForGet("title", LocalDate.now());
-        raid.getAccess().getType().setId(SchemaValues.ACCESS_TYPE_OPEN.getUri());
+        raid.getAccess().getType().setId(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_);
 
         final var raidChange = new RaidChange()
                 .handle(handle)
@@ -998,8 +999,8 @@ class RaidControllerTest {
         var raid = objectMapper.readValue(json, RaidDto.class);
 
         final var titleType = new TitleType()
-                .id(SchemaValues.PRIMARY_TITLE_TYPE.getUri())
-                .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri());
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
 
         raid.getTitle().get(0)
                 .startDate(startDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -1055,7 +1056,7 @@ class RaidControllerTest {
     void updateRaid_usesRaidServicePointForOperator() throws Exception {
         final var raidServicePointId = 20_000_099L;
         final var input = APIFixtures.newUpdateRequest();
-        input.getIdentifier().getOwner().servicePoint(raidServicePointId);
+        input.getIdentifier().getOwner().servicePoint(new BigDecimal(raidServicePointId));
         final var output = createRaidForGet("test", LocalDate.now());
 
         when(validationService.validateForUpdate(String.join("/", PREFIX, SUFFIX), input))

@@ -16,6 +16,7 @@ import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Language;
 import au.org.raid.idl.raidv2.model.Subject;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
+import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +65,7 @@ class SubjectServiceTest {
         final var raidSubjectId = 123;
         final var languageId = 234;
         final var text = "_text";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316.getValue();
         final var schemaId = 3;
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord()
@@ -87,7 +88,7 @@ class SubjectServiceTest {
         final var subject = new Subject()
                 .keyword(List.of(keyword))
                 .id(uri)
-                .schemaUri(schemaUri);
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
 
         final var raidSubjectKeywordRecord = new RaidSubjectKeywordRecord();
 
@@ -127,11 +128,11 @@ class SubjectServiceTest {
         final var handle = "_handle";
         final var id = "_id";
         final var schemaId = 99;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316.getValue();
         final var uri = "/" + id;
         final var subject = new Subject()
                 .id(uri)
-                .schemaUri(schemaUri);
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord().setId(schemaId);
 
@@ -241,7 +242,7 @@ class SubjectServiceTest {
         final var languageId = 234;
         final var text = "_text";
 
-        final var schemaUri = "schema-uri";
+        final var schemaUri = SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316.getValue();
         final var schemaId = 3;
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord()
@@ -264,7 +265,7 @@ class SubjectServiceTest {
         final var subject = new Subject()
                 .keyword(List.of(keyword))
                 .id(uri)
-                .schemaUri(schemaUri);
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
 
         final var raidSubjectKeywordRecord = new RaidSubjectKeywordRecord();
 

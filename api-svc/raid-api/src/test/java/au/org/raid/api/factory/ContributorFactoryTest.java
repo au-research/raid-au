@@ -2,12 +2,9 @@ package au.org.raid.api.factory;
 
 import au.org.raid.idl.raidv2.model.ContributorPosition;
 import au.org.raid.idl.raidv2.model.ContributorRole;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
@@ -21,13 +18,13 @@ class ContributorFactoryTest {
     @DisplayName("Sets all fields")
     void setsAllFields() {
         final var id = "_id";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = ContributorSchemaUriEnum.HTTPS_ORCID_ORG_;
         final var leader = true;
         final var contact = true;
         final var positions = List.of(new ContributorPosition());
         final var roles = List.of(new ContributorRole());
 
-        final var result = contributorFactory.create(id, schemaUri, leader, contact, positions, roles);
+        final var result = contributorFactory.create(id, schemaUri.getValue(), leader, contact, positions, roles);
 
         assertThat(result.getId(), is(id));
         assertThat(result.getSchemaUri(), is(schemaUri));

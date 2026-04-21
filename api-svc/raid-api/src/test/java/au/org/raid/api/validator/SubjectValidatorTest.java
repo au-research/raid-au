@@ -7,6 +7,7 @@ import au.org.raid.db.jooq.tables.records.SubjectTypeRecord;
 import au.org.raid.db.jooq.tables.records.SubjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Subject;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
+import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -82,7 +83,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -113,7 +114,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
@@ -171,20 +172,15 @@ class SubjectValidatorTest {
         final var subjectId = "222222";
         final var id = idStartsWith.concat(subjectId);
         final var keyword = new SubjectKeyword();
-        final var schemaId = 1;
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri("invalid")
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
-        final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
-        subjectTypeSchemaRecord.setId(schemaId);
-        subjectTypeSchemaRecord.setUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri());
-        subjectTypeSchemaRecord.setIdStartsWith(idStartsWith);
-
         when(keywordValidator.validate(keyword,0,0)).thenReturn(Collections.emptyList());
-        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(List.of(subjectTypeSchemaRecord));
+        // Return empty list so the schema URI is not in the allowed set, triggering "invalidValue"
+        when(subjectTypeSchemaRepository.findAllActive()).thenReturn(Collections.emptyList());
 
         final List<ValidationFailure> validationFailures = validationService.validate(Collections.singletonList(subject));
 
@@ -205,7 +201,7 @@ class SubjectValidatorTest {
 
         final var subject = new Subject()
                 .id(id)
-                .schemaUri(SchemaValues.SUBJECT_SCHEMA_URI.getUri())
+                .schemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316)
                 .keyword(List.of(new SubjectKeyword()));
 
         final var subjectTypeSchemaRecord = new SubjectTypeSchemaRecord();
