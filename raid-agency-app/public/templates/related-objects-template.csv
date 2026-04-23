@@ -3,13 +3,14 @@ RAiD relatedObject bulk upload sheet
 "Add extra rows below the headers between the rows labelled ""Import table starts here"" and ""Import table ends here"""
 "Do not delete the rows labelled ""Import table starts here"" and ""Import table ends here"""
 "URL must be a DOI (https://doi.org/10.xxxx/...) or a Web Archive URL (https://web.archive.org/web/YYYYMMDDHHMMSS/https://...)"
-Copy and paste from the Available types and Available categories
+"Copy and paste Type and Categories values from the Available types and Available categories reference below"
+"To enter multiple categories for one row, separate them with commas (e.g. Input, Output)"
 [Instructions for use end here]
 
 
 [Import table starts here]
 URL,Type,Categories
-https://doi.org/10.0001/01238,Output Management Plan,"Input, Output"
+https://doi.org/10.0001/01238,Output Management Plan,Input
 
 [Import table ends here]
 
@@ -17,7 +18,7 @@ https://doi.org/10.0001/01238,Output Management Plan,"Input, Output"
 ,Audiovisual,Input
 ,Book,Internal process document or artefact
 ,Book Chapter,Output
-,Computational Notebook,"Input,Output"
+,Computational Notebook,
 ,Conference Paper,
 ,Conference Poster,
 ,Conference Proceeding,

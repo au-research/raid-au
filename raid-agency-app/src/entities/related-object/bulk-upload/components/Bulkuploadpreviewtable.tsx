@@ -20,7 +20,7 @@ import {
   ErrorOutline as ErrorIcon,
   DeleteOutline as DeleteIcon,
 } from "@mui/icons-material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import type {
   EditableRow,
@@ -53,8 +53,14 @@ export function BulkUploadPreviewTable({
     (r) => Object.keys(r.errors).length > 0
   ).length;
 
-  const typeOptions = vocabulary.relatedObjectTypes.map((t) => t.value);
-  const categoryOptions = vocabulary.relatedObjectCategories.map((c) => c.value);
+  const typeOptions = useMemo(
+    () => vocabulary.relatedObjectTypes.map((t) => t.value),
+    [vocabulary.relatedObjectTypes]
+  );
+  const categoryOptions = useMemo(
+    () => vocabulary.relatedObjectCategories.map((c) => c.value),
+    [vocabulary.relatedObjectCategories]
+  );
 
   return (
     <Box>

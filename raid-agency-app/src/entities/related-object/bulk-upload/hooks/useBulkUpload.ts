@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { z } from "zod";
 
 import {
@@ -540,6 +540,7 @@ export function useBulkUpload(
   options: UseBulkUploadOptions = {}
 ) {
   const { generator } = options;
+  const rowCounter = useRef(0);
   const [status, setStatus] = useState<BulkUploadStatus>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [editableRows, setEditableRows] = useState<EditableRow[]>([]);
@@ -580,7 +581,14 @@ export function useBulkUpload(
       }
 
       if (extension === "xlsx" || extension === "xls") {
-        const ExcelJS = (await import("exceljs")).default;
+        let ExcelJS: typeof import("exceljs");
+        try {
+          ExcelJS = await import("exceljs");
+        } catch {
+          throw new Error(
+            "Unable to load Excel parser. Please try saving your file as CSV and uploading that instead."
+          );
+        }
         const workbook = new ExcelJS.Workbook();
         const buffer = await file.arrayBuffer();
         await workbook.xlsx.load(buffer);
@@ -647,10 +655,7 @@ export function useBulkUpload(
    * single-row validator to compute initial errors.
    */
   const buildEditableRow = useCallback(
-    (
-      rawRow: Record<string, string>,
-      idx: number
-    ): EditableRow => {
+    (rawRow: Record<string, string>): EditableRow => {
       const values: EditableRow["values"] = {
         URL: rawRow["URL"] ?? "",
         Type: rawRow["Type"] ?? "",
@@ -665,7 +670,7 @@ export function useBulkUpload(
       );
 
       return {
-        id: `row-${Date.now()}-${idx}`,
+        id: `row-${rowCounter.current++}`,
         values,
         errors,
       };
@@ -700,10 +705,22 @@ export function useBulkUpload(
         return;
       }
 
+      const REQUIRED_COLUMNS = ["URL", "Type", "Categories"] as const;
+      const firstRow = rawRows[0] ?? {};
+      const missingColumns = REQUIRED_COLUMNS.filter((col) => !(col in firstRow));
+      if (missingColumns.length > 0) {
+        setEditableRows([]);
+        setStatus("error");
+        setSubmissionError(
+          `Missing required column(s): ${missingColumns.join(", ")}. Please use the downloaded template and ensure the header row contains URL, Type, and Categories.`
+        );
+        return;
+      }
+
       setStatus("validating");
 
       const rows = applyDuplicateErrors(
-        rawRows.map((rawRow, idx) => buildEditableRow(rawRow, idx))
+        rawRows.map((rawRow) => buildEditableRow(rawRow))
       );
 
       setEditableRows(rows);
@@ -772,18 +789,19 @@ export function useBulkUpload(
 
   const handleConfirm = useCallback(
     async (addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>) => {
-      // Re-validate every row and re-check duplicates at submission time.
-      const revalidated = applyDuplicateErrors(
-        editableRows.map((row) => {
-          const { errors } = validateEditableRow(
-            row.values,
-            typeLookup,
-            categoryLookup,
-            generator
-          );
-          return { ...row, errors };
-        })
-      );
+      // Re-validate every row and collect expanded objects in a single pass.
+      type RowResult = { row: EditableRow; expanded: ParsedRelatedObject[] };
+      const results: RowResult[] = editableRows.map((row) => {
+        const { errors, expanded } = validateEditableRow(
+          row.values,
+          typeLookup,
+          categoryLookup,
+          generator
+        );
+        return { row: { ...row, errors }, expanded };
+      });
+
+      const revalidated = applyDuplicateErrors(results.map((r) => r.row));
 
       if (revalidated.some((r) => Object.keys(r.errors).length > 0)) {
         setSubmissionError(
@@ -792,16 +810,7 @@ export function useBulkUpload(
         return;
       }
 
-      const allExpanded: ParsedRelatedObject[] = [];
-      for (const row of revalidated) {
-        const { expanded } = validateEditableRow(
-          row.values,
-          typeLookup,
-          categoryLookup,
-          generator
-        );
-        allExpanded.push(...expanded);
-      }
+      const allExpanded: ParsedRelatedObject[] = results.flatMap((r) => r.expanded);
 
       setStatus("submitting");
       setSubmissionError(null);
