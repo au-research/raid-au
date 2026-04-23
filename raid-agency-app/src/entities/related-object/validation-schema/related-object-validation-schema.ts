@@ -17,14 +17,31 @@ const relatedObjectIdSchema = z
     }
   );
 
-export const relatedObjectValidationSchema = z.array(
-  z.object({
-    id: relatedObjectIdSchema,
-    schemaUri: z.string().min(1),
-    type: z.object({
-      id: z.string(),
-      schemaUri: z.string(),
-    }),
-    category: relatedObjectCategoryValidationSchema,
-  })
-);
+export const relatedObjectValidationSchema = z
+  .array(
+    z.object({
+      id: relatedObjectIdSchema,
+      schemaUri: z.string().min(1),
+      type: z.object({
+        id: z.string(),
+        schemaUri: z.string(),
+      }),
+      category: relatedObjectCategoryValidationSchema,
+    })
+  )
+  .superRefine((items, ctx) => {
+    const seen = new Map<string, number>(); // "url|||typeId" -> first index
+
+    items.forEach((item, index) => {
+      const key = `${item.id ?? ""}|||${item.type?.id ?? ""}`;
+      if (seen.has(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Duplicate: this URL and type combination already exists (see item #${(seen.get(key) ?? 0) + 1})`,
+          path: [index, "id"],
+        });
+      } else {
+        seen.set(key, index);
+      }
+    });
+  });

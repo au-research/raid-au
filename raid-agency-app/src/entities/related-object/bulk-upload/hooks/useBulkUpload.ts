@@ -467,6 +467,60 @@ function validateEditableRow(
 }
 
 // ------------------------------------------------------------------
+// Duplicate detection
+// ------------------------------------------------------------------
+
+const DUPLICATE_ERROR_MSG =
+  "Duplicate: this URL and Type combination already exists in another row.";
+
+/**
+ * Scans all rows for duplicate URL + Type combinations and stamps a
+ * URL-field error onto each affected row. Existing URL format errors
+ * take precedence — a duplicate error is only added when the URL field
+ * has no other error. Stale duplicate errors are cleared when the
+ * duplication is resolved.
+ */
+function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
+  const keyToRowIds = new Map<string, string[]>();
+
+  for (const row of rows) {
+    const url = row.values.URL.trim().toLowerCase();
+    if (!url) continue;
+
+    const types = row.values.Type.split(",")
+      .map((t) => t.trim().toLowerCase())
+      .filter((t) => t.length > 0);
+
+    for (const type of types) {
+      const key = `${url}|||${type}`;
+      const existing = keyToRowIds.get(key) ?? [];
+      existing.push(row.id);
+      keyToRowIds.set(key, existing);
+    }
+  }
+
+  const duplicateIds = new Set<string>();
+  for (const rowIds of keyToRowIds.values()) {
+    if (rowIds.length > 1) rowIds.forEach((id) => duplicateIds.add(id));
+  }
+
+  return rows.map((row) => {
+    const isDuplicate = duplicateIds.has(row.id);
+    const hasDuplicateError = row.errors.URL === DUPLICATE_ERROR_MSG;
+
+    if (isDuplicate && !row.errors.URL) {
+      return { ...row, errors: { ...row.errors, URL: DUPLICATE_ERROR_MSG } };
+    }
+    if (!isDuplicate && hasDuplicateError) {
+      const errors = { ...row.errors };
+      delete errors.URL;
+      return { ...row, errors };
+    }
+    return row;
+  });
+}
+
+// ------------------------------------------------------------------
 // Hook
 // ------------------------------------------------------------------
 
@@ -648,7 +702,9 @@ export function useBulkUpload(
 
       setStatus("validating");
 
-      const rows = rawRows.map((rawRow, idx) => buildEditableRow(rawRow, idx));
+      const rows = applyDuplicateErrors(
+        rawRows.map((rawRow, idx) => buildEditableRow(rawRow, idx))
+      );
 
       setEditableRows(rows);
       setStatus(rows.some((r) => Object.keys(r.errors).length > 0) ? "invalid" : "valid");
@@ -677,13 +733,15 @@ export function useBulkUpload(
 
         next[rowIndex] = { ...target, values: newValues, errors };
 
-        // Recompute global status based on whether any rows still have errors
-        const stillHasErrors = next.some(
+        // Re-run duplicate detection across all rows after each cell edit
+        const withDups = applyDuplicateErrors(next);
+
+        const stillHasErrors = withDups.some(
           (r) => Object.keys(r.errors).length > 0
         );
         setStatus(stillHasErrors ? "invalid" : "valid");
 
-        return next;
+        return withDups;
       });
     },
     [typeLookup, categoryLookup, generator]
@@ -698,36 +756,50 @@ export function useBulkUpload(
 
       if (next.length === 0) {
         setStatus("idle");
-      } else {
-        const stillHasErrors = next.some(
-          (r) => Object.keys(r.errors).length > 0
-        );
-        setStatus(stillHasErrors ? "invalid" : "valid");
+        return next;
       }
 
-      return next;
+      // Re-run duplicate detection — removing a row may resolve a duplicate
+      const withDups = applyDuplicateErrors(next);
+      const stillHasErrors = withDups.some(
+        (r) => Object.keys(r.errors).length > 0
+      );
+      setStatus(stillHasErrors ? "invalid" : "valid");
+
+      return withDups;
     });
   }, []);
 
   const handleConfirm = useCallback(
     async (addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>) => {
-      // Re-validate every row at submission time as a safety net, and
-      // collect the expanded ParsedRelatedObject[] for each valid row.
+      // Re-validate every row and re-check duplicates at submission time.
+      const revalidated = applyDuplicateErrors(
+        editableRows.map((row) => {
+          const { errors } = validateEditableRow(
+            row.values,
+            typeLookup,
+            categoryLookup,
+            generator
+          );
+          return { ...row, errors };
+        })
+      );
+
+      if (revalidated.some((r) => Object.keys(r.errors).length > 0)) {
+        setSubmissionError(
+          "Some rows still have validation errors. Please fix them before uploading."
+        );
+        return;
+      }
+
       const allExpanded: ParsedRelatedObject[] = [];
-      for (const row of editableRows) {
-        const { errors, expanded } = validateEditableRow(
+      for (const row of revalidated) {
+        const { expanded } = validateEditableRow(
           row.values,
           typeLookup,
           categoryLookup,
           generator
         );
-        if (Object.keys(errors).length > 0) {
-          // Shouldn't normally happen — UI should keep confirm disabled
-          setSubmissionError(
-            "Some rows still have validation errors. Please fix them before uploading."
-          );
-          return;
-        }
         allExpanded.push(...expanded);
       }
 
