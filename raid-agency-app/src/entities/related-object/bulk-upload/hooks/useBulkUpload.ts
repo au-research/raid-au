@@ -471,6 +471,7 @@ function validateEditableRow(
 // ------------------------------------------------------------------
 
 const DUPLICATE_ERROR_PREFIX = "Duplicate:";
+const MAX_ROWS = 100;
 
 /**
  * Scans all rows for duplicate URL + Type combinations and stamps a
@@ -740,6 +741,15 @@ export function useBulkUpload(
         return;
       }
 
+      if (rawRows.length > MAX_ROWS) {
+        setEditableRows([]);
+        setStatus("error");
+        setSubmissionError(
+          `Too many rows: the file contains ${rawRows.length} data rows but the maximum allowed is ${MAX_ROWS}. Please split your file into smaller batches.`
+        );
+        return;
+      }
+
       setStatus("validating");
 
       const rows = applyDuplicateErrors(
@@ -812,6 +822,13 @@ export function useBulkUpload(
 
   const handleConfirm = useCallback(
     async (addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>) => {
+      if (editableRows.length > MAX_ROWS) {
+        setSubmissionError(
+          `Too many rows: ${editableRows.length} rows present but the maximum allowed is ${MAX_ROWS}. Please remove some rows before uploading.`
+        );
+        return;
+      }
+
       // Re-validate every row and collect expanded objects in a single pass.
       type RowResult = { row: EditableRow; expanded: ParsedRelatedObject[] };
       const results: RowResult[] = editableRows.map((row) => {
