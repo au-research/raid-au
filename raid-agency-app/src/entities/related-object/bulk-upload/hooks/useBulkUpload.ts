@@ -470,22 +470,23 @@ function validateEditableRow(
 // Duplicate detection
 // ------------------------------------------------------------------
 
-const DUPLICATE_ERROR_MSG =
-  "Duplicate: this URL and Type combination already exists in another row.";
+const DUPLICATE_ERROR_PREFIX = "Duplicate:";
 
 /**
  * Scans all rows for duplicate URL + Type combinations and stamps a
- * URL-field error onto each affected row. Existing URL format errors
- * take precedence — a duplicate error is only added when the URL field
- * has no other error. Stale duplicate errors are cleared when the
- * duplication is resolved.
+ * URL-field error onto each affected row, naming the other row numbers
+ * involved (e.g. "Duplicate: same URL and Type as row 3").
+ * Existing URL format errors take precedence — a duplicate error is only
+ * added when the URL field has no other error. Stale duplicate errors are
+ * cleared when the duplication is resolved.
  */
 function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
-  const keyToRowIds = new Map<string, string[]>();
+  // Map key -> list of 0-based row indices that share that key
+  const keyToIndices = new Map<string, number[]>();
 
-  for (const row of rows) {
+  rows.forEach((row, idx) => {
     const url = row.values.URL.trim().toLowerCase();
-    if (!url) continue;
+    if (!url) return;
 
     const types = row.values.Type.split(",")
       .map((t) => t.trim().toLowerCase())
@@ -493,23 +494,43 @@ function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
 
     for (const type of types) {
       const key = `${url}|||${type}`;
-      const existing = keyToRowIds.get(key) ?? [];
-      existing.push(row.id);
-      keyToRowIds.set(key, existing);
+      const existing = keyToIndices.get(key) ?? [];
+      existing.push(idx);
+      keyToIndices.set(key, existing);
+    }
+  });
+
+  // Build a map from row index -> sorted set of other 1-based row numbers it duplicates
+  const othersMap = new Map<number, Set<number>>();
+  for (const indices of keyToIndices.values()) {
+    if (indices.length < 2) continue;
+    for (const idx of indices) {
+      const others = othersMap.get(idx) ?? new Set<number>();
+      for (const otherIdx of indices) {
+        if (otherIdx !== idx) others.add(otherIdx + 1);
+      }
+      othersMap.set(idx, others);
     }
   }
 
-  const duplicateIds = new Set<string>();
-  for (const rowIds of keyToRowIds.values()) {
-    if (rowIds.length > 1) rowIds.forEach((id) => duplicateIds.add(id));
-  }
-
-  return rows.map((row) => {
-    const isDuplicate = duplicateIds.has(row.id);
-    const hasDuplicateError = row.errors.URL === DUPLICATE_ERROR_MSG;
+  return rows.map((row, idx) => {
+    const others = othersMap.get(idx);
+    const isDuplicate = others !== undefined && others.size > 0;
+    const hasDuplicateError = row.errors.URL?.startsWith(DUPLICATE_ERROR_PREFIX);
 
     if (isDuplicate && !row.errors.URL) {
-      return { ...row, errors: { ...row.errors, URL: DUPLICATE_ERROR_MSG } };
+      const sorted = Array.from(others).sort((a, b) => a - b);
+      const othersText =
+        sorted.length === 1
+          ? `row ${sorted[0]}`
+          : `rows ${sorted.slice(0, -1).join(", ")} and ${sorted[sorted.length - 1]}`;
+      return {
+        ...row,
+        errors: {
+          ...row.errors,
+          URL: `${DUPLICATE_ERROR_PREFIX} same URL and Type as ${othersText}`,
+        },
+      };
     }
     if (!isDuplicate && hasDuplicateError) {
       const errors = { ...row.errors };
@@ -533,13 +554,15 @@ export interface UseBulkUploadOptions {
    * field it expects.
    */
   generator?: () => Partial<ParsedRelatedObject>;
+  /** Called once after all objects have been appended to the form. */
+  onComplete?: () => void;
 }
 
 export function useBulkUpload(
   vocabulary: BulkUploadVocabulary | undefined,
   options: UseBulkUploadOptions = {}
 ) {
-  const { generator } = options;
+  const { generator, onComplete } = options;
   const rowCounter = useRef(0);
   const [status, setStatus] = useState<BulkUploadStatus>("idle");
   const [file, setFile] = useState<File | null>(null);
@@ -823,6 +846,7 @@ export function useBulkUpload(
         }
         setSubmissionProgress(null);
         setStatus("done");
+        onComplete?.();
       } catch (err) {
         setSubmissionError(
           err instanceof Error ? err.message : "Submission failed."
@@ -830,7 +854,7 @@ export function useBulkUpload(
         setStatus("error");
       }
     },
-    [editableRows, typeLookup, categoryLookup, generator]
+    [editableRows, typeLookup, categoryLookup, generator, onComplete]
   );
 
   // ---- Derived state ----

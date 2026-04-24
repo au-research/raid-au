@@ -13,8 +13,13 @@ function FieldGrid({
   index: number;
   isRowHighlighted: boolean;
 }) {
-  const { setValue, watch, trigger } = useFormContext();
+  const { setValue, watch, trigger, formState: { errors } } = useFormContext();
   const key = "relatedObject";
+
+  // Read the id-field error directly — superRefine errors sometimes don't
+  // propagate through useController's internal subscription.
+  const idErrors = (errors?.relatedObject as Record<number, { id?: { message?: string } }> | undefined);
+  const idErrorMessage = idErrors?.[index]?.id?.message;
   const relatedObjectTypeOptions = useMemo(
     () =>
       generalMapping
@@ -46,6 +51,7 @@ function FieldGrid({
         name={`relatedObject.${index}.id`}
         label="URL"
         helperText="Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL (https://web.archive.org/web/20220101000000/https://example.com)"
+        errorText={idErrorMessage}
       />
       <TextSelectField
         options={relatedObjectTypeOptions}

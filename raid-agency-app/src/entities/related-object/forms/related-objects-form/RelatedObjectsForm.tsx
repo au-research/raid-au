@@ -1,7 +1,7 @@
 import { RelatedObjectCategoriesForm } from "@/entities/related-object-category/forms/related-object-categories-form";
 import { relatedObjectDataGenerator } from "@/entities/related-object/data-generator/related-object-data-generator";
 import { RaidDto } from "@/generated/raid";
-import { AddBox, ExpandMore } from "@mui/icons-material";
+import { AddBox, ExpandMore, ErrorOutline as ErrorIcon } from "@mui/icons-material";
 import {
   Accordion,
   AccordionDetails,
@@ -18,7 +18,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect, useRef, useCallback } from "react";
 import {
   Control,
   FieldErrors,
@@ -122,8 +122,22 @@ export function RelatedObjectsForm({
   const handleBulkAddItem = async (obj: ParsedRelatedObject) => {
     // entryMode is already "bulk" — the useEffect above will collapse the new item
     append(obj);
-    trigger(key);
   };
+
+  const handleBulkComplete = useCallback(async () => {
+    await trigger(key);
+    // Expand any accordion that now has a validation error so the user
+    // can see the error message without having to open each one manually.
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      fields.forEach((field, index) => {
+        if (errors?.relatedObject?.[index]) {
+          next.delete(field.id);
+        }
+      });
+      return next;
+    });
+  }, [trigger, key, fields, errors?.relatedObject]);
 
   const handleRemoveItem = (fieldId: string, index: number) => {
     remove(index);
@@ -201,7 +215,9 @@ export function RelatedObjectsForm({
           )}
 
           <Stack gap={1} data-testid={`${key}-form`}>
-            {fields.map((field, index) => (
+            {fields.map((field, index) => {
+              const hasError = !!(errors.relatedObject?.[index]);
+              return (
               <Accordion
                 key={field.id}
                 expanded={!collapsedIds.has(field.id)}
@@ -209,7 +225,7 @@ export function RelatedObjectsForm({
                 disableGutters
                 sx={{
                   border: "1px solid",
-                  borderColor: "divider",
+                  borderColor: hasError ? "error.main" : "divider",
                   borderRadius: 1,
                   "&:before": { display: "none" },
                 }}
@@ -220,13 +236,16 @@ export function RelatedObjectsForm({
                     alignItems="center"
                     sx={{ width: "100%", overflow: "hidden", pr: 1 }}
                   >
+                    {hasError && (
+                      <ErrorIcon color="error" fontSize="small" sx={{ mr: 0.5, flexShrink: 0 }} />
+                    )}
                     <Typography
                       variant="body2"
                       fontWeight={500}
                       noWrap
                       sx={{
                         textDecoration: highlightedFieldId === field.id ? "line-through" : "none",
-                        color: highlightedFieldId === field.id ? "error.main" : "inherit",
+                        color: highlightedFieldId === field.id ? "error.main" : hasError ? "error.main" : "inherit",
                       }}
                     >
                       {label} #{index + 1}
@@ -256,7 +275,8 @@ export function RelatedObjectsForm({
                   </Stack>
                 </AccordionDetails>
               </Accordion>
-            ))}
+            );
+            })}
           </Stack>
 
           <Box
@@ -285,7 +305,7 @@ export function RelatedObjectsForm({
                 variant="outlined"
                 sx={{ p: 2, borderRadius: 2, bgcolor: "background.default" }}
               >
-                <BulkUploadComponent addRelatedObject={handleBulkAddItem} />
+                <BulkUploadComponent addRelatedObject={handleBulkAddItem} onComplete={handleBulkComplete} />
               </Paper>
             </>
           )}

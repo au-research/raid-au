@@ -30,18 +30,28 @@ export const relatedObjectValidationSchema = z
     })
   )
   .superRefine((items, ctx) => {
-    const seen = new Map<string, number>(); // "url|||typeId" -> first index
-
+    // First pass: group indices by "url|||typeId" key
+    const keyToIndices = new Map<string, number[]>();
     items.forEach((item, index) => {
       const key = `${item.id ?? ""}|||${item.type?.id ?? ""}`;
-      if (seen.has(key)) {
+      const existing = keyToIndices.get(key) ?? [];
+      existing.push(index);
+      keyToIndices.set(key, existing);
+    });
+
+    // Second pass: flag every item in each duplicate group, naming the others
+    for (const indices of keyToIndices.values()) {
+      if (indices.length < 2) continue;
+      for (const index of indices) {
+        const others = indices
+          .filter((i) => i !== index)
+          .map((i) => `#${i + 1}`)
+          .join(", ");
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Duplicate: this URL and type combination already exists (see item #${(seen.get(key) ?? 0) + 1})`,
+          message: `Duplicate: same URL and Type as item ${others}`,
           path: [index, "id"],
         });
-      } else {
-        seen.set(key, index);
       }
-    });
+    }
   });

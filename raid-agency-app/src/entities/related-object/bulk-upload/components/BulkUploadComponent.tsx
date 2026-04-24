@@ -34,12 +34,15 @@ interface BulkUploadComponentProps {
    * generator's output so react-hook-form gets every field it expects.
    */
   generator?: () => Partial<ParsedRelatedObject>;
+  /** Called once after all objects have been successfully appended. */
+  onComplete?: () => void;
 }
 
 export function BulkUploadComponent({
   vocabulary: vocabularyOverride,
   addRelatedObject,
   generator,
+  onComplete,
 }: BulkUploadComponentProps) {
   const loadedVocabulary = useBulkUploadVocabulary(rawVocabulary);
   const vocabulary = vocabularyOverride ?? loadedVocabulary;
@@ -60,7 +63,7 @@ export function BulkUploadComponent({
     handleConfirm,
     reset,
     isConfirmDisabled,
-  } = useBulkUpload(vocabulary, { generator });
+  } = useBulkUpload(vocabulary, { generator, onComplete });
 
   // ---- Vocabulary still loading ----
   if (!isVocabularyReady || !vocabulary) {
@@ -80,130 +83,135 @@ export function BulkUploadComponent({
   return (
     <Box sx={{ mt: 2 }}>
       <Stack spacing={2}>
-        {/* ---- Intro + template download ---- */}
-        <Stack spacing={0.5}>
-          {[
-            "Download a template below (Excel or CSV)",
-            "Fill in your Related Objects — one row per object",
-            "Upload the completed file using the drop zone below",
-          ].map((step, i) => (
-            <Stack key={i} direction="row" alignItems="flex-start" spacing={1}>
-              <Typography variant="body2" color="primary" fontWeight={700} sx={{ minWidth: 18 }}>
-                {i + 1}.
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {step}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
-
-        <TemplateDownloader />
-
-        {/* ---- Stage 1: file drop zone (shown until rows are loaded) ---- */}
-        {!hasAnyRows && !isDone && (
-          <FileDropZone
-            onFileSelected={handleFileUpload}
-            disabled={isSubmitting}
-            currentFileName={file?.name ?? null}
-          />
-        )}
-
-        {/* ---- Loading indicator ---- */}
-        {isUploading && (
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <CircularProgress size={18} />
-            <Typography variant="body2" color="text.secondary">
-              {status === "parsing" ? "Parsing file…" : "Validating rows…"}
-            </Typography>
-          </Stack>
-        )}
-
-        {/* ---- File-level error (parse failure, empty file, etc.) ---- */}
-        {submissionError && !hasAnyRows && (
-          <Alert severity="error" onClose={reset}>
-            {submissionError}
-          </Alert>
-        )}
-
-        {/* ---- Stage 2: preview table (shown once rows are loaded) ---- */}
-        {hasAnyRows && !isDone && (
+        {/* ---- Bulk upload UI (hidden once submission starts) ---- */}
+        {!isSubmitting && !isDone && (
           <>
-            <BulkUploadPreviewTable
-              rows={editableRows}
-              vocabulary={vocabulary}
-              onUpdateRow={updateRow}
-              onRemoveRow={removeRow}
-              disabled={isSubmitting}
-            />
+            {/* Intro + template download */}
+            <Stack spacing={0.5}>
+              {[
+                "Download a template below (Excel or CSV)",
+                "Fill in your Related Objects — one row per object",
+                "Upload the completed file using the drop zone below",
+              ].map((step, i) => (
+                <Stack key={i} direction="row" alignItems="flex-start" spacing={1}>
+                  <Typography variant="body2" color="primary" fontWeight={700} sx={{ minWidth: 18 }}>
+                    {i + 1}.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {step}
+                  </Typography>
+                </Stack>
+              ))}
+            </Stack>
 
-            {totalErrorCount > 0 && (
-              <Alert severity="warning">
-                Fix the highlighted errors before uploading. You can edit
-                cells directly in the table or remove rows you don't need.
+            <TemplateDownloader />
+
+            {/* File drop zone (shown until rows are loaded) */}
+            {!hasAnyRows && (
+              <FileDropZone
+                onFileSelected={handleFileUpload}
+                disabled={false}
+                currentFileName={file?.name ?? null}
+              />
+            )}
+
+            {/* Loading indicator */}
+            {isUploading && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <CircularProgress size={18} />
+                <Typography variant="body2" color="text.secondary">
+                  {status === "parsing" ? "Parsing file…" : "Validating rows…"}
+                </Typography>
+              </Stack>
+            )}
+
+            {/* File-level error (parse failure, empty file, missing columns, etc.) */}
+            {submissionError && !hasAnyRows && (
+              <Alert severity="error" onClose={reset}>
+                {submissionError}
               </Alert>
             )}
 
-            {submissionError && (
-              <Alert severity="error">{submissionError}</Alert>
+            {/* Preview table */}
+            {hasAnyRows && (
+              <>
+                <BulkUploadPreviewTable
+                  rows={editableRows}
+                  vocabulary={vocabulary}
+                  onUpdateRow={updateRow}
+                  onRemoveRow={removeRow}
+                  disabled={false}
+                />
+
+                {totalErrorCount > 0 && (
+                  <Alert severity="warning">
+                    Fix the highlighted errors before uploading. You can edit
+                    cells directly in the table or remove rows you don't need.
+                  </Alert>
+                )}
+
+                {submissionError && (
+                  <Alert severity="error">{submissionError}</Alert>
+                )}
+              </>
+            )}
+
+            {/* Action buttons */}
+            {hasAnyRows && (
+              <Stack direction="row" spacing={1} justifyContent="flex-end">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<RestartIcon />}
+                  onClick={reset}
+                >
+                  Start over
+                </Button>
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<UploadIcon />}
+                  disabled={isConfirmDisabled}
+                  onClick={() => handleConfirm(addRelatedObject)}
+                >
+                  {`Confirm upload (${editableRows.length})`}
+                </Button>
+              </Stack>
             )}
           </>
         )}
 
-        {/* ---- Stage 3: success state ---- */}
-        {isDone && (
-          <Alert severity="success">
-            All related objects have been added successfully.
-          </Alert>
+        {/* ---- Submission progress ---- */}
+        {isSubmitting && (
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <CircularProgress size={18} />
+            <Typography variant="body2" color="text.secondary">
+              {submissionProgress
+                ? `Uploading ${submissionProgress.current} of ${submissionProgress.total}…`
+                : "Uploading…"}
+            </Typography>
+          </Stack>
         )}
 
-        {/* ---- Action buttons ---- */}
-        <Stack direction="row" spacing={1} justifyContent="flex-end">
-          {hasAnyRows && !isDone && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<RestartIcon />}
-              onClick={reset}
-              disabled={isSubmitting}
-            >
-              Start over
-            </Button>
-          )}
-
-          {isDone && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<RestartIcon />}
-              onClick={reset}
-            >
-              Upload more
-            </Button>
-          )}
-
-          {hasAnyRows && !isDone && (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={
-                isSubmitting ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <UploadIcon />
-                )
-              }
-              disabled={isConfirmDisabled}
-              onClick={() => handleConfirm(addRelatedObject)}
-            >
-              {isSubmitting && submissionProgress
-                ? `Uploading ${submissionProgress.current} of ${submissionProgress.total}…`
-                : isSubmitting
-                  ? "Uploading…"
-                  : `Confirm upload (${editableRows.length})`}
-            </Button>
-          )}
-        </Stack>
+        {/* ---- Success state ---- */}
+        {isDone && (
+          <Stack spacing={1}>
+            <Alert severity="success">
+              All related objects have been added successfully.
+            </Alert>
+            <Stack direction="row" justifyContent="flex-end">
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<RestartIcon />}
+                onClick={reset}
+              >
+                Upload more
+              </Button>
+            </Stack>
+          </Stack>
+        )}
       </Stack>
     </Box>
   );
