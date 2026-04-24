@@ -1,7 +1,7 @@
 import { RelatedObjectCategoriesForm } from "@/entities/related-object-category/forms/related-object-categories-form";
 import { relatedObjectDataGenerator } from "@/entities/related-object/data-generator/related-object-data-generator";
 import { RaidDto } from "@/generated/raid";
-import { AddBox, ExpandMore, ErrorOutline as ErrorIcon } from "@mui/icons-material";
+import { AddBox, Close as CloseIcon, ExpandMore, ErrorOutline as ErrorIcon } from "@mui/icons-material";
 import {
   Accordion,
   AccordionDetails,
@@ -14,8 +14,10 @@ import {
   CardHeader,
   Chip,
   Divider,
+  IconButton,
   Paper,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useState, useContext, useEffect, useRef, useCallback } from "react";
@@ -303,8 +305,18 @@ export function RelatedObjectsForm({
               </Divider>
               <Paper
                 variant="outlined"
-                sx={{ p: 2, borderRadius: 2, bgcolor: "background.default" }}
+                sx={{ p: 2, borderRadius: 2, bgcolor: "background.default", position: "relative" }}
               >
+                <Tooltip title="Close bulk upload" placement="left">
+                  <IconButton
+                    size="small"
+                    onClick={() => setEntryMode("manual")}
+                    sx={{ position: "absolute", top: 8, right: 8 }}
+                    aria-label="Close bulk upload"
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <BulkUploadComponent addRelatedObject={handleBulkAddItem} onComplete={handleBulkComplete} />
               </Paper>
             </>
