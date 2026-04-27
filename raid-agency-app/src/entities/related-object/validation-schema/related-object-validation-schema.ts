@@ -29,6 +29,7 @@ export const relatedObjectValidationSchema = z
       category: relatedObjectCategoryValidationSchema,
     })
   )
+  .max(100, "Related Objects cannot exceed 100 items. Please remove some before saving.")
   .superRefine((items, ctx) => {
     // First pass: group indices by "url|||typeId" key
     const keyToIndices = new Map<string, number[]>();

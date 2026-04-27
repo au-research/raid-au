@@ -2,9 +2,9 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   Stack,
   Typography,
+  useTheme,
 } from "@mui/material";
 import {
   CloudUpload as UploadIcon,
@@ -19,15 +19,14 @@ import { FileDropZone } from "./Filedropzone";
 import { TemplateDownloader } from "./TemplateDownloader";
 import { BulkUploadPreviewTable } from "./Bulkuploadpreviewtable";
 
-// Import the RAiD vocabulary JSON. Adjust this path to wherever the
-// shared vocabulary file lives in your app.
+import { PulseLoader } from "react-spinners";
 import rawVocabulary from "@/mapping/data/general-mapping.json";
 
 interface BulkUploadComponentProps {
   /** Optional override — if not provided, the component loads the vocab itself. */
   vocabulary?: BulkUploadVocabulary;
-  /** The same function used by the manual add form to persist one related object. */
-  addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>;
+  /** Called with all validated objects at once for a single batched append. */
+  addRelatedObjects: (objs: ParsedRelatedObject[]) => Promise<void>;
   /**
    * Optional: the same data generator the manual add flow uses (e.g.
    * `relatedObjectDataGenerator`). Parsed rows are merged on top of the
@@ -38,9 +37,21 @@ interface BulkUploadComponentProps {
   onComplete?: () => void;
 }
 
+function BulkSpinner({ message }: { message: string }) {
+  const theme = useTheme();
+  return (
+    <Stack spacing={1.5} alignItems="center" sx={{ py: 2 }}>
+      <PulseLoader color={theme.palette.primary.main} />
+      <Typography variant="body2" fontWeight={500}>
+        {message}
+      </Typography>
+    </Stack>
+  );
+}
+
 export function BulkUploadComponent({
   vocabulary: vocabularyOverride,
-  addRelatedObject,
+  addRelatedObjects,
   generator,
   onComplete,
 }: BulkUploadComponentProps) {
@@ -67,14 +78,7 @@ export function BulkUploadComponent({
 
   // ---- Vocabulary still loading ----
   if (!isVocabularyReady || !vocabulary) {
-    return (
-      <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
-        <CircularProgress size={18} />
-        <Typography variant="body2" color="text.secondary">
-          Loading vocabulary…
-        </Typography>
-      </Box>
-    );
+    return <BulkSpinner message="Loading vocabulary…" />;
   }
 
   const isSubmitting = status === "submitting";
@@ -110,19 +114,15 @@ export function BulkUploadComponent({
             {!hasAnyRows && (
               <FileDropZone
                 onFileSelected={handleFileUpload}
-                disabled={false}
                 currentFileName={file?.name ?? null}
               />
             )}
 
-            {/* Loading indicator */}
+            {/* Parsing / validating indicator */}
             {isUploading && (
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <CircularProgress size={18} />
-                <Typography variant="body2" color="text.secondary">
-                  {status === "parsing" ? "Parsing file…" : "Validating rows…"}
-                </Typography>
-              </Stack>
+              <BulkSpinner
+                message={status === "parsing" ? "Parsing file…" : "Validating rows…"}
+              />
             )}
 
             {/* File-level error (parse failure, empty file, missing columns, etc.) */}
@@ -140,7 +140,6 @@ export function BulkUploadComponent({
                   vocabulary={vocabulary}
                   onUpdateRow={updateRow}
                   onRemoveRow={removeRow}
-                  disabled={false}
                 />
 
                 {totalErrorCount > 0 && (
@@ -173,7 +172,7 @@ export function BulkUploadComponent({
                   size="small"
                   startIcon={<UploadIcon />}
                   disabled={isConfirmDisabled}
-                  onClick={() => handleConfirm(addRelatedObject)}
+                  onClick={() => handleConfirm(addRelatedObjects)}
                 >
                   {`Confirm upload (${editableRows.length})`}
                 </Button>
@@ -184,14 +183,13 @@ export function BulkUploadComponent({
 
         {/* ---- Submission progress ---- */}
         {isSubmitting && (
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <CircularProgress size={18} />
-            <Typography variant="body2" color="text.secondary">
-              {submissionProgress
-                ? `Uploading ${submissionProgress.current} of ${submissionProgress.total}…`
-                : "Uploading…"}
-            </Typography>
-          </Stack>
+          <BulkSpinner
+            message={
+              submissionProgress
+                ? `Adding ${submissionProgress.total} related object${submissionProgress.total === 1 ? "" : "s"} to the form…`
+                : "Uploading…"
+            }
+          />
         )}
 
         {/* ---- Success state ---- */}

@@ -20,7 +20,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useState, useContext, useEffect, useRef, useCallback } from "react";
+import { useState, useContext, useLayoutEffect, useRef, useCallback } from "react";
 import {
   Control,
   FieldErrors,
@@ -75,13 +75,13 @@ export function RelatedObjectsForm({
   const label = "Related Object";
   const labelPlural = "Related Objects";
   const generator = relatedObjectDataGenerator;
-  const DetailsForm = RelatedObjectDetailsForm;
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const [entryMode, setEntryMode] = useState<EntryMode>("manual");
   const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
 
   const { fields, append, remove } = useFieldArray({ control, name: key });
+  const { formState } = useFormContext();
 
   /**
    * IDs of accordions that are currently collapsed.
@@ -93,14 +93,14 @@ export function RelatedObjectsForm({
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(
     () => new Set(fields.map((f) => f.id))
   );
-  const errorMessage = errors[key]?.message;
+  const errorMessage = errors[key]?.message ?? (errors[key] as { root?: { message?: string } } | undefined)?.root?.message;
 
   // Track the set of field IDs seen in the previous render so we can
   // detect which fields are newly added after each append().
   const prevFieldIdsRef = useRef<Set<string>>(new Set(fields.map((f) => f.id)));
 
   // Bulk-added items start collapsed; manually added items start expanded.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const prevIds = prevFieldIdsRef.current;
     const newFields = fields.filter((f) => !prevIds.has(f.id));
 
@@ -121,28 +121,32 @@ export function RelatedObjectsForm({
     trigger(key);
   };
 
-  const handleBulkAddItem = async (obj: ParsedRelatedObject) => {
-    // entryMode is already "bulk" — the useEffect above will collapse the new item
-    append(obj);
+  const handleBulkAddItems = async (objs: ParsedRelatedObject[]) => {
+    // Single append call with the full array — one React re-render instead of N.
+    // entryMode is "bulk" so the useEffect above will collapse all new items.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    append(objs as any);
   };
 
   const handleBulkComplete = useCallback(async () => {
     await trigger(key);
-    // Expand any accordion that now has a validation error so the user
-    // can see the error message without having to open each one manually.
+    // Read errors fresh from form context after trigger resolves — using the
+    // prop here would be a stale closure from before trigger ran.
+    const freshErrors = formState.errors.relatedObject as Record<number, unknown> | undefined;
     setCollapsedIds((prev) => {
       const next = new Set(prev);
       fields.forEach((field, index) => {
-        if (errors?.relatedObject?.[index]) {
+        if (freshErrors?.[index]) {
           next.delete(field.id);
         }
       });
       return next;
     });
-  }, [trigger, key, fields, errors?.relatedObject]);
+  }, [trigger, key, fields, formState]);
 
   const handleRemoveItem = (fieldId: string, index: number) => {
     remove(index);
+    trigger(key);
     setCollapsedIds((prev) => {
       const next = new Set(prev);
       next.delete(fieldId);
@@ -164,10 +168,6 @@ export function RelatedObjectsForm({
 
   const metadata = useContext(MetadataContext);
   const tooltip = metadata?.[key]?.tooltip;
-
-  const showBulkUploadSection = () => {
-    setEntryMode("bulk");
-  };
 
   return (
     <Card
@@ -200,12 +200,6 @@ export function RelatedObjectsForm({
 
       <CardContent>
         <Stack gap={2}>
-          {errorMessage && (
-            <Typography variant="body2" color="error" textAlign="center">
-              {errorMessage}
-            </Typography>
-          )}
-
           {fields.length === 0 && (
             <Typography
               variant="body2"
@@ -260,7 +254,7 @@ export function RelatedObjectsForm({
 
                 <AccordionDetails>
                   <Stack gap={2}>
-                    <DetailsForm
+                    <RelatedObjectDetailsForm
                       key={field.id}
                       handleRemoveItem={() => handleRemoveItem(field.id, index)}
                       index={index}
@@ -280,6 +274,12 @@ export function RelatedObjectsForm({
             );
             })}
           </Stack>
+
+          {errorMessage && (
+            <Typography variant="body2" color="error" textAlign="center">
+              {errorMessage}
+            </Typography>
+          )}
 
           <Box
             className={isRowHighlighted ? "add" : ""}
@@ -317,7 +317,10 @@ export function RelatedObjectsForm({
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <BulkUploadComponent addRelatedObject={handleBulkAddItem} onComplete={handleBulkComplete} />
+                <BulkUploadComponent
+                  addRelatedObjects={handleBulkAddItems}
+                  onComplete={handleBulkComplete}
+                />
               </Paper>
             </>
           )}
@@ -343,7 +346,7 @@ export function RelatedObjectsForm({
           size="small"
           startIcon={<AddBox />}
           sx={{ textTransform: "none" }}
-          onClick={showBulkUploadSection}
+          onClick={() => setEntryMode("bulk")}
         >
           Upload Bulk {labelPlural}
         </Button>

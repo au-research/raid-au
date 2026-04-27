@@ -277,20 +277,6 @@ function parseCsvToRows(csvText: string): Record<string, string>[] {
 // ------------------------------------------------------------------
 
 /**
- * The schema URI *values* used inside the type and category sub-objects
- * are NOT the same as the ID's parent URI — they're separate schema
- * version URIs. Looking at actual RAiD payloads:
- *
- *   type.id        = https://vocabulary.raid.org/relatedObject.type.schema/250
- *   type.schemaUri = https://vocabulary.raid.org/relatedObject.type.schema/329
- *
- *   category[].id        = https://vocabulary.raid.org/relatedObject.category.id/190
- *   category[].schemaUri = https://vocabulary.raid.org/relatedObject.category.schemaUri/386
- *
- * The `.id` is the full vocabulary key (straight from the vocab JSON).
- * The `.schemaUri` is a version identifier that the backend expects.
- */
-/**
  * Maps a single spreadsheet row into one or more ParsedRelatedObject
  * records. When the Type column contains multiple comma-separated values,
  * the row is expanded: one ParsedRelatedObject per type, each sharing
@@ -821,7 +807,7 @@ export function useBulkUpload(
   }, []);
 
   const handleConfirm = useCallback(
-    async (addRelatedObject: (obj: ParsedRelatedObject) => Promise<void>) => {
+    async (addRelatedObjects: (objs: ParsedRelatedObject[]) => Promise<void>) => {
       if (editableRows.length > MAX_ROWS) {
         setSubmissionError(
           `Too many rows: ${editableRows.length} rows present but the maximum allowed is ${MAX_ROWS}. Please remove some rows before uploading.`
@@ -856,11 +842,10 @@ export function useBulkUpload(
       setSubmissionError(null);
       setSubmissionProgress({ current: 0, total: allExpanded.length });
 
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
       try {
-        for (let i = 0; i < allExpanded.length; i++) {
-          await addRelatedObject(allExpanded[i]);
-          setSubmissionProgress({ current: i + 1, total: allExpanded.length });
-        }
+        await addRelatedObjects(allExpanded);
         setSubmissionProgress(null);
         setStatus("done");
         onComplete?.();
