@@ -10,7 +10,8 @@ WHERE r.handle LIKE '102.100.100/%'
    OR EXISTS (SELECT 1 FROM api_svc.raid_related_object rro JOIN api_svc.related_object_type rot ON rro.related_object_type_id = rot.id WHERE rro.handle = r.handle AND rot.uri LIKE '%github.com%')
    OR EXISTS (SELECT 1 FROM api_svc.raid_related_object rro2 JOIN api_svc.raid_related_object_category rroc ON rro2.id = rroc.raid_related_object_id JOIN api_svc.related_object_category roc ON rroc.related_object_category_id = roc.id WHERE rro2.handle = r.handle AND roc.uri LIKE '%github.com%')
    OR EXISTS (SELECT 1 FROM api_svc.related_raid rr JOIN api_svc.related_raid_type rrt ON rr.related_raid_type_id = rrt.id WHERE rr.handle = r.handle AND rrt.uri LIKE '%github.com%')
-   OR EXISTS (SELECT 1 FROM api_svc.raid r2 JOIN api_svc.access_type at2 ON r2.access_type_id = at2.id WHERE r2.handle = r.handle AND at2.uri LIKE '%github.com%');
+   OR EXISTS (SELECT 1 FROM api_svc.raid r2 JOIN api_svc.access_type at2 ON r2.access_type_id = at2.id WHERE r2.handle = r.handle AND at2.uri LIKE '%github.com%')
+   OR EXISTS (SELECT 1 FROM api_svc.raid_traditional_knowledge_label rtkl JOIN api_svc.traditional_knowledge_label tkl ON rtkl.traditional_knowledge_label_id = tkl.id WHERE rtkl.handle = r.handle AND tkl.uri LIKE '%localcontexts.org%');
 
 DELETE FROM api_svc.raid_history
 WHERE handle IN (SELECT handle FROM handles_to_delete);
