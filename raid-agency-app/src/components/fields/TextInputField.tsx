@@ -32,10 +32,11 @@ const TextInputField = memo(function TextInputField({
 
   const errorMessage = getErrorMessageForField(errors, field.name);
 
+  const hasError = Boolean(errorMessage) || Boolean(errorText);
+
   const getDisplayHelperText = () => {
-    if (errorMessage) {
-      return errorText || errorMessage.message;
-    }
+    if (errorText) return errorText;
+    if (errorMessage) return errorMessage.message;
 
     if (required && helperText && helperText?.length > 0) {
       return `${helperText} *`;
@@ -50,7 +51,7 @@ const TextInputField = memo(function TextInputField({
         {...field}
         id={field.name || `field-${Date.now()}`}
         size="small"
-        error={Boolean(errorMessage)}
+        error={hasError}
         fullWidth
         helperText={getDisplayHelperText()}
         label={`${label} ${multiline ? "(supports markdown syntax)" : ""}`}
