@@ -15,7 +15,7 @@
     "@emotion/react": "11.11.4",
     "@emotion/styled": "11.11.0",
     "@fontsource/figtree": "5.0.20",
-    "@hookform/resolvers": "3.3.4",
+    "@hookform/resolvers": "5.2.2",
     "@mui/icons-material": "5.16.7",
     "@mui/material": "5.16.7",
     "@mui/x-data-grid": "6.20.4",
