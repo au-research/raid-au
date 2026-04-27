@@ -555,7 +555,7 @@ export function useBulkUpload(
   const [file, setFile] = useState<File | null>(null);
   const [editableRows, setEditableRows] = useState<EditableRow[]>([]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [submissionProgress, setSubmissionProgress] = useState<{ current: number; total: number } | null>(null);
+  const [submissionProgress, setSubmissionProgress] = useState<{ total: number } | null>(null);
 
   // Build lookups once per vocabulary change. Safe against `undefined`
   // or partially-loaded vocabulary (e.g. async fetch still in flight).
@@ -840,7 +840,7 @@ export function useBulkUpload(
 
       setStatus("submitting");
       setSubmissionError(null);
-      setSubmissionProgress({ current: 0, total: allExpanded.length });
+      setSubmissionProgress({ total: allExpanded.length });
 
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
