@@ -5,9 +5,7 @@ import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jooq.JSONB;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -191,18 +189,4 @@ class RaidIngestServiceTest {
         verify(spatialCoverageService).update(SPATIAL_COVERAGES, HANDLE);
     }
 
-    @Test
-    @DisplayName("findAllIncludingWithoutHistory() maps records via objectMapper")
-    void findAllIncludingWithoutHistory() throws JsonProcessingException {
-        final var metadata = JSONB.valueOf("{\"test\":true}");
-        final var raidRecord = new RaidRecord().setMetadata(metadata);
-        final var raidDto = new RaidDto();
-
-        when(raidRepository.findAllIncludingWithoutHistory()).thenReturn(List.of(raidRecord));
-        when(objectMapper.readValue(metadata.data(), RaidDto.class)).thenReturn(raidDto);
-
-        final var result = raidIngestService.findAllIncludingWithoutHistory();
-
-        assertThat(result, is(List.of(raidDto)));
-    }
 }

@@ -123,6 +123,7 @@ def replace_contributor_position_id:
   if . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/co-investigator.json" then "https://vocabulary.raid.org/contributor.position.schema/308"
   elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/other-participant.json" then "https://vocabulary.raid.org/contributor.position.schema/311"
   elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/principal-investigator.json" then "https://vocabulary.raid.org/contributor.position.schema/307"
+  elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/leader.json" then "https://vocabulary.raid.org/contributor.position.schema/307"
   else . end;
 
 def replace_contributor_position_schema:
@@ -192,6 +193,7 @@ def replace_related_object_category_schema:
 # Related raid type
 def replace_related_raid_type_id:
   if . == "https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/has-part.json" then "https://vocabulary.raid.org/relatedRaid.type.schema/201"
+  elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/continues.json" then "https://vocabulary.raid.org/relatedRaid.type.schema/204"
   elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/is-continued-by.json" then "https://vocabulary.raid.org/relatedRaid.type.schema/203"
   elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/is-derived-from.json" then "https://vocabulary.raid.org/relatedRaid.type.schema/200"
   elif . == "https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/is-identical-to.json" then "https://vocabulary.raid.org/relatedRaid.type.schema/204"
@@ -207,7 +209,7 @@ def replace_related_raid_type_schema:
 
 # Leader/contact position constants
 def is_leader: . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/leader.json";
-def is_contact: . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/contact.json";
+def is_contact: . == "https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/contact-person.json";
 def default_other_position($pos):
   { id: "https://vocabulary.raid.org/contributor.position.schema/311",
     schemaUri: "https://vocabulary.raid.org/contributor.position.schema/305",
@@ -240,7 +242,7 @@ def default_other_position($pos):
     | .contact = (if .position then (.position | any(.id | is_contact)) else false end)
     # Filter out leader/contact positions, replace remaining
     | (if .position then
-        (.position | map(select(.id | (is_leader or is_contact) | not))) as $remaining
+        (.position | map(select(.id | is_contact | not))) as $remaining
         | if ($remaining | length) == 0 then
             # All positions were leader/contact - add default Other
             .position = [default_other_position(.position[0])]
@@ -252,10 +254,14 @@ def default_other_position($pos):
           end
       else . end)
   )
-  # Ensure at least one contributor is flagged as leader
-  | if (.contributor | any(.leader == true)) then . else .contributor[0].leader = true end
-  # Ensure at least one contributor is flagged as contact
-  | if (.contributor | any(.contact == true)) then . else .contributor[0].contact = true end
+  # If there is only one contributor, they must be both leader and contact
+  | if (.contributor | length) == 1 then .contributor[0].leader = true | .contributor[0].contact = true
+    else
+      # Ensure at least one contributor is flagged as leader
+      if (.contributor | any(.leader == true)) then . else .contributor[0].leader = true end
+      # Ensure at least one contributor is flagged as contact
+      | if (.contributor | any(.contact == true)) then . else .contributor[0].contact = true end
+    end
   else . end)
 
 # Access statement - ensure text is set
@@ -337,9 +343,11 @@ while IFS= read -r RAID_ID; do
 
     # Extract prefix and suffix from the identifier URL
     # e.g. https://raid.org/10.26259/abc123 -> 10.26259/abc123
-    HANDLE=$(echo "$RAID_ID" | sed 's|https://raid.org/||')
-    PREFIX=$(echo "$HANDLE" | cut -d'/' -f1)
-    SUFFIX=$(echo "$HANDLE" | cut -d'/' -f2)
+    # Extract prefix and suffix from the last two path segments of the identifier URL
+    # e.g. https://raid.org/10.26259/abc123 -> prefix=10.26259, suffix=abc123
+    #       http://raid.local/102.100.100/447201 -> prefix=102.100.100, suffix=447201
+    SUFFIX=$(basename "$RAID_ID")
+    PREFIX=$(basename "$(dirname "$RAID_ID")")
 
     # Refresh token every 100 raids (tokens expire)
     if [ $((TOTAL_PROCESSED % 100)) -eq 0 ]; then
