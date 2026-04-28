@@ -2,8 +2,8 @@ import { TextInputField } from "@/components/fields/TextInputField";
 import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
-import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { Grid, IconButton, Stack, Tooltip } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 function FieldGrid({
@@ -13,6 +13,13 @@ function FieldGrid({
   index: number;
   isRowHighlighted: boolean;
 }) {
+  const { setValue, watch, trigger, formState: { errors } } = useFormContext();
+  const key = "relatedObject";
+
+  // Read the id-field error directly — superRefine errors sometimes don't
+  // propagate through useController's internal subscription.
+  const idErrors = (errors?.relatedObject as Record<number, { id?: { message?: string } }> | undefined);
+  const idErrorMessage = idErrors?.[index]?.id?.message;
   const relatedObjectTypeOptions = useMemo(
     () =>
       generalMapping
@@ -23,13 +30,28 @@ function FieldGrid({
         })),
     []
   );
+
+  const idValue = watch(`relatedObject.${index}.id`);
+
+  useEffect(() => {
+    if (!idValue) return;
+
+    if (idValue.includes("doi.org")) {
+      setValue(`${key}.${index}.schemaUri`, "https://doi.org/");
+      trigger(`${key}.${index}.schemaUri`);
+    } else if (idValue.includes("web.archive.org")) {
+      setValue(`${key}.${index}.schemaUri`, "https://web.archive.org/");
+      trigger(`${key}.${index}.schemaUri`);
+    }
+  }, [idValue, index, setValue, trigger]);
+
   return (
     <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
       <TextInputField
         name={`relatedObject.${index}.id`}
-        label="DOI URL"
-        helperText="Enter full DOI URL, e.g. https://doi.org/10.abc123/xyz456"
-        errorText="Invalid. Enter full DOI URL, e.g. https://doi.org/10.abc123/xyz456"
+        label="URL"
+        helperText="Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL (https://web.archive.org/web/20220101000000/https://example.com)"
+        errorText={idErrorMessage}
       />
       <TextSelectField
         options={relatedObjectTypeOptions}
@@ -46,32 +68,27 @@ function FieldGrid({
 export function RelatedObjectDetailsForm({
   index,
   handleRemoveItem,
+  onHighlightChange,
 }: {
   index: number;
   handleRemoveItem: (index: number) => void;
+  onHighlightChange?: (highlighted: boolean) => void;
 }) {
-  const key = "relatedObject";
   const label = "Related Object";
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
-  const { getValues } = useFormContext();
 
-  const handleMouseEnter = () => setIsRowHighlighted(true);
-  const handleMouseLeave = () => setIsRowHighlighted(false);
+  const handleMouseEnter = () => {
+    setIsRowHighlighted(true);
+    onHighlightChange?.(true);
+  };
+  const handleMouseLeave = () => {
+    setIsRowHighlighted(false);
+    onHighlightChange?.(false);
+  };
 
   return (
     <Stack gap={2}>
-      <Typography variant="body2">
-        <span
-          style={{ textDecoration: isRowHighlighted ? "line-through" : "" }}
-        >
-          {getValues(`${key}.${index}.text`)
-            ? getValues(`${key}.${index}.text`)
-            : `${label} # ${index + 1}`}
-        </span>
-        {isRowHighlighted && " (to be deleted)"}
-      </Typography>
-
       <Stack direction="row" alignItems="flex-start" gap={1}>
         <FieldGrid index={index} isRowHighlighted={isRowHighlighted} />
 
@@ -98,3 +115,4 @@ export function RelatedObjectDetailsForm({
     </Stack>
   );
 }
+

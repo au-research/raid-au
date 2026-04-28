@@ -268,4 +268,126 @@ class RelatedObjectValidatorTest {
         assertThat(failures, hasSize(2));
         assertThat(failures, hasItems(typeError, categoryError));
     }
+
+    @Test
+    @DisplayName("Validation passes with valid web archive URL")
+    void validWebArchiveRelatedObject() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_WEB_ARCHIVE_URL)
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Fails validation with malformed web archive URL")
+    void invalidWebArchiveUrl() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.INVALID_WEB_ARCHIVE_URL)
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("invalid")
+                        .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation with unsupported schemaUri")
+    void invalidSchemaUri() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id(TestConstants.VALID_DOI)
+                .schemaUri("https://example.com/")
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].schemaUri")
+                        .errorType("invalid")
+                        .message("Only [https://doi.org/, https://web.archive.org/] is supported.")
+        ));
+    }
+
+    @Test
+    @DisplayName("Fails validation when web archive URL has empty inner URL")
+    void webArchiveUrlWithEmptyInnerUrl() {
+        final var type = new RelatedObjectType()
+                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
+                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(TestConstants.INPUT_RELATED_OBJECT_CATEGORY)
+                .schemaUri(TestConstants.RELATED_OBJECT_CATEGORY_SCHEMA_URI));
+
+        final var relatedObject = new RelatedObject()
+                .id("https://web.archive.org/web/20220101000000/https://")
+                .schemaUri(TestConstants.HTTPS_WEB_ARCHIVE_ORG)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("relatedObject[0].id")
+                        .errorType("invalid")
+                        .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
+        ));
+    }
 }

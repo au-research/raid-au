@@ -142,6 +142,7 @@ public class RaidRepository {
                 .fetchInto(RaidRecord.class);
     }
 
+
     public List<RaidRecord> findAllByContributorOrcid(final String orcid) {
         return dslContext.select()
                 .from(RAID)

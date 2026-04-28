@@ -38,6 +38,7 @@ public class RaidHistoryService {
     private final RaidHistoryProperties properties;
     private final RaidChangeFactory raidChangeFactory;
     private final RaidRepository raidRepository;
+    private final VocabularyUriReplacementService vocabularyUriReplacementService;
 
     @SneakyThrows
     public RaidDto save(final RaidCreateRequest request) {
@@ -179,7 +180,9 @@ public class RaidHistoryService {
             return Optional.empty();
         }
         try {
-            return Optional.of(objectMapper.readValue(jsonValueFactory.create(history).toString(), RaidDto.class));
+            var json = vocabularyUriReplacementService.upgradeVocabularyUris(
+                    jsonValueFactory.create(history).toString());
+            return Optional.of(objectMapper.readValue(json, RaidDto.class));
         } catch (MismatchedInputException e) {
             if (e.getMessage().contains("Cannot deserialize value of type `java.util.ArrayList<au.org.raid.idl.raidv2.model.RelatedObjectCategory>`")) {
                 final var raid = objectMapper.readValue(jsonValueFactory.create(history).toString(), Map.class);

@@ -119,7 +119,11 @@ public class RaidController implements RaidApi {
             throw new ValidationException(failures);
         }
 
-        return ResponseEntity.ok(raidService.update(request, getServicePointId()));
+        final var servicePointId = TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)
+                ? request.getIdentifier().getOwner().getServicePoint()
+                : getServicePointId();
+
+        return ResponseEntity.ok(raidService.update(request, servicePointId));
     }
 
     @Override

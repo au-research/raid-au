@@ -28,8 +28,10 @@ export const transformErrorMessage = (errorData: Record<string, ErrorItem | Erro
       });
     } else {
       // Handle single error object
-      // This occurs when a field has only one validation error
-      const message = value?.message || messages.requestFailedContent;
+      // This occurs when a field has only one validation error.
+      // For useFieldArray fields, RHF v7 stores root-level errors (e.g. from
+      // Zod .max()) at value.root.message rather than value.message directly.
+      const message = value?.message || (value as Record<string, { message?: string } | undefined>)?.root?.message || messages.requestFailedContent;
       // Add formatted error message to failures array
       transformedError.failures.push(`${key} - ${message}`);
     }

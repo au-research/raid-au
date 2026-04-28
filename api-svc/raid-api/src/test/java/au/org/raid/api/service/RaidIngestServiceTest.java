@@ -4,6 +4,8 @@ import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
+import au.org.raid.idl.raidv2.model.RaidDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +62,8 @@ class RaidIngestServiceTest {
     RaidHistoryService raidHistoryService;
     @Mock
     RaidDtoReadService raidDtoReadService;
+    @Mock
+    ObjectMapper objectMapper;
     @InjectMocks
     RaidIngestService raidIngestService;
 
@@ -184,4 +188,5 @@ class RaidIngestServiceTest {
         verify(subjectService).update(SUBJECTS, HANDLE);
         verify(spatialCoverageService).update(SPATIAL_COVERAGES, HANDLE);
     }
+
 }

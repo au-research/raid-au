@@ -1,2 +1,3 @@
 au.org.raid.iam.provider.group.GroupControllerResourceProviderFactory
 au.org.raid.iam.provider.raid.RaidPermissionsControllerResourceProviderFactory
+au.org.raid.iam.provider.localization.LocalizationControllerResourceProviderFactory

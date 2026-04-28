@@ -52,6 +52,8 @@ class RaidHistoryServiceTest {
     private RaidChangeFactory raidChangeFactory;
     @Mock
     private RaidRepository raidRepository;
+    @Mock
+    private VocabularyUriReplacementService vocabularyUriReplacementService;
     @InjectMocks
     private RaidHistoryService raidHistoryService;
 
