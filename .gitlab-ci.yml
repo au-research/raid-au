@@ -42,33 +42,7 @@ other-version:
     - if: $CI_COMMIT_BRANCH
       when: always
 
-#create-git-tag:
-#  stage: release
-#  rules:
-#    - if: $CI_COMMIT_TAG
-#      when: never
-#    - when: on_success
-#  dependencies:
-#    - other-version
-#    - tag-version
-#  needs:
-#    - job: other-version
-#      optional: true
-#    - job: tag-version
-#      optional: true
-#  before_script:
-#    - apt-get update && apt-get install -y git >/dev/null
-#    - git config --global user.email ${GITLAB_USER_EMAIL}
-#    - git config --global user.name ${GITLAB_USER_NAME}
-#    - git remote set-url --push origin https://oauth:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git
-#  script:
-#    - source version.txt
-#    - echo "Create release $DOCKER_TAG_VERSION"
-#    - git tag -f "$DOCKER_TAG_VERSION"
-#    - git push -f origin $DOCKER_TAG_VERSION
-
-create-release:
-  image: gitlab/glab
+create-git-tag:
   stage: release
   rules:
     - if: $CI_COMMIT_TAG
@@ -82,18 +56,16 @@ create-release:
       optional: true
     - job: tag-version
       optional: true
-  variables:
-    GITLAB_HOST: $CI_SERVER_HOST
+  before_script:
+    - apt-get update && apt-get install -y git >/dev/null
+    - git config --global user.email ${GITLAB_USER_EMAIL}
+    - git config --global user.name ${GITLAB_USER_NAME}
+    - git remote set-url --push origin https://oauth:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git
   script:
     - source version.txt
-    - echo "gitlab $GITLAB_HOST host"
-    - CURRENT_TAG="$DOCKER_TAG_VERSION"
-    - git config user.name "Release BOT"
-    - git config user.email "release-bot@surf.nl"
-    - git remote set-url --push origin "https://oauth:${GITLAB_TOKEN_GITLAB_CLI}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git"
-    - echo $GITLAB_TOKEN_GITLAB_CLI | glab auth login --hostname $CI_SERVER_FQDN --stdin
-    - glab auth status
-    - glab release create "$CURRENT_TAG" --ref "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
+    - echo "Create release $DOCKER_TAG_VERSION"
+    - git tag -f "$DOCKER_TAG_VERSION"
+    - git push -f origin $DOCKER_TAG_VERSION
 
 #release_job:
 #  stage: release
