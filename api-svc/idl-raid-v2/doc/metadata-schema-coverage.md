@@ -1,36 +1,16 @@
 
 # Broad things 
 
-## Schema normalisation 
-
-Due to the inconsistencies in the current schema and API implementation, we 
-need to update some of the already implemented field names, see
-[metadata-block-field-naming.md](https://github.com/au-research/raid-metadata/blob/main/doc/metadata-block-field-naming.md)
-
-This will be done as a new schema definition: `PublicRaidMetadataSchemaV2` 
-will be published as a non-backward-compatible new schema.
-
-There will be new endpoints added in the authenticated API for dealing with the
-new schema.
-
-The "landing page" will be updated to return `PublicRaidMetadataSchemaV2` data,
-via an internal mapping process for dealing with `PublicRaidMetadataSchemaV1` 
-raids.
-
 ## Validation of raid data via integrations
 
 For all the blocks marked "complete" where the values point to things like 
-ORCID, ROR, etc.  We have not implemented and validation of the input data
-that involves integrating with those services.
+ORCID, ROR, etc. - ORCID and ISNI contributor identifiers are now validated
+via integration clients (`OrcidClient`, `IsniClient`). ROR organisation
+identifiers are validated against the ROR API.
 
-For example, the incoming ORCID urls in a raid are validated to be conformant
-to the format and check-digit level - but may still point at an ORCID that does
-not exist.
-
-## Missing language fields
-
-Some blocks haven't implemented the language fields, they will be added ASAP
-(backwards compatible change).
+For example, incoming ORCID urls in a raid are validated to be conformant
+to the format and check-digit level, and the ORCID integration service
+can verify the contributor exists.
 
 
 ---
@@ -47,29 +27,24 @@ Complete.
 
 ## 4. Title - Complete
 
-Complete, except missing language fields.
+Complete, including language field.
 
 ## 5. Description - Complete
 
-Complete, except missing language fields.
+Complete, including language field.
 
 ## 6. Contributor - Complete
 
-Complete, except missing language fields.
-
-Only supports ORCID identifiers at the moment.
-Can be extended on request to other (controlled) identifiers.
+Complete. Supports ORCID and ISNI identifiers.
 
 ## 7. Organisation - Complete
 
-Complete, except missing language fields.
-
-Only supports RoR identifiers at the moment.
-Can be extended on request to other (controlled) identifiers.
+Complete. Supports RoR identifiers.
+Schema is extensible to other identifier types via `organisation_schema`.
 
 ## 8. RelatedObject - Complete
 
-Implemented for DOI. Does not validate object exists.
+Supports any identifier via `id` + `schemaUri`. Does not validate object exists.
 
 ## 9. AlternateIdentifier - Complete
 
@@ -85,7 +60,7 @@ Complete. Needs extra validation for other Raid agencies.
 
 ## 12. Subject - Complete
 
-Complete. No validation for keyword/language.
+Complete, including language field on keywords.
 
 ## 13. TraditionalKnowledgeLabel - Complete
 
@@ -93,11 +68,11 @@ Complete.
 
 ## 14. SpatialCoverage - Complete
 
-Complete, except missing labguage fields.
+Complete, including language field on place.
 
 ## 15. Access - Complete
 
-Complete, except missing language fields.
+Complete, including language field on statement.
 
 
 

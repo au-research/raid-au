@@ -1,13 +1,13 @@
 # Security Policy
 
-Raido does not have a formal monetary bug bounty in place.
+RAiD does not have a formal monetary bug bounty in place.
 
 If your report is found to be helpful to the project - we would be happy to add an acknowledgement of your contribution to this file as thanks.
 
 
 ## Reporting a Vulnerability
 
-If you believe you have found a security vulnerability in the Raido repository, please report it to us through coordinated disclosure.
+If you believe you have found a security vulnerability in the RAiD repository, please report it to us through coordinated disclosure.
 
 Please do not report security vulnerabilities through public GitHub issues, discussions, or pull requests.
 

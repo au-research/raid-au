@@ -88,8 +88,9 @@ needs to be done once at startup.
 
 ## Configure for development by default
 
-See 
-[api-svc/.../config/environment/readme.md](/api-svc/spring/src/main/java/raido/apisvc/spring/config/environment/readme.md)
+Configuration defaults are set in 
+[application.yaml](/api-svc/raid-api/src/main/resources/application.yaml) 
+with profile-specific overrides for deployed environments.
 
 
 ## MTTS > MTBF

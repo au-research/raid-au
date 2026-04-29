@@ -2,46 +2,53 @@
 
 # Pre-requisites
 
-As outlined in the [onboarding-guide](./api-client-onboarding-guide.md); 
-before you can mint a raid, you must have an agreement with the ARDC and have 
+As outlined in the [onboarding-guide](./api-client-onboarding-guide.md);
+before you can mint a raid, you must have an agreement with the ARDC and have
 had a service-point created for your usage.
 
-See the [permission-model](./permission-model.md) to gain an understanding 
+See the [permission-model](./permission-model.md) to gain an understanding
 of service-points and other important concepts.
 
 
-# Get your api-token
+# Get your access token
 
-In order for your client to talk to the Raido API, you need an api-token.
+In order for your client to talk to the RAiD API, you need an access token
+issued by Keycloak (the Identity and Access Management server).
 
-## Create a user authz-request to use the system 
-* sign-in via your chosen ID Provider
-  * Google, AAF or ORCID
-* submit the form to request authorization for a service-point
-  * The Raid support team will have already created service-point as part of 
-  [business onboarding](./api-client-onboarding-guide.md#business-onboarding)
-  * It can help to send an email to `contact@raid.org` or otherwise notify
-    us (via email, slack, GitHub discussions, etc.) that you have submitted an 
-    authorization-request
-  * add a comment to your authz-request that you would like admin access so 
-  that you can manage api-keys and generate api-tokens
-* the raid support team will contact you when you can sign-in
+## Human users
 
+* sign in via the raid-agency-app at `https://app.demo.raid.org.au`
+  * Keycloak redirects you to your chosen identity provider (AAF or ORCID)
+* an operator must assign you to a service-point group in Keycloak and grant
+  the `service-point-user` role before you can mint raids
+  * contact `contact@raid.org` or notify us via email, Slack, or GitHub
+    discussions that you need access
+* once approved, the access token is obtained automatically by the
+  raid-agency-app when you sign in
 
-## Create an api-token
+## Machine-to-machine (API clients)
 
-* sign-in using the same ID provider you used before
-  * authorization is linked to your ID Provider
-* use the menu to navigate to the api-keys list page and create an api-key
-  * give your api-key a name that identifies your client application
-* click the `Generate token` button to generate your api-token
+For server-side integration, use the OAuth2 **client credentials** grant
+to obtain an access token directly from Keycloak:
+
+1. An operator creates a Keycloak client for your application, assigns the
+   appropriate roles (e.g. `service-point-user`), and configures a
+   service-point group
+2. You authenticate with Keycloak using your client ID and secret:
+```bash
+curl -X POST https://iam.demo.raid.org.au/realms/raid/protocol/openid-connect/token \
+  -d "grant_type=client_credentials" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET"
+```
+3. The response contains an `access_token` (a Keycloak-issued RS256 JWT)
 
 ### Example
 
-For the examples outlined below, we're going to do basic `curl` commands to 
+For the examples outlined below, we're going to do basic `curl` commands to
 mint and read a raid.
 
-To make these commands readable, we're going to store the api-token into an 
+To make these commands readable, we're going to store the access token into an
 environment variable that will be used by the example commands:
 ```
 export DEMO_TOKEN="xxx.yyy.zzz"
@@ -51,78 +58,81 @@ Note that we _don't_ prepend the `Bearer ` prefix, since we do that below in
 the header specification of the example commands.
 
 
-### api-token security
+### Access token security
 
 $${\color{red}**WARNING**}$$
 
-The api-token is to be considered sensitive, non-public information.
+The access token is to be considered sensitive, non-public information.
 
-api-tokens must be kept secret and should never be accessible to 
-end-users
-  * that is, do not embed the api-token in front-end client applications or 
-  web-sites
-  * the api-token is the only thing necessary to use the API and can be used
-    to mint/edit raids and see closed raid data
-  * save the api-token somewhere safe - we do not store it in our system
-    * but note that new api-tokens can be generated at any time by just 
-    clicking the generate button again
+Access tokens must be kept secret and should never be accessible to
+end-users:
+  * do not embed the token in front-end client applications or web-sites
+  * the access token is the only thing necessary to use the API and can be
+    used to mint/edit raids and see closed raid data
+  * access tokens expire (typically within minutes); use the client credentials
+    grant to obtain a fresh token as needed
 
 
 ## Mint a raid
-* use the stable "mint" endpoint 
-([`/raid/v1`](/api-svc/idl-raid-v2/src/raido-openapi-3.0.yaml))
+* use the stable "mint" endpoint
+([`POST /raid/`](/api-svc/idl-raid-v2/src/raido-openapi-3.0.yaml))
 to create a raid
-* you must set your api-token in the `Authorization` header (don't forget to 
-prefix with `Bearer ` in the value)
+* you must set your access token in the `Authorization` header (don't forget
+to prefix with `Bearer ` in the value)
 * use the OpenAPI definitions as a guide to what fields are required
-  * the metadata schema guide to the intended content of the fields is 
-  only currently available as a document available by emailing to 
-  `contact@raid.org`
-  * eventually, this document will be available as a public 
-  "[read-the-docs](https://readthedocs.org/)" website
+  * the metadata schema guide is available at
+  [RAiD Metadata Schema](https://metadata.raid.org/en/latest/index.html)
 
 ### Example
-```
-curl -v -X POST https://api.demo.raid.org.au/raid/v1 \
+```bash
+curl -v -X POST https://api.demo.raid.org.au/raid/ \
   -H "Authorization: Bearer $DEMO_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
   -d '{
-  "metadataSchema": "RaidoMetadataSchemaV1",
-  "titles": [
+  "title": [
     {
-      "title": "Client Integration Test RAID No. 1",
-      "type": "Primary Title",
+      "text": "Client Integration Test RAID No. 1",
+      "type": {
+        "id": "https://vocabulary.raid.org/title.type.schema/5",
+        "schemaUri": "https://vocabulary.raid.org/title.type.schema/376"
+      },
       "startDate": "2023-02-01"
     }
   ],
-  "dates": {
+  "date": {
     "startDate": "2023-02-01"
   },
-  "descriptions": [
+  "description": [
     {
-      "description": "Test Description",
-      "type": "Primary Description"
+      "text": "Test Description",
+      "type": {
+        "id": "https://vocabulary.raid.org/description.type.schema/318",
+        "schemaUri": "https://vocabulary.raid.org/description.type.schema/320"
+      }
     }
   ],
   "access": {
-    "type": "Open"
+    "type": {
+      "id": "https://vocabularies.coar-repositories.org/access_rights/c_abf2/",
+      "schemaUri": "https://vocabularies.coar-repositories.org/access_rights/"
+    }
   },
-  "contributors": [
+  "contributor": [
     {
       "id": "https://orcid.org/0000-0002-6492-9025",
-      "identifierSchemeUri": "https://orcid.org/",
-      "positions": [
+      "schemaUri": "https://orcid.org/",
+      "position": [
         {
-          "positionSchemaUri": "https://raid.org/",
-          "position": "Leader",
+          "id": "https://vocabulary.raid.org/contributor.position.schema/307",
+          "schemaUri": "https://vocabulary.raid.org/contributor.position.schema/305",
           "startDate": "2023-02-01"
         }
       ],
-      "roles": [
+      "role": [
         {
-          "roleSchemeUri": "https://credit.niso.org/",
-          "role": "supervision"
+          "id": "https://credit.niso.org/contributor-roles/supervision",
+          "schemaUri": "https://credit.niso.org/"
         }
       ]
     }
@@ -131,14 +141,14 @@ curl -v -X POST https://api.demo.raid.org.au/raid/v1 \
 ```
 
 ## Read a raid
- 
-* use the stable "read" endpoint 
-([`/raid/v1/{prefix}/{suffix}`](/api-svc/idl-raid-v2/src/raido-openapi-3.0.yaml)) 
+
+* use the stable "read" endpoint
+([`GET /raid/{prefix}/{suffix}`](/api-svc/idl-raid-v2/src/raido-openapi-3.0.yaml))
 to read the minted raid
 
 ### Example
-```
-curl -v https://api.demo.raid.org.au/raid/v1/10378.1/1709242 \
+```bash
+curl -v https://api.demo.raid.org.au/raid/10378.1/1709242 \
   -H "Authorization: Bearer $DEMO_TOKEN" \
-  -H 'Accept: application/json' 
+  -H 'Accept: application/json'
 ```

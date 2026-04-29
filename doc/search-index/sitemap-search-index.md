@@ -1,5 +1,8 @@
-This is what the sitemap index and sitemaps for raid and raido would look like. 
-See [BuildSearchIndex.java](/api-svc/spring/src/main/java/raido/cmdline/BuildSearchIndex.java)
+This is what the sitemap index and sitemaps for raid and raido would look like.
+
+Note: The `BuildSearchIndex.java` class that was originally referenced here
+has been removed. This document now serves as a design reference for future
+sitemap/search-index implementation.
 
 ### `sitemap_index.xml`
 

@@ -1,7 +1,7 @@
 
 
 Intended to by a quick-start guide, focused on what a client needs to do to 
-get up and running with the Raido API and minting raids.
+get up and running with the RAiD API and minting raids.
 
 
 # Business onboarding
@@ -41,17 +41,17 @@ guide are hardcode for DEMO environment.
 * DEMO - "pre-production" environment.  
   * There is only one - we don't currently maintain multiple pre-prod 
     environments.
-  * The app-client UI is available at https://app.demo.raid.org.au
+  * The raid-agency-app UI is available at https://app.demo.raid.org.au
   * The API is available at https://api.demo.raid.org.au
 
 * PROD - production environment
-  * The app-client UI is available at https://app.prod.raid.org.au
+  * The raid-agency-app UI is available at https://app.prod.raid.org.au
   * The API is available at https://api.prod.raid.org.au
 
 
 ### Experimental vs Stable API
 
-Every endpoint in the [Raido OpenAPI](/api-svc/idl-raid-v2/src/raido-openapi-3.0.yaml)
+Every endpoint in the [RAiD OpenAPI](/api-svc/idl-raid-v2/src/raido-openapi-3.0.yaml)
 definition is tagged as either "stable" or "experimental", client integration
 targeted at production deployment should use only stable APIs, the 
 [service-level-guide](/doc/service-level-guide.md) talks explicitly about out
@@ -60,7 +60,7 @@ commitment to supporting stable API endpoints.
 
 ### Open vs Closed raid data
 
-Raido has the concept of "closed" and "open" raid data.
+RAiD has the concept of "closed" and "open" raid data.
 When you select that a raid should be "closed", it means that no metadata 
 is made available to the public.
 
@@ -77,7 +77,7 @@ raid.org that people around the world will be able to use (without signing in)
 to resolve and search raid data.
 
 The global raid infrastructure should generally not be of too much concern to 
-you as an integrator to Raido.  Your agreement is with the ARDC for integration 
+you as an integrator to RAiD.  Your agreement is with the ARDC for integration 
 to the Oceania region raid-agency, which is currently maintained and operated 
 by the ARDC.
 

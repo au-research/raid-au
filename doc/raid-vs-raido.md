@@ -20,7 +20,7 @@ When you see these terms in this codebase:
   supporting global infrastructure (i.e. `raid.org`), being operated and
   maintained by ARDC in our capacity as the ISO standard "registration
   authority".
-  * note that `raid.org` does not exist yet, and when it does, the software will
-    live in a separate repository
+  * `raid.org` is now operational and is used as the schema and identifier
+    prefix for RAID handles (e.g. `https://raid.org/`)
 
  

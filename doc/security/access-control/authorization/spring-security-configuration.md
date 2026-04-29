@@ -1,34 +1,53 @@
-This diagram outlines how the 
-[RaidWebSecurityConfig](/api-svc/spring/src/main/java/raido/apisvc/spring/config/RaidWebSecurityConfig.java)
-is bootstrapped and the `AuthenticationManagerResolver()` method links to the 
-[RaidV2AuthenticationProvider](/api-svc/spring/src/main/java/raido/apisvc/spring/security/raidv2/RaidV2AuthenticationProvider.java).
+This diagram outlines how the
+[SecurityConfig](/api-svc/raid-api/src/main/java/au/org/raid/api/config/SecurityConfig.java)
+is bootstrapped by Spring Boot.
+
+The application uses Spring Security's OAuth2 Resource Server support to
+validate Keycloak-issued JWTs. There is no custom `AuthenticationProvider`;
+instead, a `JwtAuthenticationConverter` bean extracts Keycloak realm roles
+from the `realm_access.roles` claim in the JWT.
+
+Authorization decisions are handled by:
+* Standard role checks via `hasRole()` / `hasAnyRole()` in the filter chain
+* Custom `AuthorizationManager` implementations in
+  [RaidAuthorizationService](/api-svc/raid-api/src/main/java/au/org/raid/api/auth/RaidAuthorizationService.java)
+  for fine-grained access control (service-point ownership, per-raid permissions)
 
 See [oauth2_api-token_exchange.md](../authentication/oauth2_api-token_exchange.md)
-for details about how an app-user signs in and the app-client obtains an 
-api-token.
-
-See [api-token-authz-flow.md](./api-token-authz-flow.md) for details
-of how Spring and the `RaidV2AuthenticationProvider` work to implement secured
-endpoint calls.
+for details about how a user authenticates via Keycloak.
 
 ```mermaid
 sequenceDiagram
 autonumber
 actor container as Container
 participant java as Java
-participant api as Api
-participant webServer as EmbeddedJetty
+participant boot as Spring Boot<br/>(embedded Tomcat)
 participant spring as Spring framework
-participant apiConfig as ApiConfig
-participant securityConfig as RaidWebSecurityConfig
+participant securityConfig as SecurityConfig
 
-container->>java: java -jar raido-api-svc.jar
-java->>api: main(String[] args)
-api->>webServer: startJoin()
-webServer->>spring: new WebApplicationContext().<br/>register(ApiConfig.class)
-spring->>apiConfig: load components from<br/>@Bean methods
-spring->>securityConfig: load components from<br/>@Bean methods
-spring->>securityConfig: securityFilterChain()
-securityConfig->>spring: http.requestMatchers("/v2/**").fullyAuthenticated()
-securityConfig->>spring: http.oauth2ResourceServer(<br/>tokenAuthenticationManagerResolver() )
+container->>java: java -jar raid-api.jar
+java->>boot: SpringApplication.run()
+boot->>spring: create ApplicationContext
+spring->>securityConfig: load @Configuration,<br/>@EnableWebSecurity
+spring->>securityConfig: securityFilterChain(HttpSecurity)
+securityConfig->>spring: configure authorization rules<br/>(permitAll, hasRole, access managers)
+securityConfig->>spring: oauth2ResourceServer(jwt)
+securityConfig->>spring: oauth2Login + logout handler
+note right of spring: JWT validation uses Keycloak's<br/>issuer-uri and JWKS endpoint
 ```
+
+## Key roles used in authorization rules
+
+The following Keycloak realm roles are checked in `SecurityConfig`:
+
+| Role | Purpose |
+|------|---------|
+| `service-point-user` | Standard user associated with a service point |
+| `operator` | System administrator with broad access |
+| `raid-admin` | Admin-level access to specific raids |
+| `raid-user` | User-level access to specific raids |
+| `raid-upgrader` | Access to legacy/upgrade endpoints |
+| `raid-dumper` | Access to bulk public data export |
+| `pid-searcher` | Access to PID-based search endpoints |
+| `contributor-writer` | Access to PATCH contributor data |
+| `raid-access-handler` | Access to embargoed raid data |

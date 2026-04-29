@@ -1,87 +1,67 @@
 
-This documents a "happy day" sign-in process using Google as the ID Provider.
+> **Note:** This document has been updated to reflect the current Keycloak-based
+> authentication architecture. The previous custom api-token exchange flow
+> (where api-svc generated its own HS256 JWTs) has been replaced by standard
+> Keycloak OAuth2/OIDC token issuance.
+
+This documents a "happy day" sign-in process for a human user.
+
+Authentication is handled entirely by Keycloak (the Identity and Access
+Management server). Users authenticate via Keycloak, which federates to
+external identity providers (AAF via SATOSA/SAML, ORCID, etc.).
+Keycloak issues standard RS256-signed JWTs.
 
 Assume:
-* the user is already signed-in to google
-* the app-user record
-  * exists in DB because it was already approved by an OPERATOR or SP_ADMIN
-  * is enabled and otherwise valid
-
-Note:
-* I have used Mermaid optional boxes (`opt`) to try to highlight and separate 
-  the OAuth2 part of the process from the custom Raido part where we generate 
-  our own api-token for use with API endpoint calls.  
+* the user has a Keycloak account (either local or federated via AAF/ORCID)
+* the user has been assigned to a service-point group with appropriate roles
 
 ```mermaid
 sequenceDiagram
 autonumber
 actor user as User<br/>(web browser)
-participant app as app-client<br/>(SPA served from<br/> AWS CloudFront) 
-participant client as api-svc<br/>(container hosted on<br/>AWS ECS)
-participant idp as Google<br/>(google.com,<br/>googleapis.com, etc.)
+participant app as raid-agency-app<br/>(SPA served from<br/> AWS CloudFront) 
+participant keycloak as Keycloak<br/>(iam.{env}.raid.org.au)
+participant api as api-svc<br/>(container hosted on<br/>AWS ECS)
 
 user->>app: user navigates to <br/>app.prod.raid.org.au
-user->>app: user clicks<br/>`Sign in with Google`
-app-->>user: App sets location to <br/>accounts.google.com<br/>/o/oauth2/v2/auth
-  note left of app: scope: openid, email, profile<br/>state: {client_redirect_uri, client_id}
+user->>app: user clicks Sign in
+app-->>keycloak: redirect to Keycloak login page
+  note right of app: scope: openid<br/>client_id: raid-agency-app
 
-opt OAuth2 / OIDC
-  user-->>idp: browser follows location navigation
-  idp->>idp: _
-    note right of idp: user signs in to Google<br/>if not already
-  user->>idp: user consents to "authorize app"
-  idp-->>user: 302 redirect to redirect_uri<br/>(api.prod.raid.org.au/idpresponse)
-    note left of idp: {code, state}
-  user-->>client: browser follows redirect to api-svc<br/>(api.prod.raid.org.au/idpresponse)
-  
-  client-->>client: _
-    note right of client: parse state param and<br/>match google client_id
-  
-  client->>idp: GET auth2.googleapis.com/token
-    note right of client: {grant_type: authorization_code,<br/>code, client_id, client_secret}
-  idp->>client: _
-    note left of idp: {id_token}
-  
-  client-->>client: _  
-    note right of client: verify id_token RS256 JWT signature<br/>using certificate from<br/>www.googleapis.com/oauth2/v3/certs
+opt Keycloak authentication
+  keycloak->>keycloak: user authenticates<br/>(local credentials, AAF, or ORCID)
+  keycloak-->>app: redirect back with authorization code
+  app->>keycloak: exchange code for tokens
+  keycloak->>app: {access_token, id_token, refresh_token}
+    note left of keycloak: RS256-signed JWTs containing<br/>realm_access.roles,<br/>service_point_group_id, etc.
 end
 
-
-opt Raido custom api-token generation
-  client-->>client: _
-    note right of client: verify app-user exists in DB<br/>and is enabled   
-
-  client-->>client: _ 
-    note right of client: create api-token, HS256 JWT<br/>signed with non-shared api-svc secret   
-  
-  client-->>user: 302 redirect to client_redirect_uri<br/>(app.prod.raid.org.au)
-    note left of client: {api-token}
-end
-
-user-->>app: browser follows redirect to app-client
 app-->>app: _
-  note right of app: parse api-token from url and store to<br/>be sent with all authorised requests
+  note right of app: store access_token for use<br/>with API requests
 
+user->>app: user interacts with app
+app->>api: GET /raid/{prefix}/{suffix}<br/>{Authorization: Bearer access_token}
+api->>api: _
+  note right of api: validate JWT signature via<br/>Keycloak JWKS endpoint,<br/>extract roles from realm_access claim
 ```
-
-* (3) `SignInContainer.tsx googleSignIn()`
-* (9) `AppUserAuthnEndpoint.java authenticate()`
-* (17) `AuthProvider.tsx checkLoginState`
 
 ---
 
-Once the app-user is identified and the client has obtained an api-token, 
-the api-token must be added to the HTTP headers for every request to an 
-endpoint that requires authorization.
+The Keycloak-issued access token must be included in the `Authorization`
+header for every request to an endpoint that requires authorization.
 
 ```mermaid
 sequenceDiagram
 autonumber
-actor client as HTTP client<br/>(app-client, redbox, etc.)
+actor client as HTTP client<br/>(raid-agency-app, RedBox, etc.)
 participant api as api-svc
 
-client->>api: GET /raid/v1/{prefix}/{suffix}<br/>{Authorization: Bearer api-token}
+client->>api: GET /raid/{prefix}/{suffix}<br/>{Authorization: Bearer access_token}
 ```
 
-See [api-token-spring-authorization.md](../authorization/api-token-spring-authorization.md) 
-for details of how the endpoint is secured by spring.  
+The api-svc validates the JWT using Spring Security's OAuth2 Resource Server
+support, which verifies the token signature against Keycloak's JWKS endpoint.
+Roles are extracted from the `realm_access.roles` claim in the JWT.
+
+See [spring-security-configuration.md](../authorization/spring-security-configuration.md)
+for details of how the security filter chain is configured.

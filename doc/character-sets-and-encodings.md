@@ -5,14 +5,14 @@ RSS users: you can watch for changes to a specific file by appending `.atom`
 to the URL of the history page (`History` link in the top right of the page)
 for that file.
 For example to watch this page, subscribe to this 
-[RSS feed url](https://github.com/au-research/raido/commits/main/doc/character-sets-and-encodings.md.atom).
+[RSS feed url](https://github.com/au-research/raid-au/commits/main/doc/character-sets-and-encodings.md.atom).
 
 Non-RSS users: you can `Watch` the GitHub repository, but that will 
 notify you for every change across the entire repository.
 
 Major changes and announcements regarding handle generationa and character sets
 /encodings will also likely be added as an "Announcement" in the 
-[Discussions](https://github.com/au-research/raido/discussions) forum.
+[Discussions](https://github.com/au-research/raid-au/discussions) forum.
 
 Please submit issues or feedback using GitHub Issues, Discussions or email to 
 `contact@raid.org`.
@@ -43,24 +43,14 @@ This topic uses these definitions:
 
 # Current functionality 
 
-Note that `raid.org` and `raid.org.au` do not currently resolve RAID handles 
-and the Raido demo environment currently mints raid handles as pointing to 
-`demo.raido-infra.com`.
-
-Additionally, RAID numbers are minted using the 
+RAiD handles are now minted under the `raid.org` domain, using DOI-based 
+identifiers via DataCite. Legacy handles minted using the 
 [ARDC APIDS service](https://github.com/au-research/ANDS-Registry-Core) 
-using the shared handle prefix `10378.1`. 
+under the shared handle prefixes `102.100.100` and `10378.1` are still 
+supported for reading and resolution.
 
-
-DEMO environment example 
-* https://demo.raido-infra.com/handle/10378.1/1696575 
-* https://hdl.handle.net/10378.1/1696575
-  * note that we do not intend to present raid urls to the user as 
-  `hdl.handle.net`, the behavior is documented here for completeness 
-* note that the above raid URL will fail to resolve the next time the
-  database is reset, as this is just test data
-  * for the DEMO env eventually, `demo.raido-infra.com` will be replaced by
-   `demo.raid.org`. 
+The RAiD service is deployed to `raid.org.au` environments (e.g. 
+`app.prod.raid.org.au`, `app.demo.raid.org.au`).
 
 
 # Character set
@@ -130,8 +120,8 @@ additionally "percent encoded": https://stackoverflow.com/a/2744184/924597
 
 # References 
 
-* https://raido.org
-* https://github.com/au-research/raido
+* https://raid.org
+* https://github.com/au-research/raid-au
 * Raido coding standards
   * [UTF-8 for content](./code/standard.md#utf-8-encoding-for-all-non-ascii-content)
   * [ASCII for non-content](./code/standard.md#ascii-for-non-content--urls-filenames-)

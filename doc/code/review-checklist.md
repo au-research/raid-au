@@ -23,7 +23,7 @@ Not even as "debug".
 See [ssrf.md](/doc/security/api-svc/ssrf.md).
 
 
-## Avoid XSS issues - don't use  `dangerouslySetInnerHTML` in app-client
+## Avoid XSS issues - don't use  `dangerouslySetInnerHTML` in raid-agency-app
 
 See [xss.md](/doc/security/api-svc/xss.md)
 
@@ -91,7 +91,9 @@ can be added later (like pagination).
 
 Configure defaults for dev environments.
 
-See [api-svc/.../environment/readme.md](../../api-svc/spring/src/main/java/raido/apisvc/spring/config/environment/readme.md)
+Configuration defaults are set in 
+[application.yaml](../../api-svc/raid-api/src/main/resources/application.yaml)
+with profile-specific overrides for deployed environments.
 
 
 # Logging
