@@ -69,7 +69,6 @@ other-version:
 
 create-release:
   image: gitlab/glab
-#  image: gitlab/glab:latest
   stage: release
   rules:
     - if: $CI_COMMIT_TAG
@@ -88,7 +87,7 @@ create-release:
   script:
     - source version.txt
     - CURRENT_TAG="$DOCKER_TAG_VERSION"
-    - glab release create "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
+    - glab release --debug create "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
 
 #release_job:
 #  stage: release
