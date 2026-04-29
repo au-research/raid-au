@@ -88,7 +88,10 @@ create-release:
     - source version.txt
     - echo "gitlab $GITLAB_HOST host"
     - CURRENT_TAG="$DOCKER_TAG_VERSION"
-    - glab release create "$CURRENT_TAG" --debug --repo "$CI_PROJECT_PATH"
+    - glab --help
+    - glab release --help
+    - glab release create --help
+    - glab release create "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
 
 #release_job:
 #  stage: release
