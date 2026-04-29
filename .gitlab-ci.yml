@@ -68,7 +68,7 @@ other-version:
 #    - git push -f origin $DOCKER_TAG_VERSION
 
 create-release:
-  image: glab:latest
+  image: gitlab/glab
 #  image: gitlab/glab:latest
   stage: release
   rules:
@@ -116,221 +116,221 @@ create-release:
 #    tag_name: "asdf"
 #    name: "Release $DOCKER_TAG_VERSION asdfasf"
 #    description: "Release created using the CLI."
-
-build-frontend-dev:
-  stage: build
-  image: node
-  script:
-    - cd raid-agency-app
-    - npm install
-    - npm run build:dev
-  artifacts:
-    paths:
-      - "raid-agency-app/dist/"
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
-    paths:
-      - raid-agency-app/node_modules/
-
-build-frontend-acc:
-  stage: build
-  image: node
-  script:
-    - cd raid-agency-app
-    - npm install
-    - npm run build:acc
-  artifacts:
-    paths:
-      - "raid-agency-app/dist/"
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
-    paths:
-      - raid-agency-app/node_modules/
-
-build-frontend-prod:
-  stage: build
-  image: node
-  script:
-    - cd raid-agency-app
-    - npm install
-    - npm run build
-  artifacts:
-    paths:
-      - "raid-agency-app/dist/"
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
-    paths:
-      - raid-agency-app/node_modules/
-
-docker-frontend-dev:
-  stage: build
-  image: docker:29.2.1-cli
-  dependencies:
-    - other-version
-    - tag-version
-    - build-frontend-dev
-  needs:
-    - build-frontend-dev
-    - job: other-version
-      optional: true
-    - job: tag-version
-      optional: true
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    DOCKER_TLS_CERTDIR: ""
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull
-  script:
-    - source version.txt
-    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-dev
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd raid-agency-app
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-
-docker-frontend-acc:
-  stage: build
-  image: docker:29.2.1-cli
-  dependencies:
-    - other-version
-    - tag-version
-    - build-frontend-acc
-  needs:
-    - build-frontend-acc
-    - job: other-version
-      optional: true
-    - job: tag-version
-      optional: true
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    DOCKER_TLS_CERTDIR: ""
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull
-  script:
-    - source version.txt
-    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-acc
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd raid-agency-app
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-
-docker-frontend-prod:
-  stage: build
-  image: docker:29.2.1-cli
-  dependencies:
-    - other-version
-    - tag-version
-    - build-frontend-prod
-  needs:
-    - build-frontend-prod
-    - job: other-version
-      optional: true
-    - job: tag-version
-      optional: true
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    DOCKER_TLS_CERTDIR: ""
-  cache:
-    key: "$CI_PROJECT_ID"
-    policy: pull
-  script:
-    - source version.txt
-    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-prod
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd raid-agency-app
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
 #
-#test-frontend:
-#  stage: test
+#build-frontend-dev:
+#  stage: build
 #  image: node
-#  needs:
-#    - build-frontend
 #  script:
 #    - cd raid-agency-app
 #    - npm install
-#    - npm run test
-#    - npm run e2e
+#    - npm run build:dev
+#  artifacts:
+#    paths:
+#      - "raid-agency-app/dist/"
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+#    paths:
+#      - raid-agency-app/node_modules/
+#
+#build-frontend-acc:
+#  stage: build
+#  image: node
+#  script:
+#    - cd raid-agency-app
+#    - npm install
+#    - npm run build:acc
+#  artifacts:
+#    paths:
+#      - "raid-agency-app/dist/"
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+#    paths:
+#      - raid-agency-app/node_modules/
+#
+#build-frontend-prod:
+#  stage: build
+#  image: node
+#  script:
+#    - cd raid-agency-app
+#    - npm install
+#    - npm run build
+#  artifacts:
+#    paths:
+#      - "raid-agency-app/dist/"
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull-push  # Allow this job to update the cache (important as we run npm install here)
+#    paths:
+#      - raid-agency-app/node_modules/
+#
+#docker-frontend-dev:
+#  stage: build
+#  image: docker:29.2.1-cli
+#  dependencies:
+#    - other-version
+#    - tag-version
+#    - build-frontend-dev
+#  needs:
+#    - build-frontend-dev
+#    - job: other-version
+#      optional: true
+#    - job: tag-version
+#      optional: true
+#  variables:
+#    DOCKER_DRIVER: overlay2
+#    DOCKER_BUILDKIT: 1
+#    DOCKER_TLS_CERTDIR: ""
 #  cache:
 #    key: "$CI_PROJECT_ID"
 #    policy: pull
-
-build-api:
-  stage: build
-  image: gradle:9.2.1-jdk17-alpine
-  script:
-    - ./gradlew -x test build jar
-  artifacts:
-    paths:
-      - "api-svc/raid-api/build/libs"
-      - "iam/build/libs"
-      - "build/reports"
-
-docker-api:
-  stage: build
-  image: docker:29.2.1-cli
-  dependencies:
-    - other-version
-    - tag-version
-    - build-api
-  needs:
-    - build-api
-    - job: other-version
-      optional: true
-    - job: tag-version
-      optional: true
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    DOCKER_TLS_CERTDIR: ""
-  script:
-    - source version.txt
-    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-api:$DOCKER_TAG_VERSION
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd api-svc/raid-api
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-
-test-api:
-  stage: test
-  image: gradle:9.2.1-jdk17-alpine
-  needs:
-    - build-api
-  script:
-    - ./gradlew test
-  artifacts:
-    paths:
-      - "build/reports"
-
-docker-iam:
-  stage: build
-  image: docker:29.2.1-cli
-  dependencies:
-    - other-version
-    - tag-version
-    - build-api
-  needs:
-    - build-api
-    - job: other-version
-      optional: true
-    - job: tag-version
-      optional: true
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    DOCKER_TLS_CERTDIR: ""
-  script:
-    - source version.txt
-    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-iam:$DOCKER_TAG_VERSION
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - cd iam
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
+#  script:
+#    - source version.txt
+#    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-dev
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd raid-agency-app
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
+#
+#docker-frontend-acc:
+#  stage: build
+#  image: docker:29.2.1-cli
+#  dependencies:
+#    - other-version
+#    - tag-version
+#    - build-frontend-acc
+#  needs:
+#    - build-frontend-acc
+#    - job: other-version
+#      optional: true
+#    - job: tag-version
+#      optional: true
+#  variables:
+#    DOCKER_DRIVER: overlay2
+#    DOCKER_BUILDKIT: 1
+#    DOCKER_TLS_CERTDIR: ""
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull
+#  script:
+#    - source version.txt
+#    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-acc
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd raid-agency-app
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
+#
+#docker-frontend-prod:
+#  stage: build
+#  image: docker:29.2.1-cli
+#  dependencies:
+#    - other-version
+#    - tag-version
+#    - build-frontend-prod
+#  needs:
+#    - build-frontend-prod
+#    - job: other-version
+#      optional: true
+#    - job: tag-version
+#      optional: true
+#  variables:
+#    DOCKER_DRIVER: overlay2
+#    DOCKER_BUILDKIT: 1
+#    DOCKER_TLS_CERTDIR: ""
+#  cache:
+#    key: "$CI_PROJECT_ID"
+#    policy: pull
+#  script:
+#    - source version.txt
+#    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-fe:$DOCKER_TAG_VERSION-prod
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd raid-agency-app
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
+##
+##test-frontend:
+##  stage: test
+##  image: node
+##  needs:
+##    - build-frontend
+##  script:
+##    - cd raid-agency-app
+##    - npm install
+##    - npm run test
+##    - npm run e2e
+##  cache:
+##    key: "$CI_PROJECT_ID"
+##    policy: pull
+#
+#build-api:
+#  stage: build
+#  image: gradle:9.2.1-jdk17-alpine
+#  script:
+#    - ./gradlew -x test build jar
+#  artifacts:
+#    paths:
+#      - "api-svc/raid-api/build/libs"
+#      - "iam/build/libs"
+#      - "build/reports"
+#
+#docker-api:
+#  stage: build
+#  image: docker:29.2.1-cli
+#  dependencies:
+#    - other-version
+#    - tag-version
+#    - build-api
+#  needs:
+#    - build-api
+#    - job: other-version
+#      optional: true
+#    - job: tag-version
+#      optional: true
+#  variables:
+#    DOCKER_DRIVER: overlay2
+#    DOCKER_BUILDKIT: 1
+#    DOCKER_TLS_CERTDIR: ""
+#  script:
+#    - source version.txt
+#    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-api:$DOCKER_TAG_VERSION
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd api-svc/raid-api
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
+#
+#test-api:
+#  stage: test
+#  image: gradle:9.2.1-jdk17-alpine
+#  needs:
+#    - build-api
+#  script:
+#    - ./gradlew test
+#  artifacts:
+#    paths:
+#      - "build/reports"
+#
+#docker-iam:
+#  stage: build
+#  image: docker:29.2.1-cli
+#  dependencies:
+#    - other-version
+#    - tag-version
+#    - build-api
+#  needs:
+#    - build-api
+#    - job: other-version
+#      optional: true
+#    - job: tag-version
+#      optional: true
+#  variables:
+#    DOCKER_DRIVER: overlay2
+#    DOCKER_BUILDKIT: 1
+#    DOCKER_TLS_CERTDIR: ""
+#  script:
+#    - source version.txt
+#    - IMAGE_TAG=$CI_REGISTRY_IMAGE/raid-iam:$DOCKER_TAG_VERSION
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - cd iam
+#    - docker build -t $IMAGE_TAG .
+#    - docker push $IMAGE_TAG
