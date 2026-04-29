@@ -20,8 +20,7 @@ export const ErrorAlertComponent = memo(
   ({ error, showButtons }: ErrorAlertProps) => {
     const navigate = useNavigate();
     const config = useAppConfig();
-    const supportEmail =
-      import.meta.env.VITE_SUPPORT_EMAIL || config.footer.links.find(link => link.contact)?.label;
+    const supportEmail = config.footer.links.find(link => link.contact)?.label || "support team";
 
     const handleContactSupport = () => {
       location.href = `mailto:${supportEmail}`;
