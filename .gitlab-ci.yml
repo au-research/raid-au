@@ -68,7 +68,7 @@ other-version:
 #    - git push -f origin $DOCKER_TAG_VERSION
 
 create-release:
-  image: registry.gitlab.com/gitlab-org/glab:latest
+  image: glab:latest
 #  image: gitlab/glab:latest
   stage: release
   rules:
