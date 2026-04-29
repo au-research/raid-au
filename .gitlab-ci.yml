@@ -91,7 +91,7 @@ create-release:
     - glab --help
     - glab release --help
     - glab release create --help
-    - glab release create "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
+    - glab release create "$CURRENT_TAG" --ref "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
 
 #release_job:
 #  stage: release
