@@ -67,32 +67,54 @@ other-version:
 #    - git tag -f "$DOCKER_TAG_VERSION"
 #    - git push -f origin $DOCKER_TAG_VERSION
 
-release_job:
+create-release:
+  image: cr.surf.nl/proxy-docker/gitlab/glab:v1.93.0@sha256:362927acb2856a9d19cea7d1a985383080fb03875465ffd70e2cc83978ea8544
   stage: release
-  image: registry.gitlab.com/gitlab-org/cli:latest
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: never
-    - when: on_success
-  dependencies:
-    - other-version
-    - tag-version
-  needs:
-    - job: other-version
-      optional: true
-    - job: tag-version
-      optional: true
+  #  rules:
+  #    - if: $CI_COMMIT_TAG
+  #      when: never
+  #    - when: on_success
+  #  dependencies:
+  #    - other-version
+  #    - tag-version
+  #  needs:
+  #    - job: other-version
+  #      optional: true
+  #    - job: tag-version
+  #      optional: true
+  variables:
+    GITLAB_HOST: $CI_SERVER_HOST
   script:
-    - echo "Running the release job."
     - source version.txt
-    - echo "Create release $DOCKER_TAG_VERSION"
-    - PEP=$DOCKER_TAG_VERSION
-    - echo "Pietje $CI_COMMIT_TAG"
-    - echo "pep $PEP"
-  release:
-    tag_name: "asdf"
-    name: "Release $DOCKER_TAG_VERSION asdfasf"
-    description: "Release created using the CLI."
+    - CURRENT_TAG="$DOCKER_TAG_VERSION"
+    - glab release create "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
+
+#release_job:
+#  stage: release
+#  image: registry.gitlab.com/gitlab-org/cli:latest
+#  rules:
+#    - if: $CI_COMMIT_TAG
+#      when: never
+#    - when: on_success
+#  dependencies:
+#    - other-version
+#    - tag-version
+#  needs:
+#    - job: other-version
+#      optional: true
+#    - job: tag-version
+#      optional: true
+#  script:
+#    - echo "Running the release job."
+#    - source version.txt
+#    - echo "Create release $DOCKER_TAG_VERSION"
+#    - PEP=$DOCKER_TAG_VERSION
+#    - echo "Pietje $CI_COMMIT_TAG"
+#    - echo "pep $PEP"
+#  release:
+#    tag_name: "asdf"
+#    name: "Release $DOCKER_TAG_VERSION asdfasf"
+#    description: "Release created using the CLI."
 
 build-frontend-dev:
   stage: build
