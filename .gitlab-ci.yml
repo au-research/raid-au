@@ -84,8 +84,8 @@ release_job:
       optional: true
   script:
     - echo "Running the release job."
-      - source version.txt
-      - echo "Create release $DOCKER_TAG_VERSION"
+    - source version.txt
+    - echo "Create release $DOCKER_TAG_VERSION"
   release:
     tag_name: $DOCKER_TAG_VERSION
     name: 'Release $DOCKER_TAG_VERSION'
