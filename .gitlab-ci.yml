@@ -68,7 +68,8 @@ other-version:
 #    - git push -f origin $DOCKER_TAG_VERSION
 
 create-release:
-  image: cr.surf.nl/proxy-docker/gitlab/glab:v1.93.0@sha256:362927acb2856a9d19cea7d1a985383080fb03875465ffd70e2cc83978ea8544
+  image: registry.gitlab.com/gitlab-org/glab:latest
+#  image: gitlab/glab:latest
   stage: release
   rules:
     - if: $CI_COMMIT_TAG
