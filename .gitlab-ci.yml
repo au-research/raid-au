@@ -87,7 +87,7 @@ release_job:
     - source version.txt
     - echo "Create release $DOCKER_TAG_VERSION"
   release:
-    tag_name: $DOCKER_TAG_VERSION
+    tag_name: "$DOCKER_TAG_VERSION"
     name: 'Release $DOCKER_TAG_VERSION'
     description: 'Release created using the CLI.'
 
