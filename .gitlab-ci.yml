@@ -86,8 +86,9 @@ create-release:
     GITLAB_HOST: $CI_SERVER_HOST
   script:
     - source version.txt
+    - echo "gitlab $GITLAB_HOST host"
     - CURRENT_TAG="$DOCKER_TAG_VERSION"
-    - glab release --debug create "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
+    - glab release create "$CURRENT_TAG" --debug --repo "$CI_PROJECT_PATH"
 
 #release_job:
 #  stage: release
