@@ -7,6 +7,7 @@ export interface LogoConfig {
 }
 
 export interface NavLink {
+  contact?: boolean;
   label: string;
   path: string;
   external?: boolean;

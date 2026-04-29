@@ -46,7 +46,7 @@
     },
     "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
     "links": [
-      { "label": "contact@raid.org", "path": "mailto:contact@raid.org" },
+      { "label": "services@ardc.edu.au", "path": "mailto:services@ardc.edu.au", "contact": true },
       { "label": "Terms of use", "path": "https://ardc.edu.au/terms-and-conditions/" },
       { "label": " Accessibility", "path": "https://ardc.edu.au/accessibility-statement-for-ardc/" },
       { "label": "Privacy policy", "path": "https://ardc.edu.au/privacy-policy/" }
