@@ -88,9 +88,9 @@ release_job:
     - echo "Create release $DOCKER_TAG_VERSION"
     - echo "Pietje $CI_COMMIT_TAG"
   release:
-    tag_name: $CI_COMMIT_TAG
-    name: 'Release $DOCKER_TAG_VERSION'
-    description: 'Release created using the CLI.'
+    tag_name: "asdfasfd"
+    name: "Release asdfasf"
+    description: "Release created using the CLI."
 
 build-frontend-dev:
   stage: build
