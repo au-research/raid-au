@@ -88,6 +88,9 @@ create-release:
     - source version.txt
     - echo "gitlab $GITLAB_HOST host"
     - CURRENT_TAG="$DOCKER_TAG_VERSION"
+    - git config user.name "Release BOT"
+    - git config user.email "release-bot@surf.nl"
+    - git remote set-url --push origin "https://oauth:${GITLAB_TOKEN_GITLAB_CLI}@${CI_SERVER_FQDN}/${CI_PROJECT_PATH}.git"
     - echo $GITLAB_TOKEN_GITLAB_CLI | glab auth login --hostname $CI_SERVER_FQDN --stdin
     - glab auth status
     - glab release create "$CURRENT_TAG" --ref "$CURRENT_TAG" --repo "$CI_PROJECT_PATH"
