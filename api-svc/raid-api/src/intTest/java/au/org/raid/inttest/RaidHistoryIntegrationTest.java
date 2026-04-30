@@ -118,7 +118,7 @@ public class RaidHistoryIntegrationTest extends AbstractIntegrationTest {
 
     private Title getPrimaryTitle(final RaidDto raidDto) {
         return raidDto.getTitle().stream()
-                .filter(title -> title.getType().getId().equals(PRIMARY_TITLE_TYPE))
+                .filter(title -> title.getType().getId().getValue().equals(PRIMARY_TITLE_TYPE))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No primary title :("));
     }

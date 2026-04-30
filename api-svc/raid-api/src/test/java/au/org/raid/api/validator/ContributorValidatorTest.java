@@ -563,6 +563,64 @@ class ContributorValidatorTest {
     }
 
     @Test
+    @DisplayName("isOrcid matches on schemaUri enum when id does not start with orcid prefix")
+    void isOrcidMatchesOnSchemaUri() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .id("not-an-orcid-prefix")
+                .role(List.of(role))
+                .position(List.of(position))
+                .leader(true)
+                .contact(true);
+
+        when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = validationService.validate(List.of(contributor));
+
+        assertThat(failures, empty());
+        verify(orcidValidator).validate(contributor, 0);
+        verifyNoInteractions(isniValidator);
+    }
+
+    @Test
+    @DisplayName("isIsni matches on schemaUri enum when id does not start with isni prefix")
+    void isIsniMatchesOnSchemaUri() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
+                .id("not-an-isni-prefix")
+                .role(List.of(role))
+                .position(List.of(position))
+                .leader(true)
+                .contact(true);
+
+        when(isniValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = validationService.validate(List.of(contributor));
+
+        assertThat(failures, empty());
+        verify(isniValidator).validate(contributor, 0);
+        verifyNoInteractions(orcidValidator);
+    }
+
+    @Test
     @DisplayName("Validation fails with missing contact")
     void missingContact() {
         final var role = new ContributorRole()

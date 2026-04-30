@@ -76,11 +76,11 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Minting a RAiD with an unsupported related object schemaUri fails validation")
-    void unsupportedSchemaUri() {
+    @DisplayName("Minting a RAiD with web archive schemaUri but invalid id fails validation")
+    void webArchiveSchemaUriWithInvalidId() {
         final var relatedObject = new RelatedObject()
                 .id("https://example.com/some-object")
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_ARCHIVE_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_)
                 .type(new RelatedObjectType()
                         .id(RelatedObjectTypeIdEnum.fromValue(BOOK_CHAPTER_RELATED_OBJECT_TYPE))
                         .schemaUri(RelatedObjectTypeSchemaUriEnum.fromValue(RELATED_OBJECT_TYPE_SCHEMA_URI)))
@@ -92,14 +92,14 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
 
         try {
             raidApi.mintRaid(createRequest);
-            fail("No exception thrown with unsupported schemaUri");
+            fail("No exception thrown with invalid web archive id");
         } catch (RaidApiValidationException e) {
             final var failures = e.getFailures();
             assertThat(failures).hasSize(1);
             assertThat(failures).contains(new ValidationFailure()
-                    .fieldId("relatedObject[0].schemaUri")
+                    .fieldId("relatedObject[0].id")
                     .errorType("invalid")
-                    .message("Only [https://doi.org/, https://web.archive.org/] is supported."));
+                    .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)"));
         } catch (Exception e) {
             failOnError(e);
         }

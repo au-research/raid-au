@@ -99,7 +99,7 @@ public class DataciteRelatedIdentifierFactoryTest {
 
         final var relatedObject = new RelatedObject()
                 .id(id)
-                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_ARCHIVE_ORG_)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_)
                 .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_250))
                 .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
 

@@ -1031,9 +1031,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 assertThat(failures, hasSize(1));
                 assertThat(failures, contains(
                         new ValidationFailure()
-                                .fieldId("contributor[0]")
+                                .fieldId("contributor[0].position")
                                 .errorType("notSet")
-                                .message("A contributor must have a position")
+                                .message("field must be set")
                 ));
             }
         }
