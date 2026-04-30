@@ -30,11 +30,11 @@
       {
         "uri" : {
           "type" : "uri",
-          "value" : "https://archive.org/"
+          "value" : "https://web.archive.org/"
         },
         "prefLabel" : {
           "type" : "literal",
-          "value" : "Archive.org"
+          "value" : "Internet Archive"
         }
       },
       {

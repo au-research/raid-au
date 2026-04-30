@@ -1582,11 +1582,11 @@ components:
       title: "RelatedObjectSchemaUriEnum"
       type: "string"
       enum:
-      - "https://archive.org/"
       - "https://arks.org/"
       - "https://doi.org/"
       - "https://hdl.handle.net/"
       - "https://scicrunch.org/resolver/"
+      - "https://web.archive.org/"
       - "https://www.isbn-international.org/"
     RelatedObjectType:
       additionalProperties: false
