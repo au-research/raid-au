@@ -3,15 +3,21 @@ package au.org.raid.api.endpoint.raidv2;
 import au.org.raid.api.exception.*;
 import au.org.raid.idl.raidv2.model.ClosedRaid;
 import au.org.raid.idl.raidv2.model.FailureResponse;
+import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.idl.raidv2.model.ValidationFailureResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.exception.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.Set;
 
 @Slf4j
 @ControllerAdvice
@@ -186,6 +192,53 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(exception.getStatus())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
+    ) {
+        final var failures = ex.getBindingResult().getAllErrors().stream()
+                .map(error -> {
+                    if (error instanceof FieldError fieldError) {
+                        return toValidationFailure(fieldError);
+                    }
+                    return toValidationFailure(error);
+                })
+                .toList();
+
+        final var failureCount = failures.size();
+        final var body = new ValidationFailureResponse()
+                .type("https://raid.org.au/errors#ValidationException")
+                .title("There were validation failures.")
+                .status(400)
+                .detail("Request had %d validation failure(s). See failures for more details...".formatted(failureCount))
+                .instance("https://raid.org.au")
+                .failures(failures);
+
+        return ResponseEntity
+                .badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+
+    private static final Set<String> NOT_SET_CODES = Set.of("NotNull", "NotBlank", "NotEmpty");
+
+    private ValidationFailure toValidationFailure(FieldError fieldError) {
+        var rejectedValue = fieldError.getRejectedValue();
+        var isBlankValue = rejectedValue == null || (rejectedValue instanceof String s && s.isBlank());
+        var errorType = (NOT_SET_CODES.contains(fieldError.getCode()) || isBlankValue) ? "notSet" : "invalidValue";
+        var message = errorType.equals("notSet") ? "field must be set" : "field has an invalid value";
+        return new ValidationFailure(fieldError.getField(), errorType, message);
+    }
+
+    private ValidationFailure toValidationFailure(ObjectError error) {
+        var errorType = NOT_SET_CODES.contains(error.getCode()) ? "notSet" : "invalidValue";
+        var message = errorType.equals("notSet") ? "field must be set" : "field has an invalid value";
+        return new ValidationFailure(error.getObjectName(), errorType, message);
     }
 
     @Override
