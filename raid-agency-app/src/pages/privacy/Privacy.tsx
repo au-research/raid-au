@@ -1,3 +1,4 @@
+import { useAppConfig } from "@/config/Appconfigcontext";
 import {
   Button,
   Card,
@@ -11,6 +12,7 @@ import {
 import { NavLink } from "react-router-dom";
 
 export function Privacy() {
+  const config = useAppConfig();
   const privacyPolicyLinkButton = (
     <Button
       href="https://ardc.edu.au/privacy-policy/"
@@ -37,12 +39,12 @@ export function Privacy() {
 
   const supportMailLink = (
     <Button
-      href="mailto:contact@raid.org"
+      href={`mailto:${config.footer.links.find(link => link.contact)?.label}`}
       variant="text"
       size="small"
       sx={{ minWidth: 0 }}
     >
-      contact@raid.org
+      {config.footer.links.find(link => link.contact)?.label}
     </Button>
   );
 

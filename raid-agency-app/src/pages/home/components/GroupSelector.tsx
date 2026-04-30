@@ -29,6 +29,7 @@ import {
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { memo, useState } from "react";
+import { useAppConfig } from "@/config/Appconfigcontext";
 
 type KeycloakGroupSPI = {
   name: string;
@@ -40,6 +41,7 @@ type KeycloakGroupSPI = {
 
 
 export const GroupSelector = memo(() => {
+  const config = useAppConfig();
   const { token, isInitialized } = useKeycloak();
   const [open, setOpen] = useState(false);
   const handleClose = () => {
@@ -209,8 +211,8 @@ export const GroupSelector = memo(() => {
             <DialogContentText id="alert-dialog-description">
               Our notification system is not yet implemented. Please send an
               email to{" "}
-              <Link href="mailto:contact@raid.org?subject=Please approve my RAiD request">
-                contact@raid.org
+              <Link href={`mailto:${config.footer.links.find(link => link.contact)?.label}?subject=Please approve my RAiD request`}>
+                {config.footer.links.find(link => link.contact)?.label}
               </Link>{" "}
               so we can approve your request.
             </DialogContentText>
