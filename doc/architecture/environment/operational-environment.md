@@ -4,10 +4,6 @@
 To run the Raido codebase in a non-AWS environment, you would need to consider 
 how to provide equivalent services for each of the sections outlined below. 
 
-The below sections were mapped directly from the  
-[raid-architecture.md](/doc/architecture/raid-architecture.md).
-
-
 # ARDC RAiD Service environment in AWS
 
 ## DNS

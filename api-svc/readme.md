@@ -20,7 +20,7 @@ graph TB
     end
 
 
-  subgraph AWS
+    subgraph AWS
         CF["CloudFront CDN"]
         ALB["Application Load Balancer"]
 
@@ -52,6 +52,7 @@ graph TB
     KC -->|federation| IDP
     API1 & API2 --> DC & PID & SPARQL
 ```
+
 
 The api-svc is stateless (no HTTP sessions, no 2nd-level cache) and horizontally
 scalable behind an ALB. Schema migrations are managed by Flyway and are
