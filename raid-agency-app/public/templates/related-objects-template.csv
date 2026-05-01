@@ -1,20 +1,20 @@
-RAiD relatedObject bulk upload sheet
-[Instructions for use start here]
-No more than 100 relatedObjects can be added at one time
-"Add extra rows below the headers between the rows labelled ""Import table starts here"" and ""Import table ends here"""
-"Do not delete the rows labelled ""Import table starts here"" and ""Import table ends here"""
-"Identifier must be a DOI (https://doi.org/10.xxxx/...) or a Web Archive URL (https://web.archive.org/web/YYYYMMDDHHMMSS/https://...)"
-"Copy and paste Type and Categories values from the Available types and Available categories reference below"
-"To enter multiple categories for one row, separate them with commas (e.g. Input, Output)"
-[Instructions for use end here]
-
-
-[Import table starts here]
+RAiD relatedObject bulk upload sheet,,
+[Instructions for use start here],,
+No more than 100 relatedObjects can be added at one time,,
+"Add extra rows below the headers between the rows labelled ""Import table starts here"" and ""Import table ends here""",,
+"Do not delete the rows labelled ""Import table starts here"" and ""Import table ends here""",,
+Identifier must be a DOI (https://doi.org/10.xxxx/...) or a Web Archive URL (https://web.archive.org/web/YYYYMMDDHHMMSS/https://...),,
+Copy and paste Type and Categories values from the Available types and Available categories reference below,,
+"To enter multiple categories for one row, separate them with commas (e.g. Input, Output)",,
+[Instructions for use end here],,
+,,
+,,
+[Import table starts here],,
 Identifier,Type,Categories
 https://doi.org/10.0001/01238,Output Management Plan,Input
-
-[Import table ends here]
-
+,,
+[Import table ends here],,
+,,
 ,Available types,Available categories
 ,Audiovisual,Input
 ,Book,Internal process document or artefact
