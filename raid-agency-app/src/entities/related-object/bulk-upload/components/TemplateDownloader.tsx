@@ -14,7 +14,7 @@ import { useSnackbar } from "@/components/snackbar/hooks/useSnackbar";
  * Keeping the templates as static files means future tweaks (column
  * reordering, instructions, comments, examples) are file edits rather
  * than code changes. To regenerate the .xlsx, run the Python script in
- * scripts/generate-bulk-upload-template.py.
+ * scripts/generate-bulk-upload-template.cjs
  */
 
 const EXCEL_TEMPLATE_URL = "/templates/related-objects-template.xlsx";
