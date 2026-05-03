@@ -47,9 +47,6 @@ See [unapproved-user-authz-request-flow.md](./authorization/unapproved-user-auth
 * the access token must be sent in the `Authorization` header of each API
   request (prepended with "Bearer ")
 
-See [api-client-onboarding-guide.md](../../api-integration/api-client-onboarding-guide.md)
-for details about setting up API access.
-
 See the [authorization](./authorization/readme.md) section for details about how
 roles and other authorization mechanisms work.
 
