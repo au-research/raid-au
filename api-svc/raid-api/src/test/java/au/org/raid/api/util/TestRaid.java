@@ -2,6 +2,7 @@ package au.org.raid.api.util;
 
 import au.org.raid.idl.raidv2.model.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class TestRaid {
     public static final String TITLE_END_DATE = "2021-06";
     public static final String DESCRIPTION_TEXT = "Raid Title Text";
     public static final String LANGUAGE_CODE = "eng";
-    public static final String LANGUAGE_SCHEMA_URI = "https://www.iso.org/standard/39534.html";
+    public static final String LANGUAGE_SCHEMA_URI = "https://www.iso.org/standard/74575.html";
     public static final String CONTRIBUTOR_ID = "https://orcid.org/0009-0006-4129-5257";
     public static final String ORCID_SCHEMA_URI = "https://orcid.org/";
     public static final boolean IS_LEADER = true;
@@ -66,9 +67,9 @@ public class TestRaid {
     public static final LocalDate EMBARGO_EXPIRY = LocalDate.now();
     public static final String ACCESS_STATEMENT_TEXT = "Access statement";
     public static final String ACCESS_TYPE_ID =
-            "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/embargoed.json";
+            "https://vocabularies.coar-repositories.org/access_rights/c_f1cf/";
     public static final String ACCESS_TYPE_SCHEMA_URI =
-            "https://github.com/au-research/raid-metadata/tree/main/scheme/access/type/v1";
+            "https://vocabularies.coar-repositories.org/access_rights/";
     public static final String SUBJECT_ID = "https://linked.data.gov.au/def/anzsrc-for/2020/401099";
     public static final String SUBJECT_SCHEMA_URI = "https://linked.data.gov.au/def/anzsrc-for/2020/";
     public static final String SUBJECT_KEYWORD_TEXT =
@@ -84,17 +85,17 @@ public class TestRaid {
 
     public static final Language LANGUAGE = new Language()
             .id(LANGUAGE_CODE)
-            .schemaUri(LANGUAGE_SCHEMA_URI);
+            .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
     public static final Owner OWNER = new Owner()
             .id(OWNER_ID)
-            .schemaUri(ROR_SCHEMA_URI)
-            .servicePoint(SERVICE_POINT_ID);
+            .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_)
+            .servicePoint(new BigDecimal(SERVICE_POINT_ID));
     public static final RegistrationAgency REGISTRATION_AGENCY = new RegistrationAgency()
             .id(REGISTRATION_AGENCY_ID)
-            .schemaUri(ROR_SCHEMA_URI);
+            .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
     public static final Id IDENTIFIER = new Id()
             .id(RAID_NAME)
-            .schemaUri(RAID_SCHEMA_URI)
+            .schemaUri(RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_)
             .raidAgencyUrl(RAID_AGENCY_URL)
             .registrationAgency(REGISTRATION_AGENCY)
             .owner(OWNER)
@@ -105,8 +106,8 @@ public class TestRaid {
             .endDate(END_DATE);
     public static final List<Title> TITLES = List.of(new Title()
             .type(new TitleType()
-                    .id(TITLE_TYPE_ID)
-                    .schemaUri(TITLE_TYPE_SCHEMA_URI))
+                    .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156)
+                    .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376))
             .text(TITLE_TEXT)
             .startDate(TITLE_START_DATE)
             .endDate(TITLE_END_DATE)
@@ -116,35 +117,35 @@ public class TestRaid {
             .language(LANGUAGE));
     public static final List<Contributor> CONTRIBUTORS = List.of(new Contributor()
             .id(CONTRIBUTOR_ID)
-            .schemaUri(ORCID_SCHEMA_URI)
+            .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
             .leader(IS_LEADER)
             .contact(IS_CONTACT)
             .position(List.of(new ContributorPosition()
-                    .id(PRINCIPAL_INVESTIGATOR_POSITION_ID)
-                    .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
+                    .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                    .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
                     .startDate(CONTRIBUTOR_POSITION_START_DATE)
                     .endDate(CONTRIBUTOR_POSITION_END_DATE)
             ))
             .role(List.of(new ContributorRole()
-                    .id(CONCEPTUALISATION_CONTRIBUTOR_ROLE_ID)
-                    .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI))));
+                    .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_)
+                    .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_))));
     public static final List<Organisation> ORGANISATIONS = List.of(new Organisation()
             .id(ORGANISATION_ID)
-            .schemaUri(ORGANISATION_SCHEMA_URI)
+            .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
             .role(List.of(new OrganisationRole()
-                    .id(LEAD_RESEARCH_ORGANISATION_ROLE_ID)
-                    .schemaUri(ORGANISATION_ROLE_SCHEMA_URI)
+                    .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                    .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
                     .startDate(ORGANISATION_ROLE_START_DATE)
                     .endDate(ORGANISATION_ROLE_END_DATE))));
     public static final List<RelatedObject> RELATED_OBJECTS = List.of(new RelatedObject()
             .id(RELATED_OBJECT_ID)
-            .schemaUri(RELATED_OBJECT_SCHEMA_URI)
+            .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
             .type(new RelatedObjectType()
-                    .id(RELATED_OBJECT_TYPE_ID)
-                    .schemaUri(RELATED_OBJECT_TYPE_SCHEMA_URI))
+                    .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                    .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
             .category(List.of(new RelatedObjectCategory()
-                    .id(RELATED_OBJECT_CATEGORY_ID)
-                    .schemaUri(RELATED_OBJECT_CATEGORY_SCHEMA_URI))));
+                    .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                    .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386))));
     public static final List<AlternateIdentifier> ALTERNATE_IDENTIFIERS = List.of(new AlternateIdentifier()
             .id(ALTERNATE_IDENTIFIER_ID)
             .type(ALTERNATE_IDENTIFIER_TYPE));
@@ -153,28 +154,28 @@ public class TestRaid {
     public static final List<RelatedRaid> RELATED_RAIDS = List.of(new RelatedRaid()
             .id(RELATED_RAID_ID)
             .type(new RelatedRaidType()
-                    .id(RELATED_RAID_TYPE_ID)
-                    .schemaUri(RELATED_RAID_TYPE_SCHEMA_URI)));
+                    .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                    .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367)));
     public static final Access ACCESS = new Access()
             .embargoExpiry(EMBARGO_EXPIRY)
             .type(new AccessType()
-                    .id(ACCESS_TYPE_ID)
-                    .schemaUri(ACCESS_TYPE_SCHEMA_URI))
+                    .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)
+                    .schemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_))
             .statement(new AccessStatement()
                     .text(ACCESS_STATEMENT_TEXT)
                     .language(LANGUAGE));
     public static final List<Subject> SUBJECTS = List.of(new Subject()
             .id(SUBJECT_ID)
-            .schemaUri(SUBJECT_SCHEMA_URI)
+            .schemaUri(SubjectSchemaURIEnum.HTTPS_LINKED_DATA_GOV_AU_DEF_ANZSRC_FOR_2020)
             .keyword(List.of(new SubjectKeyword()
                     .text(SUBJECT_KEYWORD_TEXT)
                     .language(LANGUAGE))));
     public static final List<TraditionalKnowledgeLabel> TRADITIONAL_KNOWLEDGE_LABELS = List.of(new TraditionalKnowledgeLabel()
             .id(TRADITIONAL_KNOWLEDGE_LABEL_ID)
-            .schemaUri(TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA_URI));
+            .schemaUri(TraditionalKnowledgeLabelSchemaUriEnum.HTTPS_LOCALCONTEXTS_ORG_LABELS_TRADITIONAL_KNOWLEDGE_LABELS_));
     public static final List<SpatialCoverage> SPATIAL_COVERAGES = List.of(new SpatialCoverage()
             .id(SPATIAL_COVERAGE_ID)
-            .schemaUri(SPATIAL_COVERAGE_SCHEMA_URI)
+            .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_OPENSTREETMAP_ORG_)
             .place(List.of(new SpatialCoveragePlace()
                     .text(SPATIAL_COVERAGE_PLACE_TEXT)
                     .language(LANGUAGE))));

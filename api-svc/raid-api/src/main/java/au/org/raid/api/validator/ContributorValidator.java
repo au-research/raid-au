@@ -93,7 +93,7 @@ public class ContributorValidator {
         if (contributor.getId() != null && contributor.getId().startsWith(validationProperties.getOrcid().getUrlPrefix())) {
             return true;
         }
-        if (contributor.getSchemaUri() != null && contributor.getSchemaUri().equals(validationProperties.getOrcid().getSchemaUri())) {
+        if (contributor.getSchemaUri() != null && contributor.getSchemaUri().getValue().equals(validationProperties.getOrcid().getSchemaUri())) {
             return true;
         }
         return false;
@@ -103,7 +103,7 @@ public class ContributorValidator {
         if (contributor.getId() != null && contributor.getId().startsWith(validationProperties.getIsni().getUrlPrefix())) {
             return true;
         }
-        if (contributor.getSchemaUri() != null && contributor.getSchemaUri().equals(validationProperties.getIsni().getSchemaUri())) {
+        if (contributor.getSchemaUri() != null && contributor.getSchemaUri().getValue().equals(validationProperties.getIsni().getSchemaUri())) {
             return true;
         }
         return false;

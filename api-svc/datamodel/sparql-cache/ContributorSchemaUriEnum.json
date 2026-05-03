@@ -1,0 +1,32 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://orcid.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "ORCID contributor ID schema"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://isni.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "ISNI contributor ID schema"
+        }
+      }
+    ]
+  }
+}

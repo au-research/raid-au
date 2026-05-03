@@ -11,6 +11,8 @@ import au.org.raid.db.jooq.tables.records.RaidRelatedObjectCategoryRecord;
 import au.org.raid.db.jooq.tables.records.RelatedObjectCategoryRecord;
 import au.org.raid.db.jooq.tables.records.RelatedObjectCategorySchemaRecord;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
+import au.org.raid.idl.raidv2.model.RelatedObjectCategoryIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedObjectCategorySchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,15 +45,15 @@ class RaidRelatedObjectCategoryServiceTest {
     @Test
     @DisplayName("create() saves related object categories")
     void create() {
-        final var uri = "_uri";
+        final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190.getValue();
         final var id = 123;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386.getValue();
         final var schemaId = 234;
         final var raidRelatedObjectId = 456;
 
         final var category = new RelatedObjectCategory()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386);
 
         final var schemaRecord = new RelatedObjectCategorySchemaRecord()
                 .setId(schemaId);
@@ -77,13 +79,13 @@ class RaidRelatedObjectCategoryServiceTest {
     @Test
     @DisplayName("create() throws RelatedObjectCategorySchemaNotFoundException")
     void createThrowsRelatedObjectCategorySchemaNotFoundException() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190.getValue();
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386.getValue();
         final var raidRelatedObjectId = 456;
 
         final var category = new RelatedObjectCategory()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386);
 
         when(relatedObjectCategorySchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.empty());
@@ -98,14 +100,14 @@ class RaidRelatedObjectCategoryServiceTest {
     @Test
     @DisplayName("create() throws RelatedObjectCategoryNotFoundException")
     void createThrowsRelatedObjectCategoryNotFoundException() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190.getValue();
+        final var schemaUri = RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386.getValue();
         final var schemaId = 234;
         final var raidRelatedObjectId = 456;
 
         final var category = new RelatedObjectCategory()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386);
 
         final var schemaRecord = new RelatedObjectCategorySchemaRecord()
                 .setId(schemaId);

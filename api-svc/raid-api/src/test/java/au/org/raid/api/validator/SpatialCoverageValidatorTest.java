@@ -1,10 +1,9 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.util.SchemaValues;
-import au.org.raid.api.util.TestConstants;
-import au.org.raid.idl.raidv2.model.Language;
 import au.org.raid.idl.raidv2.model.SpatialCoverage;
 import au.org.raid.idl.raidv2.model.SpatialCoveragePlace;
+import au.org.raid.idl.raidv2.model.SpatialCoverageSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,16 +35,12 @@ class SpatialCoverageValidatorTest {
 
         final var validationService = new SpatialCoverageValidator(placeValidator, uriValidatorMap);
 
-        final var language = new Language()
-                .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(TestConstants.LANGUAGE_SCHEMA_URI);
-
         final var places = List.of(new SpatialCoveragePlace()
                 .text("London"));
 
         final var spatialCoverage = new SpatialCoverage()
                 .id("https://www.geonames.org/2643743/london.html")
-                .schemaUri(SchemaValues.GEONAMES_SCHEMA_URI.getUri())
+                .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_)
                 .place(places);
 
         final var failures = validationService.validate(List.of(spatialCoverage));
@@ -70,7 +65,7 @@ class SpatialCoverageValidatorTest {
 
         final var spatialCoverage = new SpatialCoverage()
                 .id(uri)
-                .schemaUri("https://www.geonames.org/");
+                .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_);
 
         final var failures = validationService.validate(List.of(spatialCoverage));
         assertThat(failures, is(List.of(failure)));
@@ -85,7 +80,7 @@ class SpatialCoverageValidatorTest {
 
         final var validationService = new SpatialCoverageValidator(placeValidator, uriValidatorMap);
         final var spatialCoverage = new SpatialCoverage()
-                .schemaUri("https://www.geonames.org/");
+                .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_);
 
         final var failures = validationService.validate(List.of(spatialCoverage));
         assertThat(failures, hasSize(1));
@@ -108,7 +103,7 @@ class SpatialCoverageValidatorTest {
 
         final var spatialCoverage = new SpatialCoverage()
                 .id("")
-                .schemaUri("https://www.geonames.org/");
+                .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_);
 
         final var failures = validationService.validate(List.of(spatialCoverage));
         assertThat(failures, hasSize(1));
@@ -152,7 +147,7 @@ class SpatialCoverageValidatorTest {
         final var validationService = new SpatialCoverageValidator(placeValidator, uriValidatorMap);
         final var spatialCoverage = new SpatialCoverage()
                 .id("https://www.geonames.org/2643743/london.html")
-                .schemaUri("");
+                .schemaUri((SpatialCoverageSchemaUriEnum) null);
 
         final var failures = validationService.validate(List.of(spatialCoverage));
         assertThat(failures, hasSize(1));
@@ -174,7 +169,7 @@ class SpatialCoverageValidatorTest {
         final var validationService = new SpatialCoverageValidator(placeValidator, uriValidatorMap);
         final var spatialCoverage = new SpatialCoverage()
                 .id("https://www.geonames.org/2643743/london.html")
-                .schemaUri("https://wwwgeonames.org/");
+                .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_OPENSTREETMAP_ORG_);
 
         final var failures = validationService.validate(List.of(spatialCoverage));
         assertThat(failures, hasSize(1));

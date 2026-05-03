@@ -4,7 +4,7 @@ import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.ServicePointService;
-import au.org.raid.api.util.SchemaValues;
+import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -98,7 +98,7 @@ public class RaidAuthorizationService {
                     .orElseThrow(() -> new ResourceNotFoundException(handle));
 
             // Check if embargoed - deny access if it is
-            if (raid.getAccess().getType().getId().equals(SchemaValues.ACCESS_TYPE_EMBARGOED.getUri())) {
+            if (raid.getAccess().getType().getId() == AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_) {
                 return new AuthorizationDecision(false);
             }
 
@@ -112,7 +112,7 @@ public class RaidAuthorizationService {
 
             // Allow access if user's service point owns the raid
             return new AuthorizationDecision(
-                    raid.getIdentifier().getOwner().getServicePoint().equals(servicePoint.getId())
+                    servicePoint.getId().equals(raid.getIdentifier().getOwner().getServicePoint().longValue())
             );
         } catch (Exception e) {
             log.error("Error checking service point user access", e);
@@ -172,7 +172,7 @@ public class RaidAuthorizationService {
                     .orElseThrow(() -> new ResourceNotFoundException(handle));
 
             return new AuthorizationDecision(
-                    raid.getIdentifier().getOwner().getServicePoint().equals(servicePoint.getId())
+                    servicePoint.getId().equals(raid.getIdentifier().getOwner().getServicePoint().longValue())
             );
         } catch (Exception e) {
             log.error("Error checking service point ownership", e);

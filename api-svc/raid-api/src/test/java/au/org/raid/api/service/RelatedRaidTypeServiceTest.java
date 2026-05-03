@@ -8,6 +8,8 @@ import au.org.raid.api.repository.RelatedRaidTypeSchemaRepository;
 import au.org.raid.db.jooq.tables.records.RelatedRaidTypeRecord;
 import au.org.raid.db.jooq.tables.records.RelatedRaidTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.RelatedRaidType;
+import au.org.raid.idl.raidv2.model.RelatedRaidTypeIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedRaidTypeSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,9 +40,9 @@ class RelatedRaidTypeServiceTest {
     @DisplayName("findById() returns related raid type")
     void findById() {
         final var id = 123;
-        final var uri = "_uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue();
         final var schemaId = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue();
 
         final var relatedRaidTypeRecord = new RelatedRaidTypeRecord()
                 .setUri(uri)
@@ -50,7 +52,7 @@ class RelatedRaidTypeServiceTest {
                 .setUri(schemaUri);
 
         final var relatedRaidType = new RelatedRaidType()
-                .id(uri);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198);
 
         when(relatedRaidTypeRepository.findById(id)).thenReturn(Optional.of(relatedRaidTypeRecord));
         when(relatedRaidTypeSchemaRepository.findById(schemaId)).thenReturn(Optional.of(relatedRaidTypeSchemaRecord));
@@ -94,14 +96,14 @@ class RelatedRaidTypeServiceTest {
     @Test
     @DisplayName("findId() returns id of related raid type")
     void findId() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue();
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue();
         final var schemaId = 123;
         final var id = 234;
 
         final var relatedRaidType = new RelatedRaidType()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
         final var relatedRaidTypeSchemaRecord = new RelatedRaidTypeSchemaRecord()
                 .setId(schemaId);
@@ -118,12 +120,12 @@ class RelatedRaidTypeServiceTest {
     @Test
     @DisplayName("findId() throws RelatedRaidTypeSchemaNotFoundException")
     void findIdThrowsRelatedRaidTypeSchemaNptFoundException() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue();
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue();
 
         final var relatedRaidType = new RelatedRaidType()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
         when(relatedRaidTypeSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
 
@@ -135,13 +137,13 @@ class RelatedRaidTypeServiceTest {
     @Test
     @DisplayName("findId() throws RelatedRaidTypeNotFoundException")
     void findIdThrowsRelatedRaidTypeNotFoundException() {
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue();
+        final var schemaUri = RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue();
         final var schemaId = 123;
 
         final var relatedRaidType = new RelatedRaidType()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
         final var relatedRaidTypeSchemaRecord = new RelatedRaidTypeSchemaRecord()
                 .setId(schemaId);

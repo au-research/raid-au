@@ -1,6 +1,7 @@
 package au.org.raid.inttest;
 
 import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
 import au.org.raid.inttest.service.Handle;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import static au.org.raid.fixtures.TestConstants.*;
@@ -296,12 +297,12 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
 
         try {
             createRequest.getOrganisation().forEach(organisation -> organisation.id(ror));
-            createRequest.getAccess().getType().id(EMBARGOED_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(AccessTypeIdEnum.fromValue(EMBARGOED_ACCESS_TYPE));
             createRequest.getAccess().getStatement().text("Embargoed");
 
             raidApi.mintRaid(createRequest);
 
-            createRequest.getAccess().getType().id(OPEN_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(AccessTypeIdEnum.fromValue(OPEN_ACCESS_TYPE));
             createRequest.getAccess().getStatement().text("Open");
             createRequest.getAccess().embargoExpiry(null);
 
@@ -342,7 +343,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         try {
             raidApi.mintRaid(createRequest);
 
-            createRequest.getAccess().getType().id(OPEN_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(AccessTypeIdEnum.fromValue(OPEN_ACCESS_TYPE));
             createRequest.getAccess().getStatement().text("Open");
             createRequest.getAccess().embargoExpiry(null);
 
@@ -377,7 +378,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         try {
             raidApi.mintRaid(createRequest);
 
-            createRequest.getAccess().getType().id(OPEN_ACCESS_TYPE);
+            createRequest.getAccess().getType().id(AccessTypeIdEnum.fromValue(OPEN_ACCESS_TYPE));
             createRequest.getAccess().getStatement().text("Open");
             createRequest.getAccess().embargoExpiry(null);
 

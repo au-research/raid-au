@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 public class ContributorRoleValidator {
@@ -26,7 +25,7 @@ public class ContributorRoleValidator {
             final ContributorRole role, final int contributorIndex, final int roleIndex) {
         final var failures = new ArrayList<ValidationFailure>();
 
-        if (isBlank(role.getId())) {
+        if (role.getId() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("contributor[%d].role[%d].id".formatted(contributorIndex, roleIndex))
@@ -34,7 +33,7 @@ public class ContributorRoleValidator {
                             .message(NOT_SET_MESSAGE));
         }
 
-        if (isBlank(role.getSchemaUri())) {
+        if (role.getSchemaUri() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("contributor[%d].role[%d].schemaUri".formatted(contributorIndex, roleIndex))
@@ -43,7 +42,7 @@ public class ContributorRoleValidator {
             );
         } else {
             final var roleScheme =
-                    contributorRoleSchemaRepository.findActiveByUri(role.getSchemaUri());
+                    contributorRoleSchemaRepository.findActiveByUri(role.getSchemaUri().getValue());
 
             if (roleScheme.isEmpty()) {
                 failures.add(
@@ -52,8 +51,8 @@ public class ContributorRoleValidator {
                                 .errorType(INVALID_VALUE_TYPE)
                                 .message(INVALID_SCHEMA)
                 );
-            } else if (!isBlank(role.getId()) &&
-                    contributorRoleRepository.findByUriAndSchemaId(role.getId(), roleScheme.get().getId()).isEmpty()) {
+            } else if (role.getId() != null &&
+                    contributorRoleRepository.findByUriAndSchemaId(role.getId().getValue(), roleScheme.get().getId()).isEmpty()) {
                 failures.add(
                         new ValidationFailure()
                                 .fieldId("contributor[%d].role[%d].id".formatted(contributorIndex, roleIndex))

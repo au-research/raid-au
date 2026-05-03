@@ -27,7 +27,7 @@ public class OrganisationRoleValidator {
             final OrganisationRole role, final int organisationIndex, final int roleIndex) {
         final var failures = new ArrayList<ValidationFailure>();
 
-        if (isBlank(role.getId())) {
+        if (role.getId() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("organisation[%d].role[%d].id".formatted(organisationIndex, roleIndex))
@@ -35,7 +35,7 @@ public class OrganisationRoleValidator {
                             .message(NOT_SET_MESSAGE));
         }
 
-        if (isBlank(role.getSchemaUri())) {
+        if (role.getSchemaUri() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("organisation[%d].role[%d].schemaUri".formatted(organisationIndex, roleIndex))
@@ -44,7 +44,7 @@ public class OrganisationRoleValidator {
             );
         } else {
             final var roleScheme =
-                    organisationRoleSchemaRepository.findActiveByUri(role.getSchemaUri());
+                    organisationRoleSchemaRepository.findActiveByUri(role.getSchemaUri().getValue());
 
             if (roleScheme.isEmpty()) {
                 failures.add(
@@ -53,8 +53,8 @@ public class OrganisationRoleValidator {
                                 .errorType(INVALID_VALUE_TYPE)
                                 .message(INVALID_SCHEMA)
                 );
-            } else if (!isBlank(role.getId()) &&
-                    organisationRoleRepository.findByUriAndSchemaId(role.getId(), roleScheme.get().getId()).isEmpty()) {
+            } else if (role.getId() != null &&
+                    organisationRoleRepository.findByUriAndSchemaId(role.getId().getValue(), roleScheme.get().getId()).isEmpty()) {
                 failures.add(
                         new ValidationFailure()
                                 .fieldId("organisation[%d].role[%d].id".formatted(organisationIndex, roleIndex))

@@ -4,6 +4,8 @@ import au.org.raid.db.jooq.tables.records.RaidTitleRecord;
 import au.org.raid.idl.raidv2.model.Language;
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
+import au.org.raid.idl.raidv2.model.TitleTypeSchemaURIEnum;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,8 +16,8 @@ public class TitleFactory {
                 .startDate(record.getStartDate())
                 .endDate(record.getEndDate())
                 .type(new TitleType()
-                        .id(typeId)
-                        .schemaUri(typeSchemaUri)
+                        .id(TitleTypeIdEnum.fromValue(typeId))
+                        .schemaUri(TitleTypeSchemaURIEnum.fromValue(typeSchemaUri))
 
                 )
                 .language(language);

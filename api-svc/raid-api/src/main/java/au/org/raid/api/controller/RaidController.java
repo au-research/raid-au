@@ -120,7 +120,7 @@ public class RaidController implements RaidApi {
         }
 
         final var servicePointId = TokenUtil.hasRole(TokenUtil.OPERATOR_ROLE)
-                ? request.getIdentifier().getOwner().getServicePoint()
+                ? request.getIdentifier().getOwner().getServicePoint().longValueExact()
                 : getServicePointId();
 
         return ResponseEntity.ok(raidService.update(request, servicePointId));
@@ -174,7 +174,7 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllPublic());
     }
 
-    @Override
+    @GetMapping(value = "/raid/embargoed")
     public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids() {
         return ResponseEntity.ok(raidService.findAllEmbargoed());
     }

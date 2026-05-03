@@ -1,0 +1,63 @@
+id: https://datamodel.raid.org/shared/
+name: shared
+prefixes:
+  linkml: https://w3id.org/linkml/
+  raid: https://datamodel.raid.org/core/
+  raidext: https://datamodel.raid.org/extended/
+  raidvoc: https://vocabulary.raid.org/
+  skos: http://www.w3.org/2004/02/skos/core#
+  schema: http://schema.org/
+  dcterms: http://purl.org/dc/terms/
+imports:
+  - linkml:types
+  - core-enums
+slots:
+  type:
+    range: string
+  url:
+    range: string
+    exact_mappings:
+      - schema:url
+  id:
+    range: string
+    identifier: true
+    exact_mappings:
+      - schema:identifier
+      - dct:identifier
+  text:
+    range: string
+  startDate:
+    annotations:
+      notes: ISO 8601 standard date, Only the year is required; month and day are optional (but recommended when available).
+    required: true
+    range: string
+    exact_mappings:
+      - schema:startDate
+  endDate:
+    annotations:
+      notes: ISO 8601 standard date. Only the year is required; month and day are optional (but recommended when available). Recommended if an organisation has changed roles or terminated its relationship with a project
+    range: string
+    exact_mappings:
+      - schema:endDate
+  language:
+    description: a metadata schema block declaring the language of the text
+    range: Language
+    slot_uri: raid:language
+classes:
+  Language:
+    class_uri: raid:Language
+    attributes:
+      id:
+        annotations:
+          notes: currently limited to ISO 639:2023 (Set 3)
+        description:  the language used for the access statement text, identified by a code or other identifier
+        range: string
+        required: true
+        pattern: "^\\s*\\S.*$"
+        exact_mappings:
+          - schema:inLanguage
+          - dct:language
+      schemaUri:
+        description: the URI of the language identifier schema
+        range: LanguageSchemaURIEnum
+        required: true

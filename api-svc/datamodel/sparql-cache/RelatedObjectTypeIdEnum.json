@@ -1,0 +1,320 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/273"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Audiovisual"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/258"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Book"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/271"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Book Chapter"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/256"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Computational Notebook"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/264"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Conference Paper"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/248"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Conference Poster"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/262"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Conference Proceeding"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/255"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Data Paper"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/269"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Dataset"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/253"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Dissertation"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/260"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Event"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/272"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Funding"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/257"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Image"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/266"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Instrument"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/250"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Journal Article"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/267"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Learning Object"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/263"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Model"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/247"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Output Management Plan"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/270"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Physical Object"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/254"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Preprint"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/268"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Prize"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/252"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Report"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/274"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Service"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/259"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Software"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/261"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Sound"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/251"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Standard"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/265"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Text"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedObject.type.schema/249"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Workflow"
+        }
+      }
+    ]
+  }
+}

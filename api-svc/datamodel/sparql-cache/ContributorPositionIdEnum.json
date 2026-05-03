@@ -1,0 +1,67 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/contributor.position.schema/308"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Co-investigator or Collaborator"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/contributor.position.schema/310"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Consultant "
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/contributor.position.schema/311"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Other Participant"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/contributor.position.schema/309"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Partner Investigator"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/contributor.position.schema/307"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Principal or Chief Investigator"
+        }
+      }
+    ]
+  }
+}

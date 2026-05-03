@@ -1,10 +1,12 @@
 package au.org.raid.api.validator;
 
-import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.Description;
 import au.org.raid.idl.raidv2.model.DescriptionType;
+import au.org.raid.idl.raidv2.model.DescriptionTypeIdEnum;
+import au.org.raid.idl.raidv2.model.DescriptionTypeSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,12 +38,12 @@ class DescriptionValidatorTest {
     @DisplayName("Validation passes with valid description")
     void validDescription() {
         final var type = new DescriptionType()
-                .id(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri())
-                .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri());
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .text(DESCRIPTION_VALUE)
@@ -60,12 +62,12 @@ class DescriptionValidatorTest {
     @DisplayName("Validation fails with missing primary description")
     void missingPrimaryDescription() {
         final var type = new DescriptionType()
-                .id(SchemaValues.ALTERNATIVE_DESCRIPTION_TYPE.getUri())
-                .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri());
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_319)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .text(DESCRIPTION_VALUE)
@@ -89,12 +91,12 @@ class DescriptionValidatorTest {
     @DisplayName("Validation fails with more than one primary description")
     void multiplePrimaryDescriptions() {
         final var type = new DescriptionType()
-                .id(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri())
-                .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri());
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description1 = new Description()
                 .text(DESCRIPTION_VALUE)
@@ -119,12 +121,12 @@ class DescriptionValidatorTest {
     @DisplayName("Validation fails with null description")
     void nullDescription() {
         final var type = new DescriptionType()
-                .id(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri())
-                .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri());
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(TestConstants.LANGUAGE_ID)
-                .schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri());
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .type(type)
@@ -149,8 +151,8 @@ class DescriptionValidatorTest {
         final var description = new Description()
                 .text("")
                 .type(new DescriptionType()
-                        .id(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri())
-                        .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri())
+                        .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)
+                        .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320)
                 );
 
         final var failures = validationService.validate(List.of(description));
@@ -168,8 +170,8 @@ class DescriptionValidatorTest {
     @DisplayName("Type validation failures are returned")
     void typeErrorAreReturned() {
         final var type = new DescriptionType()
-                .id(SchemaValues.PRIMARY_DESCRIPTION_TYPE.getUri())
-                .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri());
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var description = new Description()
                 .text(DESCRIPTION_VALUE)

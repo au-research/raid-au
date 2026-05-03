@@ -30,7 +30,7 @@ public class DataciteContributorFactory {
                 .setNameIdentifiers(List.of(
                         new NameIdentifier()
                                 .setNameIdentifier(registrationAgency.getId())
-                                .setSchemeUri(registrationAgency.getSchemaUri())
+                                .setSchemeUri(registrationAgency.getSchemaUri().getValue())
                                 .setNameIdentifierScheme(NAME_IDENTIFIER_SCHEME)
                 ));
     }
@@ -39,7 +39,7 @@ public class DataciteContributorFactory {
         final var organisationName = rorClient.getOrganisationName(organisation.getId());
 
         final var latestRole = organisation.getRole().stream()
-                .filter(role -> !role.getId().equals(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri()))
+                .filter(role -> !role.getId().getValue().equals(SchemaValues.FUNDER_ORGANISATION_ROLE.getUri()))
                 .max((o1, o2) -> o2.getStartDate().compareTo(o1.getStartDate()))
                 .orElse(null);
 
@@ -54,7 +54,7 @@ public class DataciteContributorFactory {
                 ));
 
         if (latestRole != null) {
-            contributor.setContributorType(ORGANISATION_ROLE_MAP.get(latestRole.getId()));
+            contributor.setContributorType(ORGANISATION_ROLE_MAP.get(latestRole.getId().getValue()));
         }
 
         return contributor;

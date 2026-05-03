@@ -33,14 +33,14 @@ public class LanguageValidator {
                     .message(NOT_SET_MESSAGE)
             );
         }
-        if (isBlank(language.getSchemaUri())) {
+        if (language.getSchemaUri() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("%s.language.schemaUri".formatted(parent))
                     .errorType(NOT_SET_TYPE)
                     .message(NOT_SET_MESSAGE)
             );
         } else {
-            final var languageScheme = languageSchemaRepository.findActiveByUri(language.getSchemaUri());
+            final var languageScheme = languageSchemaRepository.findActiveByUri(language.getSchemaUri().getValue());
 
             if (languageScheme.isEmpty()) {
                 failures.add(new ValidationFailure()

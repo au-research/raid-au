@@ -2,6 +2,7 @@ package au.org.raid.api.factory;
 
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.SubjectKeyword;
+import au.org.raid.idl.raidv2.model.SubjectSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,10 +18,10 @@ class SubjectFactoryTest {
     @DisplayName("Sets all fields")
     void setsAllFields() {
         final var id = "_id";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = SubjectSchemaURIEnum.HTTPS_LINKED_DATA_GOV_AU_DEF_ANZSRC_FOR_2020;
         final var keywords = List.of(new SubjectKeyword());
 
-        final var result = factory.create(id, schemaUri, keywords);
+        final var result = factory.create(id, schemaUri.getValue(), keywords);
 
         assertThat(result.getId(), is(SchemaValues.SUBJECT_ID_PREFIX.getUri() + id));
         assertThat(result.getSchemaUri(), is(schemaUri));

@@ -29,11 +29,11 @@ public class LanguageService {
             return null;
         }
 
-        final var languageSchemaRecord = languageSchemaRepository.findByUri(language.getSchemaUri())
-                .orElseThrow(() -> new LanguageSchemaNotFoundException(language.getSchemaUri()));
+        final var languageSchemaRecord = languageSchemaRepository.findByUri(language.getSchemaUri().getValue())
+                .orElseThrow(() -> new LanguageSchemaNotFoundException(language.getSchemaUri().getValue()));
 
         final var languageRecord = languageRepository.findByIdAndSchemaId(language.getId(), languageSchemaRecord.getId())
-                .orElseThrow(() -> new LanguageNotFoundException(language.getId(), language.getSchemaUri()));
+                .orElseThrow(() -> new LanguageNotFoundException(language.getId(), language.getSchemaUri().getValue()));
 
         return languageRecord.getId();
     }

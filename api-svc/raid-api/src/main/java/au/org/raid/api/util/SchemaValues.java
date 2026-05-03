@@ -25,7 +25,7 @@ public enum SchemaValues {
     TITLE_TYPE_SCHEMA("https://vocabulary.raid.org/title.type.schema/376"),
     PRINCIPAL_INVESTIGATOR_CONTRIBUTOR_POSITION_ROLE("https://vocabulary.raid.org/contributor.position.schema/307"),
     CONTRIBUTOR_POSITION_SCHEMA_URI("https://vocabulary.raid.org/contributor.position.schema/305"),
-    CONTRIBUTOR_ROLE_SCHEMA_URI("https://credit.niso.org"),
+    CONTRIBUTOR_ROLE_SCHEMA_URI("https://credit.niso.org/"),
     LEAD_RESEARCH_ORGANISATION_ROLE("https://vocabulary.raid.org/organisation.role.schema/182"),
     OTHER_RESEARCH_ORGANISATION_ROLE("https://vocabulary.raid.org/organisation.role.schema/183"),
     PARTNER_ORGANISATION_ROLE("https://vocabulary.raid.org/organisation.role.schema/184"),

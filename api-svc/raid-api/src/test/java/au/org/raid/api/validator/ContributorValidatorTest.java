@@ -5,7 +5,12 @@ import au.org.raid.api.repository.ContributorRepository;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
+import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ContributorRole;
+import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -80,11 +85,11 @@ class ContributorValidatorTest {
     void missingPositions() {
 
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .leader(true)
@@ -114,16 +119,16 @@ class ContributorValidatorTest {
     @DisplayName("Validation fails with missing leader")
     void missingLeadPositions() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id("https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/other-participant.json")
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_308)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .position(List.of(position))
@@ -182,16 +187,16 @@ class ContributorValidatorTest {
     @DisplayName("Validation passes with valid contributor")
     void validContributor() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .position(List.of(position))
@@ -211,16 +216,16 @@ class ContributorValidatorTest {
     @DisplayName("Failures in validation services are added to return value")
     void roleValidationFailures() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .position(List.of(position))
@@ -252,17 +257,17 @@ class ContributorValidatorTest {
 
         final var orcid = "https://orcid.org/0000-0000-0000-0002";
         final var role1 = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position1 = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate("2020-01")
                 .endDate("2021-06");
 
         final var contributor1 = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role1))
                 .position(List.of(position1))
@@ -270,17 +275,17 @@ class ContributorValidatorTest {
                 .contact(true);
 
         final var role2 = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position2 = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate("2021-06")
                 .endDate("2023-06");
 
         final var contributor2 = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(orcid)
                 .role(List.of(role2))
                 .position(List.of(position2))
@@ -298,17 +303,17 @@ class ContributorValidatorTest {
     @DisplayName("Validation fails with duplicate contributors")
     void duplicateContributors() {
         final var role1 = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position1 = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate("2020-01")
                 .endDate("2021-06");
 
         final var contributor1 = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role1))
                 .position(List.of(position1))
@@ -316,17 +321,17 @@ class ContributorValidatorTest {
                 .contact(true);
 
         final var role2 = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position2 = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate("2021-06")
                 .endDate("2023-06");
 
         final var contributor2 = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role2))
                 .position(List.of(position2))
@@ -349,23 +354,23 @@ class ContributorValidatorTest {
     @DisplayName("Validation fails if contributor has overlapping positions - year-month-day dates")
     void overlappingPositions() {
         final var role1 = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position1 = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate("2020-01-01")
                 .endDate("2021-12-31");
 
         final var position2 = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate("2021-06-01")
                 .endDate("2023-06-01");
 
         final var contributor1 = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role1))
                 .position(List.of(position1, position2))
@@ -393,12 +398,12 @@ class ContributorValidatorTest {
     @DisplayName("Validation fails with null schemaUri")
     void nullIdentifierSchemeUri() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
@@ -423,86 +428,6 @@ class ContributorValidatorTest {
                         .fieldId("contributor[0].schemaUri")
                         .errorType("notSet")
                         .message("field must be set")
-        ));
-
-        verify(orcidValidator).validate(contributor, 0);
-    }
-
-    @Test
-    @DisplayName("Validation fails with empty schemaUri")
-    void emptyIdentifierSchemeUri() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .id(VALID_ORCID)
-                .schemaUri("")
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-        when(orcidValidator.validate(contributor, 0)).thenReturn(List.of(
-                new ValidationFailure()
-                        .fieldId("contributor[0].schemaUri")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("contributor[0].schemaUri")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-
-        verify(orcidValidator).validate(contributor, 0);
-    }
-
-    @Test
-    @DisplayName("Validation fails with invalid schemaUri")
-    void invalidIdentifierSchemeUri() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .id(VALID_ORCID)
-                .schemaUri("https://example.org/")
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-        when(orcidValidator.validate(contributor, 0)).thenReturn(List.of(
-                new ValidationFailure()
-                        .fieldId("contributor[0].schemaUri")
-                        .errorType("invalidValue")
-                        .message("has invalid/unsupported value - should be https://orcid.org/")
-        ));
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("contributor[0].schemaUri")
-                        .errorType("invalidValue")
-                        .message("has invalid/unsupported value - should be https://orcid.org/")
         ));
 
         verify(orcidValidator).validate(contributor, 0);
@@ -512,16 +437,16 @@ class ContributorValidatorTest {
     @DisplayName("Validation passes with valid orcid")
     void validOrcid() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .position(List.of(position))
@@ -542,16 +467,16 @@ class ContributorValidatorTest {
     @DisplayName("Validation passes with valid isni")
     void validIsni() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ISNI_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
                 .id(VALID_ISNI)
                 .role(List.of(role))
                 .position(List.of(position))
@@ -572,17 +497,17 @@ class ContributorValidatorTest {
     @DisplayName("Validation passes with valid contributor with email address")
     void validContributorWithEmail() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
                 .id(VALID_ORCID)
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .role(List.of(role))
                 .position(List.of(position))
                 .leader(true)
@@ -602,16 +527,16 @@ class ContributorValidatorTest {
     @DisplayName("Validation fails with non-existent ORCID")
     void nonExistentOrcid() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .position(List.of(position))
@@ -638,19 +563,77 @@ class ContributorValidatorTest {
     }
 
     @Test
-    @DisplayName("Validation fails with missing contact")
-    void missingContact() {
+    @DisplayName("isOrcid matches on schemaUri enum when id does not start with orcid prefix")
+    void isOrcidMatchesOnSchemaUri() {
         final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
 
         final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
         final var contributor = new Contributor()
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .id("not-an-orcid-prefix")
+                .role(List.of(role))
+                .position(List.of(position))
+                .leader(true)
+                .contact(true);
+
+        when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = validationService.validate(List.of(contributor));
+
+        assertThat(failures, empty());
+        verify(orcidValidator).validate(contributor, 0);
+        verifyNoInteractions(isniValidator);
+    }
+
+    @Test
+    @DisplayName("isIsni matches on schemaUri enum when id does not start with isni prefix")
+    void isIsniMatchesOnSchemaUri() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
+                .id("not-an-isni-prefix")
+                .role(List.of(role))
+                .position(List.of(position))
+                .leader(true)
+                .contact(true);
+
+        when(isniValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = validationService.validate(List.of(contributor));
+
+        assertThat(failures, empty());
+        verify(isniValidator).validate(contributor, 0);
+        verifyNoInteractions(orcidValidator);
+    }
+
+    @Test
+    @DisplayName("Validation fails with missing contact")
+    void missingContact() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .id(VALID_ORCID)
                 .role(List.of(role))
                 .position(List.of(position))

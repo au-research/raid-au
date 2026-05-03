@@ -2,6 +2,7 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.endpoint.message.ValidationMessage;
 import au.org.raid.idl.raidv2.model.Access;
+import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,18 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 @RequiredArgsConstructor
 public class AccessValidator {
-    private static final String ACCESS_TYPE_EMBARGOED =
-            "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/embargoed.json";
-    private static final String ACCESS_TYPE_OPEN =
-            "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/open.json";
-    private static final String ACCESS_TYPE_CLOSED =
-            "https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/closed.json";
-
     private final AccessTypeValidator typeValidationService;
     private final AccessStatementValidator accessStatementValidator;
 
@@ -43,17 +36,10 @@ public class AccessValidator {
         } else {
             failures.addAll(typeValidationService.validate(access.getType()));
 
-            if (!isBlank(access.getType().getId())) {
+            if (access.getType().getId() != null) {
                 final var typeId = access.getType().getId();
 
-                if (typeId.equals(ACCESS_TYPE_CLOSED)) {
-                    failures.add(new ValidationFailure()
-                            .fieldId("access.type.id")
-                            .errorType(INVALID_VALUE_TYPE)
-                            .message("Creating closed Raids is no longer supported"));
-                }
-
-                if (typeId.equals(ACCESS_TYPE_EMBARGOED)) {
+                if (typeId == AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_) {
                     if (access.getStatement() == null) {
                         failures.add(new ValidationFailure()
                                 .fieldId("access.statement")
