@@ -2,7 +2,6 @@
 
 > Doesn't really matter. This is one way to do it - whatever floats your boat.
 
-
 ## 80 character lines
 Code reads down, not across.
 
