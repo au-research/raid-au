@@ -1,52 +1,177 @@
-Note: this page is not yet "documentation" - the handle architecture is at the
-proposal stage. We've not yet decided how the handle strategy will be
-implemented.
 
-This page will document how we implement the [RAiD handle strategy](https://confluence.ardc.edu.au/display/~stolley/RAID+handles+-+requirements+and+strategy).
-Note that the handle strategy itself is not public - it is not finished or 
-agreed upon and the requirements are not complete.
+# RAiD Identifier Architecture
 
-The legacy RAiD system and current-state Raido uses [APIDS](https://github.com/au-research/ANDS-PIDS-Service) 
-to assign numbers under the `102.100.100` prefix, which is shared with many  
-other (non-RAiD related) customers of ARDC.
-
-----
-
-Below are possible implementations presented by STO. The CNRI parts may not 
-be accurate - they reflect my current understanding of how this stuff works,
-but that understanding is very likely flawed.
+RAiD identifiers are minted as DOIs through the
+[DataCite REST API](https://support.datacite.org/docs/api). Each RAiD
+identifier follows the pattern `https://raid.org/{prefix}/{suffix}`, where the
+prefix is a DataCite DOI prefix (e.g. `10.25123`) and the suffix is a random
+8-character UUID segment.
 
 
-# Mint a RAiD via Raido 
+## Identifier Structure
 
-![Mint RAID handle](https://www.plantuml.com/plantuml/png/7Sj1Ze8n20RG_PnYF43BtjiW9PQ4qZ_qGwzlTFkITxCGhw6L_Z-1wzo9aj_zQPZrgACfEw21BdiHLqizoYcJacriMcn1OmjzpQ22IYM9j3OvXYij2xINSVk5VZa7QldV1m00?cache=no)
-
-
-# Local resolve via Raido - `raid.org.au`
-
-![Browse RAID via `raid.org.au`](https://www.plantuml.com/plantuml/png/7Sf13W8n243HlQVG0xJilGr3YIMXCA7WND-Ckv-Vzn8ZhS4L-foPvtu315xz8pdhgCr1RicMdNm1LWlUZ44J0cKuB1I3uGJtasJA2WQoa3RHXZ8SuTVcTlFs5Vo7zrFHifO-VW00?cache=no)
-
-
-# Global resolve via redirect - `raid.org`
-
-![Browse RAID via `raid.org`](https://www.plantuml.com/plantuml/png/9Sv1hiCm20JG_J_5xm4SzbtbAWHGZMJZ24Dp_JhjQaQZjvXz1dfaRtyFDMh9ajx-QyGvdm2Er_RIg7da5ATX8HORZGwOnMKAEjMbb0TqL0CU1FUc8HJf0cIkfQ9n4pXyN5FApSjRyLTSM7tXxMnetoEx6A_y0000?cache=no)
+| Component        | Example                            | Source                                  |
+|------------------|------------------------------------|-----------------------------------------|
+| Schema URI       | `https://raid.org/`                | `raid.identifier.schema-uri`            |
+| Full identifier  | `https://raid.org/10.25123/a1b2c3d4` | `name-prefix` + `prefix/suffix`       |
+| DOI              | `10.25123/a1b2c3d4`               | DataCite DOI prefix + UUID segment      |
+| Landing page     | `https://static.{env}.raid.org.au/raids/10.25123/a1b2c3d4` | `landing-prefix` + handle |
+| Registration agency | `https://ror.org/038sjwq14`     | ARDC ROR identifier                     |
+| Owner            | Service point ROR identifier       | `service_point.identifier_owner`        |
 
 
-# Global resolve via passthrough - `raid.org`
+## Service Point Provisioning
 
-![Browse RAID via `raid.org`](https://www.plantuml.com/plantuml/png/9OwxZSD030Npg-9Sm8gv8xL2SGajWHKfy6ErRykEtiDWWbaZqREE-VSGfLcTo-V_o3pZ2U1uBRlagAs2dKoJDHUo0x2QSp0w3N2KRd2WA7GZk9aaKvOpaBgqWTedm-Ps1RTRRo_1tpan8eTRxMCv9-gtPMNjdtq3?cache=no)
+Each service point is allocated its own DataCite repository, which provides
+an isolated DOI prefix and API credentials. When a new service point is
+created, the `DataciteRepositoryClient` calls the DataCite repositories API
+to register a new repository.
+
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant API as api-svc
+    participant DC as DataCite API
+    participant DB as PostgreSQL
+
+    Admin->>API: Create service point
+    API->>DC: POST /repositories
+    DC-->>API: Repository (prefix, repositoryId)
+    API->>DB: Store prefix, repositoryId,<br/>encrypted password
+```
+
+Credentials are stored in the `service_point` table:
+
+| Column           | Purpose                                       |
+|------------------|-----------------------------------------------|
+| `prefix`         | DataCite DOI prefix (e.g. `10.25123`)         |
+| `repository_id`  | DataCite repository identifier for Basic Auth |
+| `password`       | Encrypted DataCite API password               |
+| `identifier_owner` | Service point ROR identifier               |
 
 
-# Resolve a RAiD through `hdl.handle.net` landing on `raid.org`
+## Minting a RAiD
 
-![Browse RAID via `handle.net`](https://www.plantuml.com/plantuml/png/7ShB3SCm20RWUwTe1t2uTnk2KOnaGuIXMRzERl_Z-uXIpyhf_TqYpla5SBosGwBbdfETJ8CrDh81cCLvCZgrfQGQ31I5QWJt9i4KwGoaBgMXriwmkrsJoytBJx0ytzFw0gB7TguGEVhh3m00?cache=no)
+When a RAiD is created, the api-svc generates a handle, registers it with
+DataCite, and persists the metadata.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as api-svc
+    participant HF as HandleFactory
+    participant DC as DataCite API
+    participant DB as PostgreSQL
+
+    Client->>API: POST /raid
+    API->>API: Look up service point<br/>(prefix, repositoryId, password)
+    API->>HF: createWithPrefix(prefix)
+    HF-->>API: Handle (prefix/UUID-suffix)
+    API->>API: Build identifier DTO<br/>(raid.org URL, owner, license)
+    API->>DC: POST /dois<br/>(DataCite schema kernel-4)
+    DC-->>API: 201 Created
+
+    Note over API,DC: Retries up to 2× on HTTP 422<br/>(duplicate handle collision)
+
+    API->>DB: Save to raid_history
+    API->>DB: Save to raid table<br/>(materialised metadata)
+    API-->>Client: RaidDto
+```
+
+### Handle Generation
+
+Handles are generated by `HandleFactory`:
+1. Take the service point's DOI prefix (e.g. `10.25123`)
+2. Generate a random UUID and take the first 8 characters as the suffix
+3. Combine as `{prefix}/{suffix}` (e.g. `10.25123/a1b2c3d4`)
+
+If DataCite returns HTTP 422 (handle collision), the mint is retried with a
+new random suffix, up to 2 times.
 
 
-# Resolve a RAiD through `hdl.handle.net` landing on `raido.org`
+## Updating a RAiD
 
-![Browse RAID via `handle.net`](https://www.plantuml.com/plantuml/png/7SlH3SCm20JG_qxH3a3uxpO4enZ9nX66Plqw-JlTlVkeSSiYwUrT8yxvHNIwjaEZvfvJd8U5M6myEbA2onHohajf6TX93SjWl3iDuKWNP7E5IbQQuExZcW8tXvyIFDjpXhQ4sh6TAqJszle3?cache=no)
+When a RAiD is updated, the api-svc pushes the updated metadata to DataCite
+and saves a new version in the history.
 
-# API get metadata through `hdl.handle.net` landing on `raid.org`
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as api-svc
+    participant DC as DataCite API
+    participant DB as PostgreSQL
 
-![Get RAID via `handle.net`](https://www.plantuml.com/plantuml/png/7ShB4G8n20RWkrLe0Intkq72R9X9I8Q0jczsR__ZUwbnooBfxLaZvdeZElsEKwFc9vSu3mknE7Xqf0IN9UHSjz8oi9CQbi5uRHh2aIx8vWgLh3H1cWgd15mUlafmdtThMwYTnzmXihV77m00?cache=no)
+    Client->>API: PUT /raid/{prefix}/{suffix}
+    API->>DB: Load current version
+    API->>API: Compare checksums
+    
+    alt No changes
+        API-->>Client: Return existing RaidDto
+    else Changes detected
+        API->>DB: Save new version to raid_history
+        API->>DC: PUT /dois/{prefix}/{suffix}<br/>(updated metadata)
+        API->>DB: Update materialised metadata
+        API-->>Client: Updated RaidDto
+    end
+```
 
+
+## Resolving a RAiD
+
+RAiD identifiers can be resolved through multiple paths:
+
+```mermaid
+flowchart LR
+    User([User / Client])
+
+    User -->|"raid.org/10.25123/a1b2c3d4"| Static
+    User -->|"doi.org/10.25123/a1b2c3d4"| DataCite
+    User -->|"api.raid.org.au/raid/10.25123/a1b2c3d4"| API
+
+    DataCite[DataCite DOI resolver] -->|redirect| Static
+    Static["Static landing page<br/>(static.raid.org.au)"]
+    API["api-svc<br/>(JSON metadata)"]
+```
+
+| Resolution path | URL pattern | Returns |
+|----------------|-------------|---------|
+| Direct landing page | `https://static.{env}.raid.org.au/raids/{handle}` | Human-readable HTML |
+| DOI resolution | `https://doi.org/{handle}` | Redirect → landing page |
+| API | `https://api.{env}.raid.org.au/raid/{prefix}/{suffix}` | JSON metadata |
+
+
+## DataCite Metadata Mapping
+
+RAiD metadata is mapped to
+[DataCite Schema 4](https://schema.datacite.org/meta/kernel-4/) before being
+sent to the DataCite API. The mapping is handled by a chain of factory classes:
+
+```
+DataciteRequestFactory
+  → DataciteDtoFactory (schema: kernel-4, type: Other)
+    → DataciteAttributesDtoFactory
+      → DataciteTitleFactory
+      → DataciteCreatorFactory
+      → DataciteDateFactory
+      → DataciteContributorFactory
+      → DataciteDescriptionFactory
+      → DataciteRelatedIdentifierFactory
+      → DataciteAlternateIdentifierFactory
+      → DataciteRightsFactory
+      → DataciteFundingReferenceFactory
+```
+
+
+## Key Source Files
+
+| File | Purpose |
+|------|---------|
+| [RaidService.java](/api-svc/raid-api/src/main/java/au/org/raid/api/service/raid/RaidService.java) | Orchestrates mint, update, and read operations |
+| [DataciteService.java](/api-svc/raid-api/src/main/java/au/org/raid/api/service/datacite/DataciteService.java) | POST/PUT to DataCite DOIs API |
+| [DataciteRepositoryClient.java](/api-svc/raid-api/src/main/java/au/org/raid/api/client/repository/DataciteRepositoryClient.java) | Provisions DataCite repositories for service points |
+| [HandleFactory.java](/api-svc/raid-api/src/main/java/au/org/raid/api/factory/HandleFactory.java) | Generates handles (prefix + UUID suffix) |
+| [Handle.java](/api-svc/raid-api/src/main/java/au/org/raid/api/service/Handle.java) | Handle value object (prefix/suffix) |
+| [IdFactory.java](/api-svc/raid-api/src/main/java/au/org/raid/api/factory/IdFactory.java) | Builds identifier DTOs with owner, license, URLs |
+| [DataciteRequestFactory.java](/api-svc/raid-api/src/main/java/au/org/raid/api/factory/datacite/DataciteRequestFactory.java) | Maps RAiD metadata to DataCite schema |
+| [DataciteProperties.java](/api-svc/raid-api/src/main/java/au/org/raid/api/config/properties/DataciteProperties.java) | DataCite endpoint configuration |
+| [IdentifierProperties.java](/api-svc/raid-api/src/main/java/au/org/raid/api/config/properties/IdentifierProperties.java) | Identifier URL and schema configuration |
