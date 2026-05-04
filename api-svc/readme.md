@@ -150,15 +150,8 @@ For the flyway version number, set it based off whatever the main flyway
 migration is up to or you'll get an "out of order" execution error.  
 
 If you've done it right; when you sign-in (currently must be using Google IDP 
-and `raido` service-point) then create an authz-request using that email 
+and `raid-au` service-point) then create an authz-request using that email 
 address - you should get a browser alert dialog saying that you've been 
 auto-approved after hitting the submit button.
 
-
-# Importing legacy data for use in local environment
-This is optional (and the data files are not publicly available) - it's not 
-necessary for just running Raido. 
-
-Import the raid V1 data into the `raid_v1_import` schema:
-  * see [v1-ddb-migration/readme.md](./db/v1-ddb-migration/readme.md)
 
