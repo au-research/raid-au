@@ -20,7 +20,6 @@ redactErrorDetails=false
 
 ```
 
-
 ## Running `Api.main()` from IDE
 
 If you want to start the app from your IDE, remember to specify JVM options:

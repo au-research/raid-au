@@ -4,10 +4,6 @@
 To run the Raido codebase in a non-AWS environment, you would need to consider 
 how to provide equivalent services for each of the sections outlined below. 
 
-The below sections were mapped directly from the  
-[raid-architecture.md](/doc/architecture/raid-architecture.md).
-
-
 # ARDC RAiD Service environment in AWS
 
 ## DNS
@@ -103,18 +99,29 @@ Though the api-svc does requires network access to the internet so that
 http/https requests can be made.
 
 
-## Local Handle Service
+## DOI Minting via DataCite
 
-We currently use the ARDC APIDS service for minting handles.
-It is operated in an "on-premises" fashion, on ARDC hardware and network 
-services, by the ARDC DevOps team (separate from the Raid team).
+RAiDs are minted as DOIs through the
+[DataCite REST API](https://support.datacite.org/docs/api).
 
-* https://ardc.edu.au/services/ardc-identifier-services/ardc-handle-service/
-* https://github.com/au-research/ANDS-PIDS-Service
-* [ApidsService.java](/api-svc/spring/src/main/java/raido/apisvc/service/apids/ApidsService.java)
-* There's no AWS CDK code for this since it's operated externally to AWS
-  * the configuration is stored in the project configuration
-  * [https://github.com/au-research/raido-v2-aws-private/blob/fd26c55ab476533e6c3d9c2cd6f712046b101ba1/raido-root/lib/prod/api-svc/ApiSvcEcs.ts#LL179C31-L179C31](https://github.com/au-research/raido-v2-aws-private/blob/main/config/EnvironmentProperties.ts#L58)
+Each service point is provisioned with its own DataCite repository, which
+provides a unique DOI prefix, repository ID, and password. When a new service
+point is created, the api-svc calls the DataCite repositories API to register
+the repository and stores the credentials against the service point record in
+the database.
+
+When a RAiD is created or updated, the api-svc maps the RAiD metadata to the
+DataCite schema and calls the DataCite DOIs endpoint (`POST` for mint,
+`PUT` for update). Only handles with a `10.` prefix are sent to DataCite;
+non-DOI handles are skipped.
+
+* DataCite DOIs endpoint (test): `https://api.test.datacite.org/dois`
+* DataCite repositories endpoint (test): `https://api.test.datacite.org/repositories`
+* [DataciteService.java](/api-svc/raid-api/src/main/java/au/org/raid/api/service/datacite/DataciteService.java) — mint and update DOIs
+* [DataciteRepositoryClient.java](/api-svc/raid-api/src/main/java/au/org/raid/api/client/repository/DataciteRepositoryClient.java) — provision DataCite repositories for new service points
+* [DataciteProperties.java](/api-svc/raid-api/src/main/java/au/org/raid/api/config/properties/DataciteProperties.java) — configuration
+* Credentials (repository ID and password) are stored per service point in the
+  `service_point` table and managed via AWS Secrets Manager
 
 
 ## Database

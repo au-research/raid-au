@@ -46,28 +46,72 @@ The database schema (tables, columns, triggers, etc.) is implemented as
 * [RaidoDbFlywayMigrate project](https://github.com/au-research/raido-v2-aws-private/blob/fd26c55ab476533e6c3d9c2cd6f712046b101ba1/raido-root/lib/prod/raido/RaidoDbCodeBuild.ts#L69)
 
 
-## api-svc docker container 
+## Build-Push-Deploy Pipeline
 
-The api-svc container instances are managed as [AWS ECS](https://aws.amazon.com/ecs/) 
-tasks.
+Application builds and deployments are managed by a unified
+[AWS CodePipeline V2](https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html)
+called `Build-Push-Deploy-V2`. The pipeline promotes artifacts through four
+environments — Test, Demo, Stage, and Prod — with manual approval gates between
+each.
 
-The docker container that contains the actual api-svc task is built by an 
-AWS CodeBuild project: 
-[ApiSvcPushDockerImage project](https://github.com/au-research/raido-v2-aws-private/blob/fd26c55ab476533e6c3d9c2cd6f712046b101ba1/raido-root/lib/prod/api-svc/ApisSvcCodeBuild.ts#LL50C53-L50C68)
+Version numbers follow semantic versioning, tracked in SSM parameters. A
+pipeline variable (`RELEASE_TYPE`: major / minor / patch) controls how the
+version is incremented at release time.
 
-The core Gradle task that initiates the Java compile and docker build (called 
-by the PushDocker image project) is 
-[ecsDockerPush](/api-svc/docker/build.gradle)
+```mermaid
+flowchart LR
+    Source[Source<br/>GitHub main branch]
+    Build[Build<br/>Api · Iam · Sso · UI]
+    Test[Deploy to Test<br/>Integration tests<br/>E2E tests]
+    Demo[Deploy to Demo]
+    Stage[Deploy to Stage<br/>Tag release candidate]
+    Prod[Deploy to Prod<br/>Tag release]
 
+    Source --> Build --> Test -- approval --> Demo -- approval --> Stage -- approval --> Prod
+```
 
-## app-client build
+### Pipeline stages
 
-The app-client is built as a [create-react-app](https://create-react-app.dev/) 
-project ([Webpack](https://webpack.js.org/) under the covers),
-then deployed via a CodeBuild project:
-[AppClientDeploy](https://github.com/au-research/raido-v2-aws-private/blob/fd26c55ab476533e6c3d9c2cd6f712046b101ba1/raido-root/lib/prod/app-client/AppClientCodeBuild.ts#L36)
+| Stage | Steps |
+|-------|-------|
+| **Source** | CodeStar connection to the `raid-au` GitHub repo (`main` branch) |
+| **Build** | Parallel builds: Api, Iam, Sso (Docker images → ECR), UI (Vite bundle) |
+| **Test** | Deploy all services + UI to Test, run API integration tests, run Playwright E2E tests |
+| **Demo** | Deploy all services + UI to Demo |
+| **Stage** | Tag ECR images and Git commit as release candidates, deploy to Stage, increment RC counter |
+| **Prod** | Tag ECR images and Git commit as release, deploy to Prod, save new version to SSM |
 
-The core build task is a simple `npm run build`, then the project copies
-the built files to S3.
+Each environment transition requires a manual approval that displays the commit
+message and a link to the GitHub commit.
 
+### ECS services
+
+Three [AWS ECS](https://aws.amazon.com/ecs/) services run per environment:
+
+| Service | Description | Log group |
+|---------|-------------|-----------|
+| **Api** | Spring Boot RAID API | `ApiV2Service` |
+| **Iam** | Keycloak identity provider | `IamService` |
+| **Sso** | SATOSA SAML proxy | `SsoService` |
+
+### API build
+
+The API build (and similarly Iam and Sso) runs as a CodeBuild project:
+
+1. `./gradlew clean build` — compile Java, run unit tests
+2. `./gradlew buildDocker -PimageName=$IMAGE_URI` — build Docker image
+3. `docker push $IMAGE_URI` — push image to ECR
+4. Output `imagedefinitions.json` for the ECS deploy action
+
+### UI build and deploy
+
+The UI is built and deployed via a CodeBuild project using Node.js 22:
+
+1. `npm ci --include=dev` — install dependencies
+2. `npm run build` — Vite production build (with `VITE_RAIDO_ENV`,
+   `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_CLIENT_ID`, `VITE_KEYCLOAK_REALM`, and
+   `VITE_GA_MEASUREMENT_ID` injected as environment variables)
+3. `aws s3 sync ./dist s3://{bucket} --delete` — deploy to S3
+4. CloudFront cache invalidation is triggered by a Lambda function listening to
+   S3 bucket events
 

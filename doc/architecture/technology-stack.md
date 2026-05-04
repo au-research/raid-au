@@ -53,7 +53,7 @@ complexity of the change to json-schema surprised most people with how much
 work it turned out to be).
 
 We define the API as a `yaml` file, then the Java interfaces for serving
-the API from the api-svc (Spring) are generated via the openap-generator,
+the API from the api-svc (Spring) are generated via the openapi-generator,
 see [idl-raid-v2/build.gradle](../api-svc/idl-raid-v2/build.gradle).
 
 The client-side TypeScript mappings are also generated via openapi-generator,
@@ -68,12 +68,7 @@ see [app-client/build.gradle](../app-client/build.gradle).
       is in the private rep 
 * Java
   * JDK 17 - Corretto
-* Spring
-  * Not spring-boot
-* Gatling
-  * load testing
-  * we use the Java API bindings for this, no Scala
-
+* Spring Boot
 
 # Frontend
 
@@ -102,7 +97,6 @@ Little bits of scripting stuff, the usual glue code.
   * Gradle build scripts
   * legacy data migration
 * Shell scripts
-  * for booting up EC2 instances,
   * `codebuild` definitions
 * JavaScript
   * little bits of glue, like in NPM scripts, etc.

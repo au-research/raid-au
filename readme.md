@@ -11,7 +11,7 @@
 8. [License](#license)
 ## Getting Started
 To get started you'll need the following tools installed in your machine:
-- Node.js >= 18
+- Node.js >= 22
 - Java >= 17
 - Docker >= 27
 ## Installation
