@@ -36,12 +36,12 @@ export interface EditableRow {
   id: string;
   /** Raw spreadsheet column values, edited in-place by the user */
   values: {
-    URL: string;
+    Identifier: string;
     Type: string;
     Categories: string;
   };
   /** Field-keyed errors for this row. Empty object = row is valid. */
-  errors: Partial<Record<"URL" | "Type" | "Categories", string>>;
+  errors: Partial<Record<"Identifier" | "Type" | "Categories", string>>;
 }
 
 export type EditableRowField = keyof EditableRow["values"];
@@ -130,7 +130,7 @@ const bulkRelatedObjectRowSchema = z.object({
   id: z
     .string()
     .trim()
-    .min(1, "URL is required")
+    .min(1, "Identifier is required")
     .refine((url) => doiRegex.test(url) || webArchiveRegex.test(url), {
       message:
         "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
@@ -155,8 +155,8 @@ const bulkRelatedObjectRowSchema = z.object({
 // ------------------------------------------------------------------
 
 /** Sentinel markers that delimit the import region in the template. */
-const IMPORT_START_MARKER = "[Import table starts here]";
-const IMPORT_END_MARKER = "[Import table ends here]";
+const IMPORT_START_MARKER = "--- Import table starts here";
+const IMPORT_END_MARKER = "--- Import table ends here";
 
 /**
  * Marker that Excel produces when it tries to evaluate a cell that
@@ -298,7 +298,7 @@ function mapRowToRelatedObjects(
 ): { data: ParsedRelatedObject[]; errors: ValidationError[] } {
   const errors: ValidationError[] = [];
 
-  const doiUrl = (row["URL"] ?? "").trim();
+  const doiUrl = (row["Identifier"] ?? "").trim();
   const typesRaw = (row["Type"] ?? "").trim();
   const categoriesRaw = (row["Categories"] ?? "").trim();
 
@@ -403,7 +403,7 @@ function validateEditableRow(
   // Reuse the existing mapper, but ignore its rowIndex since the preview
   // table uses field names rather than row numbers for error placement.
   const rawRow: Record<string, string> = {
-    URL: values["URL"],
+    Identifier: values["Identifier"],
     Type: values.Type,
     Categories: values.Categories,
   };
@@ -432,12 +432,12 @@ function validateEditableRow(
         const pathStr = zodError.path.join(".");
         const fieldName: EditableRowField =
           pathStr === "id"
-            ? "URL"
+            ? "Identifier"
             : pathStr.startsWith("type")
               ? "Type"
               : pathStr.startsWith("category")
                 ? "Categories"
-                : ("URL" as EditableRowField);
+                : ("Identifier" as EditableRowField);
 
         if (!fieldErrors[fieldName]) {
           fieldErrors[fieldName] = zodError.message;
@@ -472,7 +472,7 @@ function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
   const keyToIndices = new Map<string, number[]>();
 
   rows.forEach((row, idx) => {
-    const url = row.values.URL.trim().toLowerCase();
+    const url = row.values.Identifier.trim().toLowerCase();
     if (!url) return;
 
     const types = row.values.Type.split(",")
@@ -503,9 +503,9 @@ function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
   return rows.map((row, idx) => {
     const others = othersMap.get(idx);
     const isDuplicate = others !== undefined && others.size > 0;
-    const hasDuplicateError = row.errors.URL?.startsWith(DUPLICATE_ERROR_PREFIX);
+    const hasDuplicateError = row.errors.Identifier?.startsWith(DUPLICATE_ERROR_PREFIX);
 
-    if (isDuplicate && !row.errors.URL) {
+    if (isDuplicate && !row.errors.Identifier) {
       const sorted = Array.from(others).sort((a, b) => a - b);
       const othersText =
         sorted.length === 1
@@ -515,13 +515,13 @@ function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
         ...row,
         errors: {
           ...row.errors,
-          URL: `${DUPLICATE_ERROR_PREFIX} same URL and Type as ${othersText}`,
+          Identifier: `${DUPLICATE_ERROR_PREFIX} same Identifier and Type as ${othersText}`,
         },
       };
     }
     if (!isDuplicate && hasDuplicateError) {
       const errors = { ...row.errors };
-      delete errors.URL;
+      delete errors.Identifier;
       return { ...row, errors };
     }
     return row;
@@ -667,7 +667,7 @@ export function useBulkUpload(
   const buildEditableRow = useCallback(
     (rawRow: Record<string, string>): EditableRow => {
       const values: EditableRow["values"] = {
-        URL: rawRow["URL"] ?? "",
+        Identifier: rawRow["Identifier"] ?? "",
         Type: rawRow["Type"] ?? "",
         Categories: rawRow["Categories"] ?? "",
       };
@@ -715,14 +715,14 @@ export function useBulkUpload(
         return;
       }
 
-      const REQUIRED_COLUMNS = ["URL", "Type", "Categories"] as const;
+      const REQUIRED_COLUMNS = ["Identifier", "Type", "Categories"] as const;
       const firstRow = rawRows[0] ?? {};
       const missingColumns = REQUIRED_COLUMNS.filter((col) => !(col in firstRow));
       if (missingColumns.length > 0) {
         setEditableRows([]);
         setStatus("error");
         setSubmissionError(
-          `Missing required column(s): ${missingColumns.join(", ")}. Please use the downloaded template and ensure the header row contains URL, Type, and Categories.`
+          `Missing required column(s): ${missingColumns.join(", ")}. Please use the downloaded template and ensure the header row contains Identifier, Type, and Categories.`
         );
         return;
       }
