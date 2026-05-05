@@ -745,8 +745,6 @@ components:
         statusMessage:
           description: 'Read only. If there is an error when attempting to verify the contributor the failure message will appear here'
           type: string
-        email:
-          type: string
         uuid:
           type: string
         position:

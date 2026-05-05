@@ -219,7 +219,6 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         try {
             createRequest.getContributor().forEach(contributor -> {
                 contributor.id(orcid);
-                contributor.email(null);
                 contributor.uuid(UUID.randomUUID().toString());
             });
 

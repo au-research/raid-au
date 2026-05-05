@@ -6,7 +6,6 @@ export interface Contributor {
     schemaUri: string;
     status?: string;
     statusMessage?: string;
-    email?: string;
     uuid?: string;
     position: Array<ContributorPosition>;
     role: Array<ContributorRole>;

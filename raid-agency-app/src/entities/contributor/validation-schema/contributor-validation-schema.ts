@@ -1,15 +1,14 @@
 /**
  * Validation schema for RAID contributors
- * 
+ *
  * This module defines validation rules for contributors in the RAID system.
  * Contributors are validated with specific rules for ORCID identifiers,
  * position, role, and contact information.
- * 
- * The validation supports three contributor formats:
+ *
+ * The validation supports two contributor formats:
  * 1. Contributors with ORCID identifiers
  * 2. Contributors with UUIDs (typically system-generated)
- * 3. Contributors with email addresses
- * 
+ *
  * The schema ensures that at least one contributor exists in the RAID.
  */
 import { contributorPositionValidationSchema } from "@/entities/contributor-position/validation-schema/contributor-position-validation-schema";
@@ -25,8 +24,7 @@ const orcidErrorMsg =
 // Base schema for contributors
 const baseContributorSchema = z.object({
   contact: z.boolean(),
-  email: z.string().optional(),
-   id: z.string().optional(),
+  id: z.string().optional(),
   leader: z.boolean(),
   position: contributorPositionValidationSchema,
   role: contributorRoleValidationSchema,
@@ -35,7 +33,7 @@ const baseContributorSchema = z.object({
   uuid: z.string().optional(),
 });
 
-// Single contributor validation with three potential formats
+// Single contributor validation with two potential formats
 export const singleContributorValidationSchema = z.union([
   baseContributorSchema.extend({
     id: z
@@ -46,9 +44,6 @@ export const singleContributorValidationSchema = z.union([
   }),
   baseContributorSchema.extend({
     uuid: z.string(),
-  }),
-  baseContributorSchema.extend({
-    email: z.string().optional(),
   }),
 ]);
 

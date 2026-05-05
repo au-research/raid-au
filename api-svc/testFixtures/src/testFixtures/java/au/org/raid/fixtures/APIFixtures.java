@@ -61,7 +61,7 @@ public class APIFixtures {
 
                 .contributor(List.of(
                         orcidContributor(
-                                REAL_TEST_ORCID, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today, CONTRIBUTOR_EMAIL)
+                                REAL_TEST_ORCID, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today)
                 ))
                 .organisation(List.of(organisation(
                         REAL_TEST_ROR, LEAD_RESEARCH_ORGANISATION, today)))
@@ -131,7 +131,7 @@ public class APIFixtures {
 
                 .contributor(List.of(
                         orcidContributor(
-                                REAL_TEST_ORCID, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today, CONTRIBUTOR_EMAIL)
+                                REAL_TEST_ORCID, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today)
                 ))
                 .organisation(List.of(organisation(
                         REAL_TEST_ROR, LEAD_RESEARCH_ORGANISATION, today)))
@@ -168,8 +168,7 @@ public class APIFixtures {
             final String orcid,
             final String position,
             final String role,
-            final LocalDate startDate,
-            final String email
+            final LocalDate startDate
     ) {
         return new Contributor()
                 .id(orcid)
