@@ -37,7 +37,7 @@ If you know you need more, or know your exactly limit, then do it.
 For large values, before worrying about factoring out to a separate table, learn
 about postgrest TOAST.  Then think about separating it out anyway :)
 
-Using `varachar` at the moment, because I couldn't see how to limit it with
+Using `varchar` at the moment, because I couldn't see how to limit it with
 a `text` column.
 
 There is this:

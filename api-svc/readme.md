@@ -92,7 +92,7 @@ api-svc: new nodes are rolled across the pool until all instances are upgraded.
 
 # Upgrading the Database instance
 
-Raido uses AWS RDS to manage the Postgres database in a multi-az configuration.
+Raid AU uses AWS RDS to manage the Postgres database in a multi-az configuration.
 
 When running minor database updates against this RDS configuration, AWS will
 keep the database available the same "rolling upgrade" process as the api-svc.
@@ -127,17 +127,15 @@ In usual operation, someone needs to "authorise" you to use the app:
 * you sign-in via an IDP (Google, etc)
 * that takes you to a page where you request "authorisation" to specific 
   Service Point
-* someone else, who is an Operator or SpAdmin "approves" you to use Raido with 
+* someone else, who is an Operator or SpAdmin "approves" you to use Raid AU with 
   your requested service point
 
 To "bootstrap" the sign-in process, you need to sign in as an "auto-approved" 
-operator, using the Google IDP and requesting authorisation to the `Raido` 
+operator, using the Google IDP and requesting authorisation to the `raid-au` 
 service point.
 
-The list of "auto-approved" users is stored in the `raido_operator` table:
-* rows are inserted for all environments (including PROD) via standard flyway
-  migration (e.g. [V4__sign_in_tables.sql](./db/raido/src/main/resources/db/migration/V4__sign_in_tables.sql) 
-* DEMO environment: [V8_1__DEMO_surf_operators.sql](./db/raido/src/main/resources/db/env/demo/V8_1__DEMO_surf_operators.sql)
+The list of "auto-approved" users is stored in the `raido_operator` table. To add/remove users add a new migration in 
+`./db/src/main/resources/db/env/dev/`
 
 For new devs, add a file like `env/demo/V16_2__DEMO_first_last.sql`: 
 ```
