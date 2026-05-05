@@ -5,7 +5,65 @@ The `api-svc` is a Spring application server that primarily serves the
 "V2" API: see [/api-svc/idl-raid-v2](/api-svc/idl-raid-v2).
 
 
-# Architecture and deployment
+# Architecture
+
+```mermaid
+graph TB
+    subgraph Clients
+        Browser["Browser (React SPA)"]
+        APIClient["API Clients"]
+    end
+
+    subgraph IAM["Identity"]
+        KC["Keycloak (OAuth2/OIDC)"]
+        IDP["Google / AAF / ORCID (SSO)"]
+    end
+
+
+    subgraph AWS
+        CF["CloudFront CDN"]
+        ALB["Application Load Balancer"]
+
+        subgraph ECS["ECS Cluster (multi-AZ)"]
+            API1["api-svc"]
+            API2["api-svc"]
+        end
+
+        RDS[("PostgreSQL (RDS multi-AZ)")]
+        SM["Secrets Manager"]
+        CW["CloudWatch Logs & Metrics"]
+    end
+
+    subgraph External["External Services"]
+        DC["DataCite"]
+        PID["PID Validation (ORCID, ROR, DataCite)"]
+        SPARQL["ARDC Vocabularies (SPARQL)"]
+    end
+
+    Browser -->|HTTPS| CF
+    APIClient -->|HTTPS| CF
+    CF -->|static assets| CF
+    CF -->|/api/*| ALB
+    ALB --> API1 & API2
+    API1 & API2 -->|jOOQ| RDS
+    API1 & API2 --> SM
+    API1 & API2 --> CW
+    API1 & API2 -->|token validation| KC
+    KC -->|federation| IDP
+    API1 & API2 --> DC & PID & SPARQL
+```
+
+
+The api-svc is stateless (no HTTP sessions, no 2nd-level cache) and horizontally
+scalable behind an ALB. Schema migrations are managed by Flyway and are
+backward-compatible so the database and api-svc can be deployed independently.
+
+See also:
+* [Operational environment](/doc/architecture/environment/operational-environment.md)
+* [Technology stack](/doc/architecture/technology-stack.md)
+* [Architecture decision log](/api-svc/doc/adr/readme.md)
+
+# Deployment
 
 The Raido api-svc is designed to operate on a "zero-downtime" basis.
 
@@ -34,7 +92,7 @@ api-svc: new nodes are rolled across the pool until all instances are upgraded.
 
 # Upgrading the Database instance
 
-Raido uses AWS RDS to manage the Postgres database in a multi-az configuration.
+Raid AU uses AWS RDS to manage the Postgres database in a multi-az configuration.
 
 When running minor database updates against this RDS configuration, AWS will
 keep the database available the same "rolling upgrade" process as the api-svc.
@@ -69,17 +127,15 @@ In usual operation, someone needs to "authorise" you to use the app:
 * you sign-in via an IDP (Google, etc)
 * that takes you to a page where you request "authorisation" to specific 
   Service Point
-* someone else, who is an Operator or SpAdmin "approves" you to use Raido with 
+* someone else, who is an Operator or SpAdmin "approves" you to use Raid AU with 
   your requested service point
 
 To "bootstrap" the sign-in process, you need to sign in as an "auto-approved" 
-operator, using the Google IDP and requesting authorisation to the `Raido` 
+operator, using the Google IDP and requesting authorisation to the `raid-au` 
 service point.
 
-The list of "auto-approved" users is stored in the `raido_operator` table:
-* rows are inserted for all environments (including PROD) via standard flyway
-  migration (e.g. [V4__sign_in_tables.sql](./db/raido/src/main/resources/db/migration/V4__sign_in_tables.sql) 
-* DEMO environment: [V8_1__DEMO_surf_operators.sql](./db/raido/src/main/resources/db/env/demo/V8_1__DEMO_surf_operators.sql)
+The list of "auto-approved" users is stored in the `raido_operator` table. To add/remove users add a new migration in 
+`./db/src/main/resources/db/env/dev/`
 
 For new devs, add a file like `env/demo/V16_2__DEMO_first_last.sql`: 
 ```
@@ -92,15 +148,8 @@ For the flyway version number, set it based off whatever the main flyway
 migration is up to or you'll get an "out of order" execution error.  
 
 If you've done it right; when you sign-in (currently must be using Google IDP 
-and `raido` service-point) then create an authz-request using that email 
+and `raid-au` service-point) then create an authz-request using that email 
 address - you should get a browser alert dialog saying that you've been 
 auto-approved after hitting the submit button.
 
-
-# Importing legacy data for use in local environment
-This is optional (and the data files are not publicly available) - it's not 
-necessary for just running Raido. 
-
-Import the raid V1 data into the `raid_v1_import` schema:
-  * see [v1-ddb-migration/readme.md](./db/v1-ddb-migration/readme.md)
 
