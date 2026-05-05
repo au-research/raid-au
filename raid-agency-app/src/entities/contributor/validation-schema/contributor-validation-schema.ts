@@ -39,7 +39,7 @@ export const singleContributorValidationSchema = z.union([
     id: z
       .string()
       .trim()
-      .regex(/^(?:https:\/\/orcid\.org\/)\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/, { message: orcidErrorMsg })
+      .regex(/^(?:https:\/\/(sandbox\.)?orcid\.org\/)\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/, { message: orcidErrorMsg })
       .optional()
   }),
   baseContributorSchema.extend({
