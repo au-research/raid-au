@@ -20,7 +20,10 @@ import org.springframework.web.client.RestTemplate;
 
 import au.org.raid.idl.raidv2.model.RaidDto;
 import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -126,5 +129,71 @@ public class DataciteServiceTest {
         dataciteService.update(new RaidDto(), "10378.1/1700205", "repo", "pass");
 
         verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    @DisplayName("Throws HttpClientErrorException when Datacite mint fails")
+    void mintThrowsOnError() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var raidRequest = new RaidCreateRequest();
+
+        final var dataciteRequest = new DataciteRequest();
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(raidRequest, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+        when(restTemplate.exchange(endpoint, HttpMethod.POST, entity, JsonNode.class))
+                .thenThrow(new HttpClientErrorException(HttpStatus.TOO_MANY_REQUESTS));
+
+        assertThatThrownBy(() -> dataciteService.mint(raidRequest, handle, repositoryId, password))
+                .isInstanceOf(HttpClientErrorException.class);
+    }
+
+    @Test
+    @DisplayName("Throws HttpClientErrorException when Datacite update (RaidUpdateRequest) fails")
+    void updateRaidUpdateRequestThrowsOnError() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidUpdateRequest();
+
+        final var dataciteRequest = new DataciteRequest();
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+        when(restTemplate.exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class))
+                .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        assertThatThrownBy(() -> dataciteService.update(request, handle, repositoryId, password))
+                .isInstanceOf(HttpClientErrorException.class);
+    }
+
+    @Test
+    @DisplayName("Throws HttpClientErrorException when Datacite update (RaidDto) fails")
+    void updateRaidDtoThrowsOnError() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidDto();
+
+        final var dataciteRequest = new DataciteRequest();
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+        when(restTemplate.exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class))
+                .thenThrow(new HttpClientErrorException(HttpStatus.TOO_MANY_REQUESTS));
+
+        assertThatThrownBy(() -> dataciteService.update(request, handle, repositoryId, password))
+                .isInstanceOf(HttpClientErrorException.class);
     }
 }

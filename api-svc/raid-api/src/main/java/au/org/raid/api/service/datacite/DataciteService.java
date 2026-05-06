@@ -54,6 +54,7 @@ public class DataciteService {
             restTemplate.exchange(properties.getEndpoint(), HttpMethod.POST, entity, JsonNode.class);
         } catch (HttpClientErrorException e) {
             log.error("Unable to create Datacite record", e);
+            throw e;
         }
     }
 
@@ -99,6 +100,7 @@ public class DataciteService {
             restTemplate.exchange(endpoint, HttpMethod.PUT, entity, JsonNode.class);
         } catch (HttpClientErrorException e) {
             log.error("Unable to update Datacite record", e);
+            throw e;
         }
     }
 }
