@@ -1,7 +1,10 @@
 package au.org.raid.api.config.security;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -12,7 +15,7 @@ import java.util.function.Supplier;
 
 public class RaidAdminAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
     @Override
-    public AuthorizationDecision check(final Supplier<Authentication> authentication, final RequestAuthorizationContext context) {
+    public AuthorizationDecision authorize(final Supplier<? extends Authentication> authentication, final RequestAuthorizationContext context) {
 
         final var pathParts = context.getRequest().getRequestURI().split("/");
 

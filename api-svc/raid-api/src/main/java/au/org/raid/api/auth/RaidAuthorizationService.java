@@ -48,11 +48,11 @@ public class RaidAuthorizationService {
         );
     }
 
-    private AuthorizationDecision isContributorWriter(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision isContributorWriter(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         return new AuthorizationDecision(hasRole(authentication.get(), CONTRIBUTOR_WRITER_ROLE));
     }
 
-    private AuthorizationDecision hasPidSearcherRoleIfPidSearch(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision hasPidSearcherRoleIfPidSearch(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         if (isPidSearch(context)) {
             var token = getJwtToken(authentication.get());
             if (token == null) {
@@ -66,7 +66,7 @@ public class RaidAuthorizationService {
         return new AuthorizationDecision(false);
     }
 
-    private AuthorizationDecision anyServicePointUserUnlessEmbargoed(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision anyServicePointUserUnlessEmbargoed(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         if (isPidSearch(context)) {
             return new AuthorizationDecision(false);
         }
@@ -136,15 +136,15 @@ public class RaidAuthorizationService {
         );
     }
 
-    private AuthorizationDecision isOperator(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision isOperator(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         return new AuthorizationDecision(hasRole(authentication.get(), OPERATOR_ROLE));
     }
 
-    private AuthorizationDecision hasContributorWriterRole(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision hasContributorWriterRole(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         return new AuthorizationDecision(hasRole(authentication.get(), CONTRIBUTOR_WRITER_ROLE));
     }
 
-    private AuthorizationDecision servicePointOwner(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision servicePointOwner(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         if (isPidSearch(context)) {
             return new AuthorizationDecision(false);
         }
@@ -180,15 +180,15 @@ public class RaidAuthorizationService {
         }
     }
 
-    private AuthorizationDecision hasRaidAdminPermissions(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision hasRaidAdminPermissions(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         return hasRaidPermissions(authentication, context, RAID_ADMIN_ROLE, ADMIN_RAIDS_CLAIM);
     }
 
-    private AuthorizationDecision hasRaidUserPermissions(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision hasRaidUserPermissions(Supplier<? extends Authentication> authentication, RequestAuthorizationContext context) {
         return hasRaidPermissions(authentication, context, RAID_USER_ROLE, USER_RAIDS_CLAIM);
     }
 
-    private AuthorizationDecision hasRaidPermissions(Supplier<Authentication> authentication,
+    private AuthorizationDecision hasRaidPermissions(Supplier<? extends Authentication> authentication,
                                                      RequestAuthorizationContext context,
                                                      String roleName,
                                                      String claimName) {

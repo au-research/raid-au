@@ -135,7 +135,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -150,7 +150,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -171,7 +171,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -186,7 +186,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -201,7 +201,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -217,7 +217,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -232,7 +232,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -247,7 +247,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -262,7 +262,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -277,7 +277,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -303,7 +303,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createWriteAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -318,7 +318,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createWriteAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -333,7 +333,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createWriteAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -353,7 +353,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createPatchAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -374,7 +374,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createPatchAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted());
@@ -399,7 +399,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -417,7 +417,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -438,7 +438,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -453,7 +453,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertTrue(decision.isGranted()); // Short path should be allowed for service point users
@@ -471,7 +471,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());
@@ -487,7 +487,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted()); // Service point user should be denied for PID search
@@ -503,7 +503,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted()); // Service point user should be denied for PID search
@@ -522,7 +522,7 @@ class RaidAuthorizationServiceTest {
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
-            var decision = manager.check(() -> auth, context);
+            var decision = manager.authorize(() -> auth, context);
 
             // Then
             assertFalse(decision.isGranted());

@@ -48,7 +48,7 @@ public class RestUtil {
         }
 
         var logHeaders = new HttpHeaders();
-        entity.getHeaders().entrySet().stream().
+        entity.getHeaders().headerSet().stream().
                 filter(i -> !StringUtil.equalsIgnoreCase(i.getKey(), AUTHORIZATION)).
                 forEach(i -> logHeaders.addAll(i.getKey(), i.getValue()));
         logHeaders.set(AUTHORIZATION, "redacted");
