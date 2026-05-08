@@ -3,7 +3,7 @@ package au.org.raid.inttest.client.keycloak;
 import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.inttest.config.AuthConfig;
 import au.org.raid.inttest.service.TokenService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;

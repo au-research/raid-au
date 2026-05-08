@@ -7,5 +7,5 @@ dependencies {
     implementation libs.jena.arq
     implementation libs.postgresql
     implementation libs.commons.compress
-    runtimeOnly( libs.jackson.databind)
+    runtimeOnly("tools.jackson.core:jackson-databind:3.1.3")
 }

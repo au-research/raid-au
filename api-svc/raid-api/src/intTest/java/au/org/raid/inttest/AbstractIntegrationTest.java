@@ -11,7 +11,7 @@ import au.org.raid.inttest.service.RaidApiValidationException;
 import au.org.raid.inttest.service.TestClient;
 import au.org.raid.inttest.service.TokenService;
 import au.org.raid.inttest.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import feign.Contract;
 import feign.RetryableException;
 import org.junit.jupiter.api.AfterEach;

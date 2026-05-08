@@ -7,8 +7,8 @@ import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -188,7 +188,7 @@ public class RaidIngestService {
                 .map(raidDto -> {
                     try {
                         return objectMapper.readValue(raidDto.data(), RaidDto.class);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         throw new RuntimeException(e);
                     }
                 }).collect(Collectors.toList());
@@ -200,7 +200,7 @@ public class RaidIngestService {
                 .map(raidDto -> {
                     try {
                         return objectMapper.readValue(raidDto.data(), RaidDto.class);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         throw new RuntimeException(e);
                     }
                 })

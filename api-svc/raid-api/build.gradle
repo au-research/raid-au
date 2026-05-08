@@ -75,7 +75,7 @@ dependencies{
 
   runtimeOnly libs.jackson.databind
   implementation libs.jackson.dataformat.xml
-  implementation libs.jackson.datatype.jsr310
+//  implementation libs.jackson.datatype.jsr310
   implementation libs.jackson.annotations
 
   implementation libs.jakarta.json.api
@@ -134,7 +134,7 @@ testing{
         // for PostConstruct/PreDestroy - pkg: jakarta.annotation (used to be javax)
         implementation libs.jakarta.annotation.api
 
-        implementation libs.jackson.datatype.jsr310
+        implementation libs.jackson.databind
 
         compileOnly libs.lombok
         annotationProcessor libs.lombok

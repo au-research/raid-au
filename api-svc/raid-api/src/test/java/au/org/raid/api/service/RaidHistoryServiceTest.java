@@ -9,8 +9,8 @@ import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.db.jooq.tables.records.RaidHistoryRecord;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.json.JsonPatch;
 import jakarta.json.JsonValue;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +59,7 @@ class RaidHistoryServiceTest {
 
     @Test
     @DisplayName("Throws InvalidVersionException if version already exists")
-    void throwsInvalidVersionException() throws JsonProcessingException {
+    void throwsInvalidVersionException() throws JacksonException {
         final var revision = 123;
         final var request = new RaidUpdateRequest();
         final var identifier = mock(Id.class);
@@ -109,7 +109,7 @@ class RaidHistoryServiceTest {
     class CreateTests {
         @Test
         @DisplayName("Saves on create")
-        void saveOnCreate() throws JsonProcessingException {
+        void saveOnCreate() throws JacksonException {
             final var request = new RaidCreateRequest();
             final var identifier = mock(Id.class);
             request.setIdentifier(identifier);
@@ -148,7 +148,7 @@ class RaidHistoryServiceTest {
 
         @Test
         @DisplayName("Saves on update")
-        void saveOnUpdate() throws JsonProcessingException {
+        void saveOnUpdate() throws JacksonException {
             final var revision = 123;
             final var request = new RaidUpdateRequest();
             final var identifier = mock(Id.class);
@@ -205,7 +205,7 @@ class RaidHistoryServiceTest {
 
         @Test
         @DisplayName("Saves baseline on update")
-        void saveBaselineOnUpdate() throws JsonProcessingException {
+        void saveBaselineOnUpdate() throws JacksonException {
             final var revision = 4;
             final var request = new RaidUpdateRequest();
             final var identifier = mock(Id.class);
@@ -270,7 +270,7 @@ class RaidHistoryServiceTest {
 
     @Test
     @DisplayName("read() returns raid at correct version")
-    void read() throws JsonProcessingException {
+    void read() throws JacksonException {
         final var version = 2;
         final var handle = "_handle";
         final var diff = "[]";

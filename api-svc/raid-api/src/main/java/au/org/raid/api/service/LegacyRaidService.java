@@ -10,9 +10,9 @@ import au.org.raid.api.model.datacite.doi.DataciteRelatedIdentifier;
 import au.org.raid.api.model.datacite.doi.DataciteRequest;
 import au.org.raid.api.repository.*;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +53,7 @@ public class LegacyRaidService {
                 .stream().map(record -> {
                     try {
                         return objectMapper.readValue(record.getMetadata().data(), LegacyRaid.class);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         throw new RuntimeException(e);
                     }
                 })

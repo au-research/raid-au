@@ -3,7 +3,7 @@ package au.org.raid.api.service;
 import au.org.raid.api.dto.BackfillResult;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

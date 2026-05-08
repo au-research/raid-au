@@ -17,8 +17,10 @@ import au.org.raid.api.util.TokenUtil;
 import au.org.raid.api.validator.ValidationService;
 import au.org.raid.fixtures.APIFixtures;
 import au.org.raid.idl.raidv2.model.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import tools.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +34,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -42,6 +43,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -74,7 +76,9 @@ class RaidControllerTest {
     private static final String SUFFIX = "1696639";
     private static final String USER_ID = "user-id";
 
-    final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+    final ObjectMapper objectMapper = JsonMapper.builder().defaultDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+            .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .build();
     private MockMvc mockMvc;
     @Mock
     private RaidService raidService;
@@ -93,7 +97,7 @@ class RaidControllerTest {
     void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RaidExceptionHandler())
-                .setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
+                .setMessageConverters(new JacksonJsonHttpMessageConverter())
                 .build();
     }
 

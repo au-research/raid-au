@@ -19,9 +19,9 @@ import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
 import au.org.raid.idl.raidv2.model.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.jooq.JSONB;
 import org.jooq.Record4;
@@ -40,6 +40,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.client.HttpClientErrorException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -57,10 +58,9 @@ import static org.mockito.Mockito.*;
 class RaidServiceTest {
     private static final String USER_ID = "user-id";
 
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private final ObjectMapper objectMapper = JsonMapper.builder().defaultDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+            .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .build();
     @Mock
     private RaidRepository raidRepository;
     @Mock
@@ -158,7 +158,7 @@ class RaidServiceTest {
 
     @Test
     @DisplayName("Patching contributors saves changes and returns updated raid")
-    void patchContributors() throws JsonProcessingException {
+    void patchContributors() throws JacksonException {
 
         final var prefix = "10378.1";
         final var suffix = "1696639";
@@ -203,7 +203,7 @@ class RaidServiceTest {
 
     @Test
     @DisplayName("Updating a raid saves changes and returns updated raid")
-    void update() throws JsonProcessingException {
+    void update() throws JacksonException {
         final var handle = "10378.1/1696639";
         final var raidJson = raidJson();
         final var servicePointId = 20_000_000L;
@@ -254,7 +254,7 @@ class RaidServiceTest {
 
     @Test
     @DisplayName("No update is performed if no diff is detected")
-    void noUpdateWhenNoDiff() throws JsonProcessingException, ValidationFailureException {
+    void noUpdateWhenNoDiff() throws JacksonException, ValidationFailureException {
 
         final var servicePointId = 20_000_000L;
         final var raidJson = raidJson();

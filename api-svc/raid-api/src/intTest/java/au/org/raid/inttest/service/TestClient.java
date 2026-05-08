@@ -2,7 +2,7 @@ package au.org.raid.inttest.service;
 
 import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.idl.raidv2.api.ServicePointApi;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;

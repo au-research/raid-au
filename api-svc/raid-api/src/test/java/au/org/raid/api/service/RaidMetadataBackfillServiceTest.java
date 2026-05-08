@@ -6,8 +6,8 @@ import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.Id;
 import au.org.raid.idl.raidv2.model.RaidDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import org.jooq.JSONB;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -34,10 +35,9 @@ class RaidMetadataBackfillServiceTest {
     @Mock
     RaidHistoryService raidHistoryService;
     @Spy
-    ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    ObjectMapper objectMapper = JsonMapper.builder().defaultDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+            .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .build();
     @InjectMocks
     RaidMetadataBackfillService backfillService;
 

@@ -1,7 +1,7 @@
 package au.org.raid.inttest.service;
 
 import au.org.raid.inttest.dto.keycloak.Group;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;

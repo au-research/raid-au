@@ -3,7 +3,7 @@ package au.org.raid.api.factory;
 import au.org.raid.api.service.Handle;
 import au.org.raid.api.util.TestRaid;
 import au.org.raid.db.jooq.enums.Metaschema;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

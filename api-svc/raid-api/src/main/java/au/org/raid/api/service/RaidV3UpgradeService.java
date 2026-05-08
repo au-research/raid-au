@@ -6,8 +6,8 @@ import au.org.raid.api.repository.RaidHistoryRepository;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.db.jooq.tables.records.RaidHistoryRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -38,14 +38,14 @@ public class RaidV3UpgradeService {
                 .map(raid -> {
                     try {
                         return objectMapper.writeValueAsString(raid);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         throw new RuntimeException(e);
                     }
                 })
                 .map(raid -> {
                     try {
                         return objectMapper.readValue(raid, RaidDto.class);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         throw new RuntimeException(e);
                     }
                 })
@@ -115,7 +115,7 @@ public class RaidV3UpgradeService {
                 try {
                     final var raidDto = raidService.build(record);
                     return objectMapper.readValue(objectMapper.writeValueAsString(raidDto), Map.class);
-                } catch (JsonProcessingException e) {
+                } catch (JacksonException e) {
                     throw new RuntimeException(e);
                 }
             });

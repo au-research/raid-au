@@ -2,6 +2,7 @@ package au.org.raid.iam.provider.group;
 
 import au.org.raid.iam.provider.cors.Cors;
 import au.org.raid.iam.provider.group.dto.*;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
@@ -47,7 +48,7 @@ public class GroupController {
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getGroups() throws JsonProcessingException {
+    public Response getGroups() throws JacksonException {
         log.debug("Getting all groups");
 
         if (this.auth == null) {
@@ -86,7 +87,7 @@ public class GroupController {
     @GET
     @Path("")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(@QueryParam("groupId") String groupId) throws JsonProcessingException {
+    public Response get(@QueryParam("groupId") String groupId) throws JacksonException {
         log.debug("Getting members of group");
         if (this.auth == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();

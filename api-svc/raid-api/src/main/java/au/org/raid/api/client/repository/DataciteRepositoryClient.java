@@ -3,7 +3,7 @@ package au.org.raid.api.client.repository;
 import au.org.raid.api.config.properties.RepositoryClientProperties;
 import au.org.raid.api.factory.HttpEntityFactory;
 import au.org.raid.api.model.datacite.repository.DataciteRepository;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
