@@ -1,99 +1,108 @@
 {
-  "default": false,
-  "header": {
-    "logo": {
-      "src": "/RAiD-Strapline.svg",
-      "alt": "App Logo",
-      "height": 80
-    },
-    "title": "RAiD",
-    "subtitle": "Research Activity Identifier",
-    "navLinks": [
-      { "label": "Home", "path": "/" },
-      { "label": "Dashboard", "path": "/dashboard" },
-      { "label": "Documentation", "path": "/docs" }
-    ],
-    "showSearch": true,
-    "toolBar": true
-  },
-  "footer": {
-    "main": {
-      "logos": [
-        {
-          "src": "/RAiD-Strapline.svg",
-          "alt": "App Logo",
-          "height": 30,
-          "link": "https://www.raid.org.au"
-        },
-        {
-          "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ardc-logo.svg",
-          "alt": "",
-          "height": 30,
-          "link": "https://www.ardc.edu.au"
-        },
-        {
-          "src": "/combined-logos.svg",
-          "alt": "Australian Government & NCRIS Logo",
-          "height": 30,
-          "link": "https://www.australia.gov.au"
-        }
-      ],
-      "text": [
-        "RAiD global is run by an international consortium led by the Australian Research Data Commons (ARDC).\n",
-        "The ARDC is enabled by the Australian Government’s National Collaborative Research Infrastructure Strategy (NCRIS). \n",
-        "A global network of partners deliver RAiD services within their regions, including the Australian Research Data Commons for Australia."
-      ]
-    },
-    "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
-    "links": [
-      { "label": "services@ardc.edu.au", "path": "mailto:services@ardc.edu.au", "contact": true },
-      { "label": "Terms of use", "path": "https://ardc.edu.au/terms-and-conditions/" },
-      { "label": " Accessibility", "path": "https://ardc.edu.au/accessibility-statement-for-ardc/" },
-      { "label": "Privacy policy", "path": "https://ardc.edu.au/privacy-policy/" }
-    ],
-    "showSocialLinks": true,
-    "socialLinks": [
-      { "platform": "github", "url": "https://github.com/au-research" }
-    ]
-  },
-  "content": {
-    "landingPage": {
-      "heroTitle": "Welcome to RAiD",
-      "heroSubtitle": "Manage your Research Activity Identifiers",
-      "showHero": true
+  "_info": {
+    "description": "RAiD application configuration file. This file is fetched at runtime — no rebuild required when values change.",
+    "usage": "Deploy or mount this file at the root of the public folder for each environment.",
+    "sections": {
+      "required": "Top-level fields (keycloak, apiBaseUrl, environment, etc.) are required. The app will not start if any are missing.",
+      "branding": "The 'branding' section is optional. Omit it entirely to use the built-in defaults, or override individual fields — only the fields you provide are applied."
     }
   },
-  "theme": {
-    "palette": {
-      "mode":  "dark",
-      "primary": { "main": "#8E489B" },
-      "secondary": { "main": "#808080" },
-      "background": { "default": "#f5f5f5","dark":"#4A4A4A", "paper": "#ffffff" },
-       "error": {
-        "main": "#e5187512"
+  "keycloak": {
+    "url": "http://localhost:8001",
+    "realm": "raid",
+    "clientId": "raid-api"
+  },
+  "apiBaseUrl": "http://localhost:8080",
+  "environment": "dev",
+  "supportEmail": "contact@raid.org",
+  "googleAnalytics": {
+    "measurementId": "G-286MNGELG2",
+    "measurementIdDemo": "G-RKPFHJG7Y7"
+  },
+  "raidDomain": "http://www.raid.org.au",
+  "_brandingComment": "The branding section below is optional. Remove it or any of its fields to fall back to the built-in defaults.",
+  "branding": {
+    "default": false,
+    "header": {
+      "logo": {
+        "src": "/RAiD-Strapline.svg",
+        "alt": "App Logo",
+        "height": 80
       },
-      "warning": {
-        "main": "#f6861f"
+      "title": "RAiD",
+      "subtitle": "Research Activity Identifier",
+      "navLinks": [
+        { "label": "Home", "path": "/" },
+        { "label": "Dashboard", "path": "/dashboard" },
+        { "label": "Documentation", "path": "/docs" }
+      ],
+      "showSearch": true,
+      "toolBar": true
+    },
+    "footer": {
+      "main": {
+        "logos": [
+          {
+            "src": "/RAiD-Strapline.svg",
+            "alt": "App Logo",
+            "height": 30,
+            "link": "https://www.raid.org.au"
+          },
+          {
+            "src": "https://object-store.rc.nectar.org.au/v1/AUTH_9dbba2bab9754d389ec1829fc61b06ae/web-images/ardc-logo.svg",
+            "alt": "",
+            "height": 30,
+            "link": "https://www.ardc.edu.au"
+          },
+          {
+            "src": "/combined-logos.svg",
+            "alt": "Australian Government & NCRIS Logo",
+            "height": 30,
+            "link": "https://www.australia.gov.au"
+          }
+        ],
+        "text": [
+          "RAiD global is run by an international consortium led by the Australian Research Data Commons (ARDC).\n",
+          "The ARDC is enabled by the Australian Government's National Collaborative Research Infrastructure Strategy (NCRIS). \n",
+          "A global network of partners deliver RAiD services within their regions, including the Australian Research Data Commons for Australia."
+        ]
       },
-      "info": {
-        "main": "#00A2C4"
-      },
-      "success": {
-        "main": "#39833e"
-      },
-      "text": {
-        "primary": "#000000",
-        "secondary": "#f5f5f5"
+      "copyright": "We acknowledge and celebrate the First Australians on whose traditional lands we live and work, and we pay our respects to Elders past, present and emerging",
+      "links": [
+        { "label": "services@ardc.edu.au", "path": "mailto:services@ardc.edu.au", "contact": true },
+        { "label": "Terms of use", "path": "https://ardc.edu.au/terms-and-conditions/" },
+        { "label": "Accessibility", "path": "https://ardc.edu.au/accessibility-statement-for-ardc/" },
+        { "label": "Privacy policy", "path": "https://ardc.edu.au/privacy-policy/" }
+      ],
+      "showSocialLinks": true,
+      "socialLinks": [
+        { "platform": "github", "url": "https://github.com/au-research" }
+      ]
+    },
+    "content": {
+      "landingPage": {
+        "heroTitle": "Welcome to RAiD",
+        "heroSubtitle": "Manage your Research Activity Identifiers",
+        "showHero": true
       }
     },
-    "typography": {
-      "fontFamily": "Figtree, sans-serif",
-      "fontSize": 14,
-      "fontWeightLight": 300,
-      "fontWeightRegular": 400,
-      "fontWeightMedium": 500
-    },
-    "shape": { "borderRadius": 1 },
-    "mode": "light"
+    "theme": {
+      "palette": {
+        "primary": { "main": "#8E489B" },
+        "secondary": { "main": "#808080" },
+        "background": { "default": "#f5f5f5", "dark": "#4A4A4A", "paper": "#ffffff" },
+        "error": { "main": "#e5187512" },
+        "warning": { "main": "#f6861f" },
+        "info": { "main": "#00A2C4" },
+        "success": { "main": "#39833e" },
+        "text": { "primary": "#000000", "secondary": "#f5f5f5" }
+      },
+      "typography": {
+        "fontFamily": "Figtree, sans-serif",
+        "fontSize": 14
+      },
+      "shape": { "borderRadius": 1 },
+      "mode": "light"
+    }
   }
 }

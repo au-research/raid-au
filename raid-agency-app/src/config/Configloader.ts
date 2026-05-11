@@ -1,13 +1,7 @@
-// src/config/configLoader.ts
-
 import { AppConfig } from "./Appconfig";
+import { RuntimeConfig } from "./RuntimeConfig";
 import { defaultConfig } from "./DefaultConfig";
 
-/**
- * Deep merges source into target. Arrays are replaced, not merged.
- * This ensures partial configs in app-config.json override defaults
- * without requiring every field to be present.
- */
 function deepMerge<T extends Record<string, any>>(
   target: T,
   source: Partial<T>
@@ -38,58 +32,58 @@ function deepMerge<T extends Record<string, any>>(
   return result;
 }
 
-/**
- * Loads the app configuration.
- *
- * Behaviour:
- * - If VITE_APP_USE_CUSTOM_CONFIG is set to "true", fetches /app-config.json
- *   and deep-merges it with the default config (so partial overrides work).
- * - Otherwise, returns the default config immediately.
- *
- * The JSON file is served from the CRA `public/` folder, so it can be
- * replaced at deploy time without rebuilding the app.
- */
-export async function loadAppConfig(): Promise<AppConfig> {
-  const useCustomConfig =
-    import.meta.env.VITE_APP_USE_CUSTOM_CONFIG === "true";
+function validateRuntimeFields(raw: Record<string, any>): void {
+  const missing: string[] = [];
 
-  if (!useCustomConfig) {
-    console.info(
-      "[AppConfig] VITE_APP_USE_CUSTOM_CONFIG is not enabled. Using default config."
+  if (!raw.keycloak?.url) missing.push("keycloak.url");
+  if (!raw.keycloak?.realm) missing.push("keycloak.realm");
+  if (!raw.keycloak?.clientId) missing.push("keycloak.clientId");
+  if (!raw.apiBaseUrl) missing.push("apiBaseUrl");
+  if (!raw.environment) missing.push("environment");
+  if (!raw.supportEmail) missing.push("supportEmail");
+  if (!raw.raidDomain) missing.push("raidDomain");
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[Config] Missing required fields in app-config.json: ${missing.join(", ")}`
     );
-    return defaultConfig;
+  }
+}
+
+export async function loadConfig(): Promise<{
+  runtime: RuntimeConfig;
+  app: AppConfig;
+}> {
+  const response = await fetch("/app-config.json", {
+    headers: { "Cache-Control": "no-cache" },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `[Config] Failed to load /app-config.json: ${response.status} ${response.statusText}`
+    );
   }
 
-  try {
-    const configUrl =
-      import.meta.env.REACT_APP_CONFIG_URL || "/app-config.json";
+  const raw = await response.json();
+  validateRuntimeFields(raw);
 
-    console.info(`[AppConfig] Fetching custom config from ${configUrl}`);
+  const runtime: RuntimeConfig = {
+    keycloak: raw.keycloak,
+    apiBaseUrl: raw.apiBaseUrl,
+    environment: raw.environment,
+    supportEmail: raw.supportEmail,
+    googleAnalytics: raw.googleAnalytics ?? {},
+    raidDomain: raw.raidDomain,
+  };
 
-    const response = await fetch(configUrl, {
-      // Bust cache to always get the latest config
-      headers: { "Cache-Control": "no-cache" },
-    });
+  const branding = raw.branding ?? {};
+  const app: AppConfig = deepMerge(defaultConfig, {
+    default: branding.default,
+    header: branding.header,
+    footer: branding.footer,
+    content: branding.content,
+    theme: branding.theme,
+  });
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch config: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const customConfig: Partial<AppConfig> = await response.json();
-
-    // Deep merge so partial overrides work — you don't have to
-    // duplicate the entire default config in app-config.json
-    const mergedConfig = deepMerge(defaultConfig, customConfig);
-
-    console.info("[AppConfig] Custom config loaded and merged successfully.");
-    return mergedConfig;
-  } catch (error) {
-    console.error(
-      "[AppConfig] Failed to load custom config. Falling back to defaults.",
-      error
-    );
-    return defaultConfig;
-  }
+  return { runtime, app };
 }

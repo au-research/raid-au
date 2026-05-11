@@ -1,5 +1,3 @@
-// src/config/index.ts
-
 export type {
   AppConfig,
   HeaderConfig,
@@ -15,10 +13,9 @@ export type {
 export type { RuntimeConfig } from "./RuntimeConfig";
 
 export { defaultConfig } from "./DefaultConfig";
-export { loadAppConfig } from "./Configloader";
+export { loadConfig } from "./Configloader";
 export { AppConfigProvider, useAppConfig } from "./Appconfigcontext";
 export { buildMuiTheme } from "./Buildtheme";
-export { loadRuntimeConfig } from "./RuntimeConfigLoader";
 export {
   setRuntimeConfig,
   getRuntimeConfig,

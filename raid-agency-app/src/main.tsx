@@ -12,10 +12,9 @@ import { App } from "./App";
 import { otherRoutes, raidPageRoutes, servicePointRoutes } from "./routes";
 import { ErrorAlertComponent } from "./components/error-alert-component";
 import {
-  loadAppConfig,
+  loadConfig,
   AppConfigProvider,
   buildMuiTheme,
-  loadRuntimeConfig,
   setRuntimeConfig,
   RuntimeConfigProvider,
 } from "./config";
@@ -39,23 +38,20 @@ const router = createBrowserRouter([
 ]);
 
 async function bootstrap() {
-  const [runtimeConfig, appConfig] = await Promise.all([
-    loadRuntimeConfig(),
-    loadAppConfig(),
-  ]);
+  const { runtime, app } = await loadConfig();
 
-  setRuntimeConfig(runtimeConfig);
-  initKeycloakInstance(runtimeConfig.keycloak);
+  setRuntimeConfig(runtime);
+  initKeycloakInstance(runtime.keycloak);
 
-  const theme = buildMuiTheme(appConfig.theme);
+  const theme = buildMuiTheme(app.theme);
 
   const root = ReactDOM.createRoot(
     document.getElementById("root") as HTMLElement
   );
 
   root.render(
-    <RuntimeConfigProvider config={runtimeConfig}>
-      <AppConfigProvider config={appConfig}>
+    <RuntimeConfigProvider config={runtime}>
+      <AppConfigProvider config={app}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <RouterProvider router={router} />
