@@ -1,7 +1,6 @@
 package au.org.raid.inttest;
 
 import au.org.raid.idl.raidv2.api.ServicePointApi;
-import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
 import au.org.raid.inttest.dto.UserContext;
 import org.junit.jupiter.api.AfterEach;
@@ -40,11 +39,11 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Find service point by ID returns the correct service point")
     void findServicePointById() {
-        final var response = operatorServicePointApi.findServicePointById(UQ_SERVICE_POINT_ID);
+        final var response = operatorServicePointApi.findServicePointById(RAID_AU_REGISTRY_2_SERVICE_POINT_ID);
         final var servicePoint = response.getBody();
 
         assertThat(servicePoint).isNotNull();
-        assertThat(servicePoint.getId()).isEqualTo(UQ_SERVICE_POINT_ID);
+        assertThat(servicePoint.getId()).isEqualTo(RAID_AU_REGISTRY_2_SERVICE_POINT_ID);
         assertThat(servicePoint.getName()).isNotBlank();
     }
 
@@ -52,7 +51,7 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Update service point preserves DataCite fields not in update request")
     void updatePreservesDataCiteFields() {
         // Read the existing service point
-        final var existing = operatorServicePointApi.findServicePointById(UQ_SERVICE_POINT_ID).getBody();
+        final var existing = operatorServicePointApi.findServicePointById(RAID_AU_REGISTRY_2_SERVICE_POINT_ID).getBody();
         assertThat(existing).isNotNull();
 
         final var originalName = existing.getName();
@@ -82,7 +81,7 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Update service point changes editable fields")
     void updateChangesEditableFields() {
-        final var existing = operatorServicePointApi.findServicePointById(UQ_SERVICE_POINT_ID).getBody();
+        final var existing = operatorServicePointApi.findServicePointById(RAID_AU_REGISTRY_2_SERVICE_POINT_ID).getBody();
         assertThat(existing).isNotNull();
 
         final var originalAdminEmail = existing.getAdminEmail();

@@ -162,7 +162,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         assert mintedRaid != null;
         final var handle = new Handle(mintedRaid.getIdentifier().getId());
 
-        final var uqUserContext = userService.createUser("University of Queensland", "service-point-user");
+        final var uqUserContext = userService.createUser("RAiD AU Test Registry 2", "service-point-user");
         final var api = testClient.raidApi(uqUserContext.getToken());
 
         try {
@@ -183,7 +183,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
     void closedRaidsExcludedFromList() {
         raidApi.mintRaid(createRequest);
 
-        final var uqUserContext = userService.createUser("University of Queensland", "service-point-user");
+        final var uqUserContext = userService.createUser("RAiD AU Test Registry 2", "service-point-user");
 
         final var api = testClient.raidApi(uqUserContext.getToken());
 
@@ -194,7 +194,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
 
             // filter closed/embargoed raids where the service point does not match RDM@UQ
             final var result = raidList.stream().filter(raid ->
-                    !raid.getIdentifier().getOwner().getServicePoint().equals(UQ_SERVICE_POINT_ID)
+                    !raid.getIdentifier().getOwner().getServicePoint().equals(RAID_AU_REGISTRY_2_SERVICE_POINT_ID)
             ).toList();
 
             assertThat(result).isEmpty();
