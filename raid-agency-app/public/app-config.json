@@ -19,7 +19,12 @@
     "measurementId": "G-286MNGELG2",
     "measurementIdDemo": "G-RKPFHJG7Y7"
   },
-  "raidDomain": "http://www.raid.org.au",
+  "services": {
+    "orcid": "https://orcid.test.raid.org.au",
+    "invite": "https://invite.test.raid.org.au",
+    "staticProd": "https://static.prod.raid.org.au",
+    "staticBase": "https://static.{env}.raid.org.au"
+  },
   "_brandingComment": "The branding section below is optional. Remove it or any of its fields to fall back to the built-in defaults.",
   "branding": {
     "default": false,

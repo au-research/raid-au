@@ -41,7 +41,10 @@ function validateRuntimeFields(raw: Record<string, any>): void {
   if (!raw.apiBaseUrl) missing.push("apiBaseUrl");
   if (!raw.environment) missing.push("environment");
   if (!raw.supportEmail) missing.push("supportEmail");
-  if (!raw.raidDomain) missing.push("raidDomain");
+  if (!raw.services?.orcid) missing.push("services.orcid");
+  if (!raw.services?.invite) missing.push("services.invite");
+  if (!raw.services?.staticProd) missing.push("services.staticProd");
+  if (!raw.services?.staticBase) missing.push("services.staticBase");
 
   if (missing.length > 0) {
     throw new Error(
@@ -73,7 +76,7 @@ export async function loadConfig(): Promise<{
     environment: raw.environment,
     supportEmail: raw.supportEmail,
     googleAnalytics: raw.googleAnalytics ?? {},
-    raidDomain: raw.raidDomain,
+    services: raw.services,
   };
 
   const branding = raw.branding ?? {};

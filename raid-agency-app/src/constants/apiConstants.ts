@@ -1,8 +1,7 @@
-import { getRootDomain } from "@/utils/api-utils/api-utils";
 import { getRuntimeConfig } from "@/config";
 
-const rootDomain = () => getRootDomain(getRuntimeConfig().raidDomain);
 const api = () => getRuntimeConfig().apiBaseUrl;
+const svc = () => getRuntimeConfig().services;
 
 export const API_CONSTANTS = {
   SERVICE_POINT: {
@@ -13,34 +12,25 @@ export const API_CONSTANTS = {
     get ALL() { return `${api()}/raid/`; },
     BY_HANDLE: (handle: string) => `${api()}/raid/${handle}`,
     HISTORY: (handle: string) => `${api()}/raid/${handle}/history`,
-    get GET_ENV_FOR_HANDLE() { return `https://static.prod.${rootDomain()}/api/all-handles.json`; },
+    get GET_ENV_FOR_HANDLE() { return `${svc().staticProd}/api/all-handles.json`; },
     RELATED_RAID_TITLE: (handle: string, environment: string) =>
-      `https://static.${environment}.${rootDomain()}/raids/${handle}.json`,
+      `${svc().staticBase.replace("{env}", environment)}/raids/${handle}.json`,
     HISTORY_DETAIL: (handle: string, version: string) =>
       `${api()}/raid/${handle}/${version}`,
   },
   ORCID: {
-    CONTRIBUTORS: (subDomain: string, environment: string) =>
-      `https://${subDomain}.${environment}.${rootDomain()}/contributors`,
+    get CONTRIBUTORS() { return `${svc().orcid}/contributors`; },
   },
   INVITE: {
-    SEND: (subDomain: string, environment: string) =>
-      `https://${subDomain}.${environment}.${rootDomain()}/invite`,
-    FETCH: (subDomain: string, environment: string) =>
-      `https://${subDomain}.${environment}.${rootDomain()}/invite/fetch`,
-    ACCEPT: (subDomain: string, environment: string) =>
-      `https://${subDomain}.${environment}.${rootDomain()}/invite/accept`,
-    REJECT: (subDomain: string, environment: string) =>
-      `https://${subDomain}.${environment}.${rootDomain()}/invite/reject`,
+    get SEND() { return `${svc().invite}/invite`; },
+    get FETCH() { return `${svc().invite}/invite/fetch`; },
+    get ACCEPT() { return `${svc().invite}/invite/accept`; },
+    get REJECT() { return `${svc().invite}/invite/reject`; },
   },
   DOI: {
-    REGISTRATION: (handle: string) =>
-      `https://doi.org/doiRA/${handle}`,
-    CROSS_REF: (handle: string) =>
-      `https://api.crossref.org/works/${handle}`,
-    DATA_CITE: (handle: string) =>
-      `https://api.datacite.org/dois/${handle}`,
-    BY_HANDLE_URL: (handle: string) =>
-      `https://doi.org/api/handles/${handle}?type=url`,
+    REGISTRATION: (handle: string) => `https://doi.org/doiRA/${handle}`,
+    CROSS_REF: (handle: string) => `https://api.crossref.org/works/${handle}`,
+    DATA_CITE: (handle: string) => `https://api.datacite.org/dois/${handle}`,
+    BY_HANDLE_URL: (handle: string) => `https://doi.org/api/handles/${handle}?type=url`,
   },
 };

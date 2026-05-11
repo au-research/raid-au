@@ -11,5 +11,10 @@ export interface RuntimeConfig {
     measurementId?: string;
     measurementIdDemo?: string;
   };
-  raidDomain: string;
+  services: {
+    orcid: string;
+    invite: string;
+    staticProd: string;
+    staticBase: string;
+  };
 }
