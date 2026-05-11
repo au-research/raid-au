@@ -1,17 +1,16 @@
 package au.org.raid.inttest.service;
 
-import tools.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Response;
-import feign.codec.ErrorDecoder;
+import feign.codec.DefaultErrorDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-
-public class RaidApiExceptionDecoder extends ErrorDecoder.Default {
+public class RaidApiExceptionDecoder extends DefaultErrorDecoder {
     private static final Logger log = LoggerFactory.getLogger(RaidApiExceptionDecoder.class);
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     public RaidApiExceptionDecoder(ObjectMapper mapper) {
         this.mapper = mapper;
@@ -36,7 +35,7 @@ public class RaidApiExceptionDecoder extends ErrorDecoder.Default {
             validEx.setBadRequest(badRequest);
 
             return validEx;
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             log.error("could not map error body", e);
             return feignDefaultEx;
         }

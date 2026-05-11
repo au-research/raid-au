@@ -33,10 +33,8 @@ public class IntegrationTestConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        final var objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
 
-        return objectMapper;
+        return new ObjectMapper();
     }
 
 //    @Configuration

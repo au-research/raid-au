@@ -47,7 +47,7 @@ commons-compress = { group = "org.apache.commons", name = "commons-compress", ve
 commons-math3 = { group = "org.apache.commons", name = "commons-math3", version.ref = "commons-math3" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 feign-okhttp = { group = 'io.github.openfeign', name = 'feign-okhttp', version.ref = 'feign' }
-feign-jackson = { group = 'io.github.openfeign', name = 'feign-jackson', version.ref = 'feign' }
+feign-jackson = { group = 'io.github.openfeign', name = 'feign-jackson3', version.ref = 'feign' }
 feign-slf4j = { group = 'io.github.openfeign', name = 'feign-slf4j', version.ref = 'feign' }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version.ref = "hamcrest" }
