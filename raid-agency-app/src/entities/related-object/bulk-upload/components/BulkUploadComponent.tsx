@@ -144,8 +144,23 @@ export function BulkUploadComponent({
 
                 {totalErrorCount > 0 && (
                   <Alert severity="warning">
-                    Fix the highlighted errors before uploading. You can edit
-                    cells directly in the table or remove rows you don't need.
+                    {(() => {
+                      const fields = [
+                        ...new Set(
+                          editableRows.flatMap((r) => Object.keys(r.errors))
+                        ),
+                      ];
+                      const fieldList =
+                        fields.length === 1
+                          ? `the ${fields[0]} field`
+                          : fields.length === 2
+                            ? `the ${fields[0]} and ${fields[1]} fields`
+                            : `the ${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]} fields`;
+                      const errorRowCount = editableRows.filter(
+                        (r) => Object.keys(r.errors).length > 0
+                      ).length;
+                      return `${errorRowCount === 1 ? "1 row has" : `${errorRowCount} rows have`} errors in ${fieldList}. Edit the highlighted cells or remove the affected ${errorRowCount === 1 ? "row" : "rows"} before uploading.`;
+                    })()}
                   </Alert>
                 )}
 
