@@ -302,6 +302,17 @@ function mapRowToRelatedObjects(
   const typesRaw = (row["Type"] ?? "").trim();
   const categoriesRaw = (row["Categories"] ?? "").trim();
 
+  // ---- Validate Identifier ----
+  if (!doiUrl) {
+    errors.push({ row: rowIndex, field: "Identifier", message: "Identifier is required" });
+  } else if (!doiRegex.test(doiUrl) && !webArchiveRegex.test(doiUrl)) {
+    errors.push({
+      row: rowIndex,
+      field: "Identifier",
+      message: "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
+    });
+  }
+
   // ---- Split and look up types (multi-value support) ----
   const typeLabels = typesRaw
     .split(",")
@@ -338,6 +349,10 @@ function mapRowToRelatedObjects(
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+
+  if (categoryLabels.length === 0) {
+    errors.push({ row: rowIndex, field: "Categories", message: "At least one category is required" });
+  }
 
   const categories: Array<{ id: string; schemaUri: string }> = [];
   for (const label of categoryLabels) {
