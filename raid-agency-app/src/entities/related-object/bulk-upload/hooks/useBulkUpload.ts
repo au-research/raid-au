@@ -313,34 +313,35 @@ function mapRowToRelatedObjects(
     });
   }
 
-  // ---- Split and look up types (multi-value support) ----
+  // ---- Validate Type (single value only) ----
   const typeLabels = typesRaw
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
+  const typeEntries: Array<{ id: string; schemaUri: string }> = [];
   if (typeLabels.length === 0) {
     errors.push({
       row: rowIndex,
       field: "Type",
       message: "At least one type is required.",
     });
-  }
-
-  const typeEntries: Array<{ id: string; schemaUri: string }> = [];
-  for (const label of typeLabels) {
-    const entry = typeLookup.get(label.toLowerCase());
+  } else if (typeLabels.length > 1) {
+    errors.push({
+      row: rowIndex,
+      field: "Type",
+      message: "Only one type is allowed per row.",
+    });
+  } else {
+    const entry = typeLookup.get(typeLabels[0].toLowerCase());
     if (!entry) {
       errors.push({
         row: rowIndex,
         field: "Type",
-        message: `Unknown type "${label}". Please use a value from the dropdown.`,
+        message: `Unknown type "${typeLabels[0]}". Please use a value from the dropdown.`,
       });
     } else {
-      typeEntries.push({
-        id: entry.key, // Full URI straight from vocab JSON
-        schemaUri: TYPE_SCHEMA_URI,
-      });
+      typeEntries.push({ id: entry.key, schemaUri: TYPE_SCHEMA_URI });
     }
   }
 
@@ -352,6 +353,15 @@ function mapRowToRelatedObjects(
 
   if (categoryLabels.length === 0) {
     errors.push({ row: rowIndex, field: "Categories", message: "At least one category is required" });
+  }
+
+  const uniqueCategoryLabels = new Set(categoryLabels.map((l) => l.toLowerCase()));
+  if (uniqueCategoryLabels.size < categoryLabels.length) {
+    errors.push({
+      row: rowIndex,
+      field: "Categories",
+      message: "Duplicate category values are not allowed.",
+    });
   }
 
   const categories: Array<{ id: string; schemaUri: string }> = [];
