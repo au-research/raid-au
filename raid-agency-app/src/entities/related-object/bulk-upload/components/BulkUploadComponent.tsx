@@ -6,10 +6,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import {
-  CloudUpload as UploadIcon,
-  RestartAlt as RestartIcon,
-} from "@mui/icons-material";
+import { CloudUpload as UploadIcon, RestartAlt as RestartIcon } from "@mui/icons-material";
 
 import { useBulkUpload } from "../hooks/useBulkUpload";
 import type { ParsedRelatedObject } from "../hooks/useBulkUpload";
@@ -19,6 +16,7 @@ import { FileDropZone } from "./Filedropzone";
 import { TemplateDownloader } from "./TemplateDownloader";
 import { BulkUploadPreviewTable } from "./Bulkuploadpreviewtable";
 
+import { useState, useEffect } from "react";
 import { PulseLoader } from "react-spinners";
 import rawVocabulary from "@/mapping/data/general-mapping.json";
 
@@ -81,14 +79,24 @@ export function BulkUploadComponent({
     return <BulkSpinner message="Loading vocabulary…" />;
   }
 
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === "done") {
+      setSuccessMessage("All related objects have been added successfully.");
+      reset();
+    } else if (status === "parsing") {
+      setSuccessMessage(null);
+    }
+  }, [status, reset]);
+
   const isSubmitting = status === "submitting";
-  const isDone = status === "done";
 
   return (
     <Box sx={{ mt: 2 }}>
       <Stack spacing={2}>
-        {/* ---- Bulk upload UI (hidden once submission starts) ---- */}
-        {!isSubmitting && !isDone && (
+        {/* ---- Bulk upload UI (hidden while submitting) ---- */}
+        {!isSubmitting && (
           <>
             {/* Intro + template download */}
             <Stack spacing={0.5}>
@@ -193,6 +201,13 @@ export function BulkUploadComponent({
                 </Button>
               </Stack>
             )}
+
+            {/* Success alert shown after a completed upload */}
+            {successMessage && (
+              <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+                {successMessage}
+              </Alert>
+            )}
           </>
         )}
 
@@ -207,24 +222,6 @@ export function BulkUploadComponent({
           />
         )}
 
-        {/* ---- Success state ---- */}
-        {isDone && (
-          <Stack spacing={1}>
-            <Alert severity="success">
-              All related objects have been added successfully.
-            </Alert>
-            <Stack direction="row" justifyContent="flex-end">
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<RestartIcon />}
-                onClick={reset}
-              >
-                Upload more
-              </Button>
-            </Stack>
-          </Stack>
-        )}
       </Stack>
     </Box>
   );

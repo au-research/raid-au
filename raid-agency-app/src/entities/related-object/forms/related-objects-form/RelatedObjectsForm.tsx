@@ -78,6 +78,7 @@ export function RelatedObjectsForm({
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const [entryMode, setEntryMode] = useState<EntryMode>("manual");
+  const [isBulkVisible, setIsBulkVisible] = useState(false);
   const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
 
   const { fields, append, remove } = useFieldArray({ control, name: key });
@@ -116,7 +117,7 @@ export function RelatedObjectsForm({
   }, [fields, entryMode]);
 
   const handleAddItem = () => {
-    setEntryMode("manual"); // hide bulk upload panel if open
+    setEntryMode("manual");
     append(generator());
     trigger(key);
   };
@@ -298,7 +299,7 @@ export function RelatedObjectsForm({
             )}
           </Box>
 
-          {entryMode === "bulk" && (
+          {isBulkVisible && (
             <>
               <Divider>
                 <Chip label="Bulk Upload" size="small" variant="outlined" />
@@ -310,7 +311,7 @@ export function RelatedObjectsForm({
                 <Tooltip title="Close bulk upload" placement="left">
                   <IconButton
                     size="small"
-                    onClick={() => setEntryMode("manual")}
+                    onClick={() => setIsBulkVisible(false)}
                     sx={{ position: "absolute", top: 8, right: 8 }}
                     aria-label="Close bulk upload"
                   >
@@ -346,7 +347,7 @@ export function RelatedObjectsForm({
           size="small"
           startIcon={<AddBox />}
           sx={{ textTransform: "none" }}
-          onClick={() => setEntryMode("bulk")}
+          onClick={() => { setEntryMode("bulk"); setIsBulkVisible(true); }}
         >
           Upload Bulk {labelPlural}
         </Button>
