@@ -41,8 +41,10 @@ No application code changes. No new migrations. No schema changes.
 
 The `postgres` role is a PostgreSQL superuser — it bypasses all permission checks. Hardcoding it as the owner of application objects has two concerns:
 
-- **Blast radius**: If the application were to connect as `postgres`, a SQL injection would grant an attacker superuser access — read any database, create roles, access the filesystem via `COPY`, or execute OS commands through extensions. Our deployment already mitigates this by using a restricted `api_user` role at runtime, but the baseline should not encode a dependency on a superuser.
+- **Blast radius**: If the application were to connect as `postgres`, a SQL injection would grant an attacker superuser access — read any database, create roles, access the filesystem via `COPY`, or execute OS commands through extensions.
 - **Principle of least privilege**: Objects owned by a superuser cannot be modified by lesser roles without explicit grants, which couples schema management to the highest-privilege account. Removing the ownership statements allows a dedicated non-superuser migration role to own the application schema.
+
+This issue does not apply to the RAiD AU deployment. The database is managed by AWS RDS, which has its own superuser (the RDS master user). The `postgres` role referenced in the baseline was added manually to manage migrations and is not the RDS superuser. However, the baseline should not encode a dependency on any specific role name.
 
 ## Why this is safe
 
