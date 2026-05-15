@@ -80,9 +80,11 @@ export function RelatedObjectsForm({
   const [entryMode, setEntryMode] = useState<EntryMode>("manual");
   const [isBulkVisible, setIsBulkVisible] = useState(false);
   const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
+  const [duplicateFormIndices, setDuplicateFormIndices] = useState<Set<number>>(new Set());
+  const duplicateFormIndicesRef = useRef<Set<number>>(new Set());
 
   const { fields, append, remove } = useFieldArray({ control, name: key });
-  const { formState } = useFormContext();
+  const { formState, setError, clearErrors } = useFormContext();
 
   /**
    * IDs of accordions that are currently collapsed.
@@ -115,6 +117,53 @@ export function RelatedObjectsForm({
 
     prevFieldIdsRef.current = new Set(fields.map((f) => f.id));
   }, [fields, entryMode]);
+
+  const { watch } = useFormContext();
+  const existingIdentifiers: string[] = (watch("relatedObject") ?? [])
+    .map((obj: { id?: string }) => obj.id ?? "")
+    .filter((id: string) => id.length > 0);
+
+  const handleDuplicateIdentifiers = useCallback((dois: string[]) => {
+    const doiSet = new Set(dois.map((d) => d.trim().toLowerCase()));
+    const indices = new Set<number>();
+    existingIdentifiers.forEach((id, idx) => {
+      if (doiSet.has(id.trim().toLowerCase())) indices.add(idx);
+    });
+
+    const prev = duplicateFormIndicesRef.current;
+
+    // Clear stale duplicate errors from previously flagged indices
+    prev.forEach((idx) => {
+      if (!indices.has(idx)) {
+        clearErrors(`relatedObject.${idx}.id` as `relatedObject.${number}.id`);
+      }
+    });
+
+    // Set error on each newly duplicated field
+    indices.forEach((idx) => {
+      const doi = existingIdentifiers[idx];
+      setError(`relatedObject.${idx}.id` as `relatedObject.${number}.id`, {
+        type: "manual",
+        message: `Duplicate URL - ${doi} is already included in the bulk upload.`,
+      });
+    });
+
+    duplicateFormIndicesRef.current = indices;
+    setDuplicateFormIndices(new Set(indices));
+
+    // Only expand accordions that are newly detected — don't re-expand
+    // ones the user has already manually collapsed.
+    const newIndices = new Set([...indices].filter((idx) => !prev.has(idx)));
+    if (newIndices.size > 0) {
+      setCollapsedIds((prevCollapsed) => {
+        const next = new Set(prevCollapsed);
+        fields.forEach((field, idx) => {
+          if (newIndices.has(idx)) next.delete(field.id);
+        });
+        return next;
+      });
+    }
+  }, [existingIdentifiers, fields, setError, clearErrors]);
 
   const handleAddItem = () => {
     setEntryMode("manual");
@@ -213,7 +262,7 @@ export function RelatedObjectsForm({
 
           <Stack gap={1} data-testid={`${key}-form`}>
             {fields.map((field, index) => {
-              const hasError = !!(errors.relatedObject?.[index]);
+              const hasError = !!(errors.relatedObject?.[index]) || duplicateFormIndices.has(index);
               return (
               <Accordion
                 key={field.id}
@@ -321,6 +370,8 @@ export function RelatedObjectsForm({
                 <BulkUploadComponent
                   addRelatedObjects={handleBulkAddItems}
                   onComplete={handleBulkComplete}
+                  existingIdentifiers={existingIdentifiers}
+                  onDuplicateIdentifiers={handleDuplicateIdentifiers}
                 />
               </Paper>
             </>

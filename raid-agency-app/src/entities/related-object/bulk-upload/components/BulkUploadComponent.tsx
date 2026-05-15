@@ -33,6 +33,10 @@ interface BulkUploadComponentProps {
   generator?: () => Partial<ParsedRelatedObject>;
   /** Called once after all objects have been successfully appended. */
   onComplete?: () => void;
+  /** DOI values already in the form — used to flag cross-form duplicates in the preview table. */
+  existingIdentifiers?: string[];
+  /** Called whenever the set of DOIs that duplicate existing form entries changes. */
+  onDuplicateIdentifiers?: (dois: string[]) => void;
 }
 
 function BulkSpinner({ message }: { message: string }) {
@@ -52,6 +56,8 @@ export function BulkUploadComponent({
   addRelatedObjects,
   generator,
   onComplete,
+  existingIdentifiers = [],
+  onDuplicateIdentifiers,
 }: BulkUploadComponentProps) {
   const loadedVocabulary = useBulkUploadVocabulary(rawVocabulary);
   const vocabulary = vocabularyOverride ?? loadedVocabulary;
@@ -72,7 +78,12 @@ export function BulkUploadComponent({
     handleConfirm,
     reset,
     isConfirmDisabled,
-  } = useBulkUpload(vocabulary, { generator, onComplete });
+    duplicateExistingDois,
+  } = useBulkUpload(vocabulary, { generator, onComplete, existingIdentifiers });
+
+  useEffect(() => {
+    onDuplicateIdentifiers?.(duplicateExistingDois);
+  }, [duplicateExistingDois, onDuplicateIdentifiers]);
 
   // ---- Vocabulary still loading ----
   if (!isVocabularyReady || !vocabulary) {
