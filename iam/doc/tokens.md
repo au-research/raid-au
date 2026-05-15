@@ -1,6 +1,6 @@
 # API Tokens and Refresh Tokens
 
-This guide demonstrates how to request an access token using the password grant type and how to exchange a refresh token for a new access token using curl. In the demo environment access tokens are valid for 24 hours but in the production environment access tokens are only valid for 5 minutes. In order to use this method you will need to request a client id/secret and username/password at contact@raid.org.au.
+This guide demonstrates how to request an access token using the password grant type and how to exchange a refresh token for a new access token using curl. In the demo environment access tokens are valid for 24 hours but in the production environment access tokens are only valid for 10 minutes. See [Token and Session Lifetimes](token-lifetimes.md) for full details across all environments. In order to use this method you will need to request a client id/secret and username/password at contact@raid.org.au.
 
 ## Request an access token
 To request an access token using the password grant type, use the following curl command:
