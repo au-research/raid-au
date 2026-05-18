@@ -520,9 +520,10 @@ function applyDuplicateErrors(rows: EditableRow[], existingIdentifiers: string[]
     const hasDuplicateError = row.errors.Identifier?.startsWith(DUPLICATE_ERROR_PREFIX);
 
     if (isDuplicate && !row.errors.Identifier) {
+      const urlType = webArchiveRegex.test(originalUrl) ? "web.archive.org URL" : "DOI";
       const message = isDuplicateInForm
         ? `Duplicate URL - ${originalUrl} is already linked to an existing Related Object.`
-        : `Duplicate URL - ${originalUrl} appears multiple times in this upload.`;
+        : `Duplicate URL - One ${urlType} can only be linked to one type.`;
       return {
         ...row,
         errors: { ...row.errors, Identifier: message },

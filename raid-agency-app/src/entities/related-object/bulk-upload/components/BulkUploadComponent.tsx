@@ -81,16 +81,11 @@ export function BulkUploadComponent({
     duplicateExistingDois,
   } = useBulkUpload(vocabulary, { generator, onComplete, existingIdentifiers });
 
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   useEffect(() => {
     onDuplicateIdentifiers?.(duplicateExistingDois);
   }, [duplicateExistingDois, onDuplicateIdentifiers]);
-
-  // ---- Vocabulary still loading ----
-  if (!isVocabularyReady || !vocabulary) {
-    return <BulkSpinner message="Loading vocabulary…" />;
-  }
-
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "done") {
@@ -100,6 +95,11 @@ export function BulkUploadComponent({
       setSuccessMessage(null);
     }
   }, [status, reset]);
+
+  // ---- Vocabulary still loading ----
+  if (!isVocabularyReady || !vocabulary) {
+    return <BulkSpinner message="Loading vocabulary…" />;
+  }
 
   const isSubmitting = status === "submitting";
 
@@ -164,10 +164,33 @@ export function BulkUploadComponent({
                 {totalErrorCount > 0 && (
                   <Alert severity="warning">
                     {(() => {
+                      const errorRows = editableRows.filter(
+                        (r) => Object.keys(r.errors).length > 0
+                      );
+                      const errorRowCount = errorRows.length;
+                      const rowWord = errorRowCount === 1 ? "row" : "rows";
+
+                      const duplicateRows = errorRows.filter((r) =>
+                        r.errors.Identifier?.startsWith("Duplicate URL")
+                      );
+                      const otherErrorRows = errorRows.filter((r) =>
+                        Object.entries(r.errors).some(
+                          ([field, msg]) =>
+                            field !== "Identifier" || !msg?.startsWith("Duplicate URL")
+                        )
+                      );
+
+                      if (duplicateRows.length > 0 && otherErrorRows.length === 0) {
+                        const dupCount = duplicateRows.length;
+                        return `${dupCount === 1 ? "1 row has a" : `${dupCount} rows have`} duplicate URL${dupCount === 1 ? "" : "s"}. Remove or update the duplicate ${dupCount === 1 ? "row" : "rows"} before uploading.`;
+                      }
+
+                      if (duplicateRows.length > 0 && otherErrorRows.length > 0) {
+                        return `${errorRowCount} ${rowWord} have duplicate URLs or other validation errors. Fix the highlighted ${rowWord} before uploading.`;
+                      }
+
                       const fields = [
-                        ...new Set(
-                          editableRows.flatMap((r) => Object.keys(r.errors))
-                        ),
+                        ...new Set(errorRows.flatMap((r) => Object.keys(r.errors))),
                       ];
                       const fieldList =
                         fields.length === 1
@@ -175,10 +198,7 @@ export function BulkUploadComponent({
                           : fields.length === 2
                             ? `the ${fields[0]} and ${fields[1]} fields`
                             : `the ${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]} fields`;
-                      const errorRowCount = editableRows.filter(
-                        (r) => Object.keys(r.errors).length > 0
-                      ).length;
-                      return `${errorRowCount === 1 ? "1 row has" : `${errorRowCount} rows have`} errors in ${fieldList}. Edit the highlighted cells or remove the affected ${errorRowCount === 1 ? "row" : "rows"} before uploading.`;
+                      return `${errorRowCount === 1 ? "1 row has" : `${errorRowCount} rows have`} errors in ${fieldList}. Edit the highlighted cells or remove the affected ${rowWord} before uploading.`;
                     })()}
                   </Alert>
                 )}
