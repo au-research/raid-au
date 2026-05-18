@@ -6,10 +6,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import {
-  CloudUpload as UploadIcon,
-  RestartAlt as RestartIcon,
-} from "@mui/icons-material";
+import { CloudUpload as UploadIcon, RestartAlt as RestartIcon } from "@mui/icons-material";
 
 import { useBulkUpload } from "../hooks/useBulkUpload";
 import type { ParsedRelatedObject } from "../hooks/useBulkUpload";
@@ -19,6 +16,7 @@ import { FileDropZone } from "./Filedropzone";
 import { TemplateDownloader } from "./TemplateDownloader";
 import { BulkUploadPreviewTable } from "./Bulkuploadpreviewtable";
 
+import { useState, useEffect } from "react";
 import { PulseLoader } from "react-spinners";
 import rawVocabulary from "@/mapping/data/general-mapping.json";
 
@@ -35,6 +33,10 @@ interface BulkUploadComponentProps {
   generator?: () => Partial<ParsedRelatedObject>;
   /** Called once after all objects have been successfully appended. */
   onComplete?: () => void;
+  /** DOI values already in the form — used to flag cross-form duplicates in the preview table. */
+  existingIdentifiers?: string[];
+  /** Called whenever the set of DOIs that duplicate existing form entries changes. */
+  onDuplicateIdentifiers?: (dois: string[]) => void;
 }
 
 function BulkSpinner({ message }: { message: string }) {
@@ -54,6 +56,8 @@ export function BulkUploadComponent({
   addRelatedObjects,
   generator,
   onComplete,
+  existingIdentifiers = [],
+  onDuplicateIdentifiers,
 }: BulkUploadComponentProps) {
   const loadedVocabulary = useBulkUploadVocabulary(rawVocabulary);
   const vocabulary = vocabularyOverride ?? loadedVocabulary;
@@ -74,7 +78,23 @@ export function BulkUploadComponent({
     handleConfirm,
     reset,
     isConfirmDisabled,
-  } = useBulkUpload(vocabulary, { generator, onComplete });
+    duplicateExistingDois,
+  } = useBulkUpload(vocabulary, { generator, onComplete, existingIdentifiers });
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    onDuplicateIdentifiers?.(duplicateExistingDois);
+  }, [duplicateExistingDois, onDuplicateIdentifiers]);
+
+  useEffect(() => {
+    if (status === "done") {
+      setSuccessMessage("All related objects have been added successfully.");
+      reset();
+    } else if (status === "parsing") {
+      setSuccessMessage(null);
+    }
+  }, [status, reset]);
 
   // ---- Vocabulary still loading ----
   if (!isVocabularyReady || !vocabulary) {
@@ -82,13 +102,12 @@ export function BulkUploadComponent({
   }
 
   const isSubmitting = status === "submitting";
-  const isDone = status === "done";
 
   return (
     <Box sx={{ mt: 2 }}>
       <Stack spacing={2}>
-        {/* ---- Bulk upload UI (hidden once submission starts) ---- */}
-        {!isSubmitting && !isDone && (
+        {/* ---- Bulk upload UI (hidden while submitting) ---- */}
+        {!isSubmitting && (
           <>
             {/* Intro + template download */}
             <Stack spacing={0.5}>
@@ -144,8 +163,43 @@ export function BulkUploadComponent({
 
                 {totalErrorCount > 0 && (
                   <Alert severity="warning">
-                    Fix the highlighted errors before uploading. You can edit
-                    cells directly in the table or remove rows you don't need.
+                    {(() => {
+                      const errorRows = editableRows.filter(
+                        (r) => Object.keys(r.errors).length > 0
+                      );
+                      const errorRowCount = errorRows.length;
+                      const rowWord = errorRowCount === 1 ? "row" : "rows";
+
+                      const duplicateRows = errorRows.filter((r) =>
+                        r.errors.Identifier?.startsWith("Duplicate URL")
+                      );
+                      const otherErrorRows = errorRows.filter((r) =>
+                        Object.entries(r.errors).some(
+                          ([field, msg]) =>
+                            field !== "Identifier" || !msg?.startsWith("Duplicate URL")
+                        )
+                      );
+
+                      if (duplicateRows.length > 0 && otherErrorRows.length === 0) {
+                        const dupCount = duplicateRows.length;
+                        return `${dupCount === 1 ? "1 row has a" : `${dupCount} rows have`} duplicate URL${dupCount === 1 ? "" : "s"}. Remove or update the duplicate ${dupCount === 1 ? "row" : "rows"} before uploading.`;
+                      }
+
+                      if (duplicateRows.length > 0 && otherErrorRows.length > 0) {
+                        return `${errorRowCount} ${rowWord} have duplicate URLs or other validation errors. Fix the highlighted ${rowWord} before uploading.`;
+                      }
+
+                      const fields = [
+                        ...new Set(errorRows.flatMap((r) => Object.keys(r.errors))),
+                      ];
+                      const fieldList =
+                        fields.length === 1
+                          ? `the ${fields[0]} field`
+                          : fields.length === 2
+                            ? `the ${fields[0]} and ${fields[1]} fields`
+                            : `the ${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]} fields`;
+                      return `${errorRowCount === 1 ? "1 row has" : `${errorRowCount} rows have`} errors in ${fieldList}. Edit the highlighted cells or remove the affected ${rowWord} before uploading.`;
+                    })()}
                   </Alert>
                 )}
 
@@ -178,6 +232,13 @@ export function BulkUploadComponent({
                 </Button>
               </Stack>
             )}
+
+            {/* Success alert shown after a completed upload */}
+            {successMessage && (
+              <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+                {successMessage}
+              </Alert>
+            )}
           </>
         )}
 
@@ -192,24 +253,6 @@ export function BulkUploadComponent({
           />
         )}
 
-        {/* ---- Success state ---- */}
-        {isDone && (
-          <Stack spacing={1}>
-            <Alert severity="success">
-              All related objects have been added successfully.
-            </Alert>
-            <Stack direction="row" justifyContent="flex-end">
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<RestartIcon />}
-                onClick={reset}
-              >
-                Upload more
-              </Button>
-            </Stack>
-          </Stack>
-        )}
       </Stack>
     </Box>
   );

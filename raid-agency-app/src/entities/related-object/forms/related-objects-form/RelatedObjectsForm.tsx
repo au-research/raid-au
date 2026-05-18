@@ -34,8 +34,6 @@ import { CustomStyledTooltip } from "@/components/tooltips/StyledTooltip";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { BulkUploadComponent, ParsedRelatedObject } from "../../bulk-upload/Index";
 
-type EntryMode = "manual" | "bulk";
-
 /**
  * Reads the current DOI/URL value for a given index and displays it
  * in the accordion summary. Uses useFormContext so it must be rendered
@@ -77,77 +75,167 @@ export function RelatedObjectsForm({
   const generator = relatedObjectDataGenerator;
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
-  const [entryMode, setEntryMode] = useState<EntryMode>("manual");
+  const [isBulkVisible, setIsBulkVisible] = useState(false);
   const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
+  const [duplicateFormIndices, setDuplicateFormIndices] = useState<Set<number>>(new Set());
+  const duplicateFormIndicesRef = useRef<Set<number>>(new Set());
 
   const { fields, append, remove } = useFieldArray({ control, name: key });
-  const { formState } = useFormContext();
+  const { formState, setError, clearErrors } = useFormContext();
 
   /**
-   * IDs of accordions that are currently collapsed.
-   * - Initially loaded items are collapsed (seeded from fields at mount).
-   * - Bulk-added items are collapsed.
-   * - Manually added items start expanded.
+   * IDs of accordions that are currently expanded.
+   * - Initially loaded items are NOT in this set → collapsed by default.
+   * - Bulk-added items are NOT added here → collapsed by default.
+   * - Manually added items are added here via useLayoutEffect → start expanded.
+   * - Error/duplicate items are added here explicitly → start expanded.
    * - User can toggle any item freely.
    */
-  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(
-    () => new Set(fields.map((f) => f.id))
-  );
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
   const errorMessage = errors[key]?.message ?? (errors[key] as { root?: { message?: string } } | undefined)?.root?.message;
 
-  // Track the set of field IDs seen in the previous render so we can
-  // detect which fields are newly added after each append().
+  // Always-current reference to fields — avoids stale closures in async callbacks.
+  const fieldsRef = useRef(fields);
+  fieldsRef.current = fields;
+
+  // Tracks the field IDs seen in the previous render so useLayoutEffect can
+  // detect which field was just manually added.
   const prevFieldIdsRef = useRef<Set<string>>(new Set(fields.map((f) => f.id)));
 
-  // Bulk-added items start collapsed; manually added items start expanded.
+  // Set to true just before a manual append so the layout effect knows to expand it.
+  const isManualAddRef = useRef(false);
+
+  // Snapshot of field IDs taken just before each bulk append.
+  // handleDuplicateIdentifiers uses this to avoid expanding newly-uploaded items —
+  // only pre-existing items that match an uploaded DOI should be auto-expanded.
+  const preBulkFieldIdsRef = useRef<Set<string>>(new Set(fields.map((f) => f.id)));
+
+  // Field IDs that were auto-expanded by handleDuplicateIdentifiers (not by the user).
+  // When the duplicate is resolved we collapse only these, not user-opened items.
+  const duplicateExpandedIdsRef = useRef<Set<string>>(new Set());
+
+  // Expand the single item that was just manually added (bulk items stay collapsed).
   useLayoutEffect(() => {
     const prevIds = prevFieldIdsRef.current;
     const newFields = fields.filter((f) => !prevIds.has(f.id));
+    prevFieldIdsRef.current = new Set(fields.map((f) => f.id));
 
-    if (newFields.length > 0 && entryMode === "bulk") {
-      setCollapsedIds((prev) => {
+    if (newFields.length > 0 && isManualAddRef.current) {
+      isManualAddRef.current = false;
+      setExpandedIds((prev) => {
         const next = new Set(prev);
         newFields.forEach((f) => next.add(f.id));
         return next;
       });
     }
+  }, [fields]);
 
-    prevFieldIdsRef.current = new Set(fields.map((f) => f.id));
-  }, [fields, entryMode]);
+  const { watch } = useFormContext();
+  const existingIdentifiers: string[] = (watch("relatedObject") ?? [])
+    .map((obj: { id?: string }) => obj.id ?? "")
+    .filter((id: string) => id.length > 0);
+
+  const handleDuplicateIdentifiers = useCallback((dois: string[]) => {
+    const doiSet = new Set(dois.map((d) => d.trim().toLowerCase()));
+    const indices = new Set<number>();
+    existingIdentifiers.forEach((id, idx) => {
+      if (doiSet.has(id.trim().toLowerCase())) indices.add(idx);
+    });
+
+    const prev = duplicateFormIndicesRef.current;
+
+    // Clear stale duplicate errors from previously flagged indices
+    prev.forEach((idx) => {
+      if (!indices.has(idx)) {
+        clearErrors(`relatedObject.${idx}.id` as `relatedObject.${number}.id`);
+      }
+    });
+
+    // Set error on each newly duplicated field
+    indices.forEach((idx) => {
+      const doi = existingIdentifiers[idx];
+      setError(`relatedObject.${idx}.id` as `relatedObject.${number}.id`, {
+        type: "manual",
+        message: `Duplicate URL - ${doi} is already included in the bulk upload.`,
+      });
+    });
+
+    duplicateFormIndicesRef.current = indices;
+    setDuplicateFormIndices(new Set(indices));
+
+    // Collapse auto-expanded items that are no longer duplicates.
+    const resolvedIndices = new Set([...prev].filter((idx) => !indices.has(idx)));
+    const toCollapse = new Set<string>();
+    fields.forEach((field, idx) => {
+      if (resolvedIndices.has(idx) && duplicateExpandedIdsRef.current.has(field.id)) {
+        toCollapse.add(field.id);
+      }
+    });
+    if (toCollapse.size > 0) {
+      duplicateExpandedIdsRef.current = new Set(
+        [...duplicateExpandedIdsRef.current].filter((id) => !toCollapse.has(id))
+      );
+      setExpandedIds((prevExpanded) => {
+        const next = new Set(prevExpanded);
+        toCollapse.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+
+    // Only expand pre-existing items (those present before the bulk append)
+    // that are newly detected as duplicates. Newly uploaded items stay collapsed.
+    const newIndices = new Set([...indices].filter((idx) => !prev.has(idx)));
+    const toExpand = new Set<string>();
+    fields.forEach((field, idx) => {
+      if (newIndices.has(idx) && preBulkFieldIdsRef.current.has(field.id)) {
+        toExpand.add(field.id);
+      }
+    });
+    if (toExpand.size > 0) {
+      toExpand.forEach((id) => duplicateExpandedIdsRef.current.add(id));
+      setExpandedIds((prevExpanded) => {
+        const next = new Set(prevExpanded);
+        toExpand.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  }, [existingIdentifiers, fields, setError, clearErrors]);
 
   const handleAddItem = () => {
-    setEntryMode("manual"); // hide bulk upload panel if open
+    isManualAddRef.current = true;
     append(generator());
     trigger(key);
   };
 
   const handleBulkAddItems = async (objs: ParsedRelatedObject[]) => {
-    // Single append call with the full array — one React re-render instead of N.
-    // entryMode is "bulk" so the useEffect above will collapse all new items.
+    // Snapshot current field IDs before appending so handleDuplicateIdentifiers
+    // can distinguish pre-existing items from newly uploaded ones.
+    preBulkFieldIdsRef.current = new Set(fields.map((f) => f.id));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     append(objs as any);
   };
 
   const handleBulkComplete = useCallback(async () => {
     await trigger(key);
-    // Read errors fresh from form context after trigger resolves — using the
-    // prop here would be a stale closure from before trigger ran.
+    // Expand any bulk-added fields that have validation errors.
+    // fieldsRef.current is always the latest fields array (updated inline each render).
     const freshErrors = formState.errors.relatedObject as Record<number, unknown> | undefined;
-    setCollapsedIds((prev) => {
+    if (!freshErrors) return;
+    setExpandedIds((prev) => {
       const next = new Set(prev);
-      fields.forEach((field, index) => {
-        if (freshErrors?.[index]) {
-          next.delete(field.id);
+      fieldsRef.current.forEach((field, index) => {
+        if (freshErrors[index]) {
+          next.add(field.id);
         }
       });
       return next;
     });
-  }, [trigger, key, fields, formState]);
+  }, [trigger, key, formState]);
 
   const handleRemoveItem = (fieldId: string, index: number) => {
     remove(index);
     trigger(key);
-    setCollapsedIds((prev) => {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       next.delete(fieldId);
       return next;
@@ -155,7 +243,7 @@ export function RelatedObjectsForm({
   };
 
   const handleToggle = (fieldId: string) => {
-    setCollapsedIds((prev) => {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(fieldId)) {
         next.delete(fieldId);
@@ -212,11 +300,11 @@ export function RelatedObjectsForm({
 
           <Stack gap={1} data-testid={`${key}-form`}>
             {fields.map((field, index) => {
-              const hasError = !!(errors.relatedObject?.[index]);
+              const hasError = !!(errors.relatedObject?.[index]) || duplicateFormIndices.has(index);
               return (
               <Accordion
                 key={field.id}
-                expanded={!collapsedIds.has(field.id)}
+                expanded={expandedIds.has(field.id)}
                 onChange={() => handleToggle(field.id)}
                 disableGutters
                 sx={{
@@ -246,7 +334,7 @@ export function RelatedObjectsForm({
                     >
                       {label} #{index + 1}
                     </Typography>
-                    {collapsedIds.has(field.id) && (
+                    {!expandedIds.has(field.id) && (
                       <RelatedObjectSummaryLabel index={index} />
                     )}
                   </Stack>
@@ -298,7 +386,7 @@ export function RelatedObjectsForm({
             )}
           </Box>
 
-          {entryMode === "bulk" && (
+          {isBulkVisible && (
             <>
               <Divider>
                 <Chip label="Bulk Upload" size="small" variant="outlined" />
@@ -310,7 +398,7 @@ export function RelatedObjectsForm({
                 <Tooltip title="Close bulk upload" placement="left">
                   <IconButton
                     size="small"
-                    onClick={() => setEntryMode("manual")}
+                    onClick={() => setIsBulkVisible(false)}
                     sx={{ position: "absolute", top: 8, right: 8 }}
                     aria-label="Close bulk upload"
                   >
@@ -320,6 +408,8 @@ export function RelatedObjectsForm({
                 <BulkUploadComponent
                   addRelatedObjects={handleBulkAddItems}
                   onComplete={handleBulkComplete}
+                  existingIdentifiers={existingIdentifiers}
+                  onDuplicateIdentifiers={handleDuplicateIdentifiers}
                 />
               </Paper>
             </>
@@ -346,7 +436,7 @@ export function RelatedObjectsForm({
           size="small"
           startIcon={<AddBox />}
           sx={{ textTransform: "none" }}
-          onClick={() => setEntryMode("bulk")}
+          onClick={() => setIsBulkVisible(true)}
         >
           Upload Bulk {labelPlural}
         </Button>

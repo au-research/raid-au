@@ -302,34 +302,46 @@ function mapRowToRelatedObjects(
   const typesRaw = (row["Type"] ?? "").trim();
   const categoriesRaw = (row["Categories"] ?? "").trim();
 
-  // ---- Split and look up types (multi-value support) ----
+  // ---- Validate Identifier ----
+  if (!doiUrl) {
+    errors.push({ row: rowIndex, field: "Identifier", message: "Identifier is required" });
+  } else if (!doiRegex.test(doiUrl) && !webArchiveRegex.test(doiUrl)) {
+    errors.push({
+      row: rowIndex,
+      field: "Identifier",
+      message: "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
+    });
+  }
+
+  // ---- Validate Type (single value only) ----
   const typeLabels = typesRaw
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
+  const typeEntries: Array<{ id: string; schemaUri: string }> = [];
   if (typeLabels.length === 0) {
     errors.push({
       row: rowIndex,
       field: "Type",
       message: "At least one type is required.",
     });
-  }
-
-  const typeEntries: Array<{ id: string; schemaUri: string }> = [];
-  for (const label of typeLabels) {
-    const entry = typeLookup.get(label.toLowerCase());
+  } else if (typeLabels.length > 1) {
+    errors.push({
+      row: rowIndex,
+      field: "Type",
+      message: "Only one type is allowed per row.",
+    });
+  } else {
+    const entry = typeLookup.get(typeLabels[0].toLowerCase());
     if (!entry) {
       errors.push({
         row: rowIndex,
         field: "Type",
-        message: `Unknown type "${label}". Please use a value from the dropdown.`,
+        message: `Unknown type "${typeLabels[0]}". Please use a value from the dropdown.`,
       });
     } else {
-      typeEntries.push({
-        id: entry.key, // Full URI straight from vocab JSON
-        schemaUri: TYPE_SCHEMA_URI,
-      });
+      typeEntries.push({ id: entry.key, schemaUri: TYPE_SCHEMA_URI });
     }
   }
 
@@ -338,6 +350,19 @@ function mapRowToRelatedObjects(
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+
+  if (categoryLabels.length === 0) {
+    errors.push({ row: rowIndex, field: "Categories", message: "At least one category is required" });
+  }
+
+  const uniqueCategoryLabels = new Set(categoryLabels.map((l) => l.toLowerCase()));
+  if (uniqueCategoryLabels.size < categoryLabels.length) {
+    errors.push({
+      row: rowIndex,
+      field: "Categories",
+      message: "Duplicate category values are not allowed.",
+    });
+  }
 
   const categories: Array<{ id: string; schemaUri: string }> = [];
   for (const label of categoryLabels) {
@@ -456,67 +481,52 @@ function validateEditableRow(
 // Duplicate detection
 // ------------------------------------------------------------------
 
-const DUPLICATE_ERROR_PREFIX = "Duplicate:";
+const DUPLICATE_ERROR_PREFIX = "Duplicate URL";
 const MAX_ROWS = 100;
 
 /**
- * Scans all rows for duplicate URL + Type combinations and stamps a
- * URL-field error onto each affected row, naming the other row numbers
- * involved (e.g. "Duplicate: same URL and Type as row 3").
- * Existing URL format errors take precedence — a duplicate error is only
- * added when the URL field has no other error. Stale duplicate errors are
- * cleared when the duplication is resolved.
+ * Scans all rows for duplicate DOIs (regardless of type) and checks each
+ * DOI against the existing form entries. Stamps an Identifier-field error
+ * on every affected row. Existing format errors take precedence — a
+ * duplicate error is only added when the Identifier field has no other
+ * error. Stale duplicate errors are cleared when the duplication is resolved.
  */
-function applyDuplicateErrors(rows: EditableRow[]): EditableRow[] {
-  // Map key -> list of 0-based row indices that share that key
-  const keyToIndices = new Map<string, number[]>();
+function applyDuplicateErrors(rows: EditableRow[], existingIdentifiers: string[] = []): EditableRow[] {
+  const existingSet = new Set(existingIdentifiers.map((id) => id.trim().toLowerCase()));
 
+  // Map DOI -> list of 0-based row indices that share it
+  const keyToIndices = new Map<string, number[]>();
   rows.forEach((row, idx) => {
     const url = row.values.Identifier.trim().toLowerCase();
     if (!url) return;
-
-    const types = row.values.Type.split(",")
-      .map((t) => t.trim().toLowerCase())
-      .filter((t) => t.length > 0);
-
-    for (const type of types) {
-      const key = `${url}|||${type}`;
-      const existing = keyToIndices.get(key) ?? [];
-      existing.push(idx);
-      keyToIndices.set(key, existing);
-    }
+    const existing = keyToIndices.get(url) ?? [];
+    existing.push(idx);
+    keyToIndices.set(url, existing);
   });
 
-  // Build a map from row index -> sorted set of other 1-based row numbers it duplicates
-  const othersMap = new Map<number, Set<number>>();
+  // Build a map from row index -> true if it duplicates another row
+  const duplicateIndices = new Set<number>();
   for (const indices of keyToIndices.values()) {
     if (indices.length < 2) continue;
-    for (const idx of indices) {
-      const others = othersMap.get(idx) ?? new Set<number>();
-      for (const otherIdx of indices) {
-        if (otherIdx !== idx) others.add(otherIdx + 1);
-      }
-      othersMap.set(idx, others);
-    }
+    indices.forEach((idx) => duplicateIndices.add(idx));
   }
 
   return rows.map((row, idx) => {
-    const others = othersMap.get(idx);
-    const isDuplicate = others !== undefined && others.size > 0;
+    const urlLower = row.values.Identifier.trim().toLowerCase();
+    const originalUrl = row.values.Identifier.trim();
+    const isDuplicateInFile = duplicateIndices.has(idx);
+    const isDuplicateInForm = urlLower.length > 0 && existingSet.has(urlLower);
+    const isDuplicate = isDuplicateInFile || isDuplicateInForm;
     const hasDuplicateError = row.errors.Identifier?.startsWith(DUPLICATE_ERROR_PREFIX);
 
     if (isDuplicate && !row.errors.Identifier) {
-      const sorted = Array.from(others).sort((a, b) => a - b);
-      const othersText =
-        sorted.length === 1
-          ? `row ${sorted[0]}`
-          : `rows ${sorted.slice(0, -1).join(", ")} and ${sorted[sorted.length - 1]}`;
+      const urlType = webArchiveRegex.test(originalUrl) ? "web.archive.org URL" : "DOI";
+      const message = isDuplicateInForm
+        ? `Duplicate URL - ${originalUrl} is already linked to an existing Related Object.`
+        : `Duplicate URL - One ${urlType} can only be linked to one type.`;
       return {
         ...row,
-        errors: {
-          ...row.errors,
-          Identifier: `${DUPLICATE_ERROR_PREFIX} same Identifier and Type as ${othersText}`,
-        },
+        errors: { ...row.errors, Identifier: message },
       };
     }
     if (!isDuplicate && hasDuplicateError) {
@@ -543,13 +553,15 @@ export interface UseBulkUploadOptions {
   generator?: () => Partial<ParsedRelatedObject>;
   /** Called once after all objects have been appended to the form. */
   onComplete?: () => void;
+  /** DOI/identifier values already present in the form — used to detect cross-form duplicates. */
+  existingIdentifiers?: string[];
 }
 
 export function useBulkUpload(
   vocabulary: BulkUploadVocabulary | undefined,
   options: UseBulkUploadOptions = {}
 ) {
-  const { generator, onComplete } = options;
+  const { generator, onComplete, existingIdentifiers = [] } = options;
   const rowCounter = useRef(0);
   const [status, setStatus] = useState<BulkUploadStatus>("idle");
   const [file, setFile] = useState<File | null>(null);
@@ -745,7 +757,8 @@ export function useBulkUpload(
       setStatus("validating");
 
       const rows = applyDuplicateErrors(
-        rawRows.map((rawRow) => buildEditableRow(rawRow))
+        rawRows.map((rawRow) => buildEditableRow(rawRow)),
+        existingIdentifiers
       );
 
       setEditableRows(rows);
@@ -776,7 +789,7 @@ export function useBulkUpload(
         next[rowIndex] = { ...target, values: newValues, errors };
 
         // Re-run duplicate detection across all rows after each cell edit
-        const withDups = applyDuplicateErrors(next);
+        const withDups = applyDuplicateErrors(next, existingIdentifiers);
 
         const stillHasErrors = withDups.some(
           (r) => Object.keys(r.errors).length > 0
@@ -833,12 +846,25 @@ export function useBulkUpload(
         return { row: { ...row, errors }, expanded };
       });
 
-      const revalidated = applyDuplicateErrors(results.map((r) => r.row));
+      const revalidated = applyDuplicateErrors(results.map((r) => r.row), existingIdentifiers);
 
-      if (revalidated.some((r) => Object.keys(r.errors).length > 0)) {
-        setSubmissionError(
-          "Some rows still have validation errors. Please fix them before uploading."
+      const rowsWithErrors = revalidated.filter((r) => Object.keys(r.errors).length > 0);
+      if (rowsWithErrors.length > 0) {
+        const hasDuplicates = rowsWithErrors.some((r) =>
+          r.errors.Identifier?.startsWith(DUPLICATE_ERROR_PREFIX)
         );
+        const hasOtherErrors = rowsWithErrors.some((r) =>
+          Object.entries(r.errors).some(
+            ([field, msg]) => field !== "Identifier" || !msg?.startsWith(DUPLICATE_ERROR_PREFIX)
+          )
+        );
+        const errorMessage =
+          hasDuplicates && hasOtherErrors
+            ? "Some rows have duplicate DOIs or other validation errors. Please fix them before uploading."
+            : hasDuplicates
+              ? "Some rows contain duplicate DOIs that are already linked to existing Related Objects. Remove or update the duplicate rows before uploading."
+              : "Some rows still have validation errors. Please fix them before uploading.";
+        setSubmissionError(errorMessage);
         return;
       }
 
@@ -878,6 +904,19 @@ export function useBulkUpload(
     !allRowsValid || status === "submitting" || status === "done";
   const isUploading = status === "parsing" || status === "validating";
 
+  // DOIs in the preview that duplicate an existing form entry — used by
+  // the parent to expand and flag the matching accordion items.
+  const duplicateExistingDois = useMemo(() => {
+    if (existingIdentifiers.length === 0) return [] as string[];
+    const existingSet = new Set(existingIdentifiers.map((id) => id.trim().toLowerCase()));
+    const result = new Set<string>();
+    editableRows.forEach((row) => {
+      const url = row.values.Identifier.trim();
+      if (url && existingSet.has(url.toLowerCase())) result.add(url);
+    });
+    return Array.from(result);
+  }, [editableRows, existingIdentifiers]);
+
   return {
     // Status
     status,
@@ -892,6 +931,7 @@ export function useBulkUpload(
     totalErrorCount,
     hasAnyRows,
     allRowsValid,
+    duplicateExistingDois,
 
     // Actions
     handleFileUpload,

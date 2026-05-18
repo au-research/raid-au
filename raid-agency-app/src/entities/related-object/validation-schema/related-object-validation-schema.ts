@@ -31,16 +31,16 @@ export const relatedObjectValidationSchema = z
   )
   .max(100, "Related Objects cannot exceed 100 items. Please remove some before saving.")
   .superRefine((items, ctx) => {
-    // First pass: group indices by "url|||typeId" key
+    // Group indices by URL only — one DOI/URL can only be linked to one type
     const keyToIndices = new Map<string, number[]>();
     items.forEach((item, index) => {
-      const key = `${item.id ?? ""}|||${item.type?.id ?? ""}`;
+      const key = (item.id ?? "").trim().toLowerCase();
+      if (!key) return;
       const existing = keyToIndices.get(key) ?? [];
       existing.push(index);
       keyToIndices.set(key, existing);
     });
 
-    // Second pass: flag every item in each duplicate group, naming the others
     for (const indices of keyToIndices.values()) {
       if (indices.length < 2) continue;
       for (const index of indices) {
@@ -48,9 +48,12 @@ export const relatedObjectValidationSchema = z
           .filter((i) => i !== index)
           .map((i) => `#${i + 1}`)
           .join(", ");
+        const urlType = webArchiveRegex.test(items[index]?.id ?? "")
+          ? "web.archive.org URL"
+          : "DOI";
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Duplicate: same URL and Type as item ${others}`,
+          message: `Duplicate URL - One ${urlType} can only be linked to one type, see Related Object ${others}`,
           path: [index, "id"],
         });
       }
