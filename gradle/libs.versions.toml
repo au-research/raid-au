@@ -5,7 +5,7 @@ commons-compress = "1.26.2"
 commons-lang3 = "3.18.0"
 commons-math3 = "3.6.1"
 feign = "13.11"
-flyway-core = "12.5.0"
+flyway-core = "12.6.1"
 geonames-ws-client = "1.1.17"
 guava = "33.5.0-jre"
 hamcrest = "3.0"
@@ -109,7 +109,8 @@ springboot = [
     'spring-boot-starter-cache',
     'spring-boot-starter-security',
     'spring-boot-starter-oauth2-client',
-    'spring-cloud-starter-openfeign'
+    'spring-cloud-starter-openfeign',
+    'spring-boot-starter-flyway'
 ]
 
 springboot-test = ['spring-boot-starter-test']
