@@ -155,8 +155,8 @@ const bulkRelatedObjectRowSchema = z.object({
 // ------------------------------------------------------------------
 
 /** Sentinel markers that delimit the import region in the template. */
-const IMPORT_START_MARKER = "--- Import table starts here";
-const IMPORT_END_MARKER = "--- Import table ends here";
+const IMPORT_START_MARKER = "Import table starts here";
+const IMPORT_END_MARKER = "Import table ends here";
 
 /**
  * Marker that Excel produces when it tries to evaluate a cell that
@@ -639,7 +639,13 @@ export function useBulkUpload(
         const rows: Record<string, string>[] = [];
         for (let r = headerRowIdx + 1; r <= lastDataRowIdx; r++) {
           const row = sheet.getRow(r);
+          // Pre-populate all header keys with "" so that missing cells
+          // (which eachCell skips) still appear as empty strings rather
+          // than absent keys. This matches how the CSV parser behaves and
+          // ensures the REQUIRED_COLUMNS check doesn't fire for rows that
+          // simply have one or more empty fields.
           const rowObj: Record<string, string> = {};
+          headers.forEach((h) => { if (h) rowObj[h] = ""; });
           row.eachCell((cell, colNumber) => {
             const header = headers[colNumber - 1];
             if (header) {
