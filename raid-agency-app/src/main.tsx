@@ -1,6 +1,5 @@
 import "@/index.css";
 import "@fontsource/figtree";
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -16,7 +15,11 @@ import {
   loadAppConfig,
   AppConfigProvider,
   buildMuiTheme,
+  loadRuntimeConfig,
+  setRuntimeConfig,
+  RuntimeConfigProvider,
 } from "./config";
+import { initKeycloakInstance } from "./auth/keycloak";
 
 const router = createBrowserRouter([
   {
@@ -36,20 +39,29 @@ const router = createBrowserRouter([
 ]);
 
 async function bootstrap() {
-  const config = await loadAppConfig();
-  const theme = buildMuiTheme(config.theme);
+  const [runtimeConfig, appConfig] = await Promise.all([
+    loadRuntimeConfig(),
+    loadAppConfig(),
+  ]);
+
+  setRuntimeConfig(runtimeConfig);
+  initKeycloakInstance(runtimeConfig.keycloak);
+
+  const theme = buildMuiTheme(appConfig.theme);
 
   const root = ReactDOM.createRoot(
     document.getElementById("root") as HTMLElement
   );
 
   root.render(
-    <AppConfigProvider config={config}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </AppConfigProvider>
+    <RuntimeConfigProvider config={runtimeConfig}>
+      <AppConfigProvider config={appConfig}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </AppConfigProvider>
+    </RuntimeConfigProvider>
   );
 }
 

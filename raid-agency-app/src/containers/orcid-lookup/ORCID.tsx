@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getRuntimeConfig } from "@/config";
 import {
   Box,
   Paper,
@@ -38,8 +39,8 @@ type OrcidCacheEntry = {
   expiresAt: number;
   source: string;
 };
-const env = import.meta.env.VITE_RAIDO_ENV === 'prod' ? '' : 'demo.';
-const replaceText = import.meta.env.VITE_RAIDO_ENV === 'prod' ? 'https://orcid.org/' : 'https://sandbox.orcid.org/';
+const getOrcidEnv = () => getRuntimeConfig().environment === 'prod' ? '' : 'demo.';
+const getOrcidReplaceText = () => getRuntimeConfig().environment === 'prod' ? 'https://orcid.org/' : 'https://sandbox.orcid.org/';
 const orcidLookupCache = {
   // Get data from localStorage
   get: <T,>(orcidId: string): T | null => {
@@ -129,7 +130,7 @@ const orcidLookupCache = {
 
 // Helper to normalize ORCID ID
 const normalizeOrcidId = (orcid: string): string => {
-  return orcid.trim().replace(replaceText, '');
+  return orcid.trim().replace(getOrcidReplaceText(), '');
 };
 
 // JSONP helper function
@@ -335,14 +336,14 @@ export default function ORCIDLookup({
   const searchConfig = {
     lookup: {
       placeholder: 'Type to search',
-      endpoint: `https://${env}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(searchValue)}/?api_key=public&callback=?`,
+      endpoint: `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(searchValue)}/?api_key=public&callback=?`,
       label: 'ORCID ID',
       description: 'Search by unique ORCID identifier',
       icon: <FingerprintIcon />
     },
     search: {
       placeholder: 'Type to search',
-      endpoint: `https://${env}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/search?api_key=public&q=${encodeURIComponent(searchValue)}&start=0&rows=10&wt=json&callback=?`,
+      endpoint: `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/search?api_key=public&q=${encodeURIComponent(searchValue)}&start=0&rows=10&wt=json&callback=?`,
       label: 'Custom Search',
       description: 'Search by name or keywords',
       icon: <PersonIcon />
@@ -364,7 +365,7 @@ export default function ORCIDLookup({
   setCachedResult(false);
   setError(null);
 
-  const orcid = searchValue.trim().replace(replaceText, '').match(/^\d{4}-?\d{4}-?\d{4}-?\d{3}[0-9X]$/);
+  const orcid = searchValue.trim().replace(getOrcidReplaceText(), '').match(/^\d{4}-?\d{4}-?\d{4}-?\d{3}[0-9X]$/);
 
   if (orcid) {
     // LOOKUP MODE
@@ -386,7 +387,7 @@ export default function ORCIDLookup({
     setIsLoading(true);
     setDropBox(true);
     try {
-      const endpoint = `https://${env}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(orcidParts)}/?api_key=public&callback=?`;
+      const endpoint = `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(orcidParts)}/?api_key=public&callback=?`;
       const data = await searchAPI(endpoint) as LookupResponse;
 
       // Create display name
@@ -410,7 +411,7 @@ export default function ORCIDLookup({
     setIsLoading(true);
     setDropBox(true);
     try {
-      const endpoint = `https://${env}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/search?api_key=public&q=${encodeURIComponent(searchValue)}&start=0&rows=10&wt=json&callback=?`;
+      const endpoint = `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/search?api_key=public&q=${encodeURIComponent(searchValue)}&start=0&rows=10&wt=json&callback=?`;
       const data = await searchAPI(endpoint) as SearchResponse;
       processSearchData(data, 'search');
     } catch (err) {
@@ -444,7 +445,7 @@ export default function ORCIDLookup({
     setSearchValue(value);
     setVerifiedORCID(value === '' && false);
     formMethods?.setValue?.(fieldName, value);
-    const orcid = value.trim().replace(replaceText, '').match(/^\d{4}-?\d{4}-?\d{4}-?\d{3}[0-9X]$/);
+    const orcid = value.trim().replace(getOrcidReplaceText(), '').match(/^\d{4}-?\d{4}-?\d{4}-?\d{3}[0-9X]$/);
     if (orcid) {
       setSearchMode('lookup');
     } else {
@@ -519,7 +520,7 @@ export default function ORCIDLookup({
   };
 
 const selectOrcid = (item: OrcidData | SearchPerson) => {
-  const orcidUrl = import.meta.env.VITE_RAIDO_ENV === 'prod' ? `https://orcid.org/${item?.orcid}` : `https://sandbox.orcid.org/${item?.orcid}`;
+  const orcidUrl = getRuntimeConfig().environment === 'prod' ? `https://orcid.org/${item?.orcid}` : `https://sandbox.orcid.org/${item?.orcid}`;
   const orcidName = item?.creditName ? item.creditName : `${item?.givenName || ''} ${item?.lastName || ''}`.trim();
 
   // Save selected ORCID to localStorage

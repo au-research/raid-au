@@ -1,12 +1,14 @@
-import { getEnv } from "@/utils/api-utils/api-utils";
-import {authService} from "@/services/auth-service.ts";
+import { authService } from "@/services/auth-service.ts";
 import { API_CONSTANTS } from "@/constants/apiConstants";
+import { getRuntimeConfig } from "@/config";
 
-let currentEnv = getEnv();
-if (currentEnv === "dev") {
-  currentEnv = "test";
-}
-const subDomain = "invite";
+const SUB_DOMAIN = "invite";
+
+// The invite service doesn't exist in dev, so dev maps to test.
+const getInviteEnv = () => {
+  const env = getRuntimeConfig().environment;
+  return env === "dev" ? "test" : env;
+};
 
 export async function sendInvite({
   email,
@@ -22,7 +24,7 @@ export async function sendInvite({
   token: string;
 } & ({ email: string } | { orcid: string })) {
   const response = await authService.fetchWithAuth(
-    API_CONSTANTS.INVITE.SEND(subDomain, currentEnv),
+    API_CONSTANTS.INVITE.SEND(SUB_DOMAIN, getInviteEnv()),
     {
       method: "POST",
       body: JSON.stringify({
@@ -43,7 +45,7 @@ export async function sendInvite({
 
 export async function fetchInvites({ token }: { token: string }) {
   const response = await authService.fetchWithAuth(
-      API_CONSTANTS.INVITE.FETCH(subDomain, currentEnv),
+    API_CONSTANTS.INVITE.FETCH(SUB_DOMAIN, getInviteEnv()),
   );
   return await response.json();
 }
@@ -58,13 +60,10 @@ export async function acceptInvite({
   handle: string;
 }) {
   const response = await authService.fetchWithAuth(
-    API_CONSTANTS.INVITE.ACCEPT(subDomain, currentEnv),
+    API_CONSTANTS.INVITE.ACCEPT(SUB_DOMAIN, getInviteEnv()),
     {
       method: "POST",
-      body: JSON.stringify({
-        code,
-        handle,
-      }),
+      body: JSON.stringify({ code, handle }),
     }
   );
   return await response.json();
@@ -80,13 +79,10 @@ export async function rejectInvite({
   handle: string;
 }) {
   const response = await authService.fetchWithAuth(
-    API_CONSTANTS.INVITE.REJECT(subDomain, currentEnv),
+    API_CONSTANTS.INVITE.REJECT(SUB_DOMAIN, getInviteEnv()),
     {
       method: "POST",
-      body: JSON.stringify({
-        code,
-        handle,
-      }),
+      body: JSON.stringify({ code, handle }),
     }
   );
   return await response.json();

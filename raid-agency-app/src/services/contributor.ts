@@ -1,9 +1,10 @@
-import { getEnv } from "@/utils/api-utils/api-utils";
 import { API_CONSTANTS } from "@/constants/apiConstants";
+import { getRuntimeConfig } from "@/config";
 
 export async function fetchOrcidContributors({ handle }: { handle: string }) {
-  let environment = getEnv();
-  environment = environment === "dev" ? "test" : environment;
+  // The orcid service doesn't exist in dev, so dev maps to test.
+  const env = getRuntimeConfig().environment;
+  const environment = env === "dev" ? "test" : env;
   const subDomain = "orcid";
   try {
     const url = API_CONSTANTS.ORCID.CONTRIBUTORS(subDomain, environment);
@@ -15,7 +16,6 @@ export async function fetchOrcidContributors({ handle }: { handle: string }) {
 
     return response.json();
   } catch (error) {
-    // Handle any other errors
     console.error("Error fetching contributors:", error);
     throw error;
   }
