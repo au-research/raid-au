@@ -5,7 +5,7 @@ commons-compress = "1.26.2"
 commons-lang3 = "3.18.0"
 commons-math3 = "3.6.1"
 feign = "13.11"
-flyway-core = "9.22.3"
+flyway-core = "12.6.1"
 geonames-ws-client = "1.1.17"
 guava = "33.5.0-jre"
 hamcrest = "3.0"
@@ -57,6 +57,7 @@ jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "ja
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations" }
 jakarta-validation-api = { group = "jakarta.validation", name = "jakarta.validation-api", version.ref = "jakarta-validation-api" }
 flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway-core" }
+flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway-core" }
 geonames-ws-client = { group = "org.geonames", name = "geonames-ws-client", version.ref = "geonames-ws-client" }
 jakarta-jakartaee-web-api = { group = "jakarta.platform", name = "jakarta.jakartaee-web-api", version.ref = "jakarta-jakartaee-web-api" }
 jakarta-json-api = { group = "jakarta.json", name = "jakarta.json-api", version.ref = "jakarta-json-api" }
