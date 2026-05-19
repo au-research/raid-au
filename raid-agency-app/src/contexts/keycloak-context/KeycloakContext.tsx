@@ -1,5 +1,5 @@
 import {createContext, ReactNode, useContext, useEffect, useRef, useState,} from "react";
-import {keycloakInstance} from "@/auth/keycloak";
+import {getKeycloakInstance} from "@/auth/keycloak";
 import {ErrorAlertComponent} from "@/components/error-alert-component";
 import {Loading} from "@/pages/loading";
 
@@ -49,7 +49,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
   const login = async (options?: LoginOptions) => {
     try {
-      await keycloakInstance.login({
+      await getKeycloakInstance().login({
         idpHint: options?.idpHint,
         scope: options?.scope,
         redirectUri: options?.redirectUri || window.location.origin,
@@ -62,7 +62,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
   const refreshToken = async() => {
     try {
-      const refreshed = await keycloakInstance.updateToken(60);
+      const refreshed = await getKeycloakInstance().updateToken(60);
       if (refreshed) {
         setRefreshTokenWarning(false);
       }
@@ -93,17 +93,17 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initKeycloak = async () => {
       try {
-        const authenticated = await keycloakInstance.init({
+        const authenticated = await getKeycloakInstance().init({
           onLoad: "check-sso",
           checkLoginIframe: false,
           silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
         });
 
         if (authenticated) {
-          const userProfile = await keycloakInstance.loadUserProfile();
-          const roles = keycloakInstance.realmAccess?.roles || [];
+          const userProfile = await getKeycloakInstance().loadUserProfile();
+          const roles = getKeycloakInstance().realmAccess?.roles || [];
           setUser({
-            id: keycloakInstance.subject,
+            id: getKeycloakInstance().subject,
             username: userProfile.username,
             email: userProfile.email,
             firstName: userProfile.firstName,
@@ -113,12 +113,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
           setupTokenRefresh();
 
-          keycloakInstance.onTokenExpired = () => {
+          getKeycloakInstance().onTokenExpired = () => {
             console.log("Token expired, refreshing...");
             refreshToken();
           }
 
-          keycloakInstance.onAuthRefreshError = () => {
+          getKeycloakInstance().onAuthRefreshError = () => {
             console.error("Auth refresh error");
             setRefreshTokenWarning(true);
           }
@@ -139,7 +139,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
   const wrappedUpdateToken = async (minValidity: number) => {
     try {
-      return await keycloakInstance.updateToken(minValidity);
+      return await getKeycloakInstance().updateToken(minValidity);
     } catch (error) {
       console.error("Failed to update token:", error);
       setRefreshTokenWarning(true);
@@ -151,18 +151,18 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     isInitialized,
     isLoading,
     user,
-    authenticated: keycloakInstance.authenticated,
+    authenticated: getKeycloakInstance().authenticated,
     login,
     logout: async () => {
       if (refreshIntervalRef.current) {
         window.clearInterval(refreshIntervalRef.current);
         refreshIntervalRef.current = undefined;
       }
-      return keycloakInstance.logout();
+      return getKeycloakInstance().logout();
     },
-    token: keycloakInstance.token || "",
-    tokenParsed: keycloakInstance.tokenParsed,
-    refreshToken: keycloakInstance.refreshToken,
+    token: getKeycloakInstance().token || "",
+    tokenParsed: getKeycloakInstance().tokenParsed,
+    refreshToken: getKeycloakInstance().refreshToken,
     updateToken: wrappedUpdateToken,
     error, // Add error to the context value
     refreshTokenWarning,

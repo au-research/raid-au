@@ -1,5 +1,3 @@
-// src/config/index.ts
-
 export type {
   AppConfig,
   HeaderConfig,
@@ -12,7 +10,15 @@ export type {
   ThemePaletteColor,
 } from "./Appconfig";
 
+export type { RuntimeConfig } from "./RuntimeConfig";
+
 export { defaultConfig } from "./DefaultConfig";
-export { loadAppConfig } from "./Configloader";
+export { loadConfig } from "./Configloader";
 export { AppConfigProvider, useAppConfig } from "./Appconfigcontext";
 export { buildMuiTheme } from "./Buildtheme";
+export {
+  setRuntimeConfig,
+  getRuntimeConfig,
+  RuntimeConfigProvider,
+  useRuntimeConfig,
+} from "./RuntimeConfigContext";

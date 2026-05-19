@@ -5,22 +5,10 @@
  * It handles token refreshing and authentication-related operations.
  */
 import { ApiTokenRequest, RequestTokenResponse } from "@/types";
-
-/**
- * Keycloak configuration object containing connection details
- * Loaded from environment variables
- */
-const KEYCLOAK_CONFIG = {
-  url: import.meta.env.VITE_KEYCLOAK_URL,
-  realm: import.meta.env.VITE_KEYCLOAK_REALM,
-  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
-} as const;
+import { getRuntimeConfig } from "@/config";
 
 /**
  * Fetches a new API token from Keycloak using the provided refresh token
- *
- * This function calls the Keycloak token endpoint to get a new access token
- * using the OAuth2 refresh token flow.
  *
  * @param refreshToken - The refresh token to use for getting a new access token
  * @returns Promise resolving to a token response containing access_token and refresh_token
@@ -29,16 +17,9 @@ const KEYCLOAK_CONFIG = {
 export async function fetchApiTokenFromKeycloak({
   refreshToken,
 }: ApiTokenRequest): Promise<RequestTokenResponse> {
-  // Validate environment variables
-  if (
-    !KEYCLOAK_CONFIG.url ||
-    !KEYCLOAK_CONFIG.realm ||
-    !KEYCLOAK_CONFIG.clientId
-  ) {
-    throw new Error("Missing required Keycloak configuration");
-  }
+  const { keycloak } = getRuntimeConfig();
 
-  const tokenEndpoint = `${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`;
+  const tokenEndpoint = `${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/token`;
 
   try {
     const response = await fetch(tokenEndpoint, {
@@ -48,7 +29,7 @@ export async function fetchApiTokenFromKeycloak({
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        client_id: KEYCLOAK_CONFIG.clientId,
+        client_id: keycloak.clientId,
         refresh_token: refreshToken,
       }),
     });

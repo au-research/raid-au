@@ -1,0 +1,16 @@
+services:
+  raid-agency-app:
+    build: .
+    ports:
+      - "7080:80"
+
+    # Option A — volume mount (plain Docker, no external dependencies):
+    # Place your environment's app-config.json next to this file and uncomment:
+    # volumes:
+    #   - ./app-config.json:/usr/share/nginx/html/app-config.json:ro
+
+    # Option B — proxy to external config source (e.g. S3):
+    # Nginx will fetch /app-config.json from this URL on every request.
+    # No volume or file management needed — just set the URL.
+    # environment:
+    #   APP_CONFIG_URL: https://your-bucket.s3.amazonaws.com/env/app-config.json
