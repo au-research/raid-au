@@ -1,64 +1,64 @@
 -- Step 1: Make schema_id NOT NULL (required for primary key)
-ALTER TABLE raido.api_svc.subject_type
+ALTER TABLE api_svc.subject_type
     ALTER COLUMN schema_id SET NOT NULL;
 
 -- Step 2: Drop the foreign key from raid_subject that references subject_type
-ALTER TABLE raido.api_svc.raid_subject
+ALTER TABLE api_svc.raid_subject
     DROP CONSTRAINT raid_subject_subject_type_id_fkey;
 
 -- Step 3: Add schema_id column to raid_subject
-ALTER TABLE raido.api_svc.raid_subject
+ALTER TABLE api_svc.raid_subject
     ADD COLUMN subject_type_schema_id INTEGER;
 
 -- Step 4: Populate the new column from existing relationships
-UPDATE raido.api_svc.raid_subject rs
+UPDATE api_svc.raid_subject rs
 SET subject_type_schema_id = st.schema_id
-FROM raido.api_svc.subject_type st
+FROM api_svc.subject_type st
 WHERE rs.subject_type_id = st.id;
 
 -- Step 5: Make the new column NOT NULL
-ALTER TABLE raido.api_svc.raid_subject
+ALTER TABLE api_svc.raid_subject
     ALTER COLUMN subject_type_schema_id SET NOT NULL;
 
 -- Step 6: Drop the existing primary key on subject_type
-ALTER TABLE raido.api_svc.subject_type
+ALTER TABLE api_svc.subject_type
     DROP CONSTRAINT subject_pkey;
 
 -- Step 7: Create the new composite primary key
-ALTER TABLE raido.api_svc.subject_type
+ALTER TABLE api_svc.subject_type
     ADD CONSTRAINT subject_type_pkey PRIMARY KEY (id, schema_id);
 
 -- Step 8: Re-create the foreign key as a composite reference
-ALTER TABLE raido.api_svc.raid_subject
+ALTER TABLE api_svc.raid_subject
     ADD CONSTRAINT raid_subject_subject_type_fkey
         FOREIGN KEY (subject_type_id, subject_type_schema_id)
-            REFERENCES raido.api_svc.subject_type (id, schema_id);
+            REFERENCES api_svc.subject_type (id, schema_id);
 
 -- Step 9: Add foreign key from raid_subject.subject_type_schema_id to subject_type_schema
-ALTER TABLE raido.api_svc.raid_subject
+ALTER TABLE api_svc.raid_subject
     ADD CONSTRAINT raid_subject_subject_type_schema_id_fkey
         FOREIGN KEY (subject_type_schema_id)
-            REFERENCES raido.api_svc.subject_type_schema (id);
+            REFERENCES api_svc.subject_type_schema (id);
 
-alter table raido.api_svc.subject_type_schema add column id_starts_with varchar;
+alter table api_svc.subject_type_schema add column id_starts_with varchar;
 
-insert into raido.api_svc.subject_type_schema (uri, status, id_starts_with)
+insert into api_svc.subject_type_schema (uri, status, id_starts_with)
 values ('https://vocabs.ardc.edu.au/viewById/317', 'active', 'https://linked.data.gov.au/def/anzsrc-seo/2020/');
 
-update raido.api_svc.subject_type_schema set id_starts_with = 'https://linked.data.gov.au/def/anzsrc-for/2020/' where id = 2;
-update raido.api_svc.subject_type_schema set id_starts_with = 'https://linked.data.gov.au/def/anzsrc-for/2020/' where id = 3;
+update api_svc.subject_type_schema set id_starts_with = 'https://linked.data.gov.au/def/anzsrc-for/2020/' where id = 2;
+update api_svc.subject_type_schema set id_starts_with = 'https://linked.data.gov.au/def/anzsrc-for/2020/' where id = 3;
 
-insert into raido.api_svc.subject_type (id, name, description, note, schema_id)
+insert into api_svc.subject_type (id, name, description, note, schema_id)
 select id, name, description, note, 2
-from raido.api_svc.subject_type
+from api_svc.subject_type
 where schema_id = 1;
 
-insert into raido.api_svc.subject_type (id, name, description, note, schema_id)
+insert into api_svc.subject_type (id, name, description, note, schema_id)
 select id, name, description, note, 3
-from raido.api_svc.subject_type
+from api_svc.subject_type
 where schema_id = 1;
 
-insert into raido.api_svc.subject_type (id, name, description, note, schema_id) values
+insert into api_svc.subject_type (id, name, description, note, schema_id) values
 ('10','ANIMAL PRODUCTION AND ANIMAL PRIMARY PRODUCTS','This division covers R&D directed towards breeding and farming livestock, and the production of associated primary livestock products.','a) Cereal crops grown for both grain and fodder or for feed grain or fodder alone are included in Division 26 Plant production and plant primary products.
 b) The manufacture of processed animal products, including fish, and their primary products is included in the appropriate groups in Division 24 Manufacturing.
 c) Transportation of live animals or animal products is included in Division 27 Transport.
