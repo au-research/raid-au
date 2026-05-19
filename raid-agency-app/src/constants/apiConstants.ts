@@ -22,10 +22,10 @@ export const API_CONSTANTS = {
     get CONTRIBUTORS() { return `${svc().orcid}/contributors`; },
   },
   INVITE: {
-    get SEND() { return `${svc().invite}/invite`; },
-    get FETCH() { return `${svc().invite}/invite/fetch`; },
-    get ACCEPT() { return `${svc().invite}/invite/accept`; },
-    get REJECT() { return `${svc().invite}/invite/reject`; },
+    get SEND() { return svc().invite ? `${svc().invite}/invite` : undefined; },
+    get FETCH() { return svc().invite ? `${svc().invite}/invite/fetch` : undefined; },
+    get ACCEPT() { return svc().invite ? `${svc().invite}/invite/accept` : undefined; },
+    get REJECT() { return svc().invite ? `${svc().invite}/invite/reject` : undefined; },
   },
   DOI: {
     REGISTRATION: (handle: string) => `https://doi.org/doiRA/${handle}`,

@@ -13,7 +13,7 @@ export interface RuntimeConfig {
   };
   services: {
     orcid: string;
-    invite: string;
+    invite?: string;
     staticProd: string;
     staticBase: string;
   };

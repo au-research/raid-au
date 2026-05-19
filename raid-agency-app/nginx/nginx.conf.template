@@ -1,0 +1,31 @@
+# This template is used when APP_CONFIG_URL is set at container startup.
+# The entrypoint script runs envsubst to produce /etc/nginx/conf.d/default.conf,
+# replacing ${APP_CONFIG_URL} with the actual external URL (e.g. an S3 object URL).
+#
+# For plain volume-mount deployments, use nginx.conf directly — no template needed.
+
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Proxy /app-config.json to the external config source.
+    # Nginx fetches the file on behalf of the browser — no CORS issues,
+    # no rebuild required, single image across all environments.
+    location = /app-config.json {
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+        proxy_pass ${APP_CONFIG_URL};
+        proxy_set_header Host $proxy_host;
+    }
+
+    # Hashed static assets can be cached aggressively
+    location ~* \.(js|css|woff2?|png|svg|ico|webp)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # SPA fallback — all routes resolve to index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

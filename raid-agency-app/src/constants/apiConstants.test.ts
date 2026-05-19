@@ -81,20 +81,32 @@ describe("API_CONSTANTS", () => {
   });
 
   describe("INVITE", () => {
-    it("SEND returns the correct URL", () => {
+    it("SEND returns the correct URL when invite is configured", () => {
       expect(API_CONSTANTS.INVITE.SEND).toBe("https://invite.test.raid.org.au/invite");
     });
 
-    it("FETCH returns the correct URL", () => {
+    it("FETCH returns the correct URL when invite is configured", () => {
       expect(API_CONSTANTS.INVITE.FETCH).toBe("https://invite.test.raid.org.au/invite/fetch");
     });
 
-    it("ACCEPT returns the correct URL", () => {
+    it("ACCEPT returns the correct URL when invite is configured", () => {
       expect(API_CONSTANTS.INVITE.ACCEPT).toBe("https://invite.test.raid.org.au/invite/accept");
     });
 
-    it("REJECT returns the correct URL", () => {
+    it("REJECT returns the correct URL when invite is configured", () => {
       expect(API_CONSTANTS.INVITE.REJECT).toBe("https://invite.test.raid.org.au/invite/reject");
+    });
+
+    it("returns undefined when invite is not configured", () => {
+      vi.mocked(getRuntimeConfig).mockReturnValue({
+        ...mockConfig,
+        services: { ...mockConfig.services, invite: undefined },
+      } as RuntimeConfig);
+
+      expect(API_CONSTANTS.INVITE.SEND).toBeUndefined();
+      expect(API_CONSTANTS.INVITE.FETCH).toBeUndefined();
+      expect(API_CONSTANTS.INVITE.ACCEPT).toBeUndefined();
+      expect(API_CONSTANTS.INVITE.REJECT).toBeUndefined();
     });
   });
 

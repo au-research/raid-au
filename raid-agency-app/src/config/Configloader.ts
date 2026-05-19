@@ -42,7 +42,6 @@ function validateRuntimeFields(raw: Record<string, any>): void {
   if (!raw.environment) missing.push("environment");
   if (!raw.supportEmail) missing.push("supportEmail");
   if (!raw.services?.orcid) missing.push("services.orcid");
-  if (!raw.services?.invite) missing.push("services.invite");
   if (!raw.services?.staticProd) missing.push("services.staticProd");
   if (!raw.services?.staticBase) missing.push("services.staticBase");
 

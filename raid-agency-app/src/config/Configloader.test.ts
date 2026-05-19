@@ -9,7 +9,6 @@ const mockValidConfig = {
   googleAnalytics: { measurementId: "G-123", measurementIdDemo: "G-456" },
   services: {
     orcid: "https://orcid.test.raid.org.au",
-    invite: "https://invite.test.raid.org.au",
     staticProd: "https://static.prod.raid.org.au",
     staticBase: "https://static.{env}.raid.org.au",
   },
