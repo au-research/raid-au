@@ -20,6 +20,14 @@ raid:
   cors:
     origins:
       - http://localhost:7080
+      - https://raid-dev.dpslab.surf.nl
+      - https://api.raid-dev.dpslab.surf.nl
+      - https://auth.raid-dev.dpslab.surf.nl
+      - https://auth.acc.raid.surf.nl
+      - https://api.acc.raid.surf.nl
+      - https://raid.surf.nl
+      - https://auth.raid.surf.nl
+      - https://api.raid.surf.nl
   contributor-validation:
     orcid:
       url-prefix: https://orcid.org/
