@@ -1,5 +1,15 @@
 import org.flywaydb.gradle.task.AbstractFlywayTask
 
+buildscript {
+    dependencies {
+        classpath libs.postgresql
+        classpath libs.flyway.postgresql
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins{
   id 'java'
   alias(libs.plugins.flyway)
