@@ -13,7 +13,7 @@ Bootstrap Gradle with gradle-wrapper.
 
 But you can override locally with tools that make sense:
 * aws-cdk using esbuild
-* app-client using create-react-app (webpack for the moment)
+* raid-agency-app using Vite
 
 Avoid writing lots of imperative logic in build scripts.  Factor it out to 
 `/buildSrc` ASAP.

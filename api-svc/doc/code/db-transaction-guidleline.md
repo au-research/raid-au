@@ -42,8 +42,11 @@ not in use, if configured appropriately.
 
 `select * from pg_settings where name='max_connections'`
 
-Running on my local machine, with PG 15 running in a docker container: 100.
+Running on my local machine, with PG 16 running in a docker container: 100.
 
 As at 2023-06-08, PG 15 running on an AWS RDS `db.t4g.micro` instance: 81
 
 db.t4g.small: 190
+
+Note: as of 2026-04, the local docker-compose uses PostgreSQL 16.8
+(`api-svc/raid-api/docker-compose.yaml`).

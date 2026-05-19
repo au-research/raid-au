@@ -1,12 +1,10 @@
-import { getEnv } from "@/utils/api-utils/api-utils";
-import {authService} from "@/services/auth-service.ts";
+import { authService } from "@/services/auth-service.ts";
 import { API_CONSTANTS } from "@/constants/apiConstants";
 
-let currentEnv = getEnv();
-if (currentEnv === "dev") {
-  currentEnv = "test";
+function requireInviteUrl(url: string | undefined): string {
+  if (!url) throw new Error("Invite service is not configured for this environment.");
+  return url;
 }
-const subDomain = "invite";
 
 export async function sendInvite({
   email,
@@ -21,18 +19,15 @@ export async function sendInvite({
   title: string;
   token: string;
 } & ({ email: string } | { orcid: string })) {
-  const response = await authService.fetchWithAuth(
-    API_CONSTANTS.INVITE.SEND(subDomain, currentEnv),
-    {
-      method: "POST",
-      body: JSON.stringify({
-        inviteeEmail: email || "",
-        inviteeOrcid: orcid || "",
-        title,
-        handle,
-      }),
-    }
-  );
+  const response = await authService.fetchWithAuth(requireInviteUrl(API_CONSTANTS.INVITE.SEND), {
+    method: "POST",
+    body: JSON.stringify({
+      inviteeEmail: email || "",
+      inviteeOrcid: orcid || "",
+      title,
+      handle,
+    }),
+  });
 
   if (!response.ok) {
     throw new Error("Failed to send invite");
@@ -42,9 +37,7 @@ export async function sendInvite({
 }
 
 export async function fetchInvites({ token }: { token: string }) {
-  const response = await authService.fetchWithAuth(
-      API_CONSTANTS.INVITE.FETCH(subDomain, currentEnv),
-  );
+  const response = await authService.fetchWithAuth(requireInviteUrl(API_CONSTANTS.INVITE.FETCH));
   return await response.json();
 }
 
@@ -57,16 +50,10 @@ export async function acceptInvite({
   token: string;
   handle: string;
 }) {
-  const response = await authService.fetchWithAuth(
-    API_CONSTANTS.INVITE.ACCEPT(subDomain, currentEnv),
-    {
-      method: "POST",
-      body: JSON.stringify({
-        code,
-        handle,
-      }),
-    }
-  );
+  const response = await authService.fetchWithAuth(requireInviteUrl(API_CONSTANTS.INVITE.ACCEPT), {
+    method: "POST",
+    body: JSON.stringify({ code, handle }),
+  });
   return await response.json();
 }
 
@@ -79,15 +66,9 @@ export async function rejectInvite({
   token: string;
   handle: string;
 }) {
-  const response = await authService.fetchWithAuth(
-    API_CONSTANTS.INVITE.REJECT(subDomain, currentEnv),
-    {
-      method: "POST",
-      body: JSON.stringify({
-        code,
-        handle,
-      }),
-    }
-  );
+  const response = await authService.fetchWithAuth(requireInviteUrl(API_CONSTANTS.INVITE.REJECT), {
+    method: "POST",
+    body: JSON.stringify({ code, handle }),
+  });
   return await response.json();
 }

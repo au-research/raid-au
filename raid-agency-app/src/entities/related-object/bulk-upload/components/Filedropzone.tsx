@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Alert, Box, Typography } from "@mui/material";
 import { CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 
 const ACCEPTED_TYPES = [
@@ -22,6 +22,7 @@ export function FileDropZone({
   currentFileName,
 }: FileDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [fileTypeError, setFileTypeError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isValidFile = (file: File): boolean => {
@@ -37,11 +38,13 @@ export function FileDropZone({
       if (disabled) return;
 
       if (!isValidFile(file)) {
-        // Could surface this via a snackbar or inline error
-        console.warn("Invalid file type:", file.type, file.name);
+        setFileTypeError(
+          `"${file.name}" is not a supported file type. Please upload a .xlsx, .xls, or .csv file.`
+        );
         return;
       }
 
+      setFileTypeError(null);
       onFileSelected(file);
     },
     [disabled, onFileSelected]
@@ -141,6 +144,12 @@ export function FileDropZone({
       <Typography variant="caption" color="text.secondary">
         Accepted formats: .xlsx, .xls, .csv
       </Typography>
+
+      {fileTypeError && (
+        <Alert severity="error" onClose={() => setFileTypeError(null)} sx={{ mt: 1, textAlign: "left" }}>
+          {fileTypeError}
+        </Alert>
+      )}
 
       {currentFileName && (
         <Typography

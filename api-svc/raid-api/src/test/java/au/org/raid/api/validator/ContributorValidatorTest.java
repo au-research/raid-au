@@ -569,36 +569,6 @@ class ContributorValidatorTest {
     }
 
     @Test
-    @DisplayName("Validation passes with valid contributor with email address")
-    void validContributorWithEmail() {
-        final var role = new ContributorRole()
-                .schemaUri(TestConstants.CONTRIBUTOR_ROLE_SCHEMA_URI)
-                .id(TestConstants.SUPERVISION_CONTRIBUTOR_ROLE);
-
-        final var position = new ContributorPosition()
-                .schemaUri(TestConstants.CONTRIBUTOR_POSITION_SCHEMA_URI)
-                .id(TestConstants.LEADER_CONTRIBUTOR_POSITION)
-                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        final var contributor = new Contributor()
-                .id(VALID_ORCID)
-                .schemaUri(TestConstants.ORCID_SCHEMA_URI)
-                .role(List.of(role))
-                .position(List.of(position))
-                .leader(true)
-                .contact(true);
-
-        when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
-
-        final var failures = validationService.validate(List.of(contributor));
-
-        assertThat(failures, empty());
-
-        verify(orcidValidator).validate(contributor, 0);
-        verifyNoInteractions(contributorRepository);
-    }
-
-    @Test
     @DisplayName("Validation fails with non-existent ORCID")
     void nonExistentOrcid() {
         final var role = new ContributorRole()

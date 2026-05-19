@@ -430,6 +430,31 @@
     }
   },
   {
+  "httpRequest": {
+    "method": "POST",
+    "path": "/dois",
+    "headers": {
+      "Authorization": ["Basic QVRISC5LRk9IWkI6ZGF0YWNpdGUtcGFzc3dvcmQ="],
+      "Content-Type": ["application/json"]
+    }
+  },
+  "httpResponse": {
+    "statusCode": 201,
+    "headers": {
+      "Content-Type": ["application/json"]
+    },
+    "body": {
+      "data": {
+        "id": "10.1234/example.doi",
+        "type": "dois",
+        "attributes": {
+          "doi": "10.1234/example.doi"
+        }
+      }
+    }
+  }
+},
+  {
     "httpRequest": {
       "method": "POST",
       "path": "/dois",

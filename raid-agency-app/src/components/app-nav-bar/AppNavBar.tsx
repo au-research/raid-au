@@ -19,11 +19,13 @@ import { useKeycloak } from '@/contexts/keycloak-context';
 import React from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAppConfig } from "@/config/Appconfigcontext";
+import { useRuntimeConfig } from "@/config";
 import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
 
 const AuthenticatedNavbarContent = () => {
   const { isOperator, isGroupAdmin } = useAuthHelper();
+  const { environment } = useRuntimeConfig();
   useServicePointPendingRequest();
   return (
     <Stack direction="row" alignItems="center" gap={1}>
@@ -31,7 +33,7 @@ const AuthenticatedNavbarContent = () => {
       {isOperator || isGroupAdmin ? <NotificationBell /> : null}
       <UserDropdown />
       <Chip
-        label={import.meta.env.VITE_RAIDO_ENV.toUpperCase()}
+        label={environment.toUpperCase()}
         color="error"
         size="small"
         sx={{ mr: 2 }}
@@ -57,7 +59,8 @@ export const AppNavBar = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const config = useAppConfig();
-  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
+  const { environment } = useRuntimeConfig();
+  const isProduction = environment === 'prod';
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
