@@ -39,9 +39,9 @@ interface ResearchProjectJsonLd {
     "@id": string;
     identifier: PropertyValue;
   };
-  description: string | null;
+  description?: string;
   foundingDate: string;
-  dissolutionDate: string | null;
+  dissolutionDate?: string;
   member: Role[];
   funder: Role[];
   knowsAbout: DefinedTerm[];
@@ -116,7 +116,7 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
   const description = raid.description
     ?.filter((d) => d.type.id === PRIMARY_DESCRIPTION_TYPE)
     ?.at(0)
-    ?.text ?? null;
+    ?.text;
 
   const memberRoles: Role[] = [];
   const funderRoles: Role[] = [];
@@ -156,9 +156,9 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
         value: registrationAgencyId,
       },
     },
-    description,
+    ...(description !== undefined && { description }),
     foundingDate: raid.date?.startDate ?? "",
-    dissolutionDate: raid.date?.endDate ?? null,
+    ...(raid.date?.endDate !== undefined && { dissolutionDate: raid.date.endDate }),
     member: memberRoles,
     funder: funderRoles,
     knowsAbout: subjects,

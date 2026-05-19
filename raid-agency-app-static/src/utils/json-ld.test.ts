@@ -78,7 +78,7 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result.description).toBe("The aim of the study is to investigate...");
   });
 
-  it("returns null description when no primary description exists", () => {
+  it("omits description when no primary description exists", () => {
     const raid = minimalRaid();
     raid.description = [
       {
@@ -88,7 +88,7 @@ describe("buildResearchProjectJsonLd", () => {
     ];
 
     const result = buildResearchProjectJsonLd(raid);
-    expect(result.description).toBeNull();
+    expect(result).not.toHaveProperty("description");
   });
 
   it("sets foundingDate and dissolutionDate from raid dates", () => {
@@ -100,9 +100,9 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result.dissolutionDate).toBe("2026-12-31");
   });
 
-  it("sets dissolutionDate to null when no end date", () => {
+  it("omits dissolutionDate when no end date", () => {
     const result = buildResearchProjectJsonLd(minimalRaid());
-    expect(result.dissolutionDate).toBeNull();
+    expect(result).not.toHaveProperty("dissolutionDate");
   });
 
   it("maps contributors to member roles with Person and ORCID identifier", () => {
@@ -266,9 +266,9 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result["@id"]).toBe("");
     expect(result.identifier.value).toBe("");
     expect(result.parentOrganization["@id"]).toBe("");
-    expect(result.description).toBeNull();
+    expect(result).not.toHaveProperty("description");
     expect(result.foundingDate).toBe("");
-    expect(result.dissolutionDate).toBeNull();
+    expect(result).not.toHaveProperty("dissolutionDate");
     expect(result.member).toEqual([]);
     expect(result.funder).toEqual([]);
     expect(result.knowsAbout).toEqual([]);
