@@ -16,7 +16,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER SCHEMA api_svc OWNER TO postgres;
 
 --
 -- Name: auth_request_status; Type: TYPE; Schema: api_svc; Owner: postgres
@@ -29,7 +28,6 @@ CREATE TYPE api_svc.auth_request_status AS ENUM (
     );
 
 
-ALTER TYPE api_svc.auth_request_status OWNER TO postgres;
 
 --
 -- Name: id_provider; Type: TYPE; Schema: api_svc; Owner: postgres
@@ -43,7 +41,6 @@ CREATE TYPE api_svc.id_provider AS ENUM (
     );
 
 
-ALTER TYPE api_svc.id_provider OWNER TO postgres;
 
 --
 -- Name: metaschema; Type: TYPE; Schema: api_svc; Owner: postgres
@@ -56,7 +53,6 @@ CREATE TYPE api_svc.metaschema AS ENUM (
     );
 
 
-ALTER TYPE api_svc.metaschema OWNER TO postgres;
 
 --
 -- Name: user_role; Type: TYPE; Schema: api_svc; Owner: postgres
@@ -70,7 +66,6 @@ CREATE TYPE api_svc.user_role AS ENUM (
     );
 
 
-ALTER TYPE api_svc.user_role OWNER TO postgres;
 
 SET default_tablespace = '';
 
@@ -86,7 +81,6 @@ CREATE TABLE api_svc.access_type (
 );
 
 
-ALTER TABLE api_svc.access_type OWNER TO postgres;
 
 --
 -- Name: access_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -98,7 +92,6 @@ CREATE TABLE api_svc.access_type_schema (
 );
 
 
-ALTER TABLE api_svc.access_type_schema OWNER TO postgres;
 
 --
 -- Name: access_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -113,7 +106,6 @@ CREATE SEQUENCE api_svc.access_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.access_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: access_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -140,7 +132,6 @@ CREATE TABLE api_svc.app_user (
 );
 
 
-ALTER TABLE api_svc.app_user OWNER TO postgres;
 
 --
 -- Name: COLUMN app_user.email; Type: COMMENT; Schema: api_svc; Owner: postgres
@@ -190,7 +181,6 @@ CREATE TABLE api_svc.contributor_position (
 );
 
 
-ALTER TABLE api_svc.contributor_position OWNER TO postgres;
 
 --
 -- Name: contributor_position_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -202,7 +192,6 @@ CREATE TABLE api_svc.contributor_position_schema (
 );
 
 
-ALTER TABLE api_svc.contributor_position_schema OWNER TO postgres;
 
 --
 -- Name: contributor_position_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -217,7 +206,6 @@ CREATE SEQUENCE api_svc.contributor_position_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.contributor_position_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: contributor_position_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -236,7 +224,6 @@ CREATE TABLE api_svc.contributor_role (
 );
 
 
-ALTER TABLE api_svc.contributor_role OWNER TO postgres;
 
 --
 -- Name: contributor_role_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -248,7 +235,6 @@ CREATE TABLE api_svc.contributor_role_schema (
 );
 
 
-ALTER TABLE api_svc.contributor_role_schema OWNER TO postgres;
 
 --
 -- Name: contributor_role_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -263,7 +249,6 @@ CREATE SEQUENCE api_svc.contributor_role_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.contributor_role_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: contributor_role_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -282,7 +267,6 @@ CREATE TABLE api_svc.description_type (
 );
 
 
-ALTER TABLE api_svc.description_type OWNER TO postgres;
 
 --
 -- Name: description_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -294,7 +278,6 @@ CREATE TABLE api_svc.description_type_schema (
 );
 
 
-ALTER TABLE api_svc.description_type_schema OWNER TO postgres;
 
 --
 -- Name: description_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -309,7 +292,6 @@ CREATE SEQUENCE api_svc.description_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.description_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: description_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -329,7 +311,6 @@ CREATE TABLE api_svc.language (
 );
 
 
-ALTER TABLE api_svc.language OWNER TO postgres;
 
 --
 -- Name: language_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -341,7 +322,6 @@ CREATE TABLE api_svc.language_schema (
 );
 
 
-ALTER TABLE api_svc.language_schema OWNER TO postgres;
 
 --
 -- Name: language_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -356,7 +336,6 @@ CREATE SEQUENCE api_svc.language_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.language_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: language_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -375,7 +354,6 @@ CREATE TABLE api_svc.organisation_role (
 );
 
 
-ALTER TABLE api_svc.organisation_role OWNER TO postgres;
 
 --
 -- Name: organisation_role_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -387,7 +365,6 @@ CREATE TABLE api_svc.organisation_role_schema (
 );
 
 
-ALTER TABLE api_svc.organisation_role_schema OWNER TO postgres;
 
 --
 -- Name: organisation_role_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -402,7 +379,6 @@ CREATE SEQUENCE api_svc.organisation_role_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.organisation_role_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: organisation_role_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -430,7 +406,6 @@ CREATE TABLE api_svc.raid (
 );
 
 
-ALTER TABLE api_svc.raid OWNER TO postgres;
 
 --
 -- Name: COLUMN raid.handle; Type: COMMENT; Schema: api_svc; Owner: postgres
@@ -473,7 +448,6 @@ CREATE TABLE api_svc.raido_operator (
 );
 
 
-ALTER TABLE api_svc.raido_operator OWNER TO postgres;
 
 --
 -- Name: TABLE raido_operator; Type: COMMENT; Schema: api_svc; Owner: postgres
@@ -492,7 +466,6 @@ CREATE TABLE api_svc.related_object_category (
 );
 
 
-ALTER TABLE api_svc.related_object_category OWNER TO postgres;
 
 --
 -- Name: related_object_category_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -504,7 +477,6 @@ CREATE TABLE api_svc.related_object_category_schema (
 );
 
 
-ALTER TABLE api_svc.related_object_category_schema OWNER TO postgres;
 
 --
 -- Name: related_object_category_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -519,7 +491,6 @@ CREATE SEQUENCE api_svc.related_object_category_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.related_object_category_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: related_object_category_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -540,7 +511,6 @@ CREATE TABLE api_svc.related_object_type (
 );
 
 
-ALTER TABLE api_svc.related_object_type OWNER TO postgres;
 
 --
 -- Name: related_object_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -552,7 +522,6 @@ CREATE TABLE api_svc.related_object_type_schema (
 );
 
 
-ALTER TABLE api_svc.related_object_type_schema OWNER TO postgres;
 
 --
 -- Name: related_object_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -567,7 +536,6 @@ CREATE SEQUENCE api_svc.related_object_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.related_object_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: related_object_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -588,7 +556,6 @@ CREATE TABLE api_svc.related_raid_type (
 );
 
 
-ALTER TABLE api_svc.related_raid_type OWNER TO postgres;
 
 --
 -- Name: related_raid_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -600,7 +567,6 @@ CREATE TABLE api_svc.related_raid_type_schema (
 );
 
 
-ALTER TABLE api_svc.related_raid_type_schema OWNER TO postgres;
 
 --
 -- Name: related_raid_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -615,7 +581,6 @@ CREATE SEQUENCE api_svc.related_raid_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.related_raid_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: related_raid_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -642,7 +607,6 @@ CREATE TABLE api_svc.service_point (
 );
 
 
-ALTER TABLE api_svc.service_point OWNER TO postgres;
 
 --
 -- Name: COLUMN service_point.search_content; Type: COMMENT; Schema: api_svc; Owner: postgres
@@ -678,7 +642,6 @@ CREATE TABLE api_svc.subject_type (
 );
 
 
-ALTER TABLE api_svc.subject_type OWNER TO postgres;
 
 --
 -- Name: subject_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -690,7 +653,6 @@ CREATE TABLE api_svc.subject_type_schema (
 );
 
 
-ALTER TABLE api_svc.subject_type_schema OWNER TO postgres;
 
 --
 -- Name: subject_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -705,7 +667,6 @@ CREATE SEQUENCE api_svc.subject_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.subject_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: subject_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -724,7 +685,6 @@ CREATE TABLE api_svc.title_type (
 );
 
 
-ALTER TABLE api_svc.title_type OWNER TO postgres;
 
 --
 -- Name: title_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -736,7 +696,6 @@ CREATE TABLE api_svc.title_type_schema (
 );
 
 
-ALTER TABLE api_svc.title_type_schema OWNER TO postgres;
 
 --
 -- Name: title_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -751,7 +710,6 @@ CREATE SEQUENCE api_svc.title_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.title_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: title_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -773,7 +731,6 @@ CREATE TABLE api_svc.token (
 );
 
 
-ALTER TABLE api_svc.token OWNER TO postgres;
 
 --
 -- Name: TABLE token; Type: COMMENT; Schema: api_svc; Owner: postgres
@@ -792,7 +749,6 @@ CREATE TABLE api_svc.traditional_knowledge_label (
 );
 
 
-ALTER TABLE api_svc.traditional_knowledge_label OWNER TO postgres;
 
 --
 -- Name: traditional_knowledge_label_schema; Type: TABLE; Schema: api_svc; Owner: postgres
@@ -804,7 +760,6 @@ CREATE TABLE api_svc.traditional_knowledge_label_schema (
 );
 
 
-ALTER TABLE api_svc.traditional_knowledge_label_schema OWNER TO postgres;
 
 --
 -- Name: traditional_knowledge_label_schema_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
@@ -819,7 +774,6 @@ CREATE SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq OWNER TO postgres;
 
 --
 -- Name: traditional_knowledge_label_schema_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
@@ -849,7 +803,6 @@ CREATE TABLE api_svc.user_authz_request (
 );
 
 
-ALTER TABLE api_svc.user_authz_request OWNER TO postgres;
 
 --
 -- Name: COLUMN user_authz_request.email; Type: COMMENT; Schema: api_svc; Owner: postgres
@@ -11996,336 +11949,288 @@ ALTER TABLE ONLY api_svc.user_authz_request
 -- Name: SCHEMA api_svc; Type: ACL; Schema: -; Owner: postgres
 --
 
-GRANT USAGE ON SCHEMA api_svc TO api_user;
 
 
 --
 -- Name: TABLE access_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.access_type TO api_user;
 
 
 --
 -- Name: TABLE access_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.access_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE access_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.access_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE app_user; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.app_user TO api_user;
 
 
 --
 -- Name: SEQUENCE app_user_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.app_user_id_seq TO api_user;
 
 
 --
 -- Name: TABLE contributor_position; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_position TO api_user;
 
 
 --
 -- Name: TABLE contributor_position_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_position_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE contributor_position_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.contributor_position_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE contributor_role; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_role TO api_user;
 
 
 --
 -- Name: TABLE contributor_role_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_role_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE contributor_role_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.contributor_role_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE description_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.description_type TO api_user;
 
 
 --
 -- Name: TABLE description_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.description_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE description_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.description_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE language; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.language TO api_user;
 
 
 --
 -- Name: TABLE language_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.language_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE language_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.language_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE organisation_role; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.organisation_role TO api_user;
 
 
 --
 -- Name: TABLE organisation_role_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.organisation_role_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE organisation_role_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.organisation_role_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE raid; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.raid TO api_user;
 
 
 --
 -- Name: TABLE raido_operator; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.raido_operator TO api_user;
 
 
 --
 -- Name: TABLE related_object_category; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_category TO api_user;
 
 
 --
 -- Name: TABLE related_object_category_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_category_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE related_object_category_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.related_object_category_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE related_object_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_type TO api_user;
 
 
 --
 -- Name: TABLE related_object_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE related_object_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.related_object_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE related_raid_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_raid_type TO api_user;
 
 
 --
 -- Name: TABLE related_raid_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_raid_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE related_raid_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.related_raid_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE service_point; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.service_point TO api_user;
 
 
 --
 -- Name: SEQUENCE service_point_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.service_point_id_seq TO api_user;
 
 
 --
 -- Name: TABLE subject_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.subject_type TO api_user;
 
 
 --
 -- Name: TABLE subject_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.subject_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE subject_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.subject_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE title_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.title_type TO api_user;
 
 
 --
 -- Name: TABLE title_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.title_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE title_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.title_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE token; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.token TO api_user;
 
 
 --
 -- Name: TABLE traditional_knowledge_label; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.traditional_knowledge_label TO api_user;
 
 
 --
 -- Name: TABLE traditional_knowledge_label_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.traditional_knowledge_label_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE traditional_knowledge_label_schema_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq TO api_user;
 
 
 --
 -- Name: TABLE user_authz_request; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.user_authz_request TO api_user;
 
 
 --
 -- Name: SEQUENCE user_authz_request_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.user_authz_request_id_seq TO api_user;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: api_svc; Owner: postgres
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA api_svc GRANT USAGE ON SEQUENCES TO api_user;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: api_svc; Owner: postgres
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA api_svc GRANT ALL ON TABLES TO api_user;
 
 
 --
