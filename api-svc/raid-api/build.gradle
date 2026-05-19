@@ -58,6 +58,7 @@ dependencies{
   implementation project(':api-svc:db')
   implementation project(':api-svc:idl-raid-v2')
   implementation libs.flyway.core
+  implementation libs.flyway.postgresql
   // look in settings.gradle for version catalog specs
   implementation libs.bundles.springboot
   implementation libs.springdoc.openapi
