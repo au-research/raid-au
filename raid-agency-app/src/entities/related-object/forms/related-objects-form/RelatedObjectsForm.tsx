@@ -20,7 +20,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useState, useContext, useLayoutEffect, useRef, useCallback } from "react";
+import { useState, useContext, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import {
   Control,
   FieldErrors,
@@ -131,9 +131,16 @@ export function RelatedObjectsForm({
   }, [fields]);
 
   const { watch } = useFormContext();
-  const existingIdentifiers: string[] = (watch("relatedObject") ?? [])
+  // Build a primitive key so useMemo only produces a new array when IDs actually
+  // change. Using "\n" as separator — it cannot appear in valid DOI/URL values.
+  const existingIdsKey = (watch("relatedObject") ?? [])
     .map((obj: { id?: string }) => obj.id ?? "")
-    .filter((id: string) => id.length > 0);
+    .filter((id: string) => id.length > 0)
+    .join("\n");
+  const existingIdentifiers: string[] = useMemo(
+    () => (existingIdsKey.length === 0 ? [] : existingIdsKey.split("\n")),
+    [existingIdsKey]
+  );
 
   const handleDuplicateIdentifiers = useCallback((dois: string[]) => {
     const doiSet = new Set(dois.map((d) => d.trim().toLowerCase()));
