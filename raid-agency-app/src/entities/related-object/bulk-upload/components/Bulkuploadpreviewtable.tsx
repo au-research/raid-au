@@ -58,7 +58,7 @@ export function BulkUploadPreviewTable({
     [vocabulary.relatedObjectTypes]
   );
   const categoryOptions = useMemo(
-    () => vocabulary.relatedObjectCategories.map((c) => c.value),
+    () => generateCategorySubsets(vocabulary.relatedObjectCategories.map((c) => c.value)),
     [vocabulary.relatedObjectCategories]
   );
 
@@ -285,35 +285,36 @@ function DebouncedTextCell({
 }
 
 // ------------------------------------------------------------------
-// MultiValueCell — Autocomplete with chips for multi-select with freeSolo
+// MultiValueCell — single-select Autocomplete for category combinations
 // ------------------------------------------------------------------
 
 interface MultiValueCellProps {
-  value: string; // comma-separated string from the underlying state
+  value: string; // the selected combination (e.g. "Input, Output")
   onCommit: (value: string) => void;
   error?: string;
-  options: string[];
+  options: string[]; // all pre-built category combinations
   disabled?: boolean;
   placeholder?: string;
 }
 
 /**
- * Splits a comma-separated string into an array of trimmed values.
- * Handles "Input, Output" and "Input,Output" the same way.
+ * Generates all non-empty subsets of `options` as comma-separated strings,
+ * ordered by size then by original position. Matches the Excel dropdown order.
+ *
+ * For 3 categories [A, B, C] this produces:
+ *   A, B, A+B, C, A+C, B+C, A+B+C
  */
-function stringToArray(value: string): string[] {
-  if (!value) return [];
-  return value
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
-/**
- * Joins an array back into a comma-separated string for storage.
- */
-function arrayToString(values: string[]): string {
-  return values.join(", ");
+export function generateCategorySubsets(options: string[]): string[] {
+  const subsets: string[] = [];
+  const n = options.length;
+  for (let mask = 1; mask < (1 << n); mask++) {
+    const subset: string[] = [];
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) subset.push(options[i]);
+    }
+    subsets.push(subset.join(", "));
+  }
+  return subsets;
 }
 
 function MultiValueCell({
@@ -324,8 +325,6 @@ function MultiValueCell({
   disabled,
   placeholder,
 }: MultiValueCellProps) {
-  const arrayValue = stringToArray(value);
-
   return (
     <Tooltip
       title={error ?? ""}
@@ -334,38 +333,18 @@ function MultiValueCell({
       disableHoverListener={!error}
     >
       <Autocomplete
-        multiple
-        freeSolo
         size="small"
         options={options}
-        value={arrayValue}
+        value={value || null}
         disabled={disabled}
         onChange={(_, newValue) => {
-          // newValue is string[] — convert each item to string in case
-          // freeSolo passes a custom typed entry as an object
-          const cleaned = newValue
-            .map((v) => (typeof v === "string" ? v.trim() : String(v).trim()))
-            .filter((v) => v.length > 0);
-          onCommit(arrayToString(cleaned));
+          onCommit(typeof newValue === "string" ? newValue : "");
         }}
-        renderTags={(tagValue, getTagProps) =>
-          tagValue.map((option, index) => {
-            const { key, ...chipProps } = getTagProps({ index });
-            return (
-              <Chip
-                key={key}
-                size="small"
-                label={option}
-                {...chipProps}
-              />
-            );
-          })
-        }
         renderInput={(params) => (
           <TextField
             {...params}
             error={!!error}
-            placeholder={arrayValue.length === 0 ? placeholder : ""}
+            placeholder={placeholder}
             variant="outlined"
             size="small"
           />
