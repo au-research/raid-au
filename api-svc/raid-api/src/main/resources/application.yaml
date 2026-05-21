@@ -78,7 +78,7 @@ spring:
       write-dates-as-timestamps: false
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${raid.db.host}:${raid.db.port}/${raid.db.name}?currentSchema=${spring.flyway.default-schema} # trigger branch pipeline
+    url: jdbc:postgresql://${raid.db.host}:${raid.db.port}/${raid.db.name}?currentSchema=${spring.flyway.default-schema}
     username: ${raid.db.user}
     password: ${raid.db.password}
   jooq:
