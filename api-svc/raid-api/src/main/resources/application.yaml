@@ -111,3 +111,4 @@ springdoc:
 datacite:
   endpoint: https://api.test.datacite.org/dois
   registration-agency-name: Australian Research Data Commons
+
