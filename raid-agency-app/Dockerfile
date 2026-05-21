@@ -2,14 +2,15 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
-RUN yarn build
+RUN npm run build
 
 # Stage 2: serve
 FROM nginx:alpine
+RUN apk add --no-cache gettext
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY nginx/nginx.conf.template /etc/nginx/templates/nginx.conf.template
