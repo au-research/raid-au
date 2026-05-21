@@ -16,6 +16,7 @@ server {
         add_header Cache-Control "no-store, no-cache, must-revalidate";
         proxy_pass ${APP_CONFIG_URL};
         proxy_set_header Host $proxy_host;
+        proxy_ssl_server_name on;
     }
 
     # Hashed static assets can be cached aggressively

@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react";
-import fs from "fs";
+import { existsSync, unlinkSync } from "fs";
 import path from "path";
 import { defineConfig, type Plugin } from "vite";
 
@@ -40,7 +40,7 @@ function excludeAppConfig(): Plugin {
     name: "exclude-app-config",
     closeBundle() {
       const file = path.resolve(__dirname, "dist/app-config.json");
-      if (fs.existsSync(file)) fs.unlinkSync(file);
+      if (existsSync(file)) unlinkSync(file);
     },
   };
 }
