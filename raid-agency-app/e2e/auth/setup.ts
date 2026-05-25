@@ -11,11 +11,14 @@
 //   1. Fill in credentials on the Keycloak login form (fast — Keycloak just
 //      needs to serve its own HTML, no app JS involved).
 //   2. Let Keycloak set the SSO session cookie in the browser.
-//   3. Navigate the app to /raids — the app's check-sso now resolves
-//      immediately because Keycloak already has an active session, so no
-//      cold-start delay.
+//   3. Navigate the app to /raids and wait for the page to fully render.
+//      This does two things:
+//      a) Ensures check-sso completes and localStorage tokens are saved.
+//      b) Warms up Keycloak's prompt=none code path (a separate JVM code
+//         path from the login form), so subsequent tests' check-sso runs
+//         in seconds rather than 60 s+.
 
-import { test as setup } from "@playwright/test";
+import { test as setup, expect } from "@playwright/test";
 import { fileURLToPath } from "url";
 import path from "path";
 import crypto from "crypto";
@@ -44,8 +47,11 @@ if (!BASE_URL) {
   throw new Error("BASE_URL environment variable is not set.");
 }
 
-// 2-minute budget: PKCE login round-trip + app boot + check-sso
-setup.setTimeout(120_000);
+// 2.5-minute budget:
+//   ~30 s  direct Keycloak login
+//   ~90 s  app check-sso on cold prompt=none JVM path + API response
+//   ~10 s  buffer
+setup.setTimeout(150_000);
 
 setup("authenticate", async ({ page }) => {
   const username = process.env.VITE_KEYCLOAK_E2E_USER;
@@ -64,10 +70,8 @@ setup("authenticate", async ({ page }) => {
     );
   }
 
-  // Build a PKCE code_verifier / code_challenge pair.
+  // Generate PKCE code_verifier / code_challenge.
   // Keycloak 26 enforces PKCE for public clients, so we must supply one.
-  // We don't need to exchange the code ourselves — we just need the SSO
-  // session cookie that Keycloak sets after a successful login.
   const codeVerifier = crypto.randomBytes(32).toString("base64url");
   const codeChallenge = crypto
     .createHash("sha256")
@@ -98,40 +102,39 @@ setup("authenticate", async ({ page }) => {
 
   // After login Keycloak redirects to BASE_URL/?code=...&session_state=...
   // We only need the session cookie that Keycloak set — we don't need to
-  // exchange the auth code, so wait just until the navigation commits (HTTP
-  // response received) and then navigate away before the app JS runs.
+  // exchange the auth code ourselves.  Wait until the navigation to the app
+  // commits (HTTP response headers received), then navigate away cleanly.
   await page.waitForURL((url) => url.href.startsWith(BASE_URL!), {
     timeout: 30_000,
     waitUntil: "commit",
   });
 
-  // Navigate to /raids cleanly (no ?code=... params).
-  // The SSO session cookie is now set, so the app's check-sso iframe will
-  // authenticate immediately — no cold-JVM wait needed.
+  // Navigate to /raids cleanly (no ?code=... params in the URL).
+  // The SSO session cookie is now set; the app's check-sso will authenticate.
   await page.goto(`${BASE_URL}/raids`, { waitUntil: "domcontentloaded" });
 
-  // Wait for check-sso to resolve. If authentication succeeded the URL
-  // stays at /raids; if it failed ProtectedRoute redirects to /login.
-  // We use an inverse wait: if /login appears within 30 s we fail fast,
-  // otherwise (timeout = stayed on /raids) we declare success.
-  try {
-    await page.waitForURL(
-      (url) => url.pathname.startsWith("/login"),
-      { timeout: 30_000 }
-    );
-    throw new Error(
-      "Auth setup failed: app redirected to /login after check-sso. " +
-        "The Keycloak SSO session may not have been established."
-    );
-  } catch (err) {
-    if (err instanceof Error && err.message.startsWith("Auth setup failed")) {
-      throw err;
-    }
-    // Timeout — we stayed on /raids. Authentication succeeded.
-  }
+  // Wait for the app to fully authenticate and render past the loading state.
+  //
+  // This is the critical step: it ensures
+  //   a) check-sso has completed (tokens are written to localStorage), so
+  //      the storageState we save below includes valid auth tokens, and
+  //   b) Keycloak's prompt=none JVM code path is warmed up, so subsequent
+  //      tests' check-sso takes seconds rather than 60 s+.
+  //
+  // Accept either outcome:
+  //   • DataGrid visible  → authenticated, API returned data (or empty list)
+  //   • Error text visible → authenticated, API rejected the request
+  //     (e.g. user has no service point in the DB) — auth still succeeded
+  //
+  // Allow up to 90 s for the first cold prompt=none request to Keycloak.
+  await expect(
+    page.getByRole("grid").or(
+      page.getByText("RAiDs could not be fetched")
+    )
+  ).toBeVisible({ timeout: 90_000 });
 
-  await page.waitForLoadState("networkidle");
-
-  // Save authenticated session state (cookies + localStorage tokens)
+  // Save authenticated session state (cookies + localStorage tokens).
+  // At this point check-sso has completed, so localStorage contains fresh
+  // Keycloak tokens that will be valid for subsequent tests.
   await page.context().storageState({ path: authFile });
 });
