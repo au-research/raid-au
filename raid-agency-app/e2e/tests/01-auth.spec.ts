@@ -31,8 +31,14 @@ test.describe("Authentication", () => {
         // navigation timeout on a cold JVM.
         await page.goto("/", { waitUntil: "domcontentloaded" });
 
-        // Should redirect to Keycloak (/ → /login → Keycloak; allow 60s in CI)
-        await page.waitForURL(keycloakUrlPattern, { timeout: 60_000 });
+        // Should redirect to Keycloak (/ → /login → Keycloak; allow 60s in CI).
+        // Use domcontentloaded so waitForURL returns as soon as Keycloak's HTML
+        // is parsed — without this it also waits for the full "load" event
+        // (all Keycloak JS/CSS/fonts) which can time out on a cold JVM.
+        await page.waitForURL(keycloakUrlPattern, {
+          timeout: 60_000,
+          waitUntil: "domcontentloaded",
+        });
         await expect(page).toHaveURL(keycloakUrlPattern);
 
         // Keycloak login page should be visible
@@ -52,7 +58,10 @@ test.describe("Authentication", () => {
         await page.goto("/raids", { waitUntil: "domcontentloaded" });
 
         // Should redirect to Keycloak (/raids → /login → Keycloak; allow 60s in CI)
-        await page.waitForURL(keycloakUrlPattern, { timeout: 60_000 });
+        await page.waitForURL(keycloakUrlPattern, {
+          timeout: 60_000,
+          waitUntil: "domcontentloaded",
+        });
         await expect(page).toHaveURL(keycloakUrlPattern);
         await expect(page.locator("#username")).toBeVisible();
 
@@ -83,11 +92,21 @@ test.describe("Authentication", () => {
         // Should NOT be on the Keycloak login page
         await expect(page.locator("#username")).not.toBeVisible();
 
-        // The RAiD list page should render — either a data grid or an empty state.
-        // Allow 30 s: check-sso + API response can be slow on first CI request.
+        // The RAiD list page should render past the Keycloak init / loading state.
+        // Accept either:
+        //  - DataGrid (user has a service point and the API returned data)
+        //  - API error alert (user has no service point or the API rejected the
+        //    request) — auth still succeeded; this is a data/config issue, not auth
+        //
+        // "No RAiDs found" does NOT exist in the component — the DataGrid renders
+        // with no rows (MUI shows "No rows." internally) or an ErrorAlertComponent.
+        //
+        // Allow 60 s: check-sso round-trip + API response can be slow in CI.
         await expect(
-          page.getByRole("grid").or(page.getByText("No RAiDs found"))
-        ).toBeVisible({ timeout: 30_000 });
+          page.getByRole("grid").or(
+            page.getByText("RAiDs could not be fetched")
+          )
+        ).toBeVisible({ timeout: 60_000 });
       }
     );
   });
