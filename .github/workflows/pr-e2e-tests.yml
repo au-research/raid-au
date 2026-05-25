@@ -126,7 +126,7 @@ jobs:
           FORM_ACTION=$(grep -oP 'action="[^"]+' /tmp/kc-login-page.html | head -1 | sed 's/action="//' | python3 -c "import sys,html; print(html.unescape(sys.stdin.read().strip()))")
           curl -sS --cookie /tmp/kc-cookies --cookie-jar /tmp/kc-cookies \
             --data "username=raid-test-user&password=password&credentialId=" \
-            --location --max-redirect 5 \
+            --location --max-redirs 5 \
             --max-time 90 \
             "$FORM_ACTION" -o /dev/null -w "Login submit: HTTP %{http_code} in %{time_total}s\n"
 
