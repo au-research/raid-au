@@ -34,6 +34,9 @@ export default defineConfig({
    * with setup.setTimeout() because it also has to wait for the post-login
    * redirect back to the app. */
   timeout: process.env.CI ? 90_000 : 30_000,
+  /* Skip @local tests in CI — they require local dev infrastructure
+   * (mock ORCID server, sandbox ORCID IDs, pre-seeded data, etc.). */
+  ...(process.env.CI && { grepInvert: /@local/ }),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -41,6 +44,11 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+
+    /* Navigation timeout: how long page.goto() waits for a page to load.
+     * Defaults to 30 s; raise it in CI so Keycloak's full load event doesn't
+     * cause goto() to throw before we can call waitForURL(). */
+    navigationTimeout: process.env.CI ? 90_000 : 30_000,
   },
 
   /* Configure projects for major browsers */

@@ -24,10 +24,15 @@ test.describe("Authentication", () => {
         const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
         const page = await context.newPage();
 
-        await page.goto("/");
+        // Use domcontentloaded so goto() returns as soon as the app HTML is
+        // parsed, before Keycloak JS fires the redirect. Without this, goto()
+        // follows the client-side redirect to Keycloak and waits for
+        // Keycloak's "load" event (all JS/CSS/fonts) which can hit the 30s
+        // navigation timeout on a cold JVM.
+        await page.goto("/", { waitUntil: "domcontentloaded" });
 
-        // Should redirect to Keycloak (/ → /login → Keycloak; allow 30s in CI)
-        await page.waitForURL(keycloakUrlPattern, { timeout: 30000 });
+        // Should redirect to Keycloak (/ → /login → Keycloak; allow 60s in CI)
+        await page.waitForURL(keycloakUrlPattern, { timeout: 60_000 });
         await expect(page).toHaveURL(keycloakUrlPattern);
 
         // Keycloak login page should be visible
@@ -44,10 +49,10 @@ test.describe("Authentication", () => {
         const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
         const page = await context.newPage();
 
-        await page.goto("/raids");
+        await page.goto("/raids", { waitUntil: "domcontentloaded" });
 
-        // Should redirect to Keycloak (/raids → /login → Keycloak; allow 30s in CI)
-        await page.waitForURL(keycloakUrlPattern, { timeout: 30000 });
+        // Should redirect to Keycloak (/raids → /login → Keycloak; allow 60s in CI)
+        await page.waitForURL(keycloakUrlPattern, { timeout: 60_000 });
         await expect(page).toHaveURL(keycloakUrlPattern);
         await expect(page.locator("#username")).toBeVisible();
 
@@ -78,10 +83,11 @@ test.describe("Authentication", () => {
         // Should NOT be on the Keycloak login page
         await expect(page.locator("#username")).not.toBeVisible();
 
-        // The RAiD list page should render — either a data grid or an empty state
+        // The RAiD list page should render — either a data grid or an empty state.
+        // Allow 30 s: check-sso + API response can be slow on first CI request.
         await expect(
           page.getByRole("grid").or(page.getByText("No RAiDs found"))
-        ).toBeVisible({ timeout: 15000 });
+        ).toBeVisible({ timeout: 30_000 });
       }
     );
   });
