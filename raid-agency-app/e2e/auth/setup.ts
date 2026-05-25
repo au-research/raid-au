@@ -47,11 +47,10 @@ if (!BASE_URL) {
   throw new Error("BASE_URL environment variable is not set.");
 }
 
-// 2.5-minute budget:
-//   ~30 s  direct Keycloak login
-//   ~90 s  app check-sso on cold prompt=none JVM path + API response
-//   ~10 s  buffer
-setup.setTimeout(150_000);
+// 90-second budget:
+//   ~30 s  direct Keycloak login (navigate to Keycloak, fill form, redirect back)
+//   ~60 s  buffer (Keycloak JVM is pre-warmed by CI workflow step before this runs)
+setup.setTimeout(90_000);
 
 setup("authenticate", async ({ page }) => {
   const username = process.env.VITE_KEYCLOAK_E2E_USER;
@@ -109,32 +108,17 @@ setup("authenticate", async ({ page }) => {
     waitUntil: "commit",
   });
 
-  // Navigate to /raids cleanly (no ?code=... params in the URL).
-  // The SSO session cookie is now set; the app's check-sso will authenticate.
-  await page.goto(`${BASE_URL}/raids`, { waitUntil: "domcontentloaded" });
-
-  // Wait for the app to fully authenticate and render past the loading state.
+  // Save authenticated session state (cookies only).
   //
-  // This is the critical step: it ensures
-  //   a) check-sso has completed (tokens are written to localStorage), so
-  //      the storageState we save below includes valid auth tokens, and
-  //   b) Keycloak's prompt=none JVM code path is warmed up, so subsequent
-  //      tests' check-sso takes seconds rather than 60 s+.
+  // The Keycloak SSO session cookie (set on localhost:8001 during login above)
+  // is what subsequent tests need. When a test loads with this storageState,
+  // the app's check-sso fires a prompt=none iframe to Keycloak — the SSO
+  // cookie is sent, Keycloak validates the session, and the app authenticates.
   //
-  // Accept either outcome:
-  //   • DataGrid visible  → authenticated, API returned data (or empty list)
-  //   • Error text visible → authenticated, API rejected the request
-  //     (e.g. user has no service point in the DB) — auth still succeeded
-  //
-  // Allow up to 90 s for the first cold prompt=none request to Keycloak.
-  await expect(
-    page.getByRole("grid").or(
-      page.getByText("RAiDs could not be fetched")
-    )
-  ).toBeVisible({ timeout: 90_000 });
-
-  // Save authenticated session state (cookies + localStorage tokens).
-  // At this point check-sso has completed, so localStorage contains fresh
-  // Keycloak tokens that will be valid for subsequent tests.
+  // We do NOT navigate to /raids here. The CI workflow runs a dedicated
+  // "Warm up Keycloak JVM" step before Playwright starts, which performs a
+  // full login+prompt=none flow via curl. By the time setup.ts runs, the
+  // prompt=none JVM code path is already warm, so check-sso in subsequent
+  // tests completes in seconds rather than 60+ s.
   await page.context().storageState({ path: authFile });
 });

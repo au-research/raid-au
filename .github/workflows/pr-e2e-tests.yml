@@ -114,6 +114,29 @@ jobs:
             sleep 2
           done
 
+      - name: Warm up Keycloak JVM
+        run: |
+          echo "Warming up Keycloak JVM by performing a full login flow..."
+          echo "Step 1: Hit auth endpoint to load auth classes..."
+          curl -sS --cookie-jar /tmp/kc-cookies \
+            "http://localhost:8001/realms/raid/protocol/openid-connect/auth?client_id=raid-api&redirect_uri=http%3A%2F%2Flocalhost%3A7080%2F&response_type=code&scope=openid" \
+            --max-time 90 -o /tmp/kc-login-page.html -w "Auth page: HTTP %{http_code} in %{time_total}s\n"
+
+          echo "Step 2: Submit credentials to warm login form code path..."
+          FORM_ACTION=$(grep -oP 'action="[^"]+' /tmp/kc-login-page.html | head -1 | sed 's/action="//' | python3 -c "import sys,html; print(html.unescape(sys.stdin.read().strip()))")
+          curl -sS --cookie /tmp/kc-cookies --cookie-jar /tmp/kc-cookies \
+            --data "username=raid-test-user&password=password&credentialId=" \
+            --location --max-redirect 5 \
+            --max-time 90 \
+            "$FORM_ACTION" -o /dev/null -w "Login submit: HTTP %{http_code} in %{time_total}s\n"
+
+          echo "Step 3: Hit prompt=none with session cookie to warm that JVM code path..."
+          curl -sS --cookie /tmp/kc-cookies \
+            "http://localhost:8001/realms/raid/protocol/openid-connect/auth?client_id=raid-api&redirect_uri=http%3A%2F%2Flocalhost%3A7080%2F&response_type=code&scope=openid&prompt=none" \
+            -o /dev/null -w "prompt=none warmup: HTTP %{http_code} in %{time_total}s\n" \
+            --max-time 120
+          echo "Keycloak JVM warmup complete"
+
       - name: Run Playwright tests
         working-directory: raid-agency-app
         env:
