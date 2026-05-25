@@ -29,6 +29,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
+  /* Per-test timeout. In CI Keycloak (JVM) can be slow to render pages on
+   * the first request, so we allow 90 s. The auth setup test overrides this
+   * with setup.setTimeout() because it also has to wait for the post-login
+   * redirect back to the app. */
+  timeout: process.env.CI ? 90_000 : 30_000,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
