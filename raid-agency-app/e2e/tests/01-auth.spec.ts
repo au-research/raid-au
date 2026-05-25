@@ -26,8 +26,8 @@ test.describe("Authentication", () => {
 
         await page.goto("/");
 
-        // Should redirect to Keycloak
-        await page.waitForURL(keycloakUrlPattern, { timeout: 15000 });
+        // Should redirect to Keycloak (/ → /login → Keycloak; allow 30s in CI)
+        await page.waitForURL(keycloakUrlPattern, { timeout: 30000 });
         await expect(page).toHaveURL(keycloakUrlPattern);
 
         // Keycloak login page should be visible
@@ -46,7 +46,8 @@ test.describe("Authentication", () => {
 
         await page.goto("/raids");
 
-        await page.waitForURL(keycloakUrlPattern, { timeout: 15000 });
+        // Should redirect to Keycloak (/raids → /login → Keycloak; allow 30s in CI)
+        await page.waitForURL(keycloakUrlPattern, { timeout: 30000 });
         await expect(page).toHaveURL(keycloakUrlPattern);
         await expect(page.locator("#username")).toBeVisible();
 
