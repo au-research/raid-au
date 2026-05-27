@@ -1,6 +1,19 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.9.1
+
+## Database
+* Removed `OWNER TO postgres` and `GRANT` statements from the Flyway baseline (`B25__baseline.sql`)
+  and `V25__move-token-table.sql` to make migration scripts agnostic to database ownership and
+  permissions.
+* Fixed `V37__seo_subject_data.sql` by removing erroneous `raido.` database prefix from all table
+  references (PR #464).
+
+## Dependencies
+* Upgraded Flyway from 9.22.3 to 11.20.3.
+* Added `flyway-database-postgresql` driver required by Flyway 11.
+
 # 2.9.0
 
 ## App-client UI
