@@ -4,11 +4,11 @@ drop index if exists idx_raid_service_point_id_date_created;
 -- https://github.com/flyway/flyway/issues/3508
 -- https://github.com/flyway/flyway/issues/3684
 create index idx_raid_service_point_id_date_created
-  on api_svc.raid(service_point_id, date_created desc);
+  on raid(service_point_id, date_created desc);
 
 comment on index idx_raid_service_point_id_date_created is
 'created because load-testing showed the query for the experimental list-raid'
 ' endpoint was doing a full table scan';
 
-analyze api_svc.raid;
+analyze raid;
 

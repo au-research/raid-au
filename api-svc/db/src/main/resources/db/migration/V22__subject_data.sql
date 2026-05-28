@@ -1,20 +1,20 @@
 begin transaction;
 
-create table if not exists raido.api_svc.subject_type_scheme
+create table if not exists raido.subject_type_scheme
 (
     id  serial primary key,
     uri varchar not null
 );
 
-insert into raido.api_svc.subject_type_scheme (uri) values ('https://linked.data.gov.au/def/anzsrc-for/2020/');
+insert into raido.subject_type_scheme (uri) values ('https://linked.data.gov.au/def/anzsrc-for/2020/');
 
-alter table raido.api_svc.subject
+alter table raido.subject
     rename to subject_type;
 
-alter table raido.api_svc.subject_type
+alter table raido.subject_type
 add column scheme_id int;
 
-insert into raido.api_svc.subject_type (id, name, description, note, scheme_id) values
+insert into raido.subject_type (id, name, description, note, scheme_id) values
                                                                                     ('4502','Aboriginal and Torres Strait Islander education','This group covers all aspects of education related to Aboriginal and Torres Strait Islander.','',1),
                                                                                     ('4503','Aboriginal and Torres Strait Islander environmental knowledges and management','This group covers earth sciences, environmental sciences, knowledges and management (caring for country), agricultural sciences and veterinary sciences related to Aboriginal and Torres Strait Islander.','',1),
                                                                                     ('4504','Aboriginal and Torres Strait Islander health and wellbeing','This group covers health and wellbeing (including physical, psychological and spiritual wellbeing), health services and biomedical and clinical sciences related to Aboriginal and Torres Strait Islander.','',1),

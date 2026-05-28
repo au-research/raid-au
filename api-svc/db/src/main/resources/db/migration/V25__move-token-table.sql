@@ -1,4 +1,4 @@
-CREATE TABLE api_svc.token (
+CREATE TABLE token (
     name text NOT NULL,
     environment text NOT NULL,
     date_created timestamp without time zone NOT NULL,
@@ -7,12 +7,12 @@ CREATE TABLE api_svc.token (
 );
 
 
-COMMENT ON TABLE api_svc.token IS 'from arn:aws:dynamodb:ap-southeast-2:005299621378:table/RAiD-TokenTable-1P6MFZ0WFEETH';
+COMMENT ON TABLE token IS 'from arn:aws:dynamodb:ap-southeast-2:005299621378:table/RAiD-TokenTable-1P6MFZ0WFEETH';
 
-ALTER TABLE ONLY api_svc.token
+ALTER TABLE ONLY token
     ADD CONSTRAINT token_pkey PRIMARY KEY (name, environment, date_created);
 
 
-insert into api_svc.token
+insert into token
 select *
 from raid_v1_import.token;
