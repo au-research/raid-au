@@ -36,6 +36,28 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result["@type"]).toBe("ResearchProject");
   });
 
+  it("sets name and headline from primary title", () => {
+    const raid = minimalRaid();
+    raid.title = [
+      {
+        text: "Researching the lived experience of First Nations Peoples",
+        type: { id: "https://vocabulary.raid.org/title.type.schema/5", schemaUri: "" },
+        startDate: "2025-01-01",
+        language: { id: "eng", schemaUri: "https://www.iso.org/standard/74575.html" },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.name).toBe("Researching the lived experience of First Nations Peoples");
+    expect(result.headline).toBe("Researching the lived experience of First Nations Peoples");
+  });
+
+  it("defaults name and headline to empty string when no title", () => {
+    const result = buildResearchProjectJsonLd(minimalRaid());
+    expect(result.name).toBe("");
+    expect(result.headline).toBe("");
+  });
+
   it("sets @id and identifier from raid identifier", () => {
     const result = buildResearchProjectJsonLd(minimalRaid());
     expect(result["@id"]).toBe("https://raid.org/10.26259/0d7f1865");
@@ -264,6 +286,8 @@ describe("buildResearchProjectJsonLd", () => {
   it("handles empty/missing optional fields", () => {
     const result = buildResearchProjectJsonLd({});
     expect(result["@id"]).toBe("");
+    expect(result.name).toBe("");
+    expect(result.headline).toBe("");
     expect(result.identifier.value).toBe("");
     expect(result.parentOrganization["@id"]).toBe("");
     expect(result).not.toHaveProperty("description");
