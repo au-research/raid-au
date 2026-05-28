@@ -27,10 +27,10 @@
   resolved "https://registry.npmjs.org/@astrojs/compiler/-/compiler-4.0.0.tgz#81eb5dbb1d0664f94fccdc0669c0c203ef75227a"
   integrity sha512-eouss7G8ygdZqHuke033VMcVw5HTZUu+PXd/h06DGDUg/jt5btPYPqh66ENWw/mU78rBrf/oeC4oqoBwMtDMNA==
 
-"@astrojs/internal-helpers@0.9.0":
-  version "0.9.0"
-  resolved "https://registry.npmjs.org/@astrojs/internal-helpers/-/internal-helpers-0.9.0.tgz#671ace03cd91b2ca905fed825ebc79e37bbe82f8"
-  integrity sha512-GdYkzR26re8izmyYlBqf4z2s7zNngmWLFuxw0UKiPNqHraZGS6GKWIwSHgS22RDlu2ePFJ8bzmpBcUszut/SDg==
+"@astrojs/internal-helpers@0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@astrojs/internal-helpers/-/internal-helpers-0.9.1.tgz#273aa9c8b4782237c3f852e2c00b82026c007747"
+  integrity sha512-1pWuARqYom/TzuU3+0ZugsTrKlUydWKuULmDqSMTuonY+9IRDUEGKX/8PXQ1nBxRq3w85uGtd9q9SXfqEldMIQ==
   dependencies:
     picomatch "^4.0.4"
 
@@ -58,13 +58,13 @@
     vscode-html-languageservice "^5.6.2"
     vscode-uri "^3.1.0"
 
-"@astrojs/markdown-remark@7.1.1":
-  version "7.1.1"
-  resolved "https://registry.npmjs.org/@astrojs/markdown-remark/-/markdown-remark-7.1.1.tgz#79aa9310381e64bd21082f3bd46e3bd635cc8982"
-  integrity sha512-C6e9BnLGlbdv6bV8MYGeHpHxsUHrCrB4OuRLqi5LI7oiBVcBcqfUN06zpwFQdHgV48QCCrMmLpyqBr7VqC+swA==
+"@astrojs/markdown-remark@7.1.2":
+  version "7.1.2"
+  resolved "https://registry.yarnpkg.com/@astrojs/markdown-remark/-/markdown-remark-7.1.2.tgz#ab0fc6c7ae915e4f89eb7308c39679ea0571f04e"
+  integrity sha512-caXZ4Dc2St2dW8luEg22GlP0gupLdztCTQE4EzZOxW1pqWXz9mbeJEuHUkgDYcKWW8tjIHkydYDhWLVoxJ327Q==
   dependencies:
-    "@astrojs/internal-helpers" "0.9.0"
-    "@astrojs/prism" "4.0.1"
+    "@astrojs/internal-helpers" "0.9.1"
+    "@astrojs/prism" "4.0.2"
     github-slugger "^2.0.0"
     hast-util-from-html "^2.0.3"
     hast-util-to-text "^4.0.2"
@@ -85,10 +85,10 @@
     unist-util-visit-parents "^6.0.2"
     vfile "^6.0.3"
 
-"@astrojs/prism@4.0.1":
-  version "4.0.1"
-  resolved "https://registry.npmjs.org/@astrojs/prism/-/prism-4.0.1.tgz#a78653c1c0fa82f39f29da7c44452f32d22fb507"
-  integrity sha512-nksZQVjlferuWzhPsBpQ1JE5XuKAf1id1/9Hj4a9KG4+ofrlzxUUwX4YGQF/SuDiuiGKEnzopGOt38F3AnVWsQ==
+"@astrojs/prism@4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@astrojs/prism/-/prism-4.0.2.tgz#5dc0725a61ea6fe665a48474e65c968079a51f40"
+  integrity sha512-KTivpmnz6lDsC6o9H4+DNm2SrE/GHzw8cNAvEJwAvUT+eoaEnn/4NtbDNfRRaxaJHdp15gf+tfHAWiXR4wB3BA==
   dependencies:
     prismjs "^1.30.0"
 
@@ -100,15 +100,6 @@
     sitemap "^9.0.0"
     stream-replace-string "^2.0.0"
     zod "^4.3.6"
-
-"@astrojs/tailwind@^5.1.4":
-  version "5.1.5"
-  resolved "https://registry.npmjs.org/@astrojs/tailwind/-/tailwind-5.1.5.tgz#d2e0bb18d5df661853772fb1aae288df1bb3d6f9"
-  integrity sha512-1diguZEau7FZ9vIjzE4BwavGdhD3+JkdS8zmibl1ene+EHgIU5hI0NMgRYG3yea+Niaf7cyMwjeWeLvzq/maxg==
-  dependencies:
-    autoprefixer "^10.4.20"
-    postcss "^8.5.1"
-    postcss-load-config "^4.0.2"
 
 "@astrojs/telemetry@3.3.2":
   version "3.3.2"
@@ -1359,14 +1350,14 @@ ast-types@^0.13.4:
   dependencies:
     tslib "^2.0.1"
 
-astro@^6.1.8:
-  version "6.3.1"
-  resolved "https://registry.npmjs.org/astro/-/astro-6.3.1.tgz#214e2448bbb7505a79fa0a92db9b34f89950fbdf"
-  integrity sha512-atz6dmkE3Gu24bDgb7g2RE/BYnKqPYIHd6hTUM1UXvu/i7qNZOKLAqEHvgYpv9PQVcgWsXpk4/OOXZ0E/FzvSQ==
+astro@^6.3.3:
+  version "6.3.8"
+  resolved "https://registry.yarnpkg.com/astro/-/astro-6.3.8.tgz#3769fd8fa9dbb1892444cef41c82a39666a57bdd"
+  integrity sha512-xH2UA8Z17IS+JaqSlSkBor7jO6gd7zXTLdmu06nKpfpDDJFbi/7KZEy3NDmWxmier+6XrCZ9Z4aitO8jhC9oiA==
   dependencies:
     "@astrojs/compiler" "^4.0.0"
-    "@astrojs/internal-helpers" "0.9.0"
-    "@astrojs/markdown-remark" "7.1.1"
+    "@astrojs/internal-helpers" "0.9.1"
+    "@astrojs/markdown-remark" "7.1.2"
     "@astrojs/telemetry" "3.3.2"
     "@capsizecss/unpack" "^4.0.0"
     "@clack/prompts" "^1.1.0"
@@ -1770,10 +1761,10 @@ data-uri-to-buffer@^6.0.2:
   resolved "https://registry.npmjs.org/data-uri-to-buffer/-/data-uri-to-buffer-6.0.2.tgz#8a58bb67384b261a38ef18bea1810cb01badd28b"
   integrity sha512-7hvf7/GW8e86rW0ptuwS3OcBGDjIi6SZva7hCyWC0yYry2cOPmLIjXAUHI6DK2HsnwJd9ifmt57i8eV2n4YNpw==
 
-dayjs@^1.11.13:
-  version "1.11.20"
-  resolved "https://registry.npmjs.org/dayjs/-/dayjs-1.11.20.tgz#88d919fd639dc991415da5f4cb6f1b6650811938"
-  integrity sha512-YbwwqR/uYpeoP4pu043q+LTDLFBLApUP6VxRihdfNTqu4ubqMlGDLd6ErXhEgsyvY0K6nCs7nggYumAN+9uEuQ==
+dayjs@^1.11.21:
+  version "1.11.21"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.21.tgz#57f87562e62de76f3c704bd2b8d522fc33068eb2"
+  integrity sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==
 
 debug@4, debug@^4.0.0, debug@^4.3.4, debug@^4.4.3:
   version "4.4.3"
@@ -2688,7 +2679,7 @@ lightningcss@^1.32.0:
     lightningcss-win32-arm64-msvc "1.32.0"
     lightningcss-win32-x64-msvc "1.32.0"
 
-lilconfig@^3.0.0, lilconfig@^3.1.1, lilconfig@^3.1.3:
+lilconfig@^3.1.1, lilconfig@^3.1.3:
   version "3.1.3"
   resolved "https://registry.npmjs.org/lilconfig/-/lilconfig-3.1.3.tgz#a1bcfd6257f9585bf5ae14ceeebb7b559025e4c4"
   integrity sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==
@@ -3484,14 +3475,6 @@ postcss-js@^4.0.1:
   dependencies:
     camelcase-css "^2.0.1"
 
-postcss-load-config@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.npmjs.org/postcss-load-config/-/postcss-load-config-4.0.2.tgz#7159dcf626118d33e299f485d6afe4aff7c4a3e3"
-  integrity sha512-bSVhyJGL00wMVoPUzAVAnbEoWyqRxkjv64tUl427SKnPrENtq6hJwUojroMz2VB+Q1edmi4IfrAPpami5VVgMQ==
-  dependencies:
-    lilconfig "^3.0.0"
-    yaml "^2.3.4"
-
 "postcss-load-config@^4.0.2 || ^5.0 || ^6.0":
   version "6.0.1"
   resolved "https://registry.npmjs.org/postcss-load-config/-/postcss-load-config-6.0.1.tgz#6fd7dcd8ae89badcf1b2d644489cbabf83aa8096"
@@ -3527,7 +3510,7 @@ postcss-value-parser@^4.0.0, postcss-value-parser@^4.2.0:
   resolved "https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
-postcss@^8.4.47, postcss@^8.5.1, postcss@^8.5.14, postcss@^8.5.6:
+postcss@^8.4.47, postcss@^8.5.14, postcss@^8.5.6:
   version "8.5.14"
   resolved "https://registry.npmjs.org/postcss/-/postcss-8.5.14.tgz#a66c2d7808fadf69ebb5b84a03f8bafd76c4919c"
   integrity sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==
@@ -4708,7 +4691,7 @@ yaml@2.7.1:
   resolved "https://registry.npmjs.org/yaml/-/yaml-2.7.1.tgz#44a247d1b88523855679ac7fa7cda6ed7e135cf6"
   integrity sha512-10ULxpnOCQXxJvBgxsn9ptjq6uviG/htZKk9veJGhlqn3w/DxQ631zFF+nlQXLwmImeS5amR2dl2U8sg6U9jsQ==
 
-yaml@^2.3.4, yaml@^2.8.2:
+yaml@^2.8.2:
   version "2.9.0"
   resolved "https://registry.npmjs.org/yaml/-/yaml-2.9.0.tgz#78274afd93598a1dfdd6130df6a566defcbf9aa4"
   integrity sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==
