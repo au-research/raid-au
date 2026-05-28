@@ -1,4 +1,5 @@
 import react from "@vitejs/plugin-react";
+import { existsSync, unlinkSync } from "fs";
 import path from "path";
 import { defineConfig, type Plugin } from "vite";
 
@@ -34,8 +35,18 @@ function muiEsmPlugin(): Plugin {
   };
 }
 
+function excludeAppConfig(): Plugin {
+  return {
+    name: "exclude-app-config",
+    closeBundle() {
+      const file = path.resolve(__dirname, "dist/app-config.json");
+      if (existsSync(file)) unlinkSync(file);
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [muiEsmPlugin(), react()],
+  plugins: [muiEsmPlugin(), react(), excludeAppConfig()],
   base: "/.",
   resolve: {
     alias: {

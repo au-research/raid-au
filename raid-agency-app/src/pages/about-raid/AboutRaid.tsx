@@ -71,8 +71,8 @@ export function AboutRaid() {
             </ListItem>
             <ListItem>
               {externalLinkButton({
-                label: "Raido GitHub",
-                link: "https://github.com/au-research/raido",
+                label: "RAiD GitHub",
+                link: "https://github.com/au-research/raid-au",
               })}
             </ListItem>
             <ListItem>

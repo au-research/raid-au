@@ -159,6 +159,30 @@ const IMPORT_START_MARKER = "Import table starts here";
 const IMPORT_END_MARKER = "Import table ends here";
 
 /**
+ * Returns a user-facing error message describing which sentinel marker(s)
+ * are absent. Covers three cases: both missing, start only, end only.
+ */
+function missingMarkerError(startFound: boolean, endFound: boolean): string {
+  if (!startFound && !endFound) {
+    return (
+      `This file is missing both required template markers ("${IMPORT_START_MARKER}" and "${IMPORT_END_MARKER}"). ` +
+      `The template structure may have been accidentally modified or the wrong file was uploaded. ` +
+      `Please download a fresh template and enter your data between the two marker rows.`
+    );
+  }
+  if (!startFound) {
+    return (
+      `This file is missing the "${IMPORT_START_MARKER}" marker. ` +
+      `Please download a fresh template and enter your data between the two marker rows.`
+    );
+  }
+  return (
+    `This file is missing the "${IMPORT_END_MARKER}" marker. ` +
+    `Please download a fresh template and enter your data between the two marker rows.`
+  );
+}
+
+/**
  * Marker that Excel produces when it tries to evaluate a cell that
  * starts with '-', '=', '+', or '@' as a formula but can't.
  * If we see this in column A, the user almost certainly opened an
@@ -241,16 +265,14 @@ function parseCsvToRows(csvText: string): Record<string, string>[] {
     }
   }
 
-  // Fallback: no sentinels found, treat the whole file as a flat table
-  let dataLines: string[];
   if (startIdx === -1 || endIdx === -1) {
-    dataLines = allLines.filter((line) => line.trim().length > 0);
-  } else {
-    // Lines strictly between the sentinels, blank lines stripped
-    dataLines = allLines
-      .slice(startIdx + 1, endIdx)
-      .filter((line) => line.trim().length > 0);
+    throw new Error(missingMarkerError(startIdx !== -1, endIdx !== -1));
   }
+
+  // Lines strictly between the sentinels, blank lines stripped
+  const dataLines = allLines
+    .slice(startIdx + 1, endIdx)
+    .filter((line) => line.trim().length > 0);
 
   if (dataLines.length < 2) return [];
 
@@ -632,11 +654,12 @@ export function useBulkUpload(
           }
         });
 
-        // Determine the data region. If sentinels are missing, fall back
-        // to assuming row 1 = headers (legacy behaviour).
-        const headerRowIdx = startRowIdx !== -1 ? startRowIdx + 1 : 1;
-        const lastDataRowIdx =
-          endRowIdx !== -1 ? endRowIdx - 1 : sheet.actualRowCount;
+        if (startRowIdx === -1 || endRowIdx === -1) {
+          throw new Error(missingMarkerError(startRowIdx !== -1, endRowIdx !== -1));
+        }
+
+        const headerRowIdx = startRowIdx + 1;
+        const lastDataRowIdx = endRowIdx - 1;
 
         if (headerRowIdx > lastDataRowIdx) return [];
 

@@ -10,32 +10,29 @@ SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER SCHEMA api_svc OWNER TO postgres;
 
 --
 -- Name: auth_request_status; Type: TYPE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TYPE api_svc.auth_request_status AS ENUM (
+CREATE TYPE auth_request_status AS ENUM (
     'REQUESTED',
     'APPROVED',
     'REJECTED'
     );
 
 
-ALTER TYPE api_svc.auth_request_status OWNER TO postgres;
 
 --
 -- Name: id_provider; Type: TYPE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TYPE api_svc.id_provider AS ENUM (
+CREATE TYPE id_provider AS ENUM (
     'GOOGLE',
     'AAF',
     'RAIDO_API',
@@ -43,26 +40,24 @@ CREATE TYPE api_svc.id_provider AS ENUM (
     );
 
 
-ALTER TYPE api_svc.id_provider OWNER TO postgres;
 
 --
 -- Name: metaschema; Type: TYPE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TYPE api_svc.metaschema AS ENUM (
+CREATE TYPE metaschema AS ENUM (
     'raido-metadata-schema-v1',
     'legacy-metadata-schema-v1',
     'raido-metadata-schema-v2'
     );
 
 
-ALTER TYPE api_svc.metaschema OWNER TO postgres;
 
 --
 -- Name: user_role; Type: TYPE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TYPE api_svc.user_role AS ENUM (
+CREATE TYPE user_role AS ENUM (
     'OPERATOR',
     'SP_ADMIN',
     'SP_USER',
@@ -70,7 +65,6 @@ CREATE TYPE api_svc.user_role AS ENUM (
     );
 
 
-ALTER TYPE api_svc.user_role OWNER TO postgres;
 
 SET default_tablespace = '';
 
@@ -80,31 +74,29 @@ SET default_table_access_method = heap;
 -- Name: access_type; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.access_type (
+CREATE TABLE access_type (
                                      schema_id integer NOT NULL,
                                      uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.access_type OWNER TO postgres;
 
 --
 -- Name: access_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.access_type_schema (
+CREATE TABLE access_type_schema (
                                             id integer NOT NULL,
                                             uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.access_type_schema OWNER TO postgres;
 
 --
 -- Name: access_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.access_type_scheme_id_seq
+CREATE SEQUENCE access_type_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -113,40 +105,38 @@ CREATE SEQUENCE api_svc.access_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.access_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: access_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.access_type_scheme_id_seq OWNED BY api_svc.access_type_schema.id;
+ALTER SEQUENCE access_type_scheme_id_seq OWNED BY access_type_schema.id;
 
 
 --
 -- Name: app_user; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.app_user (
+CREATE TABLE app_user (
                                   id bigint NOT NULL,
                                   service_point_id bigint NOT NULL,
                                   email character varying(256) NOT NULL,
                                   client_id character varying(256) NOT NULL,
                                   subject character varying(256) NOT NULL,
-                                  id_provider api_svc.id_provider NOT NULL,
-                                  role api_svc.user_role NOT NULL,
+                                  id_provider id_provider NOT NULL,
+                                  role user_role NOT NULL,
                                   enabled boolean DEFAULT true NOT NULL,
                                   token_cutoff timestamp without time zone,
                                   date_created timestamp without time zone DEFAULT transaction_timestamp() NOT NULL
 );
 
 
-ALTER TABLE api_svc.app_user OWNER TO postgres;
 
 --
 -- Name: COLUMN app_user.email; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.app_user.email IS 'should be renamed to "description" or some such.  api-keys do not and orcid
+COMMENT ON COLUMN app_user.email IS 'should be renamed to "description" or some such.  api-keys do not and orcid
   sign-ins might not have email address';
 
 
@@ -154,7 +144,7 @@ COMMENT ON COLUMN api_svc.app_user.email IS 'should be renamed to "description" 
 -- Name: COLUMN app_user.id_provider; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.app_user.id_provider IS 'not a real identity field, its just redundant info we figure it out from
+COMMENT ON COLUMN app_user.id_provider IS 'not a real identity field, its just redundant info we figure it out from
   the clientId or issuer and store it for easy analysis';
 
 
@@ -162,7 +152,7 @@ COMMENT ON COLUMN api_svc.app_user.id_provider IS 'not a real identity field, it
 -- Name: COLUMN app_user.token_cutoff; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.app_user.token_cutoff IS 'Any endpoint call with a bearer token issued after this point will be
+COMMENT ON COLUMN app_user.token_cutoff IS 'Any endpoint call with a bearer token issued after this point will be
   rejected. Any authentication attempt after this point will be rejected.';
 
 
@@ -170,8 +160,8 @@ COMMENT ON COLUMN api_svc.app_user.token_cutoff IS 'Any endpoint call with a bea
 -- Name: app_user_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE api_svc.app_user ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME api_svc.app_user_id_seq
+ALTER TABLE app_user ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME app_user_id_seq
     START WITH 1000000000
     INCREMENT BY 1
     NO MINVALUE
@@ -184,31 +174,29 @@ ALTER TABLE api_svc.app_user ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 -- Name: contributor_position; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.contributor_position (
+CREATE TABLE contributor_position (
                                               schema_id integer NOT NULL,
                                               uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.contributor_position OWNER TO postgres;
 
 --
 -- Name: contributor_position_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.contributor_position_schema (
+CREATE TABLE contributor_position_schema (
                                                      id integer NOT NULL,
                                                      uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.contributor_position_schema OWNER TO postgres;
 
 --
 -- Name: contributor_position_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.contributor_position_scheme_id_seq
+CREATE SEQUENCE contributor_position_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -217,44 +205,41 @@ CREATE SEQUENCE api_svc.contributor_position_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.contributor_position_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: contributor_position_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.contributor_position_scheme_id_seq OWNED BY api_svc.contributor_position_schema.id;
+ALTER SEQUENCE contributor_position_scheme_id_seq OWNED BY contributor_position_schema.id;
 
 
 --
 -- Name: contributor_role; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.contributor_role (
+CREATE TABLE contributor_role (
                                           schema_id integer NOT NULL,
                                           uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.contributor_role OWNER TO postgres;
 
 --
 -- Name: contributor_role_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.contributor_role_schema (
+CREATE TABLE contributor_role_schema (
                                                  id integer NOT NULL,
                                                  uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.contributor_role_schema OWNER TO postgres;
 
 --
 -- Name: contributor_role_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.contributor_role_scheme_id_seq
+CREATE SEQUENCE contributor_role_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -263,44 +248,41 @@ CREATE SEQUENCE api_svc.contributor_role_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.contributor_role_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: contributor_role_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.contributor_role_scheme_id_seq OWNED BY api_svc.contributor_role_schema.id;
+ALTER SEQUENCE contributor_role_scheme_id_seq OWNED BY contributor_role_schema.id;
 
 
 --
 -- Name: description_type; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.description_type (
+CREATE TABLE description_type (
                                           schema_id integer NOT NULL,
                                           uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.description_type OWNER TO postgres;
 
 --
 -- Name: description_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.description_type_schema (
+CREATE TABLE description_type_schema (
                                                  id integer NOT NULL,
                                                  uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.description_type_schema OWNER TO postgres;
 
 --
 -- Name: description_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.description_type_scheme_id_seq
+CREATE SEQUENCE description_type_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -309,45 +291,42 @@ CREATE SEQUENCE api_svc.description_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.description_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: description_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.description_type_scheme_id_seq OWNED BY api_svc.description_type_schema.id;
+ALTER SEQUENCE description_type_scheme_id_seq OWNED BY description_type_schema.id;
 
 
 --
 -- Name: language; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.language (
+CREATE TABLE language (
                                   id character varying NOT NULL,
                                   name character varying NOT NULL,
                                   schema_id integer NOT NULL
 );
 
 
-ALTER TABLE api_svc.language OWNER TO postgres;
 
 --
 -- Name: language_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.language_schema (
+CREATE TABLE language_schema (
                                          id integer NOT NULL,
                                          uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.language_schema OWNER TO postgres;
 
 --
 -- Name: language_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.language_scheme_id_seq
+CREATE SEQUENCE language_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -356,44 +335,41 @@ CREATE SEQUENCE api_svc.language_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.language_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: language_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.language_scheme_id_seq OWNED BY api_svc.language_schema.id;
+ALTER SEQUENCE language_scheme_id_seq OWNED BY language_schema.id;
 
 
 --
 -- Name: organisation_role; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.organisation_role (
+CREATE TABLE organisation_role (
                                            schema_id integer NOT NULL,
                                            uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.organisation_role OWNER TO postgres;
 
 --
 -- Name: organisation_role_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.organisation_role_schema (
+CREATE TABLE organisation_role_schema (
                                                   id integer NOT NULL,
                                                   uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.organisation_role_schema OWNER TO postgres;
 
 --
 -- Name: organisation_role_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.organisation_role_scheme_id_seq
+CREATE SEQUENCE organisation_role_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -402,27 +378,26 @@ CREATE SEQUENCE api_svc.organisation_role_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.organisation_role_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: organisation_role_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.organisation_role_scheme_id_seq OWNED BY api_svc.organisation_role_schema.id;
+ALTER SEQUENCE organisation_role_scheme_id_seq OWNED BY organisation_role_schema.id;
 
 
 --
 -- Name: raid; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.raid (
+CREATE TABLE raid (
                               handle character varying(128) NOT NULL,
                               service_point_id bigint NOT NULL,
                               url character varying(512) NOT NULL,
                               url_index integer NOT NULL,
                               primary_title character varying(256) NOT NULL,
                               confidential boolean NOT NULL,
-                              metadata_schema api_svc.metaschema NOT NULL,
+                              metadata_schema metaschema NOT NULL,
                               metadata jsonb NOT NULL,
                               start_date date DEFAULT transaction_timestamp() NOT NULL,
                               date_created timestamp without time zone DEFAULT transaction_timestamp() NOT NULL,
@@ -430,20 +405,19 @@ CREATE TABLE api_svc.raid (
 );
 
 
-ALTER TABLE api_svc.raid OWNER TO postgres;
 
 --
 -- Name: COLUMN raid.handle; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.raid.handle IS 'Holds the handle (i.e. just prefix/suffix) not the URL.  Usually quite  short in production, but the max length is set to accommodate int and load testing.';
+COMMENT ON COLUMN raid.handle IS 'Holds the handle (i.e. just prefix/suffix) not the URL.  Usually quite  short in production, but the max length is set to accommodate int and load testing.';
 
 
 --
 -- Name: COLUMN raid.url; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.raid.url IS 'The value that we set as the `URL` property via ARDC APIDS.
+COMMENT ON COLUMN raid.url IS 'The value that we set as the `URL` property via ARDC APIDS.
   Example: `https://demo.raido-infra.com/raid/123.456/789`.
   The global handle regisrty url (e.g. `https://hdl.handle.net/123.456/789`)
   will redirect to this value.';
@@ -453,7 +427,7 @@ COMMENT ON COLUMN api_svc.raid.url IS 'The value that we set as the `URL` proper
 -- Name: COLUMN raid.url_index; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.raid.url_index IS 'The `index` of the URL property in APIDS. This can be different if we change
+COMMENT ON COLUMN raid.url_index IS 'The `index` of the URL property in APIDS. This can be different if we change
   how we mint URL values via APIDS.';
 
 
@@ -461,56 +435,53 @@ COMMENT ON COLUMN api_svc.raid.url_index IS 'The `index` of the URL property in 
 -- Name: COLUMN raid.metadata_schema; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.raid.metadata_schema IS 'Identifies the structure of the data in the metadata column';
+COMMENT ON COLUMN raid.metadata_schema IS 'Identifies the structure of the data in the metadata column';
 
 
 --
 -- Name: raido_operator; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.raido_operator (
+CREATE TABLE raido_operator (
     email character varying(256) NOT NULL
 );
 
 
-ALTER TABLE api_svc.raido_operator OWNER TO postgres;
 
 --
 -- Name: TABLE raido_operator; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON TABLE api_svc.raido_operator IS 'any app_user with an email in this table will be considered an operator';
+COMMENT ON TABLE raido_operator IS 'any app_user with an email in this table will be considered an operator';
 
 
 --
 -- Name: related_object_category; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.related_object_category (
+CREATE TABLE related_object_category (
                                                  schema_id integer NOT NULL,
                                                  uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.related_object_category OWNER TO postgres;
 
 --
 -- Name: related_object_category_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.related_object_category_schema (
+CREATE TABLE related_object_category_schema (
                                                         id integer NOT NULL,
                                                         uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.related_object_category_schema OWNER TO postgres;
 
 --
 -- Name: related_object_category_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.related_object_category_scheme_id_seq
+CREATE SEQUENCE related_object_category_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -519,20 +490,19 @@ CREATE SEQUENCE api_svc.related_object_category_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.related_object_category_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: related_object_category_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.related_object_category_scheme_id_seq OWNED BY api_svc.related_object_category_schema.id;
+ALTER SEQUENCE related_object_category_scheme_id_seq OWNED BY related_object_category_schema.id;
 
 
 --
 -- Name: related_object_type; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.related_object_type (
+CREATE TABLE related_object_type (
                                              schema_id integer NOT NULL,
                                              uri character varying NOT NULL,
                                              name character varying,
@@ -540,25 +510,23 @@ CREATE TABLE api_svc.related_object_type (
 );
 
 
-ALTER TABLE api_svc.related_object_type OWNER TO postgres;
 
 --
 -- Name: related_object_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.related_object_type_schema (
+CREATE TABLE related_object_type_schema (
                                                     id integer NOT NULL,
                                                     uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.related_object_type_schema OWNER TO postgres;
 
 --
 -- Name: related_object_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.related_object_type_scheme_id_seq
+CREATE SEQUENCE related_object_type_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -567,20 +535,19 @@ CREATE SEQUENCE api_svc.related_object_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.related_object_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: related_object_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.related_object_type_scheme_id_seq OWNED BY api_svc.related_object_type_schema.id;
+ALTER SEQUENCE related_object_type_scheme_id_seq OWNED BY related_object_type_schema.id;
 
 
 --
 -- Name: related_raid_type; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.related_raid_type (
+CREATE TABLE related_raid_type (
                                            schema_id integer NOT NULL,
                                            uri character varying NOT NULL,
                                            name character varying,
@@ -588,25 +555,23 @@ CREATE TABLE api_svc.related_raid_type (
 );
 
 
-ALTER TABLE api_svc.related_raid_type OWNER TO postgres;
 
 --
 -- Name: related_raid_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.related_raid_type_schema (
+CREATE TABLE related_raid_type_schema (
                                                   id integer NOT NULL,
                                                   uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.related_raid_type_schema OWNER TO postgres;
 
 --
 -- Name: related_raid_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.related_raid_type_scheme_id_seq
+CREATE SEQUENCE related_raid_type_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -615,20 +580,19 @@ CREATE SEQUENCE api_svc.related_raid_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.related_raid_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: related_raid_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.related_raid_type_scheme_id_seq OWNED BY api_svc.related_raid_type_schema.id;
+ALTER SEQUENCE related_raid_type_scheme_id_seq OWNED BY related_raid_type_schema.id;
 
 
 --
 -- Name: service_point; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.service_point (
+CREATE TABLE service_point (
                                        id bigint NOT NULL,
                                        name character varying(256) NOT NULL,
                                        search_content character varying(256),
@@ -642,21 +606,20 @@ CREATE TABLE api_svc.service_point (
 );
 
 
-ALTER TABLE api_svc.service_point OWNER TO postgres;
 
 --
 -- Name: COLUMN service_point.search_content; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.service_point.search_content IS 'Trimmed lowercase only';
+COMMENT ON COLUMN service_point.search_content IS 'Trimmed lowercase only';
 
 
 --
 -- Name: service_point_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE api_svc.service_point ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME api_svc.service_point_id_seq
+ALTER TABLE service_point ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME service_point_id_seq
     START WITH 20000000
     INCREMENT BY 1
     NO MINVALUE
@@ -669,7 +632,7 @@ ALTER TABLE api_svc.service_point ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTI
 -- Name: subject_type; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.subject_type (
+CREATE TABLE subject_type (
                                       id character varying(6) NOT NULL,
                                       name text NOT NULL,
                                       description text,
@@ -678,25 +641,23 @@ CREATE TABLE api_svc.subject_type (
 );
 
 
-ALTER TABLE api_svc.subject_type OWNER TO postgres;
 
 --
 -- Name: subject_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.subject_type_schema (
+CREATE TABLE subject_type_schema (
                                              id integer NOT NULL,
                                              uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.subject_type_schema OWNER TO postgres;
 
 --
 -- Name: subject_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.subject_type_scheme_id_seq
+CREATE SEQUENCE subject_type_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -705,44 +666,41 @@ CREATE SEQUENCE api_svc.subject_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.subject_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: subject_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.subject_type_scheme_id_seq OWNED BY api_svc.subject_type_schema.id;
+ALTER SEQUENCE subject_type_scheme_id_seq OWNED BY subject_type_schema.id;
 
 
 --
 -- Name: title_type; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.title_type (
+CREATE TABLE title_type (
                                     schema_id integer NOT NULL,
                                     uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.title_type OWNER TO postgres;
 
 --
 -- Name: title_type_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.title_type_schema (
+CREATE TABLE title_type_schema (
                                            id integer NOT NULL,
                                            uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.title_type_schema OWNER TO postgres;
 
 --
 -- Name: title_type_scheme_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.title_type_scheme_id_seq
+CREATE SEQUENCE title_type_scheme_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -751,20 +709,19 @@ CREATE SEQUENCE api_svc.title_type_scheme_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.title_type_scheme_id_seq OWNER TO postgres;
 
 --
 -- Name: title_type_scheme_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.title_type_scheme_id_seq OWNED BY api_svc.title_type_schema.id;
+ALTER SEQUENCE title_type_scheme_id_seq OWNED BY title_type_schema.id;
 
 
 --
 -- Name: token; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.token (
+CREATE TABLE token (
                                name text NOT NULL,
                                environment text NOT NULL,
                                date_created timestamp without time zone NOT NULL,
@@ -773,44 +730,41 @@ CREATE TABLE api_svc.token (
 );
 
 
-ALTER TABLE api_svc.token OWNER TO postgres;
 
 --
 -- Name: TABLE token; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON TABLE api_svc.token IS 'from arn:aws:dynamodb:ap-southeast-2:005299621378:table/RAiD-TokenTable-1P6MFZ0WFEETH';
+COMMENT ON TABLE token IS 'from arn:aws:dynamodb:ap-southeast-2:005299621378:table/RAiD-TokenTable-1P6MFZ0WFEETH';
 
 
 --
 -- Name: traditional_knowledge_label; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.traditional_knowledge_label (
+CREATE TABLE traditional_knowledge_label (
                                                      schema_id integer NOT NULL,
                                                      uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.traditional_knowledge_label OWNER TO postgres;
 
 --
 -- Name: traditional_knowledge_label_schema; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.traditional_knowledge_label_schema (
+CREATE TABLE traditional_knowledge_label_schema (
                                                             id integer NOT NULL,
                                                             uri character varying NOT NULL
 );
 
 
-ALTER TABLE api_svc.traditional_knowledge_label_schema OWNER TO postgres;
 
 --
 -- Name: traditional_knowledge_label_schema_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-CREATE SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq
+CREATE SEQUENCE traditional_knowledge_label_schema_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -819,26 +773,25 @@ CREATE SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq OWNER TO postgres;
 
 --
 -- Name: traditional_knowledge_label_schema_id_seq; Type: SEQUENCE OWNED BY; Schema: api_svc; Owner: postgres
 --
 
-ALTER SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq OWNED BY api_svc.traditional_knowledge_label_schema.id;
+ALTER SEQUENCE traditional_knowledge_label_schema_id_seq OWNED BY traditional_knowledge_label_schema.id;
 
 
 --
 -- Name: user_authz_request; Type: TABLE; Schema: api_svc; Owner: postgres
 --
 
-CREATE TABLE api_svc.user_authz_request (
+CREATE TABLE user_authz_request (
                                             id bigint NOT NULL,
-                                            status api_svc.auth_request_status NOT NULL,
+                                            status auth_request_status NOT NULL,
                                             service_point_id bigint NOT NULL,
                                             email character varying(256) NOT NULL,
                                             client_id character varying(256) NOT NULL,
-                                            id_provider api_svc.id_provider NOT NULL,
+                                            id_provider id_provider NOT NULL,
                                             subject character varying(256) NOT NULL,
                                             responding_user bigint,
                                             approved_user bigint,
@@ -849,27 +802,26 @@ CREATE TABLE api_svc.user_authz_request (
 );
 
 
-ALTER TABLE api_svc.user_authz_request OWNER TO postgres;
 
 --
 -- Name: COLUMN user_authz_request.email; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.user_authz_request.email IS 'Lowercase chars only - db enforced';
+COMMENT ON COLUMN user_authz_request.email IS 'Lowercase chars only - db enforced';
 
 
 --
 -- Name: COLUMN user_authz_request.responding_user; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.user_authz_request.responding_user IS 'user that approved or rejected, not set until that happens';
+COMMENT ON COLUMN user_authz_request.responding_user IS 'user that approved or rejected, not set until that happens';
 
 
 --
 -- Name: COLUMN user_authz_request.approved_user; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.user_authz_request.approved_user IS 'the user that was approved, set when request is approved and the
+COMMENT ON COLUMN user_authz_request.approved_user IS 'the user that was approved, set when request is approved and the
   user is created or updated';
 
 
@@ -877,15 +829,15 @@ COMMENT ON COLUMN api_svc.user_authz_request.approved_user IS 'the user that was
 -- Name: COLUMN user_authz_request.date_responded; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON COLUMN api_svc.user_authz_request.date_responded IS 'not set until approved or rejected';
+COMMENT ON COLUMN user_authz_request.date_responded IS 'not set until approved or rejected';
 
 
 --
 -- Name: user_authz_request_id_seq; Type: SEQUENCE; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE api_svc.user_authz_request ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME api_svc.user_authz_request_id_seq
+ALTER TABLE user_authz_request ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME user_authz_request_id_seq
     START WITH 30000000
     INCREMENT BY 1
     NO MINVALUE
@@ -898,91 +850,91 @@ ALTER TABLE api_svc.user_authz_request ALTER COLUMN id ADD GENERATED ALWAYS AS I
 -- Name: access_type_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.access_type_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.access_type_scheme_id_seq'::regclass);
+ALTER TABLE ONLY access_type_schema ALTER COLUMN id SET DEFAULT nextval('access_type_scheme_id_seq'::regclass);
 
 
 --
 -- Name: contributor_position_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_position_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.contributor_position_scheme_id_seq'::regclass);
+ALTER TABLE ONLY contributor_position_schema ALTER COLUMN id SET DEFAULT nextval('contributor_position_scheme_id_seq'::regclass);
 
 
 --
 -- Name: contributor_role_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_role_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.contributor_role_scheme_id_seq'::regclass);
+ALTER TABLE ONLY contributor_role_schema ALTER COLUMN id SET DEFAULT nextval('contributor_role_scheme_id_seq'::regclass);
 
 
 --
 -- Name: description_type_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.description_type_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.description_type_scheme_id_seq'::regclass);
+ALTER TABLE ONLY description_type_schema ALTER COLUMN id SET DEFAULT nextval('description_type_scheme_id_seq'::regclass);
 
 
 --
 -- Name: language_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.language_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.language_scheme_id_seq'::regclass);
+ALTER TABLE ONLY language_schema ALTER COLUMN id SET DEFAULT nextval('language_scheme_id_seq'::regclass);
 
 
 --
 -- Name: organisation_role_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.organisation_role_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.organisation_role_scheme_id_seq'::regclass);
+ALTER TABLE ONLY organisation_role_schema ALTER COLUMN id SET DEFAULT nextval('organisation_role_scheme_id_seq'::regclass);
 
 
 --
 -- Name: related_object_category_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_category_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.related_object_category_scheme_id_seq'::regclass);
+ALTER TABLE ONLY related_object_category_schema ALTER COLUMN id SET DEFAULT nextval('related_object_category_scheme_id_seq'::regclass);
 
 
 --
 -- Name: related_object_type_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_type_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.related_object_type_scheme_id_seq'::regclass);
+ALTER TABLE ONLY related_object_type_schema ALTER COLUMN id SET DEFAULT nextval('related_object_type_scheme_id_seq'::regclass);
 
 
 --
 -- Name: related_raid_type_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_raid_type_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.related_raid_type_scheme_id_seq'::regclass);
+ALTER TABLE ONLY related_raid_type_schema ALTER COLUMN id SET DEFAULT nextval('related_raid_type_scheme_id_seq'::regclass);
 
 
 --
 -- Name: subject_type_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.subject_type_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.subject_type_scheme_id_seq'::regclass);
+ALTER TABLE ONLY subject_type_schema ALTER COLUMN id SET DEFAULT nextval('subject_type_scheme_id_seq'::regclass);
 
 
 --
 -- Name: title_type_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.title_type_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.title_type_scheme_id_seq'::regclass);
+ALTER TABLE ONLY title_type_schema ALTER COLUMN id SET DEFAULT nextval('title_type_scheme_id_seq'::regclass);
 
 
 --
 -- Name: traditional_knowledge_label_schema id; Type: DEFAULT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.traditional_knowledge_label_schema ALTER COLUMN id SET DEFAULT nextval('api_svc.traditional_knowledge_label_schema_id_seq'::regclass);
+ALTER TABLE ONLY traditional_knowledge_label_schema ALTER COLUMN id SET DEFAULT nextval('traditional_knowledge_label_schema_id_seq'::regclass);
 
 
 --
 -- Data for Name: access_type; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.access_type (schema_id, uri) FROM stdin;
+COPY access_type (schema_id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/open.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/embargoed.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/access/type/v1/closed.json
@@ -993,7 +945,7 @@ COPY api_svc.access_type (schema_id, uri) FROM stdin;
 -- Data for Name: access_type_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.access_type_schema (id, uri) FROM stdin;
+COPY access_type_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/access/type/v1/
 \.
 
@@ -1002,7 +954,7 @@ COPY api_svc.access_type_schema (id, uri) FROM stdin;
 -- Data for Name: app_user; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.app_user (id, service_point_id, email, client_id, subject, id_provider, role, enabled, token_cutoff, date_created) FROM stdin;
+COPY app_user (id, service_point_id, email, client_id, subject, id_provider, role, enabled, token_cutoff, date_created) FROM stdin;
 \.
 
 
@@ -1010,7 +962,7 @@ COPY api_svc.app_user (id, service_point_id, email, client_id, subject, id_provi
 -- Data for Name: contributor_position; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.contributor_position (schema_id, uri) FROM stdin;
+COPY contributor_position (schema_id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/co-investigator.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/contact-person.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/contributor/position/v1/leader.json
@@ -1023,7 +975,7 @@ COPY api_svc.contributor_position (schema_id, uri) FROM stdin;
 -- Data for Name: contributor_position_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.contributor_position_schema (id, uri) FROM stdin;
+COPY contributor_position_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/contributor/position/v1/
 \.
 
@@ -1032,7 +984,7 @@ COPY api_svc.contributor_position_schema (id, uri) FROM stdin;
 -- Data for Name: contributor_role; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.contributor_role (schema_id, uri) FROM stdin;
+COPY contributor_role (schema_id, uri) FROM stdin;
 1	https://credit.niso.org/contributor-roles/conceptualization/
 1	https://credit.niso.org/contributor-roles/data-curation/
 1	https://credit.niso.org/contributor-roles/formal-analysis/
@@ -1054,7 +1006,7 @@ COPY api_svc.contributor_role (schema_id, uri) FROM stdin;
 -- Data for Name: contributor_role_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.contributor_role_schema (id, uri) FROM stdin;
+COPY contributor_role_schema (id, uri) FROM stdin;
 1	https://credit.niso.org/
 \.
 
@@ -1063,7 +1015,7 @@ COPY api_svc.contributor_role_schema (id, uri) FROM stdin;
 -- Data for Name: description_type; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.description_type (schema_id, uri) FROM stdin;
+COPY description_type (schema_id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/description/type/v1/alternative.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/description/type/v1/primary.json
 \.
@@ -1073,7 +1025,7 @@ COPY api_svc.description_type (schema_id, uri) FROM stdin;
 -- Data for Name: description_type_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.description_type_schema (id, uri) FROM stdin;
+COPY description_type_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/description/type/v1/
 \.
 
@@ -1082,7 +1034,7 @@ COPY api_svc.description_type_schema (id, uri) FROM stdin;
 -- Data for Name: language; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.language (id, name, schema_id) FROM stdin;
+COPY language (id, name, schema_id) FROM stdin;
 aaa	Ghotuo	1
 aab	Alumu-Tesu	1
 aac	Ari	1
@@ -9006,7 +8958,7 @@ zzj	Zuojiang Zhuang	1
 -- Data for Name: language_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.language_schema (id, uri) FROM stdin;
+COPY language_schema (id, uri) FROM stdin;
 1	https://iso639-3.sil.org
 \.
 
@@ -9015,7 +8967,7 @@ COPY api_svc.language_schema (id, uri) FROM stdin;
 -- Data for Name: organisation_role; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.organisation_role (schema_id, uri) FROM stdin;
+COPY organisation_role (schema_id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/organisation/role/v1/contractor.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/organisation/role/v1/lead-research-organisation.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/organisation/role/v1/other-organisation.json
@@ -9028,7 +8980,7 @@ COPY api_svc.organisation_role (schema_id, uri) FROM stdin;
 -- Data for Name: organisation_role_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.organisation_role_schema (id, uri) FROM stdin;
+COPY organisation_role_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/organisation/role/v1/
 \.
 
@@ -9037,7 +8989,7 @@ COPY api_svc.organisation_role_schema (id, uri) FROM stdin;
 -- Data for Name: raid; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.raid (handle, service_point_id, url, url_index, primary_title, confidential, metadata_schema, metadata, start_date, date_created, version) FROM stdin;
+COPY raid (handle, service_point_id, url, url_index, primary_title, confidential, metadata_schema, metadata, start_date, date_created, version) FROM stdin;
 \.
 
 
@@ -9045,7 +8997,7 @@ COPY api_svc.raid (handle, service_point_id, url, url_index, primary_title, conf
 -- Data for Name: raido_operator; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.raido_operator (email) FROM stdin;
+COPY raido_operator (email) FROM stdin;
 matthias.liffers@ardc.edu.au
 shawn.ross@ardc.edu.au
 rob.leney@ardc.edu.au
@@ -9057,7 +9009,7 @@ steffen.weidenhaus@ardc.edu.au
 -- Data for Name: related_object_category; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.related_object_category (schema_id, uri) FROM stdin;
+COPY related_object_category (schema_id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/category/v1/input.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/category/v1/internal.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/category/v1/output.json
@@ -9068,7 +9020,7 @@ COPY api_svc.related_object_category (schema_id, uri) FROM stdin;
 -- Data for Name: related_object_category_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.related_object_category_schema (id, uri) FROM stdin;
+COPY related_object_category_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/category/v1/
 \.
 
@@ -9077,7 +9029,7 @@ COPY api_svc.related_object_category_schema (id, uri) FROM stdin;
 -- Data for Name: related_object_type; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.related_object_type (schema_id, uri, name, description) FROM stdin;
+COPY related_object_type (schema_id, uri, name, description) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/type/v1/audiovisual.json	Audiovisual	An audiovisual related object.
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/type/v1/book-chapter.json	Book Chapter	A book chapter related object.
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/type/v1/book.json	Book	A book related object.
@@ -9113,7 +9065,7 @@ COPY api_svc.related_object_type (schema_id, uri, name, description) FROM stdin;
 -- Data for Name: related_object_type_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.related_object_type_schema (id, uri) FROM stdin;
+COPY related_object_type_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/type/v1/
 \.
 
@@ -9122,7 +9074,7 @@ COPY api_svc.related_object_type_schema (id, uri) FROM stdin;
 -- Data for Name: related_raid_type; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.related_raid_type (schema_id, uri, name, description) FROM stdin;
+COPY related_raid_type (schema_id, uri, name, description) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/continues.json	Continues	Continues the related RAiD.
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/has-part.json	HasPart	Has part of the related RAiD.
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/related-raid/type/v1/is-continued-by.json	IsContinuedBy	Is continued by the related RAiD.
@@ -9139,7 +9091,7 @@ COPY api_svc.related_raid_type (schema_id, uri, name, description) FROM stdin;
 -- Data for Name: related_raid_type_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.related_raid_type_schema (id, uri) FROM stdin;
+COPY related_raid_type_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/related-raid/type/v1/
 \.
 
@@ -9148,7 +9100,7 @@ COPY api_svc.related_raid_type_schema (id, uri) FROM stdin;
 -- Data for Name: service_point; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.service_point (id, name, search_content, admin_email, tech_email, enabled, identifier_owner, app_writes_enabled) FROM stdin;
+COPY service_point (id, name, search_content, admin_email, tech_email, enabled, identifier_owner, app_writes_enabled) FROM stdin;
 20000000	raido	\N	web.services@ardc.edu.au	web.services@ardc.edu.au	t	https://ror.org/038sjwq14	t
 20000001	Australian Research Data Commons	ardc	matthias.liffers@ardc.edu.au	joel.benn@ardc.edu.au	t	https://ror.org/038sjwq14	t
 20000002	RDM@UQ				t	https://ror.org/00rqy9422	t
@@ -9161,7 +9113,7 @@ COPY api_svc.service_point (id, name, search_content, admin_email, tech_email, e
 -- Data for Name: subject_type; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.subject_type (id, name, description, note, schema_id) FROM stdin;
+COPY subject_type (id, name, description, note, schema_id) FROM stdin;
 4502	Aboriginal and Torres Strait Islander education	This group covers all aspects of education related to Aboriginal and Torres Strait Islander.		1
 4503	Aboriginal and Torres Strait Islander environmental knowledges and management	This group covers earth sciences, environmental sciences, knowledges and management (caring for country), agricultural sciences and veterinary sciences related to Aboriginal and Torres Strait Islander.		1
 4504	Aboriginal and Torres Strait Islander health and wellbeing	This group covers health and wellbeing (including physical, psychological and spiritual wellbeing), health services and biomedical and clinical sciences related to Aboriginal and Torres Strait Islander.		1
@@ -11372,7 +11324,7 @@ COPY api_svc.subject_type (id, name, description, note, schema_id) FROM stdin;
 -- Data for Name: subject_type_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.subject_type_schema (id, uri) FROM stdin;
+COPY subject_type_schema (id, uri) FROM stdin;
 1	https://linked.data.gov.au/def/anzsrc-for/2020/
 \.
 
@@ -11381,7 +11333,7 @@ COPY api_svc.subject_type_schema (id, uri) FROM stdin;
 -- Data for Name: title_type; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.title_type (schema_id, uri) FROM stdin;
+COPY title_type (schema_id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/title/type/v1/alternative.json
 1	https://github.com/au-research/raid-metadata/blob/main/scheme/title/type/v1/primary.json
 \.
@@ -11391,7 +11343,7 @@ COPY api_svc.title_type (schema_id, uri) FROM stdin;
 -- Data for Name: title_type_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.title_type_schema (id, uri) FROM stdin;
+COPY title_type_schema (id, uri) FROM stdin;
 1	https://github.com/au-research/raid-metadata/tree/main/scheme/title/type/v1/
 \.
 
@@ -11400,7 +11352,7 @@ COPY api_svc.title_type_schema (id, uri) FROM stdin;
 -- Data for Name: token; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.token (name, environment, date_created, token, s3_export) FROM stdin;
+COPY token (name, environment, date_created, token, s3_export) FROM stdin;
 \.
 
 
@@ -11408,7 +11360,7 @@ COPY api_svc.token (name, environment, date_created, token, s3_export) FROM stdi
 -- Data for Name: traditional_knowledge_label; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.traditional_knowledge_label (schema_id, uri) FROM stdin;
+COPY traditional_knowledge_label (schema_id, uri) FROM stdin;
 1	https://localcontexts.org/label/tk-attribution/
 1	https://localcontexts.org/label/tk-clan/
 1	https://localcontexts.org/label/tk-family/
@@ -11446,7 +11398,7 @@ COPY api_svc.traditional_knowledge_label (schema_id, uri) FROM stdin;
 -- Data for Name: traditional_knowledge_label_schema; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.traditional_knowledge_label_schema (id, uri) FROM stdin;
+COPY traditional_knowledge_label_schema (id, uri) FROM stdin;
 1	https://localcontexts.org/labels/traditional-knowledge-labels/
 2	https://localcontexts.org/labels/biocultural-labels/
 \.
@@ -11456,7 +11408,7 @@ COPY api_svc.traditional_knowledge_label_schema (id, uri) FROM stdin;
 -- Data for Name: user_authz_request; Type: TABLE DATA; Schema: api_svc; Owner: postgres
 --
 
-COPY api_svc.user_authz_request (id, status, service_point_id, email, client_id, id_provider, subject, responding_user, approved_user, description, date_requested, date_responded) FROM stdin;
+COPY user_authz_request (id, status, service_point_id, email, client_id, id_provider, subject, responding_user, approved_user, description, date_requested, date_responded) FROM stdin;
 \.
 
 
@@ -11464,112 +11416,112 @@ COPY api_svc.user_authz_request (id, status, service_point_id, email, client_id,
 -- Name: access_type_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.access_type_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('access_type_scheme_id_seq', 1, true);
 
 
 --
 -- Name: app_user_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.app_user_id_seq', 1000000000, false);
+SELECT pg_catalog.setval('app_user_id_seq', 1000000000, false);
 
 
 --
 -- Name: contributor_position_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.contributor_position_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('contributor_position_scheme_id_seq', 1, true);
 
 
 --
 -- Name: contributor_role_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.contributor_role_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('contributor_role_scheme_id_seq', 1, true);
 
 
 --
 -- Name: description_type_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.description_type_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('description_type_scheme_id_seq', 1, true);
 
 
 --
 -- Name: language_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.language_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('language_scheme_id_seq', 1, true);
 
 
 --
 -- Name: organisation_role_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.organisation_role_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('organisation_role_scheme_id_seq', 1, true);
 
 
 --
 -- Name: related_object_category_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.related_object_category_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('related_object_category_scheme_id_seq', 1, true);
 
 
 --
 -- Name: related_object_type_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.related_object_type_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('related_object_type_scheme_id_seq', 1, true);
 
 
 --
 -- Name: related_raid_type_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.related_raid_type_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('related_raid_type_scheme_id_seq', 1, true);
 
 
 --
 -- Name: service_point_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.service_point_id_seq', 20000004, true);
+SELECT pg_catalog.setval('service_point_id_seq', 20000004, true);
 
 
 --
 -- Name: subject_type_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.subject_type_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('subject_type_scheme_id_seq', 1, true);
 
 
 --
 -- Name: title_type_scheme_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.title_type_scheme_id_seq', 1, true);
+SELECT pg_catalog.setval('title_type_scheme_id_seq', 1, true);
 
 
 --
 -- Name: traditional_knowledge_label_schema_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.traditional_knowledge_label_schema_id_seq', 2, true);
+SELECT pg_catalog.setval('traditional_knowledge_label_schema_id_seq', 2, true);
 
 
 --
 -- Name: user_authz_request_id_seq; Type: SEQUENCE SET; Schema: api_svc; Owner: postgres
 --
 
-SELECT pg_catalog.setval('api_svc.user_authz_request_id_seq', 30000000, false);
+SELECT pg_catalog.setval('user_authz_request_id_seq', 30000000, false);
 
 
 --
 -- Name: access_type access_type_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.access_type
+ALTER TABLE ONLY access_type
     ADD CONSTRAINT access_type_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11577,7 +11529,7 @@ ALTER TABLE ONLY api_svc.access_type
 -- Name: access_type_schema access_type_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.access_type_schema
+ALTER TABLE ONLY access_type_schema
     ADD CONSTRAINT access_type_schema_pkey PRIMARY KEY (id);
 
 
@@ -11585,7 +11537,7 @@ ALTER TABLE ONLY api_svc.access_type_schema
 -- Name: app_user app_user_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.app_user
+ALTER TABLE ONLY app_user
     ADD CONSTRAINT app_user_pkey PRIMARY KEY (id);
 
 
@@ -11593,7 +11545,7 @@ ALTER TABLE ONLY api_svc.app_user
 -- Name: contributor_position contributor_position_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_position
+ALTER TABLE ONLY contributor_position
     ADD CONSTRAINT contributor_position_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11601,7 +11553,7 @@ ALTER TABLE ONLY api_svc.contributor_position
 -- Name: contributor_position_schema contributor_position_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_position_schema
+ALTER TABLE ONLY contributor_position_schema
     ADD CONSTRAINT contributor_position_schema_pkey PRIMARY KEY (id);
 
 
@@ -11609,7 +11561,7 @@ ALTER TABLE ONLY api_svc.contributor_position_schema
 -- Name: contributor_role contributor_role_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_role
+ALTER TABLE ONLY contributor_role
     ADD CONSTRAINT contributor_role_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11617,7 +11569,7 @@ ALTER TABLE ONLY api_svc.contributor_role
 -- Name: contributor_role_schema contributor_role_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_role_schema
+ALTER TABLE ONLY contributor_role_schema
     ADD CONSTRAINT contributor_role_schema_pkey PRIMARY KEY (id);
 
 
@@ -11625,7 +11577,7 @@ ALTER TABLE ONLY api_svc.contributor_role_schema
 -- Name: description_type description_type_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.description_type
+ALTER TABLE ONLY description_type
     ADD CONSTRAINT description_type_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11633,7 +11585,7 @@ ALTER TABLE ONLY api_svc.description_type
 -- Name: description_type_schema dwscription_type_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.description_type_schema
+ALTER TABLE ONLY description_type_schema
     ADD CONSTRAINT dwscription_type_schema_pkey PRIMARY KEY (id);
 
 
@@ -11641,7 +11593,7 @@ ALTER TABLE ONLY api_svc.description_type_schema
 -- Name: language_schema language_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.language_schema
+ALTER TABLE ONLY language_schema
     ADD CONSTRAINT language_schema_pkey PRIMARY KEY (id);
 
 
@@ -11649,7 +11601,7 @@ ALTER TABLE ONLY api_svc.language_schema
 -- Name: organisation_role organisation_role_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.organisation_role
+ALTER TABLE ONLY organisation_role
     ADD CONSTRAINT organisation_role_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11657,7 +11609,7 @@ ALTER TABLE ONLY api_svc.organisation_role
 -- Name: organisation_role_schema organisation_role_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.organisation_role_schema
+ALTER TABLE ONLY organisation_role_schema
     ADD CONSTRAINT organisation_role_schema_pkey PRIMARY KEY (id);
 
 
@@ -11665,7 +11617,7 @@ ALTER TABLE ONLY api_svc.organisation_role_schema
 -- Name: raid raid_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.raid
+ALTER TABLE ONLY raid
     ADD CONSTRAINT raid_pkey PRIMARY KEY (handle);
 
 
@@ -11673,7 +11625,7 @@ ALTER TABLE ONLY api_svc.raid
 -- Name: raido_operator raido_operator_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.raido_operator
+ALTER TABLE ONLY raido_operator
     ADD CONSTRAINT raido_operator_pkey PRIMARY KEY (email);
 
 
@@ -11681,7 +11633,7 @@ ALTER TABLE ONLY api_svc.raido_operator
 -- Name: related_object_category related_object_category_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_category
+ALTER TABLE ONLY related_object_category
     ADD CONSTRAINT related_object_category_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11689,7 +11641,7 @@ ALTER TABLE ONLY api_svc.related_object_category
 -- Name: related_object_category_schema related_object_category_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_category_schema
+ALTER TABLE ONLY related_object_category_schema
     ADD CONSTRAINT related_object_category_schema_pkey PRIMARY KEY (id);
 
 
@@ -11697,7 +11649,7 @@ ALTER TABLE ONLY api_svc.related_object_category_schema
 -- Name: related_object_type related_object_type_new_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_type
+ALTER TABLE ONLY related_object_type
     ADD CONSTRAINT related_object_type_new_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11705,7 +11657,7 @@ ALTER TABLE ONLY api_svc.related_object_type
 -- Name: related_object_type_schema related_object_type_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_type_schema
+ALTER TABLE ONLY related_object_type_schema
     ADD CONSTRAINT related_object_type_schema_pkey PRIMARY KEY (id);
 
 
@@ -11713,7 +11665,7 @@ ALTER TABLE ONLY api_svc.related_object_type_schema
 -- Name: related_raid_type related_raid_type_new_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_raid_type
+ALTER TABLE ONLY related_raid_type
     ADD CONSTRAINT related_raid_type_new_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11721,7 +11673,7 @@ ALTER TABLE ONLY api_svc.related_raid_type
 -- Name: related_raid_type_schema related_raid_type_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_raid_type_schema
+ALTER TABLE ONLY related_raid_type_schema
     ADD CONSTRAINT related_raid_type_schema_pkey PRIMARY KEY (id);
 
 
@@ -11729,7 +11681,7 @@ ALTER TABLE ONLY api_svc.related_raid_type_schema
 -- Name: service_point service_point_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.service_point
+ALTER TABLE ONLY service_point
     ADD CONSTRAINT service_point_pkey PRIMARY KEY (id);
 
 
@@ -11737,7 +11689,7 @@ ALTER TABLE ONLY api_svc.service_point
 -- Name: subject_type subject_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.subject_type
+ALTER TABLE ONLY subject_type
     ADD CONSTRAINT subject_pkey PRIMARY KEY (id);
 
 
@@ -11745,7 +11697,7 @@ ALTER TABLE ONLY api_svc.subject_type
 -- Name: subject_type_schema subject_type_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.subject_type_schema
+ALTER TABLE ONLY subject_type_schema
     ADD CONSTRAINT subject_type_schema_pkey PRIMARY KEY (id);
 
 
@@ -11753,7 +11705,7 @@ ALTER TABLE ONLY api_svc.subject_type_schema
 -- Name: title_type title_type_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.title_type
+ALTER TABLE ONLY title_type
     ADD CONSTRAINT title_type_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11761,7 +11713,7 @@ ALTER TABLE ONLY api_svc.title_type
 -- Name: title_type_schema title_type_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.title_type_schema
+ALTER TABLE ONLY title_type_schema
     ADD CONSTRAINT title_type_schema_pkey PRIMARY KEY (id);
 
 
@@ -11769,7 +11721,7 @@ ALTER TABLE ONLY api_svc.title_type_schema
 -- Name: token token_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.token
+ALTER TABLE ONLY token
     ADD CONSTRAINT token_pkey PRIMARY KEY (name, environment, date_created);
 
 
@@ -11777,7 +11729,7 @@ ALTER TABLE ONLY api_svc.token
 -- Name: traditional_knowledge_label traditional_knowledge_label_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.traditional_knowledge_label
+ALTER TABLE ONLY traditional_knowledge_label
     ADD CONSTRAINT traditional_knowledge_label_pkey PRIMARY KEY (schema_id, uri);
 
 
@@ -11785,7 +11737,7 @@ ALTER TABLE ONLY api_svc.traditional_knowledge_label
 -- Name: traditional_knowledge_label_schema traditional_knowledge_label_schema_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.traditional_knowledge_label_schema
+ALTER TABLE ONLY traditional_knowledge_label_schema
     ADD CONSTRAINT traditional_knowledge_label_schema_pkey PRIMARY KEY (id);
 
 
@@ -11793,7 +11745,7 @@ ALTER TABLE ONLY api_svc.traditional_knowledge_label_schema
 -- Name: service_point unique_name; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.service_point
+ALTER TABLE ONLY service_point
     ADD CONSTRAINT unique_name UNIQUE (lower_name);
 
 
@@ -11801,7 +11753,7 @@ ALTER TABLE ONLY api_svc.service_point
 -- Name: CONSTRAINT unique_name ON service_point; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON CONSTRAINT unique_name ON api_svc.service_point IS 'initially for uniqueness rather than querying, we want to retain the case
+COMMENT ON CONSTRAINT unique_name ON service_point IS 'initially for uniqueness rather than querying, we want to retain the case
   entered by the user';
 
 
@@ -11809,7 +11761,7 @@ COMMENT ON CONSTRAINT unique_name ON api_svc.service_point IS 'initially for uni
 -- Name: user_authz_request user_authz_request_pkey; Type: CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.user_authz_request
+ALTER TABLE ONLY user_authz_request
     ADD CONSTRAINT user_authz_request_pkey PRIMARY KEY (id);
 
 
@@ -11817,14 +11769,14 @@ ALTER TABLE ONLY api_svc.user_authz_request
 -- Name: app_user_id_fields_active_key; Type: INDEX; Schema: api_svc; Owner: postgres
 --
 
-CREATE UNIQUE INDEX app_user_id_fields_active_key ON api_svc.app_user USING btree (email, client_id, subject) WHERE (enabled = true);
+CREATE UNIQUE INDEX app_user_id_fields_active_key ON app_user USING btree (email, client_id, subject) WHERE (enabled = true);
 
 
 --
 -- Name: INDEX app_user_id_fields_active_key; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON INDEX api_svc.app_user_id_fields_active_key IS 'a user can only be attached to one service point at a time.  We could change
+COMMENT ON INDEX app_user_id_fields_active_key IS 'a user can only be attached to one service point at a time.  We could change
   this, but would need to change sign-in to specify service-point';
 
 
@@ -11832,500 +11784,452 @@ COMMENT ON INDEX api_svc.app_user_id_fields_active_key IS 'a user can only be at
 -- Name: idx_raid_service_point_id_date_created; Type: INDEX; Schema: api_svc; Owner: postgres
 --
 
-CREATE INDEX idx_raid_service_point_id_date_created ON api_svc.raid USING btree (service_point_id, date_created DESC);
+CREATE INDEX idx_raid_service_point_id_date_created ON raid USING btree (service_point_id, date_created DESC);
 
 
 --
 -- Name: INDEX idx_raid_service_point_id_date_created; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON INDEX api_svc.idx_raid_service_point_id_date_created IS 'created because load-testing showed the query for the experimental list-raid endpoint was doing a full table scan';
+COMMENT ON INDEX idx_raid_service_point_id_date_created IS 'created because load-testing showed the query for the experimental list-raid endpoint was doing a full table scan';
 
 
 --
 -- Name: user_authz_request_once_active_key; Type: INDEX; Schema: api_svc; Owner: postgres
 --
 
-CREATE UNIQUE INDEX user_authz_request_once_active_key ON api_svc.user_authz_request USING btree (service_point_id, client_id, subject) WHERE (status = 'REQUESTED'::api_svc.auth_request_status);
+CREATE UNIQUE INDEX user_authz_request_once_active_key ON user_authz_request USING btree (service_point_id, client_id, subject) WHERE (status = 'REQUESTED'::auth_request_status);
 
 
 --
 -- Name: INDEX user_authz_request_once_active_key; Type: COMMENT; Schema: api_svc; Owner: postgres
 --
 
-COMMENT ON INDEX api_svc.user_authz_request_once_active_key IS 'a user can only make one active request per service point';
+COMMENT ON INDEX user_authz_request_once_active_key IS 'a user can only make one active request per service point';
 
 
 --
 -- Name: app_user app_user_service_point_id_fkey; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.app_user
-    ADD CONSTRAINT app_user_service_point_id_fkey FOREIGN KEY (service_point_id) REFERENCES api_svc.service_point(id);
+ALTER TABLE ONLY app_user
+    ADD CONSTRAINT app_user_service_point_id_fkey FOREIGN KEY (service_point_id) REFERENCES service_point(id);
 
 
 --
 -- Name: access_type fk_access_type_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.access_type
-    ADD CONSTRAINT fk_access_type_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.access_type_schema(id);
+ALTER TABLE ONLY access_type
+    ADD CONSTRAINT fk_access_type_schema_id FOREIGN KEY (schema_id) REFERENCES access_type_schema(id);
 
 
 --
 -- Name: contributor_position fk_contributor_position_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_position
-    ADD CONSTRAINT fk_contributor_position_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.access_type_schema(id);
+ALTER TABLE ONLY contributor_position
+    ADD CONSTRAINT fk_contributor_position_schema_id FOREIGN KEY (schema_id) REFERENCES access_type_schema(id);
 
 
 --
 -- Name: contributor_role fk_contributor_role_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.contributor_role
-    ADD CONSTRAINT fk_contributor_role_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.contributor_role_schema(id);
+ALTER TABLE ONLY contributor_role
+    ADD CONSTRAINT fk_contributor_role_schema_id FOREIGN KEY (schema_id) REFERENCES contributor_role_schema(id);
 
 
 --
 -- Name: description_type fk_description_type_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.description_type
-    ADD CONSTRAINT fk_description_type_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.description_type_schema(id);
+ALTER TABLE ONLY description_type
+    ADD CONSTRAINT fk_description_type_schema_id FOREIGN KEY (schema_id) REFERENCES description_type_schema(id);
 
 
 --
 -- Name: language fk_language_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.language
-    ADD CONSTRAINT fk_language_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.language_schema(id);
+ALTER TABLE ONLY language
+    ADD CONSTRAINT fk_language_schema_id FOREIGN KEY (schema_id) REFERENCES language_schema(id);
 
 
 --
 -- Name: organisation_role fk_organisation_role_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.organisation_role
-    ADD CONSTRAINT fk_organisation_role_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.organisation_role_schema(id);
+ALTER TABLE ONLY organisation_role
+    ADD CONSTRAINT fk_organisation_role_schema_id FOREIGN KEY (schema_id) REFERENCES organisation_role_schema(id);
 
 
 --
 -- Name: related_object_category fk_related_object_category_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_category
-    ADD CONSTRAINT fk_related_object_category_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.related_object_category_schema(id);
+ALTER TABLE ONLY related_object_category
+    ADD CONSTRAINT fk_related_object_category_schema_id FOREIGN KEY (schema_id) REFERENCES related_object_category_schema(id);
 
 
 --
 -- Name: related_object_type fk_related_object_type_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_object_type
-    ADD CONSTRAINT fk_related_object_type_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.related_object_type_schema(id);
+ALTER TABLE ONLY related_object_type
+    ADD CONSTRAINT fk_related_object_type_schema_id FOREIGN KEY (schema_id) REFERENCES related_object_type_schema(id);
 
 
 --
 -- Name: related_raid_type fk_related_raid_type_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.related_raid_type
-    ADD CONSTRAINT fk_related_raid_type_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.related_raid_type_schema(id);
+ALTER TABLE ONLY related_raid_type
+    ADD CONSTRAINT fk_related_raid_type_schema_id FOREIGN KEY (schema_id) REFERENCES related_raid_type_schema(id);
 
 
 --
 -- Name: subject_type fk_subject_type_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.subject_type
-    ADD CONSTRAINT fk_subject_type_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.subject_type_schema(id);
+ALTER TABLE ONLY subject_type
+    ADD CONSTRAINT fk_subject_type_schema_id FOREIGN KEY (schema_id) REFERENCES subject_type_schema(id);
 
 
 --
 -- Name: title_type fk_title_type_schema_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.title_type
-    ADD CONSTRAINT fk_title_type_schema_id FOREIGN KEY (schema_id) REFERENCES api_svc.title_type_schema(id);
+ALTER TABLE ONLY title_type
+    ADD CONSTRAINT fk_title_type_schema_id FOREIGN KEY (schema_id) REFERENCES title_type_schema(id);
 
 
 --
 -- Name: traditional_knowledge_label fk_traditional_knowledge_label_id; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.traditional_knowledge_label
-    ADD CONSTRAINT fk_traditional_knowledge_label_id FOREIGN KEY (schema_id) REFERENCES api_svc.traditional_knowledge_label_schema(id);
+ALTER TABLE ONLY traditional_knowledge_label
+    ADD CONSTRAINT fk_traditional_knowledge_label_id FOREIGN KEY (schema_id) REFERENCES traditional_knowledge_label_schema(id);
 
 
 --
 -- Name: raid raid_service_point_id_fkey; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.raid
-    ADD CONSTRAINT raid_service_point_id_fkey FOREIGN KEY (service_point_id) REFERENCES api_svc.service_point(id);
+ALTER TABLE ONLY raid
+    ADD CONSTRAINT raid_service_point_id_fkey FOREIGN KEY (service_point_id) REFERENCES service_point(id);
 
 
 --
 -- Name: user_authz_request user_authz_request_approved_user_fkey; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.user_authz_request
-    ADD CONSTRAINT user_authz_request_approved_user_fkey FOREIGN KEY (approved_user) REFERENCES api_svc.app_user(id);
+ALTER TABLE ONLY user_authz_request
+    ADD CONSTRAINT user_authz_request_approved_user_fkey FOREIGN KEY (approved_user) REFERENCES app_user(id);
 
 
 --
 -- Name: user_authz_request user_authz_request_responding_user_fkey; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.user_authz_request
-    ADD CONSTRAINT user_authz_request_responding_user_fkey FOREIGN KEY (responding_user) REFERENCES api_svc.app_user(id);
+ALTER TABLE ONLY user_authz_request
+    ADD CONSTRAINT user_authz_request_responding_user_fkey FOREIGN KEY (responding_user) REFERENCES app_user(id);
 
 
 --
 -- Name: user_authz_request user_authz_request_service_point_id_fkey; Type: FK CONSTRAINT; Schema: api_svc; Owner: postgres
 --
 
-ALTER TABLE ONLY api_svc.user_authz_request
-    ADD CONSTRAINT user_authz_request_service_point_id_fkey FOREIGN KEY (service_point_id) REFERENCES api_svc.service_point(id);
+ALTER TABLE ONLY user_authz_request
+    ADD CONSTRAINT user_authz_request_service_point_id_fkey FOREIGN KEY (service_point_id) REFERENCES service_point(id);
 
 
 --
 -- Name: SCHEMA api_svc; Type: ACL; Schema: -; Owner: postgres
 --
 
-GRANT USAGE ON SCHEMA api_svc TO api_user;
 
 
 --
 -- Name: TABLE access_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.access_type TO api_user;
 
 
 --
 -- Name: TABLE access_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.access_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE access_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.access_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE app_user; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.app_user TO api_user;
 
 
 --
 -- Name: SEQUENCE app_user_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.app_user_id_seq TO api_user;
 
 
 --
 -- Name: TABLE contributor_position; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_position TO api_user;
 
 
 --
 -- Name: TABLE contributor_position_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_position_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE contributor_position_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.contributor_position_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE contributor_role; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_role TO api_user;
 
 
 --
 -- Name: TABLE contributor_role_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.contributor_role_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE contributor_role_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.contributor_role_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE description_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.description_type TO api_user;
 
 
 --
 -- Name: TABLE description_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.description_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE description_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.description_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE language; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.language TO api_user;
 
 
 --
 -- Name: TABLE language_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.language_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE language_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.language_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE organisation_role; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.organisation_role TO api_user;
 
 
 --
 -- Name: TABLE organisation_role_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.organisation_role_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE organisation_role_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.organisation_role_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE raid; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.raid TO api_user;
 
 
 --
 -- Name: TABLE raido_operator; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.raido_operator TO api_user;
 
 
 --
 -- Name: TABLE related_object_category; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_category TO api_user;
 
 
 --
 -- Name: TABLE related_object_category_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_category_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE related_object_category_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.related_object_category_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE related_object_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_type TO api_user;
 
 
 --
 -- Name: TABLE related_object_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_object_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE related_object_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.related_object_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE related_raid_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_raid_type TO api_user;
 
 
 --
 -- Name: TABLE related_raid_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.related_raid_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE related_raid_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.related_raid_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE service_point; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.service_point TO api_user;
 
 
 --
 -- Name: SEQUENCE service_point_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.service_point_id_seq TO api_user;
 
 
 --
 -- Name: TABLE subject_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.subject_type TO api_user;
 
 
 --
 -- Name: TABLE subject_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.subject_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE subject_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.subject_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE title_type; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.title_type TO api_user;
 
 
 --
 -- Name: TABLE title_type_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.title_type_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE title_type_scheme_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.title_type_scheme_id_seq TO api_user;
 
 
 --
 -- Name: TABLE token; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.token TO api_user;
 
 
 --
 -- Name: TABLE traditional_knowledge_label; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.traditional_knowledge_label TO api_user;
 
 
 --
 -- Name: TABLE traditional_knowledge_label_schema; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.traditional_knowledge_label_schema TO api_user;
 
 
 --
 -- Name: SEQUENCE traditional_knowledge_label_schema_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.traditional_knowledge_label_schema_id_seq TO api_user;
 
 
 --
 -- Name: TABLE user_authz_request; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT ALL ON TABLE api_svc.user_authz_request TO api_user;
 
 
 --
 -- Name: SEQUENCE user_authz_request_id_seq; Type: ACL; Schema: api_svc; Owner: postgres
 --
 
-GRANT USAGE ON SEQUENCE api_svc.user_authz_request_id_seq TO api_user;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: api_svc; Owner: postgres
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA api_svc GRANT USAGE ON SEQUENCES TO api_user;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: api_svc; Owner: postgres
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA api_svc GRANT ALL ON TABLES TO api_user;
 
 
 --

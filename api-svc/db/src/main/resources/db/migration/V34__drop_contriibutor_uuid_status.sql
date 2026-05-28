@@ -1,1 +1,1 @@
-alter table api_svc.contributor drop column uuid;
+alter table contributor drop column uuid;

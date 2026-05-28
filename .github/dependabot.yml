@@ -21,6 +21,21 @@ updates:
       - dependency-name: "@typescript-eslint/*"
         update-types: ["version-update:semver-major"]
 
+  - package-ecosystem: "npm"
+    directory: "raid-agency-app-static"
+    schedule:
+      interval: "daily"
+    groups:
+      astro:
+        patterns: ["astro", "@astrojs/*"]
+      tailwind:
+        patterns: ["tailwindcss", "@tailwindcss/*", "autoprefixer"]
+    ignore:
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@astrojs/*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
