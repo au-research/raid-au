@@ -1,0 +1,8 @@
+DO $$
+DECLARE
+  s text := current_schema();
+BEGIN
+  EXECUTE format('GRANT USAGE ON SCHEMA %I TO api_user', s);
+  EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON TABLES TO api_user', s);
+  EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT USAGE ON SEQUENCES TO api_user', s);
+END$$;
