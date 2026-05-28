@@ -33,6 +33,8 @@ interface ResearchProjectJsonLd {
   "@context": "https://schema.org";
   "@type": "ResearchProject";
   "@id": string;
+  name: string;
+  headline: string;
   identifier: PropertyValue;
   parentOrganization: {
     "@type": "Organization";
@@ -136,10 +138,14 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     inDefinedTermSet: subject.schemaUri,
   }));
 
+  const name = raid.title?.at(0)?.text ?? "";
+
   return {
     "@context": "https://schema.org",
     "@type": "ResearchProject",
     "@id": raid.identifier?.id ?? "",
+    name,
+    headline: name,
     identifier: {
       "@type": "PropertyValue",
       propertyID: "https://registry.identifiers.org/registry/raid",
