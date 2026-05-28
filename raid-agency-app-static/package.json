@@ -18,7 +18,7 @@
     "@astrojs/sitemap": "^3.7.3",
     "autoprefixer": "^10.4.20",
     "@fontsource/figtree": "^5.1.1",
-    "@openapitools/openapi-generator-cli": "^2.14.0",
+    "@openapitools/openapi-generator-cli": "^2.34.0",
     "@tailwindcss/typography": "^0.5.16",
     "astro": "^6.3.3",
     "dayjs": "^1.11.21",
