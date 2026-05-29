@@ -5,30 +5,38 @@ import Layout from "@/layouts/main.astro";
 import { getRaidAppUrl } from "@/utils/data-utils";
 
 import { raids } from "@/store/raids";
+import { embargoedRaids } from "@/store/embargoed-raids";
 const { prefix } = Astro.params;
 
-// Filter raids by prefix
-const filteredRaids = raids.filter((raid) => {
-  const [_, raidPrefix] = new URL(raid.identifier.id).pathname.split("/");
-  return raidPrefix === prefix;
-});
-
 export async function getStaticPaths() {
-  const prefixRaidCount = new Map<string, number>();
+  const prefixes = new Set<string>();
 
   for (const el of raids) {
-    const [_, prefix] = new URL(el.identifier.id).pathname.split("/");
-    const counter = prefixRaidCount.get(prefix) || 0;
-    prefixRaidCount.set(prefix, counter + 1);
+    const [_, p] = new URL(el.identifier.id).pathname.split("/");
+    prefixes.add(p);
+  }
+  for (const el of embargoedRaids) {
+    const [p] = el.handle.split("/");
+    prefixes.add(p);
   }
 
-  return Array.from(prefixRaidCount.entries()).map(([key]) => {
-    return {
-      params: { prefix: key },
-      props: { prefix: key },
-    };
-  });
+  return Array.from(prefixes).map((p) => ({ params: { prefix: p }, props: { prefix: p } }));
 }
+
+const tableRaids = [
+  ...raids
+    .filter((r) => {
+      const [_, p] = new URL(r.identifier.id).pathname.split("/");
+      return p === prefix;
+    })
+    .map((r) => {
+      const [_, p, suffix] = new URL(r.identifier.id).pathname.split("/");
+      return { handle: `${p}/${suffix}`, title: r.title?.map((t) => t.text).join("; ") ?? "", isEmbargoed: false };
+    }),
+  ...embargoedRaids
+    .filter((er) => er.handle.split("/")[0] === prefix)
+    .map((er) => ({ handle: er.handle, title: "", isEmbargoed: true })),
+];
 
 const raidAppUrl = getRaidAppUrl();
 ---
@@ -60,7 +68,7 @@ const raidAppUrl = getRaidAppUrl();
           >
         </div>
       </div>
-      <RaidsTable raids={filteredRaids} />
+      <RaidsTable raids={tableRaids} />
     </div>
   </div>
 </Layout>

@@ -121,9 +121,6 @@ async function main() {
   const bearerToken = await getDumperToken();
   config.bearerToken = bearerToken;
 
-  // Decode JWT claims to verify roles are present
-  const payload = JSON.parse(Buffer.from(bearerToken.split('.')[1], 'base64').toString());
-  console.log('Token claims:', JSON.stringify(payload, null, 2));
 
   const summaries = await fetchEmbargoedRaids(bearerToken, config, makeRequestWithRetry);
 

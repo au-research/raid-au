@@ -4,6 +4,7 @@ import RaidsTable from "@/components/raids-table.astro";
 import Layout from "@/layouts/main.astro";
 import { getRaidAppUrl } from "@/utils/data-utils";
 import { raids } from "@/store/raids";
+import { embargoedRaids } from "@/store/embargoed-raids";
 
 const raidAppUrl = getRaidAppUrl();
 
@@ -20,6 +21,14 @@ const raidParts = raids.map((el) => {
     url: `https://doi.org/${prefix}/${suffix}`,
   };
 });
+
+const tableRaids = [
+  ...raids.map((r) => {
+    const [_, prefix, suffix] = new URL(r.identifier.id).pathname.split("/");
+    return { handle: `${prefix}/${suffix}`, title: r.title?.map((t) => t.text).join("; ") ?? "", isEmbargoed: false };
+  }),
+  ...embargoedRaids.map((er) => ({ handle: er.handle, title: "", isEmbargoed: true })),
+];
 ---
 
 <script
@@ -50,7 +59,7 @@ const raidParts = raids.map((el) => {
           >
         </div>
       </div>
-      <RaidsTable raids={raids} />
+      <RaidsTable raids={tableRaids} />
     </div>
   </div>
 </Layout>
