@@ -99,7 +99,7 @@ const { raid, isEmbargoed, embargoedRaid } = Astro.props as {
           />
           {raid?.access && <Access access={raid?.access} />}
           <Subjects subjects={raid?.subject || []} />
-          <Raw raid={raid} />
+          {raid && <Raw raid={raid} />}
         </div>
       )}
     </div>
