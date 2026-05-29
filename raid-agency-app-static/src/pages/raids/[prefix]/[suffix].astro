@@ -7,6 +7,7 @@ import AlternateUrls from "@/components/raid-components/alternate-urls.astro";
 import Contributors from "@/components/raid-components/contributors.astro";
 import Dates from "@/components/raid-components/dates.astro";
 import Descriptions from "@/components/raid-components/descriptions.astro";
+import EmbargoedStub from "@/components/raid-components/embargoed-stub.astro";
 import Organisations from "@/components/raid-components/organisations.astro";
 import Raw from "@/components/raid-components/raw.astro";
 import RelatedObjects from "@/components/raid-components/related-objects.astro";
@@ -16,32 +17,51 @@ import Titles from "@/components/raid-components/titles.astro";
 import type { ModelDate, RaidDto } from "@/generated/raid";
 import Layout from "@/layouts/main.astro";
 import { raids } from "@/store/raids";
+import { embargoedRaids, type EmbargoedRaidSummary } from "@/store/embargoed-raids";
 import { buildResearchProjectJsonLd } from "@/utils/json-ld";
 
 export async function getStaticPaths() {
-  return raids.map((el) => {
+  const publicPaths = raids.map((el) => {
     const [_, prefix, suffix] = new URL(el.identifier.id).pathname.split("/");
     return {
-      params: {
-        prefix,
-        suffix,
-      },
-      props: {
-        raid: el,
-      },
+      params: { prefix, suffix },
+      props: { raid: el, isEmbargoed: false, embargoedRaid: null as EmbargoedRaidSummary | null },
     };
   });
+
+  const publicHandles = new Set(
+    publicPaths.map((p) => `${p.params.prefix}/${p.params.suffix}`)
+  );
+
+  const embargoedPaths = embargoedRaids
+    .filter((el) => !publicHandles.has(el.handle))
+    .map((el) => {
+      const [prefix, suffix] = el.handle.split("/");
+      return {
+        params: { prefix, suffix },
+        props: { raid: null as Partial<RaidDto> | null, isEmbargoed: true, embargoedRaid: el },
+      };
+    });
+
+  return [...publicPaths, ...embargoedPaths];
 }
 
-const { prefix, suffix }: { prefix: string; suffix: string } = Astro.params;
-const { raid } = Astro.props as unknown as { raid: Partial<RaidDto> };
+const { prefix, suffix } = Astro.params;
+const { raid, isEmbargoed, embargoedRaid } = Astro.props as {
+  raid: Partial<RaidDto> | null;
+  isEmbargoed: boolean;
+  embargoedRaid: EmbargoedRaidSummary | null;
+};
 ---
 
 <Layout title={`RAiD ${prefix}/${suffix}`}>
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify(buildResearchProjectJsonLd(raid))}
-  />
+  {!isEmbargoed && raid && (
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify(buildResearchProjectJsonLd(raid))}
+    />
+  )}
 
   <div class="sticky top-0 z-10 bg-white border border-gray-300 border-b-0">
     <Breadcrumbs
@@ -53,31 +73,35 @@ const { raid } = Astro.props as unknown as { raid: Partial<RaidDto> };
     />
     <Header
       id={`${prefix}/${suffix}`}
-      label={raid.title?.map((el) => el.text).join(" | ")}
+      label={isEmbargoed ? "Embargoed RAiD" : raid?.title?.map((el) => el.text).join(" | ")}
     />
   </div>
 
   <div class="overflow-hidden border-x border-b border-gray-300 rounded-b-md">
     <div class="divide-y">
-      <div class="divide-y">
-        <Dates dates={raid?.date || ({} as ModelDate)} />
-        <Titles titles={raid?.title || []} />
-        <Descriptions descriptions={raid?.description || []} />
-        <Contributors contributors={raid?.contributor || []} />
-        <Organisations organisations={raid?.organisation || []} />
-        <RelatedObjects relatedObjects={raid?.relatedObject || []} />
-        <AlternateIdentifiers
-          alternateIdentifiers={raid?.alternateIdentifier || []}
-        />
-        <AlternateUrls alternateUrls={raid?.alternateUrl || []} />
-        <RelatedRaidsTree
-          relatedRaids={raid?.relatedRaid || []}
-          currentRaidId={`${prefix}/${suffix}`}
-        />
-        {raid?.access && <Access access={raid?.access} />}
-        <Subjects subjects={raid?.subject || []} />
-        <Raw raid={raid} />
-      </div>
+      {isEmbargoed && embargoedRaid ? (
+        <EmbargoedStub raid={embargoedRaid} />
+      ) : (
+        <div class="divide-y">
+          <Dates dates={raid?.date || ({} as ModelDate)} />
+          <Titles titles={raid?.title || []} />
+          <Descriptions descriptions={raid?.description || []} />
+          <Contributors contributors={raid?.contributor || []} />
+          <Organisations organisations={raid?.organisation || []} />
+          <RelatedObjects relatedObjects={raid?.relatedObject || []} />
+          <AlternateIdentifiers
+            alternateIdentifiers={raid?.alternateIdentifier || []}
+          />
+          <AlternateUrls alternateUrls={raid?.alternateUrl || []} />
+          <RelatedRaidsTree
+            relatedRaids={raid?.relatedRaid || []}
+            currentRaidId={`${prefix}/${suffix}`}
+          />
+          {raid?.access && <Access access={raid?.access} />}
+          <Subjects subjects={raid?.subject || []} />
+          {raid && <Raw raid={raid} />}
+        </div>
+      )}
     </div>
   </div>
 </Layout>

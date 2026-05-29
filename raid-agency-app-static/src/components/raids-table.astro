@@ -1,5 +1,15 @@
 ---
-const { raids } = Astro.props;
+interface TableRaid {
+  handle: string;
+  title: string;
+  isEmbargoed: boolean;
+}
+
+interface Props {
+  raids: TableRaid[];
+}
+
+const { raids } = Astro.props as Props;
 ---
 
 <div class="mt-8 flow-root">
@@ -25,30 +35,30 @@ const { raids } = Astro.props;
         </thead>
         <tbody class="bg-white">
           {
-            raids.map((raid: any) => {
-              const [_, prefix, suffix] = new URL(
-                raid.identifier.id
-              ).pathname.split("/");
-
-              return (
-                <tr class="even:bg-gray-50">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
-                    {prefix}/{suffix}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm truncate max-w-96">
-                    {raid.title.map((el: any) => el.text).join(";")}
-                  </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
-                    <a
-                      href={`/raids/${prefix}/${suffix}`}
-                      class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                    >
-                      Open<span class="sr-only">, {raid.name}</span>
-                    </a>
-                  </td>
-                </tr>
-              );
-            })
+            raids.map((raid) => (
+              <tr class="even:bg-gray-50">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                  {raid.handle}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm truncate max-w-96">
+                  {raid.isEmbargoed ? (
+                    <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
+                      Embargoed
+                    </span>
+                  ) : (
+                    raid.title
+                  )}
+                </td>
+                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                  <a
+                    href={`/raids/${raid.handle}`}
+                    class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                  >
+                    Open<span class="sr-only">, {raid.handle}</span>
+                  </a>
+                </td>
+              </tr>
+            ))
           }
         </tbody>
       </table>
