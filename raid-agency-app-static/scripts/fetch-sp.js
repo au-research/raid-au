@@ -15,7 +15,7 @@
  * @param {Object} params.config - Global config (apiEndpoint, bearerToken, etc.)
  * @returns {Promise<Map<string, string>>} Map of servicePointId -> name
  */
-async function fetchAllServicePoints({ makeRequestWithRetry, config }) {
+export async function fetchAllServicePoints({ makeRequestWithRetry, config }) {
   const url = `${config.apiEndpoint}/service-point/`;
 
   const response = await makeRequestWithRetry(url, {
