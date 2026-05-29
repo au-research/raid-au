@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/main.astro";
 import { raids } from "@/store/raids";
+import { embargoedRaids } from "@/store/embargoed-raids";
 
 const prefixRaidCount = new Map<string, number>();
 for (const el of raids) {
@@ -8,6 +9,13 @@ for (const el of raids) {
   const counter = prefixRaidCount.get(prefix) || 0;
   prefixRaidCount.set(prefix, counter + 1);
 }
+for (const el of embargoedRaids) {
+  const [prefix] = el.handle.split("/");
+  const counter = prefixRaidCount.get(prefix) || 0;
+  prefixRaidCount.set(prefix, counter + 1);
+}
+
+const totalRaids = raids.length + embargoedRaids.length;
 ---
 
 <Layout title="main">
@@ -36,7 +44,7 @@ for (const el of raids) {
         <dd
           class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900"
         >
-          {raids.length}
+          {totalRaids}
         </dd>
       </div>
     </a>
