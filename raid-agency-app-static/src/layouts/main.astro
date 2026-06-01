@@ -14,9 +14,10 @@ const { topBar } = getSiteConfig().header;
 
 interface Props {
   title: string;
+  noindex?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, noindex = false } = Astro.props;
 // Only show banner in non-production environments
 const raidEnv = import.meta.env.RAID_ENV;
 const isProduction = raidEnv === 'prod';
@@ -32,6 +33,7 @@ const shouldRender = !isProduction;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <title>{title}</title>
     <style>
       body {
