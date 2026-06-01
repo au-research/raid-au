@@ -22,7 +22,7 @@ const { raid } = Astro.props as Props;
           />
           <InfoField
             label="Access Statement"
-            value={raid.accessStatement ?? "No access statement provided."}
+            value={raid.accessStatement ?? "No access statement provided"}
           />
         </div>
       </div>
@@ -40,12 +40,12 @@ const { raid } = Astro.props as Props;
           <div>
             <span class="block font-medium text-gray-900">Identifier</span>
             {raid.registrationAgencyRor ? (
-              <a href={raid.registrationAgencyRor} target="_blank">
-                <img style="display: inline; margin-right: 2px" src="/ror-icon.png" alt="ror-icon" height="24" />
+              <a href={raid.registrationAgencyRor} target="_blank" rel="noopener noreferrer">
+                <img style="display: inline; margin-right: 2px" src="/ror-icon.png" alt="" height="24" />
                 <span style="text-decoration: underline">{raid.registrationAgencyRor}</span>
               </a>
             ) : (
-              <span class="text-gray-500">—</span>
+              <span class="text-gray-600">—</span>
             )}
           </div>
         </div>
@@ -77,12 +77,12 @@ const { raid } = Astro.props as Props;
           <div>
             <span class="block font-medium text-gray-900">Identifier</span>
             {raid.ownerRor ? (
-              <a href={raid.ownerRor} target="_blank">
-                <img style="display: inline; margin-right: 2px" src="/ror-icon.png" alt="ror-icon" height="24" />
+              <a href={raid.ownerRor} target="_blank" rel="noopener noreferrer">
+                <img style="display: inline; margin-right: 2px" src="/ror-icon.png" alt="" height="24" />
                 <span style="text-decoration: underline">{raid.ownerRor}</span>
               </a>
             ) : (
-              <span class="text-gray-500">—</span>
+              <span class="text-gray-600">—</span>
             )}
           </div>
         </div>

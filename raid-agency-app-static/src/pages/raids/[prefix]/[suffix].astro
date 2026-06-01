@@ -54,7 +54,7 @@ const { raid, isEmbargoed, embargoedRaid } = Astro.props as {
 };
 ---
 
-<Layout title={`RAiD ${prefix}/${suffix}`}>
+<Layout title={isEmbargoed ? `Embargoed RAiD – ${prefix}/${suffix}` : `RAiD ${prefix}/${suffix}`} noindex={isEmbargoed}>
   {!isEmbargoed && raid && (
     <script
       is:inline
