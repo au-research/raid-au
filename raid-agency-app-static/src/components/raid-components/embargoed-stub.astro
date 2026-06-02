@@ -7,6 +7,19 @@ interface Props {
 }
 
 const { raid } = Astro.props as Props;
+
+function formatEmbargoExpiry(isoDate: string | null): string {
+  if (!isoDate) return "Not specified";
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const human = new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+  return `${human} (ISO 8601: ${isoDate})`;
+}
 ---
 
 <section class="bg-gray-50 py-5">
@@ -18,7 +31,7 @@ const { raid } = Astro.props as Props;
           <InfoField label="Status" value={raid.embargoedStatusLabel} />
           <InfoField
             label="Embargo Expiry"
-            value={raid.embargoExpiry ?? "Not specified"}
+            value={formatEmbargoExpiry(raid.embargoExpiry)}
           />
           <InfoField
             label="Access Statement"
