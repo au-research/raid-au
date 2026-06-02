@@ -7,6 +7,7 @@ import { raids } from "@/store/raids";
 import { embargoedRaids } from "@/store/embargoed-raids";
 
 const raidAppUrl = getRaidAppUrl();
+const buildTime = new Date().toISOString();
 
 const raidParts = raids.map((el) => {
   const [_, prefix, suffix] = new URL(el.identifier.id).pathname.split("/");
@@ -41,7 +42,7 @@ const tableRaids = [
   })}
 />
 
-<Layout title="main">
+<Layout title="main" lastModified={buildTime}>
   <div class="overflow-hidden rounded-md bg-white border border-gray-300">
     <Breadcrumbs elements={[{ to: "/raids", label: "RAiDs" }]} />
     <div class="p-4 sm:p-6 lg:p-8">
@@ -61,5 +62,8 @@ const tableRaids = [
       </div>
       <RaidsTable raids={tableRaids} />
     </div>
+    <p class="px-4 pb-4 text-xs text-gray-500 text-right">
+      Page generated: <time datetime={buildTime}>{buildTime}</time>
+    </p>
   </div>
 </Layout>
