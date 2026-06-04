@@ -5,7 +5,7 @@ import {useErrorDialog} from "@/components/error-dialog";
 import {RaidForm} from "@/components/raid-form";
 import {RaidFormErrorMessage} from "@/components/raid-form-error-message";
 import {useKeycloak} from "@/contexts/keycloak-context";
-import {Contributor, RaidCreateRequest, RaidDto} from "@/generated/raid";
+import {RaidCreateRequest, RaidDto} from "@/generated/raid";
 import {Loading} from "@/pages/loading";
 import {fetchServicePoints} from "@/services/service-points";
 import {raidRequest} from "@/utils/data-utils";
@@ -142,19 +142,8 @@ export const RaidEdit = () => {
     return <ErrorAlertComponent error="Service points could not be fetched" />;
   }
 
-  const contributors: (Contributor & { email?: string | undefined })[] = [];
-
-  for (const contributor of query.data?.contributor ?? []) {
-    const updatedContributor = {
-      ...contributor,
-      email: (contributor as { email?: string }).email || "",
-    };
-    contributors.push(updatedContributor);
-  }
-
   const raidData: RaidDto | RaidCreateRequest = {
     ...(addMissingEndDateInPlace(query.data) as RaidDto),
-    contributor: contributors,
   };
 
   return (

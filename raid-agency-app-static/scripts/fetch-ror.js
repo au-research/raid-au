@@ -8,7 +8,7 @@
 import { rorCache } from './apiCache.js';
 
 // ROR API configuration
-const ROR_API_BASE = 'https://api.ror.org/organizations';
+const ROR_API_BASE = 'https://api.ror.org/v2/organizations';
 
 /**
  * Extract ROR ID from various formats

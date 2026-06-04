@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 @SpringBootTest(classes = IntegrationTestConfig.class)
 public class AbstractIntegrationTest {
-    protected static final Long UQ_SERVICE_POINT_ID = 20000002L;
+    protected static final Long RAID_AU_REGISTRY_2_SERVICE_POINT_ID = 20000005L;
     protected LocalDate today = LocalDate.now();
     protected RaidCreateRequest createRequest;
 

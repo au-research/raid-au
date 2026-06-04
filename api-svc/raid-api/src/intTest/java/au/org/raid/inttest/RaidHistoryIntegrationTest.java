@@ -99,7 +99,7 @@ public class RaidHistoryIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("History of embargoed raid is not accessible by user from different service point")
     void embargoedRaid() {
-        final var uqUserContext = userService.createUser("University of Queensland", "service-point-user");
+        final var uqUserContext = userService.createUser("RAiD AU Test Registry 2", "service-point-user");
 
         final var createResponse = raidApi.mintRaid(createRequest);
         Handle handle = new Handle(Objects.requireNonNull(createResponse.getBody()).getIdentifier().getId());

@@ -1,0 +1,121 @@
+---
+import type { EmbargoedRaidSummary } from "@/store/embargoed-raids";
+
+interface Props {
+  raids: EmbargoedRaidSummary[];
+}
+
+const { raids } = Astro.props as Props;
+---
+
+{
+  raids.length === 0 ? (
+    <p class="mt-6 text-sm text-gray-500">No embargoed RAiDs found.</p>
+  ) : (
+    <div class="mt-8 flow-root">
+      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                >
+                  RAiD
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Embargo Expiry
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Access Statement
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Registration Agency
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Service Point
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Owning Organisation
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white">
+              {raids.map((raid) => (
+                <tr class="even:bg-gray-50">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                    {raid.handle}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm">
+                    <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
+                      {raid.embargoedStatusLabel}
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {raid.embargoExpiry ?? "—"}
+                  </td>
+                  <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
+                    {raid.accessStatement ?? "—"}
+                  </td>
+                  <td class="px-3 py-4 text-sm text-gray-500">
+                    {raid.registrationAgencyRor ? (
+                      <a
+                        href={raid.registrationAgencyRor}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-600 hover:underline"
+                      >
+                        {raid.registrationAgencyName}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {raid.servicePointName || "—"}
+                  </td>
+                  <td class="px-3 py-4 text-sm text-gray-500">
+                    {raid.ownerRor ? (
+                      <a
+                        href={raid.ownerRor}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-600 hover:underline"
+                      >
+                        {raid.ownerName}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}

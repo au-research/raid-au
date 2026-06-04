@@ -94,8 +94,6 @@ public class TestConstants {
 
     public static final String GEONAMES_SCHEMA_URI = "https://www.geonames.org/";
 
-    public static final String CONTRIBUTOR_EMAIL = "authenticated@test.raid.org.au";
-
     public static final String RELATED_OBJECT_TYPE_SCHEMA_URI =
             "https://vocabulary.raid.org/relatedObject.type.schema/329";
     public static final String BOOK_CHAPTER_RELATED_OBJECT_TYPE =

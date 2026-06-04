@@ -18,7 +18,7 @@ The only real downside to doing the standard install in a "single-project"
 environment is that diagnosing version issues, testing new versions, 
 upgrading/downgrading when the project prerequisites change etc. can be a pain.
 
-Some pople use https://sdkman.io/ for managing their environment, opther people
+Some peple use https://sdkman.io/ for managing their environment, other people
 use the package manager of their local system.
 
 
@@ -75,44 +75,3 @@ directory somewhere else on your disk that is included in your exclude list.
 This means any "roaming profile" won't be saving/reading your gigabytes of 
 cache files to the network server.  Decide for yourself if that's a good thing
 or a bad thing.
-
-
-# CodeBuild project fails because "too many requests" pulling from DockerHub
-
-Known issue because we share source IP addresses with all the other CodeBuild
-projects out there.  
-
-Workaround is to just try again.
-Potential fixes listed in [technical-debt.md](./technical-debt.md).
-
-
-# Gradle "Could not resolve plugin" on GitHub CI environment
-
-The cause was that the `gradle-jooq-plugin` seems to require JDK 17 and I forgot
-to add JDK 17 to the `app-client` CI build spec.
-
-The reason this didn't come up previously was that the GitHub CI environment
-has JDK 11 installed by default, and when we were running the `openApiGenerate`
-task in a standalone Gradle build, there was no jooq plugin.
-
-The fix is to add the Corretto 17 `uses` setup block to the CI build spec. 
-
-```
-> Could not resolve all files for configuration ':api-svc:db:raido:classpath'.
-   > Could not resolve nu.studer:gradle-jooq-plugin:8.1.
-     Required by:
-         project :api-svc:db:raido > nu.studer.jooq:nu.studer.jooq.gradle.plugin:8.1
-      > No matching variant of nu.studer:gradle-jooq-plugin:8.1 was found. The consumer was configured to find a runtime of a library compatible with Java 11, packaged as a jar, and its dependencies declared externally, as well as attribute 'org.gradle.plugin.api-version' with value '7.6' but:
-          - Variant 'apiElements' capability nu.studer:gradle-jooq-plugin:8.1 declares a library, packaged as a jar, and its dependencies declared externally:
-              - Incompatible because this component declares an API of a component compatible with Java 17 and the consumer needed a runtime of a component compatible with Java 11
-```
-
-# Can't sign-in locally, api-svc says "redirectUri not in allowed list - redirectUri=http://192.168.20.10:7080/"
-
-This can happen because if you click the wrong url in the app-client node.js 
-start-up message.  You want to use the "localhost" url, not the ip address.
-
-The reason it doesn't work is because your ip address is not in the 
-allowed redirectUri list on the OAuth2 client config (i.e. in Google, AAF 
-or ORCID).  Given that your ip addresses are generally ephemeral, we're not
-going to be adding them to allowed redirect urls - just use localhost.

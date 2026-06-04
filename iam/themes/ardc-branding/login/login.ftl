@@ -127,10 +127,10 @@
 
             <!-- Footer Links -->
             <div class="raid-footer-links">
-                <a href="mailto:contact@raid.org" class="footer-link">contact@raid.org</a>
-                <a href="#" class="footer-link">Terms of use</a>
-                <a href="#" class="footer-link">Accessibility</a>
-                <a href="#" class="footer-link">Privacy policy</a>
+                <a href="mailto:${msg("contact")}" class="footer-link">${msg("contact")}</a>
+                <a href="${msg("termsOfUse")}" class="footer-link">Terms of use</a>
+                <a href="${msg("accessibility")}" class="footer-link">Accessibility</a>
+                <a href="${msg("privacyPolicy")}" class="footer-link">Privacy policy</a>
             </div>
 
             <!-- Acknowledgement of Country -->

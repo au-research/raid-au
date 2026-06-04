@@ -1,0 +1,26 @@
+---
+import Breadcrumbs from "@/components/breadcrumbs.astro";
+import EmbargoedRaidsTable from "@/components/embargoed-raids-table.astro";
+import Layout from "@/layouts/main.astro";
+import { embargoedRaids } from "@/store/embargoed-raids";
+---
+
+<Layout title="Embargoed RAiDs" noindex={true}>
+  <div class="overflow-hidden rounded-md bg-white border border-gray-300">
+    <Breadcrumbs elements={[{ to: "/embargoed", label: "Embargoed RAiDs" }]} />
+    <div class="p-4 sm:p-6 lg:p-8">
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h1 class="text-base font-semibold leading-6 text-gray-900">
+            Embargoed RAiDs
+          </h1>
+          <p class="mt-2 text-sm text-gray-700">
+            RAiDs with restricted access, including embargo expiry date and
+            access statement.
+          </p>
+        </div>
+      </div>
+      <EmbargoedRaidsTable raids={embargoedRaids} />
+    </div>
+  </div>
+</Layout>

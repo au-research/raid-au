@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 // TODO: Test that pre-existing contributors have UNVERIFIED status
-// TODO: How do we know when to update pre-existing contributors - if an email is present?
 
 public class ContributorsIntegrationTest extends AbstractIntegrationTest {
     @Autowired
@@ -266,7 +265,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             createRequest.setContributor(List.of(
                     new Contributor()
                             .id(REAL_TEST_ORCID)
-                            .email(CONTRIBUTOR_EMAIL)
                             .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                             .contact(true)
                             .leader(true)
@@ -301,7 +299,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                             .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                             .contact(true)
                             .leader(true)
-                            .email(CONTRIBUTOR_EMAIL)
                             .position(Collections.emptyList())
                             .role(List.of(
                                     new ContributorRole()
@@ -332,7 +329,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                     new Contributor()
                             .id(REAL_TEST_ORCID)
                             .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                            .email(CONTRIBUTOR_EMAIL)
                             .leader(true)
                             .position(List.of(
                                     new ContributorPosition()
@@ -368,7 +364,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                     new Contributor()
                             .id(REAL_TEST_ORCID)
                             .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                            .email(CONTRIBUTOR_EMAIL)
                             .contact(true)
                             .position(List.of(
                                     new ContributorPosition()
@@ -523,7 +518,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .contact(true)
                                 .leader(true)
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                                .email("https://orcid.org/0000-0000-0000-0001")
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -559,7 +553,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                                 .contact(true)
                                 .leader(true)
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -601,7 +594,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                                 .contact(true)
                                 .leader(true)
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(position))
                                 .role(List.of(
                                         new ContributorRole()
@@ -639,7 +631,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .contact(true)
                                 .leader(true)
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(position))
                                 .role(List.of(
                                         new ContributorRole()
@@ -672,7 +663,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .contact(true)
                                 .leader(true)
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .id(ContributorPositionIdEnum.fromValue(PRINCIPAL_INVESTIGATOR_POSITION))
@@ -718,7 +708,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                                 .contact(true)
                                 .leader(true)
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .schemaUri(ContributorPositionSchemaUriEnum.fromValue(CONTRIBUTOR_POSITION_SCHEMA_URI))
@@ -754,7 +743,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                         new Contributor()
                                 .id(REAL_TEST_ORCID)
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                                .email(CONTRIBUTOR_EMAIL)
                                 .contact(true)
                                 .leader(true)
                                 .position(List.of(
@@ -798,7 +786,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                                 .contact(true)
                                 .leader(true)
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -837,7 +824,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .contact(true)
                                 .leader(true)
                                 .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
-                                .email(CONTRIBUTOR_EMAIL)
                                 .position(List.of(
                                         new ContributorPosition()
                                                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -891,23 +877,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                                 .message("Contributor not found with PID (%s) and UUID (%s)".formatted(REAL_TEST_ORCID, uuid))
                 ));
             }
-        }
-
-        @Test
-        @Disabled("Email not currently supported")
-        @DisplayName("Should not be able to update status of contributor with PUT request")
-        void updateStatus() {
-            createRequest.getContributor().get(0).email("awaiting-authentication@test.raid.org.au");
-            createRequest.getContributor().get(0).id(null);
-
-            final var createResponse = raidApi.mintRaid(createRequest);
-            final var raidDto = createResponse.getBody();
-            final var handle = new Handle(raidDto.getIdentifier().getId());
-
-            raidDto.getContributor().get(0).setStatus("AUTHENTICATED");
-
-            final var updateResponse = raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), raidUpdateRequestFactory.create(raidDto));
-            assertThat(updateResponse.getBody().getContributor().get(0).getStatus(), is("AWAITING_AUTHENTICATION"));
         }
 
         @Test
@@ -1385,42 +1354,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
 
             assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATED"));
             assertThat(raidDto.getContributor().get(0).getId(), is(REAL_TEST_ORCID));
-        }
-
-        @Test
-        @Disabled("Email not currently supported")
-        @DisplayName("Should set awaiting-authentication contributor")
-        void awaitingAuthenticationContributor() {
-            createRequest.getContributor().get(0).setEmail("awaiting-authentication@test.raid.org.au");
-            createRequest.getContributor().get(0).setId(null);
-
-            final var createResponse = raidApi.mintRaid(createRequest);
-            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
-
-            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
-            final var raidDto = readResponse.getBody();
-
-            assertThat(raidDto.getContributor().get(0).getStatus(), is("AWAITING_AUTHENTICATION"));
-            assertThat(raidDto.getContributor().get(0).getId(), is(nullValue()));
-            assertThat(raidDto.getContributor().get(0).getUuid(), is("4b932e7c-f7c2-4bd6-93d0-0244f47bdbcb"));
-        }
-
-        @Test
-        @Disabled("Email not currently supported")
-        @DisplayName("Should set authentication-failed contributor")
-        void authenticationFailedContributor() {
-            createRequest.getContributor().get(0).setEmail("authentication-failed@test.raid.org.au");
-            createRequest.getContributor().get(0).setId(null);
-
-            final var createResponse = raidApi.mintRaid(createRequest);
-            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
-
-            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
-            final var raidDto = readResponse.getBody();
-
-            assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATION_FAILED"));
-            assertThat(raidDto.getContributor().get(0).getId(), is(nullValue()));
-            assertThat(raidDto.getContributor().get(0).getUuid(), is("de8cb78e-3cb6-424d-9537-3b6a0b15604c"));
         }
 
         @Test

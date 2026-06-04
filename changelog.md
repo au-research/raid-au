@@ -1,6 +1,73 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.9.1
+
+## Database
+* Removed `OWNER TO postgres` and `GRANT` statements from the Flyway baseline (`B25__baseline.sql`)
+  and `V25__move-token-table.sql` to make migration scripts agnostic to database ownership and
+  permissions.
+* Fixed `V37__seo_subject_data.sql` by removing erroneous `raido.` database prefix from all table
+  references (PR #464).
+
+## Dependencies
+* Upgraded Flyway from 9.22.3 to 11.20.3.
+* Added `flyway-database-postgresql` driver required by Flyway 11.
+
+# 2.9.0
+
+## App-client UI
+* Bulk upload for related objects — new CSV/Excel import flow with a preview table, inline error
+  highlighting, and duplicate detection before confirming the upload (RAID-561).
+* 100-item validation guard on bulk upload to prevent oversized submissions (RAID-561).
+* Related object fields now accept multiple IDs instead of a single Type/DOI value (RAID-563).
+* Accordion panel for related objects with a close button to dismiss the bulk upload section when
+  not in use (RAID-561).
+* Fixed Excel empty-cell parsing and updated CSV sentinel markers (RAiD-621 / RAID-563).
+* Categories / Type field now accepts a single value (was incorrectly requiring multiple values)
+  (RAiD-642).
+* Preview table now highlights all required missing fields; error messages indicate the specific
+  failing field (RAiD-642 / RAiD-629).
+* Duplicate validation errors now report the location of the duplicate (RAiD-629).
+* Invalid file type upload now shows a clear error message (RAiD-629).
+* Fixed a maximum update depth (infinite re-render) issue and two further validation bugs in
+  related object submission (RAiD-629).
+* ORCID validation now accepts sandbox URLs (`sandbox.orcid.org`) (RAID-569).
+* Contributor email field removed from the frontend form (RAID-569).
+* `web.archive.org` accepted as a valid related object URL (RAID-569).
+* Title `endDate` field made optional in the bulk upload context (RAID-561).
+* Footer contact email is now driven from `app-config.json` rather than being hardcoded (RAID-592).
+* Invite feature can be enabled/disabled via runtime config; disabled by default (RAID-624).
+* Contributors and Invite URLs are configurable via the runtime config file (RAID-624).
+* Footer links are configurable via the Keycloak UI (RAID-624).
+* Branding updated — all remaining references to "Raido" removed and replaced with "RAiD";
+  new RAiD logo favicon replaces the old "R" icon (RAiD-420).
+
+## API
+* Corrected `SERVICE_POINT_ID` / JSONB metadata divergence that could cause inconsistent raid
+  records (RAID-618).
+* Contributor email field removed from the API (RAID-569).
+
+## Runtime Config
+* Combined branding override and runtime config into a single `app-config.json` file to reduce
+  confusion and duplication (RAID-624).
+* Config file is now loaded from an external S3 resource at startup; fixed an override bug where
+  S3-sourced config was silently replaced (RAID-624).
+
+## IAM
+* Upgraded Keycloak from 26.6.1 to 26.6.2.
+
+## Documentation
+* Major documentation overhaul — added Mermaid architecture diagram to `api-svc` README,
+  replaced CNRI/APIDS handle docs with DataCite DOI minting docs, updated deployment,
+  security, and technology-stack documentation, removed obsolete API architecture docs (RAID-547).
+* Added sitemap investigation & proposal document (RAID-619).
+
+## Dependencies
+* `postcss` 8.5.8 → 8.5.12 in `raid-agency-app` (security patch).
+* `brace-expansion` 1.1.12 → 1.1.14 in `raid-agency-app`.
+* `astro` 5.18.1 → 6.1.8 in `raid-agency-app-static`.
+
 # 2.8.5
 ## API
 * Fix stale metadata column for raids with legacy github.com/au-research/raid-metadata vocabulary

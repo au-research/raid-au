@@ -1,10 +1,16 @@
-import {authService} from "@/services/auth-service.ts";
+import { authService } from "@/services/auth-service.ts";
 import { API_CONSTANTS } from "@/constants/apiConstants";
+import { getRuntimeConfig } from "@/config";
 
-const kcUrl = import.meta.env.VITE_KEYCLOAK_URL as string;
-const kcRealm = import.meta.env.VITE_KEYCLOAK_REALM as string;
-const keycloakGroupEndpoint = `${kcUrl}/realms/${kcRealm}/group`;
-const keycloaklocalizationEndpoint = `${kcUrl}/realms/${kcRealm}/localization`;
+const kcGroupBase = () => {
+  const { keycloak } = getRuntimeConfig();
+  return `${keycloak.url}/realms/${keycloak.realm}/group`;
+};
+
+const kcLocalizationBase = () => {
+  const { keycloak } = getRuntimeConfig();
+  return `${keycloak.url}/realms/${keycloak.realm}/localization`;
+};
 
 export async function joinKeycloakGroup({
   token,
@@ -13,13 +19,11 @@ export async function joinKeycloakGroup({
   token: string | undefined;
   groupId: string;
 }) {
-  const requestUrl = `${keycloakGroupEndpoint}/join`;
-
   try {
     if (token === undefined) {
       throw new Error("Error: Keycloak token not set");
     }
-    const response = await authService.fetchWithAuth(requestUrl, {
+    const response = await authService.fetchWithAuth(`${kcGroupBase()}/join`, {
       method: "PUT",
       body: JSON.stringify({ groupId }),
     });
@@ -30,20 +34,18 @@ export async function joinKeycloakGroup({
     throw new Error(errorMessage);
   }
 }
+
 export async function fetchAllKeycloakGroups({
   token,
 }: {
   token: string | undefined;
 }) {
-  const requestUrl = `${keycloakGroupEndpoint}/all`;
-
   try {
     if (token === undefined) {
       throw new Error("Error: Keycloak token not set");
     }
-    const response = await authService.fetchWithAuth(requestUrl);
-    const data = await response.json();
-    return data;
+    const response = await authService.fetchWithAuth(`${kcGroupBase()}/all`);
+    return await response.json();
   } catch (error) {
     const errorMessage = "Error: Keycloak groups could not be fetched";
     console.error(errorMessage);
@@ -56,15 +58,12 @@ export async function fetchCurrentUserKeycloakGroups({
 }: {
   token: string | undefined;
 }) {
-  const requestUrl = `${keycloakGroupEndpoint}/user-groups`;
-
   try {
     if (token === undefined) {
       throw new Error("Error: Keycloak token not set");
     }
-    const response = await authService.fetchWithAuth(requestUrl);
-    const data = await response.json();
-    return data;
+    const response = await authService.fetchWithAuth(`${kcGroupBase()}/user-groups`);
+    return await response.json();
   } catch (error) {
     const errorMessage = "Error: Keycloak groups could not be fetched";
     console.error(errorMessage);
@@ -79,15 +78,13 @@ export async function setKeycloakUserAttribute({
   groupId: string;
   token: string | undefined;
 }) {
-  const requestUrl = `${keycloakGroupEndpoint}/active-group`;
   try {
     if (token === undefined) {
       throw new Error("Error: Keycloak token not set");
     }
-
-    await authService.fetchWithAuth(requestUrl, {
+    await authService.fetchWithAuth(`${kcGroupBase()}/active-group`, {
       method: "PUT",
-      body: JSON.stringify({ activeGroupId: groupId })
+      body: JSON.stringify({ activeGroupId: groupId }),
     });
   } catch (error) {
     const errorMessage = "Error: Keycloak group could not be joined";
@@ -108,20 +105,13 @@ export async function fetchCurrentUserRor({
       throw new Error("Error: Keycloak token not set");
     }
 
-    const requestUrl = API_CONSTANTS.SERVICE_POINT.ALL;
-
-    const response = await authService.fetchWithAuth(requestUrl);
-
+    const response = await authService.fetchWithAuth(API_CONSTANTS.SERVICE_POINT.ALL);
     const servicePointGroupId = tokenParsed.service_point_group_id;
-
     const data = await response.json();
 
     let ror = null;
     for (const servicePoint of data) {
-      if (
-        servicePoint.groupId &&
-        servicePoint.groupId === servicePointGroupId
-      ) {
+      if (servicePoint.groupId && servicePoint.groupId === servicePointGroupId) {
         ror = servicePoint.identifierOwner;
       }
     }
@@ -143,7 +133,7 @@ export const fetchKeycloakLocalization = async ({
   locale?: string;
 }) => {
   const response = await fetch(
-    `${keycloaklocalizationEndpoint}?key=${encodeURIComponent(key)}&locale=${encodeURIComponent(locale)}`,
+    `${kcLocalizationBase()}?key=${encodeURIComponent(key)}&locale=${encodeURIComponent(locale)}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

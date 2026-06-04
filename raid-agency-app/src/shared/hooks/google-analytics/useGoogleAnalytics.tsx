@@ -1,5 +1,6 @@
 // hooks/useGoogleAnalytics.tsx
 import { useEffect } from 'react';
+import { useRuntimeConfig } from '@/config';
 
 declare global {
   interface Window {
@@ -8,17 +9,19 @@ declare global {
 }
 
 export const useGoogleAnalytics = () => {
+  const { googleAnalytics } = useRuntimeConfig();
+
   useEffect(() => {
     const hostname = window.location.hostname;
     const isProduction = import.meta.env.PROD || hostname.includes('prod');
     const isDemo = hostname.includes('demo');
-    
+
     let gaId: string | null = null;
-    
+
     if (isProduction) {
-      gaId = import.meta.env.VITE_GA_MEASUREMENT_ID || null;
+      gaId = googleAnalytics.measurementId ?? null;
     } else if (isDemo) {
-      gaId = import.meta.env.VITE_GA_MEASUREMENT_ID_DEMO || null;
+      gaId = googleAnalytics.measurementIdDemo ?? null;
     } else {
       gaId = null;
     }
@@ -47,7 +50,6 @@ export const useGoogleAnalytics = () => {
     document.head.appendChild(inlineScript);
   }, []); // Run once only
 
-  // Simple track event function
   const trackEvent = (eventName: string, parameters?: Record<string, unknown>) => {
     if (window.gtag) {
       window.gtag('event', eventName, parameters || {});
