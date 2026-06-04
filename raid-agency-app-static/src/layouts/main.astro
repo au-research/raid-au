@@ -10,7 +10,8 @@ import GoogleAnalytics from '@/components/google-analytics.astro';
 import Banner from "@/components/raid-components/banner.astro";
 import { getSiteConfig } from "@/config";
 
-const { topBar } = getSiteConfig().header;
+const config = getSiteConfig();
+const { topBar } = config.header;
 
 interface Props {
   title: string;
@@ -21,8 +22,7 @@ interface Props {
 
 const { title, description, noindex = false, lastModified } = Astro.props;
 // Only show banner in non-production environments
-const raidEnv = import.meta.env.RAID_ENV;
-const isProduction = raidEnv === 'prod';
+const isProduction = config.raidEnv === 'prod';
 const shouldRender = !isProduction;
 ---
 
@@ -46,7 +46,7 @@ const shouldRender = !isProduction;
     <GoogleAnalytics />
   </head>
   <body class=`${topBar.show && "min-h-dvh" } flex flex-col bg-[#c6d9f0] dark:bg-[#1b3e60]`>
-    <!-- ARDC Top Bar (only renders when PUBLIC_USE_CUSTOM_CONFIG=true) -->
+    <!-- Top Bar (only renders when header.topBar.show=true in app-config.json) -->
     <TopBar />
 
     <!-- Main Content Card -->
@@ -66,7 +66,7 @@ const shouldRender = !isProduction;
       </main>
     </div>
 
-    <!-- ARDC Footer (only renders when PUBLIC_USE_CUSTOM_CONFIG=true) -->
+    <!-- Footer (only renders when footer.show=true in app-config.json) -->
     <Footer />
   </body>
 </html>

@@ -1,26 +1,42 @@
 ---
-// components/GoogleAnalytics.astro
-let gaId;
-const isProduction = import.meta.env.PROD || 
-                    Astro.url.hostname.includes('prod')
-const isDemo = Astro.url.hostname.includes('demo');
-if (isProduction) {
-  gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
-} else if (isDemo) {
-  gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID_DEMO;
-} else {
-  gaId = null; // No GA in dev environment
-}
+/**
+ * Google Analytics — loaded at runtime from /app-config.json.
+ *
+ * Fetching client-side means the GA measurement ID can be updated by
+ * replacing /app-config.json on S3 or via a Docker volume mount without
+ * rebuilding the site. Only fires on hostnames containing "prod" or "demo".
+ */
 ---
-{(isProduction || isDemo) && gaId && (
-  <>
-    <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
-    <script define:vars={{ gaId }}>
+<script is:inline>
+  (async function () {
+    try {
+      var res = await fetch("/app-config.json");
+      if (!res.ok) return;
+      var cfg = await res.json();
+
+      var hostname = window.location.hostname;
+      var isProd = hostname.includes("prod");
+      var isDemo = hostname.includes("demo");
+
+      var gaId = isProd
+        ? cfg.analytics && cfg.analytics.gaMeasurementId
+        : isDemo
+          ? cfg.analytics && cfg.analytics.gaMeasurementIdDemo
+          : null;
+
+      if (!gaId) return;
+
+      var s = document.createElement("script");
+      s.src = "https://www.googletagmanager.com/gtag/js?id=" + gaId;
+      s.async = true;
+      document.head.appendChild(s);
+
       window.dataLayer = window.dataLayer || [];
-      function gtag(){window.dataLayer.push(arguments);}
-      window.gtag = gtag;
-      gtag('js', new Date());
-      gtag('config', gaId);
-    </script>
-  </>
-)}
+      window.gtag = function gtag() { window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", gaId);
+    } catch (_) {
+      // GA is non-critical — fail silently
+    }
+  })();
+</script>
