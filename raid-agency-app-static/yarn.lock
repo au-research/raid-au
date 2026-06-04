@@ -1343,10 +1343,10 @@ ast-types@^0.13.4:
   dependencies:
     tslib "^2.0.1"
 
-astro@^6.4.3:
-  version "6.4.3"
-  resolved "https://registry.yarnpkg.com/astro/-/astro-6.4.3.tgz#6c44f5bd3d9bab3c0206348bf254aaea2d6ce23a"
-  integrity sha512-heArIk8zLcxuoj1WgBH2zGdAD8zKSU1mEcBvS6hYMEHRPlbtvB+4Y8ri9Z27hzeryvGaFgrH32zjghEfV2y07g==
+astro@^6.4.4:
+  version "6.4.4"
+  resolved "https://registry.yarnpkg.com/astro/-/astro-6.4.4.tgz#2078aaf981be8ef72e7df3705094884c2755e1dd"
+  integrity sha512-hVe8tq3lqt/Dr0UyB//yUmQSlHMTU8scTiF/vQddQVahLE4TTaSdH5H0nb7OvRcwo0UmlAO8DWYar4jNaS7H+A==
   dependencies:
     "@astrojs/compiler" "^4.0.0"
     "@astrojs/internal-helpers" "0.10.0"
