@@ -20,6 +20,15 @@ import { raids } from "@/store/raids";
 import { embargoedRaids, type EmbargoedRaidSummary } from "@/store/embargoed-raids";
 import { buildResearchProjectJsonLd } from "@/utils/json-ld";
 
+const PRIMARY_TITLE_TYPES = new Set([
+  "https://vocabulary.raid.org/title.type.schema/5",
+  "https://github.com/au-research/raid-metadata/blob/main/scheme/title/type/v1/primary.json",
+]);
+const PRIMARY_DESCRIPTION_TYPES = new Set([
+  "https://vocabulary.raid.org/description.type.schema/318",
+  "https://github.com/au-research/raid-metadata/blob/main/scheme/description/type/v1/primary.json",
+]);
+
 export async function getStaticPaths() {
   const publicPaths = raids.map((el) => {
     const [_, prefix, suffix] = new URL(el.identifier.id).pathname.split("/");
@@ -52,9 +61,27 @@ const { raid, isEmbargoed, embargoedRaid } = Astro.props as {
   isEmbargoed: boolean;
   embargoedRaid: EmbargoedRaidSummary | null;
 };
+
+const handle = `${prefix}/${suffix}`;
+const primaryTitle = raid?.title?.find((t) => PRIMARY_TITLE_TYPES.has(t.type?.id ?? ""))?.text;
+
+const rawDescription = raid?.description?.find((d) => PRIMARY_DESCRIPTION_TYPES.has(d.type?.id ?? ""))?.text;
+const metaDescription = (() => {
+  if (!rawDescription) return undefined;
+  const MAX = 155;
+  if (rawDescription.length <= MAX) return rawDescription;
+  const cut = rawDescription.lastIndexOf(" ", MAX);
+  return (cut > 0 ? rawDescription.slice(0, cut) : rawDescription.slice(0, MAX)) + "…";
+})();
+
+const pageTitle = isEmbargoed
+  ? `Embargoed RAiD – ${handle}`
+  : primaryTitle
+    ? `${primaryTitle} — RAiD ${handle}`
+    : `RAiD ${handle}`;
 ---
 
-<Layout title={isEmbargoed ? `Embargoed RAiD – ${prefix}/${suffix}` : `RAiD ${prefix}/${suffix}`} noindex={isEmbargoed}>
+<Layout title={pageTitle} description={metaDescription} noindex={isEmbargoed}>
   {!isEmbargoed && raid && (
     <script
       is:inline

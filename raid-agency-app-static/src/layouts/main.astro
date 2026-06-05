@@ -14,11 +14,12 @@ const { topBar } = getSiteConfig().header;
 
 interface Props {
   title: string;
+  description?: string;
   noindex?: boolean;
   lastModified?: string;
 }
 
-const { title, noindex = false, lastModified } = Astro.props;
+const { title, description, noindex = false, lastModified } = Astro.props;
 // Only show banner in non-production environments
 const raidEnv = import.meta.env.RAID_ENV;
 const isProduction = raidEnv === 'prod';
@@ -29,11 +30,11 @@ const shouldRender = !isProduction;
 <html lang="en" class="min-h-dvh">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content="Astro description" />
+    <meta name="description" content={description ?? "RAiD — Research Activity Identifier"} />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <meta name="generator" content={Astro.generator} />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     {lastModified && <meta name="last-modified" content={lastModified} />}
     <title>{title}</title>
