@@ -19,11 +19,19 @@ The RAiD Agency Static App is a web application that fetches, processes, enriche
 
 ```text
 /
-├── public/                 # Static assets
+├── public/
+│   └── app-config.json     # Runtime configuration (endpoints, branding, analytics)
+├── app-config.template.json # Starter template for other registration agencies
+├── Dockerfile               # Two-stage build (Node builder → nginx)
+├── docker-entrypoint.sh     # Supports APP_CONFIG_URL proxy at runtime
+├── nginx/
+│   ├── nginx.conf           # Static serving with no-cache on app-config.json
+│   └── nginx.conf.template  # Used when APP_CONFIG_URL is set
 ├── scripts/                # Data fetching Node.js modules
 │   ├── fetch-raids.js      # Main orchestration module
 │   ├── fetch-citation.js   # Citation fetching and caching module
-│   └── fetch-handles.js    # Multi-environment handle fetching
+│   ├── fetch-handles.js    # Multi-environment handle fetching
+│   └── loadAppConfig.js    # Shared config loader (reads app-config.json)
 ├── src/
 │   ├── components/         # Reusable UI components
 │   │   ├── raid-components/ # Components for RAiD data display
@@ -101,48 +109,65 @@ The RAiD Agency Static App is a web application that fetches, processes, enriche
 | `npm run build`        | Build production site to `./dist/` (runs scripts first)          |
 | `npm run preview`      | Preview your build locally                                       |
 
-## 🔐 Environment Setup
+## 🔐 Configuration
 
-The application requires the following environment variables:
+Configuration is split into two parts: a JSON file for non-secret settings, and environment variables for secrets only.
 
-### Required Variables:
-```env
-# IAM Authentication
-IAM_ENDPOINT=<auth endpoint URL>
-IAM_CLIENT_ID=<client ID>
-IAM_CLIENT_SECRET=<client secret>
+### `public/app-config.json` (non-secret)
 
-# API Configuration
-API_ENDPOINT=<API endpoint URL>
-RAID_ENV=<environment name>
+Copy `app-config.template.json` to `public/app-config.json` and fill in your values:
+
+```json
+{
+  "apiEndpoint": "https://app.your-env.raid.org.au",
+  "iamEndpoint": "https://iam.your-env.raid.org.au",
+  "iamClientId": "your-iam-client-id",
+  "raidDumperClientId": "your-dumper-client-id",
+  "raidEnv": "prod",
+  "siteUrl": "https://static.your-env.raid.org.au",
+  "raidUrl": "https://raid.org/",
+  "analytics": {
+    "gaMeasurementId": "G-XXXXXXXXXX"
+  },
+  "caching": { "enabled": true, "ttlMs": 432000000 },
+  "header": { "topBar": { "show": false, ... } },
+  "footer": { "show": false, ... }
+}
 ```
 
-### Optional Performance Variables:
+This file is also served at `/app-config.json` at runtime. Google Analytics IDs are loaded from it client-side, so they can be updated without rebuilding.
+
+### `.env` (secrets only)
+
 ```env
-# Performance Tuning
+IAM_CLIENT_SECRET=<client secret>
+RAID_DUMPER_CLIENT_SECRET=<dumper client secret>
+```
+
+Secrets are **never** stored in `app-config.json`. In CI/CD (AWS CodeBuild, GitHub Actions, Kubernetes) inject them as environment variables from your secret store.
+
+### Optional performance tuning (environment variables)
+
+```env
 CONCURRENT_DOI_REQUESTS=5     # Parallel DOI requests (default: 5)
 DOI_REQUEST_DELAY=100         # Delay between batches in ms (default: 100)
 REQUEST_TIMEOUT=30000         # HTTP timeout in ms (default: 30000)
 MAX_RETRIES=3                 # Maximum retry attempts (default: 3)
-
-# Feature Flags
 ENABLE_CACHING=true           # Enable citation caching (default: false)
 CACHING_TIME=432000000        # Cache TTL in ms (default: 5 days)
 VERBOSE_LOGGING=false         # Enable detailed logging (default: false)
 ```
 
-Create a `.env` file in the project root with these variables.
-
 ## 💻 Development Workflow
 
 1. Clone the repository
 2. Install Node.js v14+ (required for ES modules)
-3. Set up environment variables in a `.env` file
-4. Install dependencies with `npm install`
-5. Fetch initial data with `npm run predev`
-6. Run the development server with `npm run dev`(which also fetches RAID data)
+3. Copy `app-config.template.json` to `public/app-config.json` and fill in your values
+4. Create a `.env` file with secrets only (`IAM_CLIENT_SECRET`, `RAID_DUMPER_CLIENT_SECRET`)
+5. Install dependencies with `npm install`
+6. Run the development server with `npm dev` (fetches RAiD data first via `predev`)
 7. Make changes to components, pages, or styles
-8. Build for production with `npm run build`
+8. Build for production with `npm build`
 
 ## 🚀 Performance Improvements
 
@@ -218,23 +243,60 @@ Understanding these mappings is crucial for maintaining and extending the displa
 
 ## 🚢 Deployment
 
-### Production Build
+### Standard build (S3 / CDN)
 
-To build for production:
+1. Provide `public/app-config.json` with environment-specific values
+2. Set `IAM_CLIENT_SECRET` and `RAID_DUMPER_CLIENT_SECRET` as environment variables
+3. Run `npm build` to fetch data and generate static files
+4. Deploy the `dist/` directory to your web server or S3 bucket
+5. Optionally upload a separate `app-config.json` to the bucket root to update branding or analytics without rebuilding
 
-1. Ensure environment variables are correctly set in `.env`
-2. Run `npm run build` to fetch data and generate static files
-3. Deploy the contents of the `dist/` directory to your web server
+### Docker
 
-### Continuous Integration
+```bash
+docker build \
+  --build-arg IAM_CLIENT_SECRET=xxx \
+  --build-arg RAID_DUMPER_CLIENT_SECRET=xxx \
+  -t raid-agency-app-static .
 
-For CI/CD setup:
+docker run -p 80:80 raid-agency-app-static
+```
 
-1. Include the required environment variables in your CI environment
-2. Configure Node.js v14+ in your CI pipeline
-3. Run `npm i` to install dependencies
-4. Run `npm run build` to fetch data and build
-5. Deploy the `dist/` directory to your hosting environment
+To update `app-config.json` at container start-up without rebuilding (e.g. from S3):
+
+```bash
+docker run -e APP_CONFIG_URL=https://your-bucket.s3.amazonaws.com/app-config.json \
+  -p 80:80 raid-agency-app-static
+```
+
+### Kubernetes
+
+Mount `app-config.json` from a ConfigMap and secrets from a Kubernetes Secret:
+
+```yaml
+envFrom:
+  - secretRef:
+      name: raid-static-secrets   # IAM_CLIENT_SECRET, RAID_DUMPER_CLIENT_SECRET
+volumeMounts:
+  - name: app-config
+    mountPath: /usr/share/nginx/html/app-config.json
+    subPath: app-config.json
+volumes:
+  - name: app-config
+    configMap:
+      name: raid-static-config
+```
+
+### CI/CD (AWS CodeBuild)
+
+Store secrets in SSM Parameter Store and reference them in the buildspec:
+
+```yaml
+env:
+  parameter-store:
+    IAM_CLIENT_SECRET: /raid/prod/iam-client-secret
+    RAID_DUMPER_CLIENT_SECRET: /raid/prod/raid-dumper-client-secret
+```
 
 ## 🧪 Testing
 

@@ -124,7 +124,7 @@ The application uses several techniques to optimize performance:
 
 ### Common Issues
 
-1. **Authentication Failures**: Ensure environment variables are correctly set
+1. **Authentication Failures**: Check that `iamEndpoint`, `iamClientId` are set in `public/app-config.json` and `IAM_CLIENT_SECRET` is set as an environment variable
 2. **Build Errors**: Check the data format and TypeScript errors
 3. **Component Errors**: Verify component props and data structure
 
@@ -157,26 +157,45 @@ To add a new page:
 
 ## API Reference
 
-### Environment Variables
+### Configuration
 
-- `IAM_ENDPOINT`: Authentication endpoint URL
-- `API_ENDPOINT`: API endpoint URL
-- `IAM_CLIENT_ID`: Client ID for OAuth
-- `IAM_CLIENT_SECRET`: Client secret for OAuth
-- `RAID_ENV`: Environment name (prod, stage, etc.)
+Non-secret configuration lives in `public/app-config.json`. This file is read by data-fetch scripts at build time and served as `/app-config.json` at runtime (for client-side features like Google Analytics).
 
-### Optional Performance Variables:
+| Field | Description |
+|---|---|
+| `apiEndpoint` | RAiD API base URL |
+| `iamEndpoint` | Keycloak IAM base URL |
+| `iamClientId` | OAuth client ID for public data fetching |
+| `raidDumperClientId` | OAuth client ID for embargoed data |
+| `raidEnv` | Environment name: `prod` \| `demo` \| `test` \| `dev` |
+| `siteUrl` | Public URL the site is served from (used for sitemap) |
+| `raidUrl` | Base URL for resolving RAiD handles |
+| `analytics.gaMeasurementId` | Google Analytics ID for prod |
+| `analytics.gaMeasurementIdDemo` | Google Analytics ID for demo |
+| `caching.enabled` | Enable citation caching |
+| `caching.ttlMs` | Cache TTL in milliseconds |
+| `header` / `footer` | Branding — see `app-config.template.json` |
 
-# Performance Tuning
-- `CONCURRENT_DOI_REQUESTS` : Parallel DOI requests (default: 5)
-- `DOI_REQUEST_DELAY`: Delay between batches in ms (default: 100)
-- `REQUEST_TIMEOUT` : HTTP timeout in ms (default: 30000)
-- `MAX_RETRIES` : Maximum retry attempts (default: 3)
+### Secrets (environment variables only)
 
-# Feature Flags
-- `ENABLE_CACHING` : Enable citation caching (default: false)
-- `CACHING_TIME`: Cache TTL in ms (default: 5 days)
-- `VERBOSE_LOGGING`: Enable detailed logging (default: false)
+Secrets are **never** stored in `app-config.json`.
+
+| Variable | Description |
+|---|---|
+| `IAM_CLIENT_SECRET` | OAuth client secret for public data fetching |
+| `RAID_DUMPER_CLIENT_SECRET` | OAuth client secret for embargoed data |
+
+### Optional performance tuning (environment variables)
+
+| Variable | Default | Description |
+|---|---|---|
+| `CONCURRENT_DOI_REQUESTS` | `5` | Parallel DOI requests |
+| `DOI_REQUEST_DELAY` | `100` | Delay between DOI batches (ms) |
+| `REQUEST_TIMEOUT` | `30000` | HTTP request timeout (ms) |
+| `MAX_RETRIES` | `3` | Maximum retry attempts |
+| `ENABLE_CACHING` | `false` | Enable citation caching |
+| `CACHING_TIME` | `432000000` | Cache TTL (ms) |
+| `VERBOSE_LOGGING` | `false` | Enable detailed logging |
 
 
 ### API Endpoints

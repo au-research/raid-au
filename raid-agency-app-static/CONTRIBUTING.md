@@ -5,29 +5,30 @@ Thank you for your interest in contributing to the RAiD Agency Static App! This 
 ## Getting Started
 
 1. Clone the repository
-2. Create a `.env` file with the required environment variables (see README.md)
-3. Install dependencies: `npm install`
-4. Start the development server: `npm run dev`
+2. Copy `app-config.template.json` to `public/app-config.json` and fill in your values (see README.md)
+3. Create a `.env` file with secrets only — `IAM_CLIENT_SECRET` and `RAID_DUMPER_CLIENT_SECRET`
+4. Install dependencies: `npm install`
+5. Start the development server: `npm run dev`
 
 ## Development Environment
 
 ### Prerequisites
 
 - Node.js (14.x or later)
-- npm or yarn
+- npm
 - Git
 
-### Environment Variables
+### Configuration
 
-Create a `.env` file in the project root with the following variables:
+Non-secret config goes in `public/app-config.json` (copy from `app-config.template.json`).
+Secrets go in `.env`:
 
 ```
-IAM_ENDPOINT=<auth endpoint URL>
-API_ENDPOINT=<API endpoint URL>
-IAM_CLIENT_ID=<client ID>
 IAM_CLIENT_SECRET=<client secret>
-RAID_ENV=<environment name>
+RAID_DUMPER_CLIENT_SECRET=<dumper client secret>
 ```
+
+See `README.md` for the full configuration reference.
 
 ### Optional Performance Variables:
 ```env

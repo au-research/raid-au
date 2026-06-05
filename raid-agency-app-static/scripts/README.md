@@ -16,6 +16,7 @@ The scripts in this directory are responsible for:
 ## Architecture
 
 The system is built using modular Node.js ES modules:
+- **loadAppConfig.js** - Shared config loader (reads `public/app-config.json`, falls back to env vars)
 - **fetch-raids.js** - Main orchestration module
 - **fetch-citation.js** - Citation fetching and caching module
 - **fetch-handles.js** - Multi-environment handle fetching module
@@ -35,8 +36,8 @@ The system is built using modular Node.js ES modules:
 - Cross-platform compatibility (Windows/Mac/Linux)
 
 **Flow:**
-1. Loads environment variables from `.env`
-2. Validates required configuration(environment variables)
+1. Loads config from `public/app-config.json` via `loadAppConfig.js` (falls back to env vars)
+2. Validates required configuration
 3. Authenticates with IAM endpoint to obtain bearer token
 4. Fetches all public RAiD data from the API
 5. Enriches data with citations from DOI.org and save them to `src/raw-data/raids.json`
@@ -93,33 +94,41 @@ node scripts/fetch-raids.js
 
 ## Configuration
 
-### Required Environment Variables:
-```env
-# IAM Authentication
-IAM_ENDPOINT=https://your-iam-endpoint
-IAM_CLIENT_ID=your-client-id
-IAM_CLIENT_SECRET=your-client-secret
+Config is loaded by `scripts/loadAppConfig.js`, which reads `public/app-config.json` first and falls back to environment variables. This means you can configure the scripts with a JSON file, env vars, or both.
 
-# API Configuration
-API_ENDPOINT=https://your-api-endpoint
-RAID_ENV=prod  # Environment: prod/stage/demo/test
+### `public/app-config.json` (required non-secret values)
+
+```json
+{
+  "apiEndpoint": "https://app.your-env.raid.org.au",
+  "iamEndpoint": "https://iam.your-env.raid.org.au",
+  "iamClientId": "your-client-id",
+  "raidDumperClientId": "your-dumper-client-id",
+  "raidEnv": "prod",
+  "caching": { "enabled": true, "ttlMs": 432000000 }
+}
 ```
 
-### Optional Environment Variables:
+Copy `app-config.template.json` from the project root as a starting point.
+
+### Secrets (environment variables only — never in the JSON file)
+
 ```env
-# Output Configuration
-DATA_DIR=./src/raw-data  # Output directory (default: ./src/raw-data)
+IAM_CLIENT_SECRET=your-client-secret
+RAID_DUMPER_CLIENT_SECRET=your-dumper-secret
+```
 
-# Performance Tuning
+### Optional performance tuning (environment variables)
+
+```env
+DATA_DIR=./src/raw-data        # Output directory (default: ./src/raw-data)
 CONCURRENT_DOI_REQUESTS=5      # Parallel DOI requests (default: 5)
-DOI_REQUEST_DELAY=100         # Delay between batches in ms (default: 100)
-REQUEST_TIMEOUT=30000         # HTTP timeout in ms (default: 30000)
-MAX_RETRIES=3                 # Maximum retry attempts (default: 3)
-
-# Feature Flags
-ENABLE_CACHING=true           # Enable citation caching (default: false)
-CACHING_TIME=432000000        # Cache TTL in ms (default: 5 days)
-VERBOSE_LOGGING=false         # Enable detailed logging (default: false)
+DOI_REQUEST_DELAY=100          # Delay between batches in ms (default: 100)
+REQUEST_TIMEOUT=30000          # HTTP timeout in ms (default: 30000)
+MAX_RETRIES=3                  # Maximum retry attempts (default: 3)
+ENABLE_CACHING=true            # Enable citation caching (default: false)
+CACHING_TIME=432000000         # Cache TTL in ms (default: 5 days)
+VERBOSE_LOGGING=false          # Enable detailed logging (default: false)
 ```
 
 ## Installation
@@ -129,10 +138,13 @@ VERBOSE_LOGGING=false         # Enable detailed logging (default: false)
    npm install
    ```
 
-2. **Create `.env` file:**
+2. **Set up config:**
    ```bash
-   cp .env.example .env
-   # Edit .env with your credentials
+   cp app-config.template.json public/app-config.json
+   # Edit public/app-config.json with your endpoints and settings
+
+   cp .env.template .env
+   # Edit .env with your secrets (IAM_CLIENT_SECRET, RAID_DUMPER_CLIENT_SECRET)
    ```
 
 3. **Make scripts executable (optional):**
@@ -177,9 +189,9 @@ This happens through the `predev` and `prebuild` npm scripts defined in `package
    - Verify `"type": "module"` is in your `package.json`
 
 2. **Authentication Failures:**
-   - Verify `.env` file has correct credentials
-   - Check IAM endpoint accessibility
-   - Ensure client has necessary permissions
+   - Verify `iamEndpoint` and `iamClientId` are set in `public/app-config.json`
+   - Verify `IAM_CLIENT_SECRET` is set as an environment variable
+   - Check IAM endpoint accessibility and client permissions
 
 3. **Citation Fetch Failures:**
    - Some DOIs may not support bibliography format
@@ -187,7 +199,7 @@ This happens through the `predev` and `prebuild` npm scripts defined in `package
    - Check verbose logging for specific errors
 
 4. **Timeout Issues:**
-   - Increase `REQUEST_TIMEOUT` in `.env`
+   - Increase `REQUEST_TIMEOUT` as an environment variable
    - Reduce `CONCURRENT_DOI_REQUESTS` for slower connections
    - Check network connectivity
 
