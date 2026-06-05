@@ -4,7 +4,9 @@
  * Priority for non-secret values:
  *   1. public/app-config.json  (explicit runtime config)
  *   2. environment variables   (backwards-compat / CI overrides)
- *   3. built-in defaults
+ *
+ * siteUrl is intentionally excluded — only astro.config.mjs needs it and
+ * reads it directly from public/app-config.json.
  *
  * Secrets (IAM_CLIENT_SECRET, RAID_DUMPER_CLIENT_SECRET) are ALWAYS
  * sourced from environment variables only — never from the JSON file.
@@ -39,7 +41,6 @@ export function loadAppConfig() {
     iamClientId:        fileConfig.iamClientId       ?? process.env.IAM_CLIENT_ID,
     raidDumperClientId: fileConfig.raidDumperClientId ?? process.env.RAID_DUMPER_CLIENT_ID,
     raidEnv:            fileConfig.raidEnv           ?? process.env.RAID_ENV,
-    siteUrl:            fileConfig.siteUrl           ?? process.env.SITE_URL,
 
     // Secrets: env var ONLY — never stored in the JSON file
     iamClientSecret:        process.env.IAM_CLIENT_SECRET,

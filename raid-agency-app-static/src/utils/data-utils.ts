@@ -18,7 +18,7 @@ export function getRaidAppUrl(): string {
     return `http://localhost:${localWebAppPort}`;
   }
 
-  if (environment === "test" || "dev") {
+  if (environment === "test" || environment === "dev") {
     console.log("environment", environment);
   }
 

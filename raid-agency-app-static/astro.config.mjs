@@ -14,7 +14,7 @@ const embargoedRaids = JSON.parse(
 );
 const embargoedHandles = new Set(embargoedRaids.map((/** @type {{ handle: string }} */ r) => r.handle));
 
-// Read siteUrl from app-config.json; fall back to env var, then prod default.
+// Read siteUrl from app-config.json; fall back to prod default if absent.
 let siteUrl = "https://static.prod.raid.org.au";
 try {
   const appConfig = JSON.parse(
@@ -24,7 +24,6 @@ try {
 } catch {
   // file absent — use default
 }
-if (process.env.SITE_URL) siteUrl = process.env.SITE_URL;
 
 // https://astro.build/config
 export default defineConfig({

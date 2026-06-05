@@ -53,10 +53,9 @@
  */
 
 import fs from 'fs/promises';
-import path, {dirname} from 'path';
+import path from 'path';
 import https from 'https';
 import http from 'http';
-import {fileURLToPath} from 'url';
 import {fetchCitation} from './fetch-citation.js'
 import {extractHandles} from './fetch-handles.js';
 import { addOrcidInfoToRaidData } from './fetch-orcidData.js';
@@ -64,10 +63,6 @@ import { addRorDetailsToRaidData } from './fetch-ror.js';
 import { addServicePointNameToRaidData } from './fetch-sp.js';
 import { fetchEmbargoedRaids } from './fetch-embargoed-raids.js';
 import { loadAppConfig } from './loadAppConfig.js';
-
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Load config from public/app-config.json (falls back to env vars)
 const config = loadAppConfig();
