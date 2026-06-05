@@ -7,9 +7,11 @@ import {
   Home as HomeIcon,
 } from "@mui/icons-material";
 import { Container, Stack, Box } from "@mui/material";
+import { useRuntimeConfig } from "@/config";
 
 export const Raids = () => {
-  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
+  const { environment } = useRuntimeConfig();
+  const isProduction = environment === 'prod';
   const breadcrumbs: Breadcrumb[] = [
     {
       label: "Home",

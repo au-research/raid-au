@@ -10,26 +10,34 @@
     "prebuild": "npm run scripts",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/sitemap": "^3.3.0",
-    "@astrojs/tailwind": "^5.1.4",
+    "@astrojs/sitemap": "^3.7.3",
     "@fontsource/figtree": "^5.1.1",
-    "@openapitools/openapi-generator-cli": "^2.14.0",
-    "@tailwindcss/typography": "^0.5.16",
-    "astro": "^6.1.8",
-    "dayjs": "^1.11.13",
+    "@openapitools/openapi-generator-cli": "^2.34.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.4.4",
+    "dayjs": "^1.11.21",
     "dotenv": "^16.3.1",
     "fast-json-patch": "^3.1.1",
     "marked": "^16.1.0",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^4.3.0",
     "typescript": "^5.6.3"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
-    "@types/trusted-types": "^2.0.7"
+    "@types/trusted-types": "^2.0.7",
+    "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "vite": "~7.3.3"
+  },
+  "resolutions": {
+    "vite": "~7.3.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

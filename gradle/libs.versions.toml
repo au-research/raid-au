@@ -5,7 +5,7 @@ commons-compress = "1.26.2"
 commons-lang3 = "3.18.0"
 commons-math3 = "3.6.1"
 feign = "13.11"
-flyway-core = "9.22.3"
+flyway-core = "11.20.3"
 geonames-ws-client = "1.1.17"
 guava = "33.5.0-jre"
 hamcrest = "3.0"
@@ -57,6 +57,7 @@ jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "ja
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations" }
 jakarta-validation-api = { group = "jakarta.validation", name = "jakarta.validation-api", version.ref = "jakarta-validation-api" }
 flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway-core" }
+flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway-core" }
 geonames-ws-client = { group = "org.geonames", name = "geonames-ws-client", version.ref = "geonames-ws-client" }
 jakarta-jakartaee-web-api = { group = "jakarta.platform", name = "jakarta.jakartaee-web-api", version.ref = "jakarta-jakartaee-web-api" }
 jakarta-json-api = { group = "jakarta.json", name = "jakarta.json-api", version.ref = "jakarta-json-api" }
@@ -83,6 +84,7 @@ spring-boot-starter-oauth2-resource-server = { group = "org.springframework.boot
 spring-boot-starter-jooq = { group = "org.springframework.boot", name = "spring-boot-starter-jooq", version.ref = "springboot" }
 spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator", version.ref = "springboot" }
 spring-boot-starter-cache = { group = "org.springframework.boot", name = "spring-boot-starter-cache", version.ref = "springboot" }
+spring-boot-starter-flyway = { group = "org.springframework.boot", name = "spring-boot-starter-flyway", version.ref = "springboot" }
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security", version.ref = "springboot" }
 spring-boot-starter-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client", version.ref = "springboot" }
 spring-cloud-starter-openfeign = { group = "org.springframework.cloud", name = "spring-cloud-starter-openfeign", version.ref = "springcloud" }
@@ -108,7 +110,7 @@ springboot = [
     'spring-boot-starter-cache',
     'spring-boot-starter-security',
     'spring-boot-starter-oauth2-client',
-    'spring-cloud-starter-openfeign'
+    'spring-cloud-starter-openfeign',
 ]
 
 springboot-test = ['spring-boot-starter-test']

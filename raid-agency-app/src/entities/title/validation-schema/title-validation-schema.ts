@@ -4,11 +4,15 @@ import titleTypeSchema from "@/references/title_type_schema.json";
 import { combinedPattern } from "@/utils/date-utils/date-utils";
 import { z } from "zod";
 
-const dateStringSchema = z.string()
+const dateStringSchema = z.string().min(1, { message: "Required" }).regex(combinedPattern, {
+    message: "YYYY or YYYY-MM or YYYY-MM-DD",
+});
+
+const optionalDateStringSchema = z.string()
     .transform(val => val === '' ? undefined : val).pipe(
         z.string().regex(combinedPattern, {
             message: "YYYY or YYYY-MM or YYYY-MM-DD",
-        })
+        }).optional()
     );
 
 const titleTypeValidationSchema = z.object({
@@ -27,7 +31,7 @@ export const singleTitleValidationSchema = z
     type: titleTypeValidationSchema,
     language: titleLanguageValidationSchema.optional(),
     startDate: dateStringSchema,
-    endDate: dateStringSchema.optional(),
+    endDate: optionalDateStringSchema,
   })
   .refine(
     ({ startDate, endDate }) => {

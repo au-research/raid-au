@@ -431,8 +431,8 @@
   },
   "groups" : [ {
     "id" : "ba0b01a6-726f-464f-b501-454a10096826",
-    "name" : "University of Queensland",
-    "path" : "/University of Queensland",
+    "name" : "RAiD AU Test Registry 2",
+    "path" : "/RAiD AU Test Registry 2",
     "subGroups" : [ ],
     "attributes" : {
       "groupId" : [ "ba0b01a6-726f-464f-b501-454a10096826" ]
@@ -671,7 +671,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "group-admin", "service-point-user", "default-roles-raid", "operator" ],
     "notBefore" : 0,
-    "groups" : [ "/University of Queensland", "/raid-au" ]
+    "groups" : [ "/RAiD AU Test Registry 2", "/raid-au" ]
   }, {
     "id" : "53b5d46a-4d63-4506-9e7f-4b65f7b58e1e",
     "username" : "service-account-integration-test-client",
@@ -753,7 +753,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "service-point-user", "default-roles-raid" ],
     "notBefore" : 0,
-    "groups" : [ "/University of Queensland" ]
+    "groups" : [ "/RAiD AU Test Registry 2" ]
   } ],
   "scopeMappings" : [ {
     "clientScope" : "offline_access",

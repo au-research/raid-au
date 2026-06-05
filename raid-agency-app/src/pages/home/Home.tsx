@@ -1,4 +1,5 @@
 import {useAuthHelper} from "@/auth/keycloak"
+import { useRuntimeConfig } from "@/config";
 import { Footer } from "@/components/footer-bar/footer";
 import {GroupSelector} from "@/pages/home/components/GroupSelector";
 import {RaidTable} from "@/pages/raid-table";
@@ -8,7 +9,8 @@ import {Link} from "react-router-dom";
 
 export const Home = () => {
   const { hasServicePointGroup, isServicePointUser, isOperator } = useAuthHelper();
-  const isProduction = import.meta.env.VITE_RAIDO_ENV === 'prod';
+  const { environment } = useRuntimeConfig();
+  const isProduction = environment === 'prod';
   return (
     <>
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - ' + (isProduction ? '168px' : '216px') + ')' }}> 

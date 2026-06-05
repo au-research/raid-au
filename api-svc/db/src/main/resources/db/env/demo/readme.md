@@ -25,12 +25,3 @@ on from the PROD baseline and we don't end up with "gaps" in our schema
 history.
 
 ---
-
-For api-keys and app-users, consider adding them to the prod system before
-taking the next baseline copy of the PROD DB.
-
-But I don't want to make the Surf folks be OPERATOR in prod, so I'm just
-bumping the surf_operators file along. I reckon we should make a Surf
-service-point in prod and get the Surf folks to sign up in prod, 
-then they'll be able to sign-in to DEMO without having to go through the
-auth-requestz process (which is surf_operators was for).

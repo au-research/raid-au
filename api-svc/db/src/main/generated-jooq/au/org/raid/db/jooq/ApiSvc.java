@@ -89,7 +89,7 @@ public class ApiSvc extends SchemaImpl {
      * No further instances allowed
      */
     private ApiSvc() {
-        super("api_svc", null);
+        super("", null);
     }
 
 

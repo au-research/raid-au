@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import { keycloakInstance } from "@/auth/keycloak";
+import { getKeycloakInstance } from "@/auth/keycloak";
 
 // Define roles as readonly const to ensure type safety
 export const REALM_ROLES = {
@@ -16,11 +16,11 @@ export const authService = {
     async getValidToken(): Promise<string> {
         try {
             // Try to refresh when token has less than 30 seconds remaining
-            const refreshed = await keycloakInstance.updateToken(30);
+            const refreshed = await getKeycloakInstance().updateToken(30);
             if (refreshed) {
                 console.log("Token was successfully refreshed");
             }
-            return keycloakInstance.token || '';
+            return getKeycloakInstance().token || '';
         } catch (error) {
             console.error('Failed to refresh token:', error);
             throw error;
@@ -50,12 +50,12 @@ export const authService = {
 
     // Role checking
     hasRole(role: RealmRole): boolean {
-        return !!keycloakInstance.realmAccess?.roles.includes(role);
+        return !!getKeycloakInstance().realmAccess?.roles.includes(role);
     },
 
     // Helper properties
     get hasServicePointGroup(): boolean {
-        return Boolean(keycloakInstance.tokenParsed?.service_point_group_id);
+        return Boolean(getKeycloakInstance().tokenParsed?.service_point_group_id);
     },
 
     get isServicePointUser(): boolean {
@@ -71,17 +71,17 @@ export const authService = {
     },
 
     get groupId(): string | undefined {
-        return keycloakInstance.tokenParsed?.service_point_group_id;
+        return getKeycloakInstance().tokenParsed?.service_point_group_id;
     },
 
     get token(): string | undefined {
-        return keycloakInstance.token;
+        return getKeycloakInstance().token;
     },
 
     get user(): { id: string | undefined; roles: string[] } {
         return {
-            id: keycloakInstance.subject,
-            roles: keycloakInstance.realmAccess?.roles || [],
+            id: getKeycloakInstance().subject,
+            roles: getKeycloakInstance().realmAccess?.roles || [],
             // Add other user properties if needed
         };
     }

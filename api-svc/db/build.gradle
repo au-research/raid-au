@@ -1,5 +1,13 @@
 import org.flywaydb.gradle.task.AbstractFlywayTask
-
+buildscript {
+    dependencies {
+        classpath libs.postgresql
+        classpath libs.flyway.postgresql
+    }
+    repositories {
+        mavenCentral()
+    }
+}
 plugins{
   id 'java'
   alias(libs.plugins.flyway)
@@ -57,6 +65,12 @@ if( file(configPath).exists() ){
 dependencies{
   runtimeOnly libs.postgresql
   jooqGenerator libs.postgresql
+  testImplementation libs.junit.jupiter
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+  useJUnitPlatform()
 }
 
 compileJava {
@@ -132,6 +146,7 @@ jooq{
           name = 'org.jooq.codegen.DefaultGenerator'
           database {
             name = 'org.jooq.meta.postgres.PostgresDatabase'
+            outputSchemaToDefault = true
             schemata {
               schema {
                 inputSchema = apiSvcPgSchema

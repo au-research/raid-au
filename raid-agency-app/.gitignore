@@ -31,5 +31,8 @@ dist-ssr
 
 coverage
 
+# Environment-specific app config files — managed outside the repo
+config/
+
 # Playwright auth state (contains session tokens - never commit)
 e2e/.auth/

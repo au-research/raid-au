@@ -63,6 +63,7 @@ import {extractHandles} from './fetch-handles.js';
 import { addOrcidInfoToRaidData } from './fetch-orcidData.js';
 import { addRorDetailsToRaidData } from './fetch-ror.js';
 import { addServicePointNameToRaidData } from './fetch-sp.js';
+import { fetchEmbargoedRaids } from './fetch-embargoed-raids.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -77,6 +78,8 @@ const config = {
   apiEndpoint: process.env.API_ENDPOINT,
   iamClientId: process.env.IAM_CLIENT_ID,
   iamClientSecret: process.env.IAM_CLIENT_SECRET,
+  raidDumperClientId: process.env.RAID_DUMPER_CLIENT_ID,
+  raidDumperClientSecret: process.env.RAID_DUMPER_CLIENT_SECRET,
   raidEnv: process.env.RAID_ENV,
   dataDir: process.env.DATA_DIR || './src/raw-data',
   // Performance tuning
@@ -147,8 +150,8 @@ export async function makeRequestWithRetry(url, options = {}, retries = config.m
       }
       if (config.verboseLogging) {
         console.log(`  Retry ${attempt}/${retries} for ${url}`);
+        console.error(` raids node module - Full error:`, error);
       }
-      console.error(` raids node module - Full error:`, error);
       // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
     }
@@ -196,10 +199,32 @@ function makeRequest(url, options = {}) {
   });
 }
 
+// Get bearer token from IAM for a given client
+async function getTokenForClient(clientId, clientSecret) {
+  const tokenUrl = `${config.iamEndpoint}/realms/raid/protocol/openid-connect/token`;
+  const bodyParams = `grant_type=client_credentials&client_id=${clientId}`;
+  const body = clientSecret ? `${bodyParams}&client_secret=${clientSecret}` : bodyParams;
+
+  const response = await makeRequestWithRetry(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(body)
+    },
+    body
+  });
+
+  const tokenData = JSON.parse(response.data);
+  if (!tokenData.access_token) {
+    throw new Error('No access token in response');
+  }
+  return tokenData.access_token;
+}
+
 // Get bearer token from IAM
 async function getBearerToken() {
   console.log('Getting bearer token...');
-  
+
   const tokenUrl = `${config.iamEndpoint}/realms/raid/protocol/openid-connect/token`;
   const body = `grant_type=client_credentials&client_id=${config.iamClientId}&client_secret=${config.iamClientSecret}`;
   
@@ -406,6 +431,13 @@ async function main() {
     const outputFile = path.join(config.dataDir, 'raids.json');
     await fs.writeFile(outputFile, JSON.stringify(enrichedWithServicePoint, null, 2));
     console.log(`Data successfully saved to ${outputFile}`);
+
+    // Step 7b: Fetch and save embargoed RAiD summaries
+    const dumperToken = await getTokenForClient(config.raidDumperClientId, config.raidDumperClientSecret);
+    const embargoedRaids = await fetchEmbargoedRaids(dumperToken, config, makeRequestWithRetry);
+    const embargoedOutputFile = path.join(config.dataDir, 'embargoed-raids.json');
+    await fs.writeFile(embargoedOutputFile, JSON.stringify(embargoedRaids, null, 2));
+    console.log(`Embargoed RAiD data saved to ${embargoedOutputFile}`);
     
     // Step 8: Extract and save handles
     const handles = await extractHandles(raidData);
@@ -433,6 +465,7 @@ async function main() {
     if (config.enableCaching) {
       console.log(`- Cached citations used: ${stats.cachedCitations}`);
     }
+    console.log(`- Total embargoed RAiDs: ${embargoedRaids.length}`);
     console.log(`- Total handles: ${handles.length}`);
     console.log(`- Execution time: ${elapsedTime} seconds`);
     
@@ -457,4 +490,5 @@ export {
   addOrcidInfoToRaidData,
   addRorDetailsToRaidData,
   addServicePointNameToRaidData,
+  fetchEmbargoedRaids,
 };
