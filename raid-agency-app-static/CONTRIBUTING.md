@@ -7,7 +7,7 @@ Thank you for your interest in contributing to the RAiD Agency Static App! This 
 1. Clone the repository
 2. Copy `app-config.template.json` to `public/app-config.json` and fill in your values (see README.md)
 3. Create a `.env` file with secrets only — `IAM_CLIENT_SECRET` and `RAID_DUMPER_CLIENT_SECRET`
-4. Install dependencies: `npm install`
+4. Install dependencies: `npm ci`
 5. Start the development server: `npm run dev`
 
 ## Development Environment

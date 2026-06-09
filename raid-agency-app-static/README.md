@@ -103,7 +103,7 @@ The RAiD Agency Static App is a web application that fetches, processes, enriche
 
 | Command                | Action                                                           |
 | :--------------------- | :--------------------------------------------------------------- |
-| `npm install`          | Installs dependencies                                            |
+| `npm ci`               | Installs dependencies (use this — `npm install` has a known bug with npm v11 + Node 24) |
 | `npm run scripts`      | Fetches latest RAiD data                                         |
 | `npm run dev`          | Starts local dev server at `localhost:4321` (runs scripts first) |
 | `npm run build`        | Build production site to `./dist/` (runs scripts first)          |
