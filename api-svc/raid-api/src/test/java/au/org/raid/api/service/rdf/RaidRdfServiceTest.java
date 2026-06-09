@@ -10,6 +10,7 @@ import org.apache.jena.vocabulary.SKOS;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,19 +99,19 @@ class RaidRdfServiceTest {
         // Set identifier
         var id = new Id();
         id.setId("https://raid.org/123.456/abc");
-        id.setSchemaUri("https://raid.org");
-        
+        id.setSchemaUri(RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_);
+
         // Set registration agency
         var registrationAgency = new RegistrationAgency();
         registrationAgency.setId("https://ror.org/02stey378");
-        registrationAgency.setSchemaUri("https://ror.org");
+        registrationAgency.setSchemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
         id.setRegistrationAgency(registrationAgency);
-        
+
         // Set owner
         var owner = new Owner();
         owner.setId("https://ror.org/02stey378");
-        owner.setSchemaUri("https://ror.org");
-        owner.setServicePoint(20000003L);
+        owner.setSchemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
+        owner.setServicePoint(BigDecimal.valueOf(20000003L));
         id.setOwner(owner);
         
         // Set license
@@ -133,13 +134,13 @@ class RaidRdfServiceTest {
         title.setStartDate("2023-01-01");
         
         var titleType = new TitleType();
-        titleType.setId("https://vocabulary.raid.org/title.type.schema/5");
-        titleType.setSchemaUri("https://vocabulary.raid.org/title.type.schema/376");
+        titleType.setId(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5);
+        titleType.setSchemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
         title.setType(titleType);
-        
+
         var language = new Language();
         language.setId("eng");
-        language.setSchemaUri("https://iso639-3.sil.org/");
+        language.setSchemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
         title.setLanguage(language);
         
         titles.add(title);
@@ -151,8 +152,8 @@ class RaidRdfServiceTest {
         description.setText("This is a sample RAID for testing");
         
         var descriptionType = new DescriptionType();
-        descriptionType.setId("https://vocabulary.raid.org/description.type.schema/318");
-        descriptionType.setSchemaUri("https://vocabulary.raid.org/description.type.schema/320");
+        descriptionType.setId(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_318);
+        descriptionType.setSchemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
         description.setType(descriptionType);
         description.setLanguage(language);
         
@@ -162,8 +163,8 @@ class RaidRdfServiceTest {
         // Add access information
         var access = new Access();
         var accessType = new AccessType();
-        accessType.setId("https://vocabularies.coar-repositories.org/access_rights/c_abf2/");
-        accessType.setSchemaUri("https://vocabularies.coar-repositories.org/access_rights/");
+        accessType.setId(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_);
+        accessType.setSchemaUri(AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_);
         access.setType(accessType);
         
         var accessStatement = new AccessStatement();
@@ -177,7 +178,7 @@ class RaidRdfServiceTest {
         var contributors = new ArrayList<Contributor>();
         var contributor = new Contributor();
         contributor.setId("https://orcid.org/0000-0002-1825-0097");
-        contributor.setSchemaUri("https://orcid.org/");
+        contributor.setSchemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
         contributor.setEmail("researcher@example.org");
         contributor.setUuid("12345678-abcd-1234-efgh-1234567890ab");
         contributor.setLeader(true);
@@ -185,16 +186,16 @@ class RaidRdfServiceTest {
         
         var positions = new ArrayList<ContributorPosition>();
         var position = new ContributorPosition();
-        position.setId("https://vocabulary.raid.org/contributor.position.schema/307");
-        position.setSchemaUri("https://vocabulary.raid.org/contributor.position.schema/305");
+        position.setId(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307);
+        position.setSchemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305);
         position.setStartDate("2023-01-01");
         positions.add(position);
         contributor.setPosition(positions);
         
         var roles = new ArrayList<ContributorRole>();
         var role = new ContributorRole();
-        role.setId("https://credit.niso.org/contributor-roles/conceptualization/");
-        role.setSchemaUri("https://credit.niso.org/");
+        role.setId(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_);
+        role.setSchemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_);
         roles.add(role);
         contributor.setRole(roles);
         
@@ -205,12 +206,12 @@ class RaidRdfServiceTest {
         var organizations = new ArrayList<Organisation>();
         var organisation = new Organisation();
         organisation.setId("https://ror.org/038sjwq14");
-        organisation.setSchemaUri("https://ror.org/");
+        organisation.setSchemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_);
         
         var orgRoles = new ArrayList<OrganisationRole>();
         var orgRole = new OrganisationRole();
-        orgRole.setId("https://vocabulary.raid.org/organisation.role.schema/182");
-        orgRole.setSchemaUri("https://vocabulary.raid.org/organisation.role.schema/359");
+        orgRole.setId(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182);
+        orgRole.setSchemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359);
         orgRole.setStartDate("2023-01-01");
         orgRoles.add(orgRole);
         organisation.setRole(orgRoles);
@@ -222,7 +223,7 @@ class RaidRdfServiceTest {
         var subjects = new ArrayList<Subject>();
         var subject = new Subject();
         subject.setId("https://linked.data.gov.au/def/anzsrc-for/2020/3702");
-        subject.setSchemaUri("https://vocabs.ardc.edu.au/viewById/316");
+        subject.setSchemaUri(SubjectSchemaURIEnum.HTTPS_VOCABS_ARDC_EDU_AU_VIEW_BY_ID_316);
         
         var keywords = new ArrayList<SubjectKeyword>();
         var keyword = new SubjectKeyword();
@@ -238,7 +239,7 @@ class RaidRdfServiceTest {
         var spatialCoverages = new ArrayList<SpatialCoverage>();
         var spatialCoverage = new SpatialCoverage();
         spatialCoverage.setId("https://www.geonames.org/2158177/melbourne.html");
-        spatialCoverage.setSchemaUri("https://www.geonames.org/");
+        spatialCoverage.setSchemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_GEONAMES_ORG_);
         
         var places = new ArrayList<SpatialCoveragePlace>();
         var place = new SpatialCoveragePlace();
@@ -254,17 +255,17 @@ class RaidRdfServiceTest {
         var relatedObjects = new ArrayList<RelatedObject>();
         var relatedObject = new RelatedObject();
         relatedObject.setId("https://doi.org/10.12345/67890");
-        relatedObject.setSchemaUri("https://doi.org/");
+        relatedObject.setSchemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_);
         
         var relatedObjectType = new RelatedObjectType();
-        relatedObjectType.setId("https://vocabulary.raid.org/relatedObject.type.schema/258");
-        relatedObjectType.setSchemaUri("https://vocabulary.raid.org/relatedObject.type.schema/329");
+        relatedObjectType.setId(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_258);
+        relatedObjectType.setSchemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
         relatedObject.setType(relatedObjectType);
         
         var categories = new ArrayList<RelatedObjectCategory>();
         var category = new RelatedObjectCategory();
-        category.setId("https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/category/v1/input.json");
-        category.setSchemaUri("https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/category/v1");
+        category.setId(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190);
+        category.setSchemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386);
         categories.add(category);
         relatedObject.setCategory(categories);
         

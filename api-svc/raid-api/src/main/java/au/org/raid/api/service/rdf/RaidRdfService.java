@@ -102,7 +102,7 @@ public class RaidRdfService {
         
         // Add identifier properties
         raid.addProperty(hasIdentifier, raidDto.getIdentifier().getId());
-        raid.addProperty(hasSchemaUri, raidDto.getIdentifier().getSchemaUri());
+        raid.addProperty(hasSchemaUri, raidDto.getIdentifier().getSchemaUri().getValue());
         
         if (raidDto.getIdentifier().getVersion() != null) {
             raid.addProperty(hasVersion, String.valueOf(raidDto.getIdentifier().getVersion()));
@@ -120,7 +120,7 @@ public class RaidRdfService {
         if (raidDto.getIdentifier().getRegistrationAgency() != null) {
             RegistrationAgency regAgency = raidDto.getIdentifier().getRegistrationAgency();
             Resource regAgencyResource = model.createResource(regAgency.getId())
-                    .addProperty(hasSchemaUri, regAgency.getSchemaUri());
+                    .addProperty(hasSchemaUri, regAgency.getSchemaUri().getValue());
             raid.addProperty(hasRegistrationAgency, regAgencyResource);
         }
         
@@ -128,7 +128,7 @@ public class RaidRdfService {
         if (raidDto.getIdentifier().getOwner() != null) {
             Owner owner = raidDto.getIdentifier().getOwner();
             Resource ownerResource = model.createResource(owner.getId())
-                    .addProperty(hasSchemaUri, owner.getSchemaUri());
+                    .addProperty(hasSchemaUri, owner.getSchemaUri().getValue());
             
             if (owner.getServicePoint() != null) {
                 ownerResource.addProperty(hasServicePoint, String.valueOf(owner.getServicePoint()));
@@ -154,7 +154,7 @@ public class RaidRdfService {
                         .addProperty(DCTerms.title, title.getText());
                 
                 if (title.getType() != null) {
-                    titleResource.addProperty(DCTerms.type, title.getType().getId());
+                    titleResource.addProperty(DCTerms.type, title.getType().getId().getValue());
                 }
                 
                 if (title.getStartDate() != null) {
@@ -180,7 +180,7 @@ public class RaidRdfService {
                         .addProperty(DCTerms.description, description.getText());
                 
                 if (description.getType() != null) {
-                    descResource.addProperty(DCTerms.type, description.getType().getId());
+                    descResource.addProperty(DCTerms.type, description.getType().getId().getValue());
                 }
                 
                 if (description.getLanguage() != null) {
@@ -197,7 +197,7 @@ public class RaidRdfService {
             Resource accessResource = model.createResource();
             
             if (access.getType() != null) {
-                accessResource.addProperty(hasAccessType, access.getType().getId());
+                accessResource.addProperty(hasAccessType, access.getType().getId().getValue());
             }
             
             if (access.getStatement() != null) {
@@ -222,7 +222,7 @@ public class RaidRdfService {
         if (raidDto.getContributor() != null) {
             raidDto.getContributor().forEach(contributor -> {
                 Resource contributorResource = model.createResource(contributor.getId())
-                        .addProperty(hasSchemaUri, contributor.getSchemaUri());
+                        .addProperty(hasSchemaUri, contributor.getSchemaUri().getValue());
                 
                 // Add contributor status
                 Optional.ofNullable(contributor.getStatus())
@@ -254,8 +254,8 @@ public class RaidRdfService {
                 // Add positions
                 if (contributor.getPosition() != null) {
                     contributor.getPosition().forEach(position -> {
-                        Resource positionResource = model.createResource(position.getId())
-                                .addProperty(hasSchemaUri, position.getSchemaUri());
+                        Resource positionResource = model.createResource(position.getId().getValue())
+                                .addProperty(hasSchemaUri, position.getSchemaUri().getValue());
                         
                         if (position.getStartDate() != null) {
                             positionResource.addProperty(hasStartDate, position.getStartDate().toString());
@@ -272,8 +272,8 @@ public class RaidRdfService {
                 // Add roles
                 if (contributor.getRole() != null) {
                     contributor.getRole().forEach(role -> {
-                        Resource roleResource = model.createResource(role.getId())
-                                .addProperty(hasSchemaUri, role.getSchemaUri());
+                        Resource roleResource = model.createResource(role.getId().getValue())
+                                .addProperty(hasSchemaUri, role.getSchemaUri().getValue());
                         
                         contributorResource.addProperty(hasRole, roleResource);
                     });
@@ -287,13 +287,13 @@ public class RaidRdfService {
         if (raidDto.getOrganisation() != null) {
             raidDto.getOrganisation().forEach(organization -> {
                 Resource orgResource = model.createResource(organization.getId())
-                        .addProperty(hasSchemaUri, organization.getSchemaUri());
+                        .addProperty(hasSchemaUri, organization.getSchemaUri().getValue());
                 
                 // Add roles
                 if (organization.getRole() != null) {
                     organization.getRole().forEach(role -> {
-                        Resource roleResource = model.createResource(role.getId())
-                                .addProperty(hasSchemaUri, role.getSchemaUri());
+                        Resource roleResource = model.createResource(role.getId().getValue())
+                                .addProperty(hasSchemaUri, role.getSchemaUri().getValue());
                         
                         if (role.getStartDate() != null) {
                             roleResource.addProperty(hasStartDate, role.getStartDate().toString());
@@ -315,7 +315,7 @@ public class RaidRdfService {
         if (raidDto.getSubject() != null) {
             raidDto.getSubject().forEach(subject -> {
                 Resource subjectResource = model.createResource(subject.getId())
-                        .addProperty(hasSchemaUri, subject.getSchemaUri());
+                        .addProperty(hasSchemaUri, subject.getSchemaUri().getValue());
                 
                 // Add keywords
                 if (subject.getKeyword() != null) {
@@ -341,8 +341,8 @@ public class RaidRdfService {
                 Resource relatedRaidResource = model.createResource(relatedRaid.getId());
                 
                 if (relatedRaid.getType() != null) {
-                    relatedRaidResource.addProperty(hasRelationType, model.createResource(relatedRaid.getType().getId())
-                            .addProperty(hasSchemaUri, relatedRaid.getType().getSchemaUri()));
+                    relatedRaidResource.addProperty(hasRelationType, model.createResource(relatedRaid.getType().getId().getValue())
+                            .addProperty(hasSchemaUri, relatedRaid.getType().getSchemaUri().getValue()));
                 }
                 
                 raid.addProperty(hasRelatedRaid, relatedRaidResource);
@@ -353,18 +353,18 @@ public class RaidRdfService {
         if (raidDto.getRelatedObject() != null) {
             raidDto.getRelatedObject().forEach(relatedObject -> {
                 Resource relatedObjectResource = model.createResource(relatedObject.getId())
-                        .addProperty(hasSchemaUri, relatedObject.getSchemaUri());
-                
+                        .addProperty(hasSchemaUri, relatedObject.getSchemaUri().getValue());
+
                 if (relatedObject.getType() != null) {
-                    relatedObjectResource.addProperty(DCTerms.type, model.createResource(relatedObject.getType().getId())
-                            .addProperty(hasSchemaUri, relatedObject.getType().getSchemaUri()));
+                    relatedObjectResource.addProperty(DCTerms.type, model.createResource(relatedObject.getType().getId().getValue())
+                            .addProperty(hasSchemaUri, relatedObject.getType().getSchemaUri().getValue()));
                 }
                 
                 // Add categories
                 if (relatedObject.getCategory() != null) {
                     relatedObject.getCategory().forEach(category -> {
-                        relatedObjectResource.addProperty(hasCategory, model.createResource(category.getId())
-                                .addProperty(hasSchemaUri, category.getSchemaUri()));
+                        relatedObjectResource.addProperty(hasCategory, model.createResource(category.getId().getValue())
+                                .addProperty(hasSchemaUri, category.getSchemaUri().getValue()));
                     });
                 }
                 
@@ -400,7 +400,7 @@ public class RaidRdfService {
         if (raidDto.getSpatialCoverage() != null) {
             raidDto.getSpatialCoverage().forEach(spatialCoverage -> {
                 Resource spatialResource = model.createResource(spatialCoverage.getId())
-                        .addProperty(hasSchemaUri, spatialCoverage.getSchemaUri());
+                        .addProperty(hasSchemaUri, spatialCoverage.getSchemaUri().getValue());
                 
                 // Add places
                 if (spatialCoverage.getPlace() != null) {

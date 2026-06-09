@@ -22,8 +22,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
+    private final RaidTurtleConverter raidTurtleConverter;
+    private final RaidNTriplesConverter raidNTriplesConverter;
+    private final RaidRdfXmlConverter raidRdfXmlConverter;
+
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(raidTurtleConverter);
+        converters.add(raidNTriplesConverter);
+        converters.add(raidRdfXmlConverter);
+
         for (HttpMessageConverter<?> converter : converters) {
             if (converter instanceof MappingJackson2HttpMessageConverter) {
                 MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;

@@ -1,11 +1,14 @@
 package au.org.raid.api.converter;
 
 import au.org.raid.api.service.rdf.RaidRdfService;
+import au.org.raid.idl.raidv2.model.Date;
 import au.org.raid.idl.raidv2.model.Id;
 import au.org.raid.idl.raidv2.model.RaidDto;
+import au.org.raid.idl.raidv2.model.RaidIdentifierSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
-import au.org.raid.idl.raidv2.model.Date;
+import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
+import au.org.raid.idl.raidv2.model.TitleTypeSchemaURIEnum;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,15 +108,15 @@ class RaidJsonLdConverterTest {
         // Set identifier
         Id id = new Id();
         id.setId("https://raid.org/10.25.1/abc123");
-        id.setSchemaUri("https://raid.org");
+        id.setSchemaUri(RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_);
         raidDto.setIdentifier(id);
         
         // Set title
         Title title = new Title();
         title.setText("Sample RAID Title");
         TitleType titleType = new TitleType();
-        titleType.setId("https://vocabulary.raid.org/title.type.schema/5");
-        titleType.setSchemaUri("https://vocabulary.raid.org/title.type.schema/376");
+        titleType.setId(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5);
+        titleType.setSchemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
         title.setType(titleType);
         raidDto.title(java.util.List.of(title));
         

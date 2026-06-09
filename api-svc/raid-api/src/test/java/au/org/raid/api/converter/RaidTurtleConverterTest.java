@@ -4,9 +4,13 @@ import au.org.raid.api.service.rdf.RaidRdfService;
 import au.org.raid.idl.raidv2.model.Id;
 import au.org.raid.idl.raidv2.model.Owner;
 import au.org.raid.idl.raidv2.model.RaidDto;
+import au.org.raid.idl.raidv2.model.RaidIdentifierSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.RegistrationAgency;
+import au.org.raid.idl.raidv2.model.RegistrationAgencySchemaURIEnum;
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
+import au.org.raid.idl.raidv2.model.TitleTypeSchemaURIEnum;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +23,7 @@ import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.mock.http.MockHttpOutputMessage;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,36 +34,36 @@ import static org.mockito.Mockito.when;
 class RaidTurtleConverterTest {
     @Mock
     private RaidRdfService raidRdfService;
-    
+
     @InjectMocks
     private RaidTurtleConverter converter;
-    
+
     @Test
     @DisplayName("Should return true for canWrite when media type is text/turtle and class is RaidDto")
     void canWriteReturnsTrueWhenMediaTypeIsTurtleAndClassIsRaidDto() {
         // Given
         var mediaType = new MediaType("text", "turtle");
-        
+
         // When
         var result = converter.canWrite(RaidDto.class, mediaType);
-        
+
         // Then
         assertThat(result).isTrue();
     }
-    
+
     @Test
     @DisplayName("Should return false for canWrite when media type is not text/turtle")
     void canWriteReturnsFalseWhenMediaTypeIsNotTurtle() {
         // Given
         var mediaType = new MediaType("application", "json");
-        
+
         // When
         var result = converter.canWrite(RaidDto.class, mediaType);
-        
+
         // Then
         assertThat(result).isFalse();
     }
-    
+
     @Test
     @DisplayName("Should write RaidDto as Turtle")
     void writeRaidDtoAsTurtle() throws Exception {
@@ -68,61 +73,61 @@ class RaidTurtleConverterTest {
         Model model = ModelFactory.createDefaultModel();
         model.createResource("https://raid.org/123.456/abc")
             .addProperty(model.createProperty("http://example.org/property"), "test");
-        
+
         when(raidRdfService.toRdfModel(any(RaidDto.class))).thenReturn(model);
-        
+
         // When
         converter.write(raidDto, MediaType.parseMediaType("text/turtle"), outputMessage);
-        
+
         // Then
         var content = ((MockHttpOutputMessage) outputMessage).getBodyAsString();
         assertThat(content).isNotEmpty();
         assertThat(content).contains("https://raid.org/123.456/abc");
     }
-    
+
     private RaidDto createSampleRaidDto() {
         var raidDto = new RaidDto();
-        
+
         // Set identifier
         var id = new Id();
         id.setId("https://raid.org/123.456/abc");
-        id.setSchemaUri("https://raid.org");
-        
+        id.setSchemaUri(RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_);
+
         var registrationAgency = new RegistrationAgency();
         registrationAgency.setId("https://ror.org/02stey378");
-        registrationAgency.setSchemaUri("https://ror.org");
+        registrationAgency.setSchemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
         id.setRegistrationAgency(registrationAgency);
-        
+
         var owner = new Owner();
         owner.setId("https://ror.org/02stey378");
-        owner.setSchemaUri("https://ror.org");
-        owner.setServicePoint(20000003L);
+        owner.setSchemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_);
+        owner.setServicePoint(BigDecimal.valueOf(20000003L));
         id.setOwner(owner);
-        
+
         id.setLicense("Creative Commons CC-0");
         id.setVersion(1);
-        
+
         raidDto.setIdentifier(id);
-        
+
         // Set date
         var date = new au.org.raid.idl.raidv2.model.Date();
         date.setStartDate("2023-01-01");
         date.setEndDate("2023-12-31");
         raidDto.setDate(date);
-        
+
         // Set title
         var titles = new ArrayList<Title>();
         var title = new Title();
         title.setText("Sample RAID");
-        
+
         var titleType = new TitleType();
-        titleType.setId("https://vocabulary.raid.org/title.type.schema/5");
-        titleType.setSchemaUri("https://vocabulary.raid.org/title.type.schema/376");
+        titleType.setId(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5);
+        titleType.setSchemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
         title.setType(titleType);
-        
+
         titles.add(title);
         raidDto.setTitle(titles);
-        
+
         return raidDto;
     }
 }

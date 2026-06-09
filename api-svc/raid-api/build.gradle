@@ -83,6 +83,9 @@ dependencies{
   implementation libs.jakarta.json
   implementation libs.commons.lang3
 
+  implementation 'org.apache.jena:jena-core:4.8.0'
+  implementation 'org.apache.jena:jena-arq:4.8.0'
+
   implementation libs.jakarta.xml.bind.api
   implementation libs.jaxb.runtime
 

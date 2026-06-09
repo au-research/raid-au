@@ -4,6 +4,7 @@ import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.raid.RaidService;
 import au.org.raid.idl.raidv2.model.RaidDto;
 import au.org.raid.idl.raidv2.model.Title;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Disabled("Requires full application context with database - use ContentNegotiationIntegrationTest in intTest source set instead")
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
