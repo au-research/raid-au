@@ -17,7 +17,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource/figtree": "^5.1.1",
-"@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.4.4",
     "dayjs": "^1.11.21",
