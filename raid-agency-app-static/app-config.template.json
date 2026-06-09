@@ -1,0 +1,54 @@
+{
+  "_comment": "Copy this file to public/app-config.json and fill in your values. Secrets (IAM_CLIENT_SECRET, RAID_DUMPER_CLIENT_SECRET) must be set as environment variables — never put them here.",
+
+  "apiEndpoint": "https://app.your-env.raid.org.au",
+  "iamEndpoint": "https://iam.your-env.raid.org.au",
+  "iamClientId": "your-iam-client-id",
+  "raidDumperClientId": "your-dumper-client-id",
+  "raidEnv": "prod",
+  "siteUrl": "https://static.your-env.raid.org.au",
+  "raidUrl": "https://raid.org/",
+
+  "analytics": {
+    "gaMeasurementId": "G-XXXXXXXXXX",
+    "gaMeasurementIdDemo": "G-YYYYYYYYYY"
+  },
+
+  "caching": {
+    "enabled": true,
+    "ttlMs": 432000000
+  },
+
+  "header": {
+    "topBar": {
+      "show": false,
+      "label": "Your Agency",
+      "href": "https://your-agency.example.org",
+      "height": "55px"
+    }
+  },
+
+  "footer": {
+    "show": false,
+    "main": {
+      "logos": [
+        {
+          "src": "/your-logo.svg",
+          "alt": "Your Agency Logo",
+          "height": 80,
+          "link": "https://your-agency.example.org"
+        }
+      ],
+      "text": [
+        "Your agency description here."
+      ]
+    },
+    "links": [
+      { "label": "Contact", "path": "mailto:contact@your-agency.example.org" },
+      { "label": "Privacy policy", "path": "https://your-agency.example.org/privacy" }
+    ],
+    "copyright": "Your copyright statement here.",
+    "showSocialLinks": false,
+    "socialLinks": []
+  }
+}

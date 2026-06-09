@@ -8,15 +8,26 @@ import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const embargoedRaids = JSON.parse(
   readFileSync(resolve(__dirname, "src/raw-data/embargoed-raids.json"), "utf-8")
 );
-const embargoedHandles = new Set(embargoedRaids.map((r) => r.handle));
+const embargoedHandles = new Set(embargoedRaids.map((/** @type {{ handle: string }} */ r) => r.handle));
+
+// Read siteUrl from app-config.json; fall back to prod default if absent.
+let siteUrl = "https://static.prod.raid.org.au";
+try {
+  const appConfig = JSON.parse(
+    readFileSync(resolve(__dirname, "public/app-config.json"), "utf-8")
+  );
+  if (appConfig.siteUrl) siteUrl = appConfig.siteUrl;
+} catch {
+  // file absent — use default
+}
 
 // https://astro.build/config
-// todo: replace `prod` with actual value per environment
 export default defineConfig({
-  site: `https://static.prod.raid.org.au`,
+  site: siteUrl,
   integrations: [
     sitemap({
       filter: (page) => {

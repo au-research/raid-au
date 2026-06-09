@@ -1,4 +1,19 @@
 {
+  "apiEndpoint": "https://app.demo.raid.org.au",
+  "iamEndpoint": "https://iam.demo.raid.org.au",
+  "iamClientId": "static-page-client",
+  "raidDumperClientId": "raid-access-handler",
+  "raidEnv": "demo",
+  "siteUrl": "https://static.demo.raid.org.au",
+  "raidUrl": "https://raid.org/",
+  "analytics": {
+    "gaMeasurementId": "G-W9D3GE8Z32",
+    "gaMeasurementIdDemo": "G-4Y9QZVVJ4W"
+  },
+  "caching": {
+    "enabled": true,
+    "ttlMs": 432000000
+  },
   "header": {
     "topBar": {
       "show": true,

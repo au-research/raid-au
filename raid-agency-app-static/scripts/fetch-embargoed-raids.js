@@ -18,33 +18,15 @@
  */
 
 import fs from 'fs/promises';
-import path, { dirname } from 'path';
+import path from 'path';
 import https from 'https';
 import http from 'http';
-import { config as dotenvConfig } from 'dotenv';
-import { fileURLToPath } from 'url';
 import { fetchRorDetails } from './fetch-ror.js';
 import { fetchAllServicePoints } from './fetch-sp.js';
+import { loadAppConfig } from './loadAppConfig.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-dotenvConfig({ path: path.resolve(__dirname, '../.env') });
-
-const config = {
-  iamEndpoint: process.env.IAM_ENDPOINT,
-  apiEndpoint: process.env.API_ENDPOINT,
-  raidDumperClientId: process.env.RAID_DUMPER_CLIENT_ID,
-  raidDumperClientSecret: process.env.RAID_DUMPER_CLIENT_SECRET,
-  dataDir: process.env.DATA_DIR || './src/raw-data',
-  requestTimeout: parseInt(process.env.REQUEST_TIMEOUT) || 30000,
-  maxRetries: parseInt(process.env.MAX_RETRIES) || 3,
-  enableCaching: process.env.ENABLE_CACHING === 'true',
-  verboseLogging: process.env.VERBOSE_LOGGING === 'true',
-  concurrentRorRequests: parseInt(process.env.CONCURRENT_ROR_REQUESTS) || 5,
-  rorRequestDelay: parseInt(process.env.ROR_REQUEST_DELAY) || 100,
-  doiRequestDelay: parseInt(process.env.DOI_REQUEST_DELAY) || 100,
-};
+// Load config from public/app-config.json (falls back to env vars)
+const config = loadAppConfig();
 
 function makeRequest(url, options = {}) {
   return new Promise((resolve, reject) => {
@@ -108,10 +90,11 @@ async function getDumperToken() {
 }
 
 async function main() {
-  const required = ['IAM_ENDPOINT', 'API_ENDPOINT', 'RAID_DUMPER_CLIENT_ID'];
-  const missing = required.filter((k) => !process.env[k]);
+  const requiredFields = { iamEndpoint: config.iamEndpoint, apiEndpoint: config.apiEndpoint, raidDumperClientId: config.raidDumperClientId };
+  const missing = Object.entries(requiredFields).filter(([, v]) => !v).map(([k]) => k);
   if (missing.length > 0) {
-    console.error('Missing required env vars:', missing.join(', '));
+    console.error('Missing required config values:', missing.join(', '));
+    console.error('Set them in public/app-config.json or as environment variables.');
     process.exit(1);
   }
 
