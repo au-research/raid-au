@@ -19,6 +19,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import https from 'https';
 import http from 'http';
 import { fetchRorDetails } from './fetch-ror.js';
@@ -112,7 +113,7 @@ async function main() {
   console.log(`Saved ${summaries.length} embargoed RAiD(s) to ${outputFile}`);
 }
 
-if (process.argv[1] === __filename) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch((err) => {
     console.error('Error:', err.message);
     process.exit(1);
