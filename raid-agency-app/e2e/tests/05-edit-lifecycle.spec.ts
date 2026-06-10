@@ -27,6 +27,7 @@ import {
   waitForSnackbar,
   extractPrefixSuffixFromUrl,
 } from "../utils/wait-helpers";
+import { validEmbargoExpiry } from "../utils/date-helpers";
 
 // Unique timestamps so each test run creates distinct records
 const RUN_ID = Date.now();
@@ -44,7 +45,7 @@ const ADDED_DESCRIPTION =
 // Required access fields — Embargoed so the statement text field is visible
 const EMBARGOED_LABEL = "Embargoed Access";
 const ACCESS_STATEMENT = "Embargoed for e2e edit lifecycle testing";
-const EMBARGO_EXPIRY = "2030-01-01";
+const EMBARGO_EXPIRY = validEmbargoExpiry();
 
 // Contributor ORCID accepted by the local mock server
 const TEST_ORCID = "https://sandbox.orcid.org/0009-0002-5128-5184";

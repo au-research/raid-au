@@ -21,6 +21,7 @@ import { DateSection } from "../page-objects/sections/DateSection";
 import { AccessSection } from "../page-objects/sections/AccessSection";
 import { ContributorSection } from "../page-objects/sections/ContributorSection";
 import { waitForSnackbar, extractPrefixSuffixFromUrl } from "../utils/wait-helpers";
+import { validEmbargoExpiry } from "../utils/date-helpers";
 
 // A unique title text used to identify the created RAiD across both tests.
 // The timestamp ensures each test run creates a distinct record.
@@ -31,8 +32,8 @@ const START_DATE = "2024-01-15";
 // Known valid mock ORCID IDs: 0009-0002-5128-5184, 0009-0005-9091-4416
 // See api-svc/raid-api/docker-compose/mockserver/expectations.json
 const TEST_ORCID = "https://sandbox.orcid.org/0009-0002-5128-5184";
-// Embargo expiry must be a future date in YYYY-MM-DD format
-const EMBARGO_EXPIRY = "2030-01-01";
+// Embargo expiry must be a future date within 18 months of today
+const EMBARGO_EXPIRY = validEmbargoExpiry();
 const ACCESS_STATEMENT = "Embargoed for e2e testing";
 // Display label for Embargoed Access in the MUI select dropdown
 const EMBARGOED_LABEL = "Embargoed Access";
