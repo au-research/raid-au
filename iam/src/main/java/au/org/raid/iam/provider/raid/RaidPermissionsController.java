@@ -187,6 +187,10 @@ public class RaidPermissionsController {
         if (client.getRolesStream().anyMatch(role -> role.getName().equals("raid-permissions-admin"))) {
             final var user = session.users().getUserById(session.getContext().getRealm(), request.getUserId());
 
+            if (user == null) {
+                throw new UserNotFoundException(request.getUserId());
+            }
+
             final var adminRaids = user.getAttributeStream(ADMIN_RAIDS_ATTRIBUTE).collect(Collectors.toSet());
 
             adminRaids.add(request.getHandle());
