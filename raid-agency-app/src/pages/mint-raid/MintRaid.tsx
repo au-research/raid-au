@@ -2,7 +2,7 @@ import {useErrorDialog} from "@/components/error-dialog";
 import {RaidForm} from "@/components/raid-form";
 import {RaidFormErrorMessage} from "@/components/raid-form-error-message";
 import {RaidDto} from "@/generated/raid";
-import {newRaid, raidRequest} from "@/utils/data-utils";
+import {newRaid, raidCreateRequest} from "@/utils/data-utils";
 import {Container, Stack} from "@mui/material";
 
 import {useMutation} from "@tanstack/react-query";
@@ -30,7 +30,7 @@ export const MintRaid = () => {
   });
 
   const handleSubmit = async (data: RaidDto) => {
-    mintMutation.mutate(raidRequest(data));
+    mintMutation.mutate(raidCreateRequest(data));
   };
 
   return (
