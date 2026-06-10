@@ -28,7 +28,7 @@ create table api_svc.raid_archive (
     url_index           integer,
     primary_title       varchar(256),
     confidential        boolean,
-    metadata_schema     metaschema not null,
+    metadata_schema     api_svc.metaschema not null,
     metadata            jsonb,
     start_date          date,
     date_created        timestamp without time zone not null,
