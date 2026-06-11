@@ -1,0 +1,75 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://doi.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "DOI"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://hdl.handle.net/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "Handle"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://web.archive.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "Internet Archive"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://arks.org/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "ARK"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://scicrunch.org/resolver/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "RRID"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://www.isbn-international.org/"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "ISBN"
+        }
+      }
+    ]
+  }
+}

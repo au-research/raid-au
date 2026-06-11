@@ -13,7 +13,10 @@ import au.org.raid.db.jooq.tables.records.DescriptionTypeSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidDescriptionRecord;
 import au.org.raid.idl.raidv2.model.Description;
 import au.org.raid.idl.raidv2.model.DescriptionType;
+import au.org.raid.idl.raidv2.model.DescriptionTypeIdEnum;
+import au.org.raid.idl.raidv2.model.DescriptionTypeSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,21 +50,21 @@ class DescriptionServiceTest {
     void create() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3.getValue();
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320.getValue();
         final var descriptionTypeSchemaId = 123;
         final var descriptionTypeId = 234;
         final var languageId = 345;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var type = new DescriptionType()
-                .id(descriptionTypeUri)
-                .schemaUri(descriptionTypeSchemaUri);
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(languageCode)
-                .schemaUri(languageSchemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .text(text)
@@ -115,18 +118,18 @@ class DescriptionServiceTest {
     void createThrowsDescriptionTypeSchemaNotFoundException() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3.getValue();
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320.getValue();
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var type = new DescriptionType()
-                .id(descriptionTypeUri)
-                .schemaUri(descriptionTypeSchemaUri);
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(languageCode)
-                .schemaUri(languageSchemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .text(text)
@@ -150,19 +153,19 @@ class DescriptionServiceTest {
     void createThrowsDescriptionTypeNotFoundException() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3.getValue();
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320.getValue();
         final var descriptionTypeSchemaId = 123;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var type = new DescriptionType()
-                .id(descriptionTypeUri)
-                .schemaUri(descriptionTypeSchemaUri);
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(languageCode)
-                .schemaUri(languageSchemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .text(text)
@@ -289,21 +292,21 @@ class DescriptionServiceTest {
     void update() {
         final var handle = "_handle";
         final var text = "_text";
-        final var descriptionTypeUri = "description-type-id";
-        final var descriptionTypeSchemaUri = "description-type-schema-uri";
+        final var descriptionTypeUri = DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3.getValue();
+        final var descriptionTypeSchemaUri = DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320.getValue();
         final var descriptionTypeSchemaId = 123;
         final var descriptionTypeId = 234;
         final var languageId = 345;
         final var languageCode = "language-code";
-        final var languageSchemaUri = "language-schema-uri";
+        final var languageSchemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var type = new DescriptionType()
-                .id(descriptionTypeUri)
-                .schemaUri(descriptionTypeSchemaUri);
+                .id(DescriptionTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_3)
+                .schemaUri(DescriptionTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_DESCRIPTION_TYPE_SCHEMA_320);
 
         final var language = new Language()
                 .id(languageCode)
-                .schemaUri(languageSchemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var description = new Description()
                 .text(text)

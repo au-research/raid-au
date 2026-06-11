@@ -13,6 +13,8 @@ import au.org.raid.db.jooq.tables.records.TitleTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.Language;
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
+import au.org.raid.idl.raidv2.model.TitleTypeSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -131,17 +133,17 @@ class TitleServiceTest {
     @DisplayName("create() saves titles for raid")
     void create() {
         final var handle = "_handle";
-        final var uri = "_uri";
+        final var uri = TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156.getValue();
         final var id = 456;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue();
         final var schemaId = 123;
         final var languageId = 234;
 
         final var language = new Language();
 
         final var type = new TitleType()
-                .schemaUri(schemaUri)
-                .id(uri);
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376)
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156);
 
         final var title = new Title()
                 .type(type)
@@ -169,14 +171,14 @@ class TitleServiceTest {
     @DisplayName("create() throws TitleTypeSchemaNotFoundException")
     void createThrowsTitleTypeSchemaNotFoundException() {
         final var handle = "_handle";
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156.getValue();
+        final var schemaUri = TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue();
 
         final var language = new Language();
 
         final var type = new TitleType()
-                .schemaUri(schemaUri)
-                .id(uri);
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376)
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156);
 
         final var title = new Title()
                 .type(type)
@@ -196,15 +198,15 @@ class TitleServiceTest {
     @DisplayName("create() throws TitleTypeNotFoundException")
     void createThrowsTitleTypeNotFoundException() {
         final var handle = "_handle";
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156.getValue();
+        final var schemaUri = TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue();
         final var schemaId = 123;
 
         final var language = new Language();
 
         final var type = new TitleType()
-                .schemaUri(schemaUri)
-                .id(uri);
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376)
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156);
 
         final var title = new Title()
                 .type(type)
@@ -227,17 +229,17 @@ class TitleServiceTest {
     @DisplayName("update() deletes and re-inserts raid titles")
     void update() {
         final var handle = "_handle";
-        final var uri = "_uri";
+        final var uri = TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156.getValue();
         final var id = 456;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue();
         final var schemaId = 123;
         final var languageId = 234;
 
         final var language = new Language();
 
         final var type = new TitleType()
-                .schemaUri(schemaUri)
-                .id(uri);
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376)
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_156);
 
         final var title = new Title()
                 .type(type)

@@ -1,6 +1,7 @@
 package au.org.raid.api.factory.record;
 
 import au.org.raid.idl.raidv2.model.Organisation;
+import au.org.raid.idl.raidv2.model.OrganizationSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +17,10 @@ class OrganisationRecordFactoryTest {
     void setsAllFieldsFromOrganisationAndSchemaId() {
         final var pid = "organisation-pid";
         final var schemaId = 123;
-        final var schemaUri = "organisation-schema-uri";
 
         final var organisation = new Organisation()
                 .id(pid)
-                .schemaUri(schemaUri);
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_);
 
         final var result = organisationRecordFactory.create(organisation, schemaId);
 

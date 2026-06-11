@@ -1,0 +1,658 @@
+openapi: 3.1.0
+
+servers:
+  - url: 'https://api.prod.raid.org.au'
+    description: The production service - "PROD".
+  - url: 'https://api.demo.raid.org.au'
+    description: >
+      DEMO environment, used for client integration testing and 
+      customer demonstrations.
+  - url: 'https://api.test.raid.org.au'
+    description: >
+      dev environment, used for developer integration testing.
+  - url: 'http://localhost:8080'
+    description: Local development.
+    
+info:
+  title: RAID v2 API
+  version: 2.0.0
+  description: >
+    This file is where all the endpoint paths are defined, it's the "top level'
+    of the OpenAPI definition that links all the different files together.
+    The `3.0` in the filename refers to this file being based on OpenAPI 3.0 
+    as opposed to OpenAPI 3.1, which the tooling doesn't support yet.
+    The `2.0.0` in the version field refers to the fact that there's already 
+    a `1.0.0` used for the legacy RAiD application.
+    Note that swagger ui doesn't currently work with our spec, 
+    see https://github.com/swagger-api/swagger-ui/issues/7724
+    But the spec works fine with openapi-generator tooling.
+
+  contact:
+    name: ARDC RAiD team
+    email: contact@raid.org
+  termsOfService: https://github.com/au-research/raido/blob/main/doc/service-level-guide.md
+tags:
+  - name: public-experimental
+    description: The APIs are not stable, they may change at any time.  
+      Can be called without auth.
+  - name: public-stable
+    description: >
+      The APIs are stable and will be supported in to the future,
+      as per the service-level-guide.  
+      Can be called without auth.
+  - name: basic-raid-experimental
+    description: The APIs are not stable, they may change at any time.
+      These endpoints are intended to be called by the Raido UI.
+      Must be called with auth.
+  - name: basic-raid-stable
+    description: Stable APIs.
+security:
+  - bearerAuth: []
+
+paths:
+
+  # region raid endpoints
+  /raid/:
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: mintRaid
+      summary: Mint a raid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RaidCreateRequest'
+      responses:
+        201:
+          description: The Raid was successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaidDto'
+
+        400:
+          description: There was a problem with the message sent to the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailureResponse'
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: findAllRaids
+      summary: List raids
+      parameters:
+        - name: includeFields
+          description: The top level fields to include in each RAiD in the response body. Excludes all other fields.
+          example: [identifier,title,date]
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: contributor.id
+          description: Only show RAiDs that include a contributor with the given id
+          example: https://orcid.org/0009-0006-4129-5257
+          in: query
+          schema:
+            type: string
+        - name: organisation.id
+          description: Only show RAiDs that include an organisation with the given id
+          example: https://ror.org/038sjwq14
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RaidDto'
+
+  /raid/{prefix}/{suffix}:
+    parameters:
+      - name: prefix
+        in: path
+        required: true
+        description: Prefix of the raid handle
+        schema:
+          type: string
+      - name: suffix
+        in: path
+        required: true
+        description: Suffix of the raid handle
+        schema:
+          type: string
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: findRaidByName
+      summary: Read a raid
+      responses:
+        200:
+          description: data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaidDto'
+
+            text/turtle:
+              schema:
+                type: string
+            application/n-triples:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: object
+        403:
+          description: Closed or Embargoed raids return a 403 response with an access statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosedRaid'
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: updateRaid
+      summary: Update a raid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RaidUpdateRequest'
+      responses:
+        200:
+          description: The Raid was successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaidDto'
+
+        400:
+          description: Bad request. There was a problem with the message sent to the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailureResponse'
+    patch:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: patchRaid
+      summary: Patch a raid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RaidPatchRequest'
+      responses:
+        200:
+          description: The Raid was successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaidDto'
+        400:
+          description: Bad request. There was a problem with the message sent to the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailureResponse'
+  /raid/{prefix}/{suffix}/{version}:
+    parameters:
+      - name: prefix
+        in: path
+        required: true
+        description: Prefix of the raid handle
+        schema:
+          type: string
+      - name: suffix
+        in: path
+        required: true
+        description: Suffix of the raid handle
+        schema:
+          type: string
+      - name: version
+        in: path
+        required: true
+        description: The version of the raid
+        schema:
+          type: integer
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: findRaidByNameAndVersion
+      summary: Read a raid with a specified version
+      responses:
+        200:
+          description: data
+          content:
+            application/json:
+              schema:
+                type: #/components/schemas/RaidDto
+        403:
+          description: Closed or Embargoed raids return a 403 response with an access statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosedRaid'
+  /raid/{prefix}/{suffix}/history:
+    parameters:
+      - name: prefix
+        in: path
+        required: true
+        description: Prefix of the raid handle
+        schema:
+          type: string
+      - name: suffix
+        in: path
+        required: true
+        description: Suffix of the raid handle
+        schema:
+          type: string
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: raid-history
+      summary: A list of base64 encoded changes to the raid in JSON Patch (RFC 6902) format.
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RaidChange'
+        403:
+          description: Closed or Embargoed raids return a 403 response with an access statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosedRaid'
+
+  /raid/count:
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: countRaids
+      summary: Count RAiDs with optional filtering
+      description: >
+        Returns the total number of RAiDs, optionally filtered by service point
+        and/or date range. Includes a breakdown by owner organisation and service
+        point. Requires operator or service-point-user role.
+      parameters:
+        - name: servicePointId
+          in: query
+          required: false
+          description: Filter by service point ID
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          required: false
+          description: Filter RAiDs created on or after this date (inclusive, ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          description: Filter RAiDs created on or before this date (inclusive, ISO 8601)
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaidCountResponse'
+
+  /raid/all-public:
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - raid
+      operationId: findAllPublicRaids
+      summary: List raids
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RaidDto'
+
+
+  /service-point/:
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - service-point
+      operationId: createServicePoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicePointCreateRequest'
+      responses:
+        201:
+          description: The service point was successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePoint'
+        400:
+          description: There was a problem with the message sent to the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailureResponse'
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - service-point
+      operationId: findAllServicePoints
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServicePoint'
+  /service-point/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the service point
+        schema:
+          type: integer
+          format: int64
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - service-point
+      operationId: findServicePointById
+      responses:
+        200:
+          description: data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePoint'
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - service-point
+      operationId: updateServicePoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicePointUpdateRequest'
+      responses:
+        200:
+          description: The service point was successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePoint'
+        400:
+          description: Bad request. There was a problem with the message sent to the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationFailureResponse'
+
+  # endregion
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ClosedRaid:
+      additionalProperties: false
+      description: ""
+      properties:
+        access:
+          anyOf:
+          - $ref: "#/components/schemas/Access"
+          - type: "null"
+        id:
+          type: string
+      required:
+      - id
+      title: ClosedRaid
+      type: object
+    RaidChange:
+      type: object
+      properties:
+        handle:
+          type: string
+          example: "10.25.1.1/abcde"
+        version:
+          type: integer        
+        diff:
+          type: string
+          description: A base64 encoded json patch (RFC 6902) representation of a change to the raid.
+        timestamp:
+          type: string
+          format: date-time
+          description: A timestamp of the change
+    ServicePointCreateRequest:
+      type: object
+      required:
+        - name
+        - identifierOwner
+        - groupId
+      properties:
+        name:
+          type: string
+          description: The name of the service point
+          example: Australian Research Data Commons
+        adminEmail:
+          type: string
+          description: The email address of the person responsible for administering the service point.
+        techEmail:
+          type: string
+          description: The email address of a technical contact when using the API
+        identifierOwner:
+          type: string
+          description: The PID of the institution that will own the RAiDs (currently only RORs are supported).
+          example: https://ror.org/038sjwq14
+        repositoryId:
+          type: string
+          description: The Datacite repository id. This needs to be created in Fabrica.
+          example: VBGR.QJYTRX
+        groupId:
+          type: string
+          description: The Keycloak group id (UUID) associated with the service point.
+          example: ba0b01a6-726f-464f-b501-454a10096826
+        prefix:
+          type: string
+          description: The prefix used in the handle when minting RAiDs. Assigned when the repository is created.
+          example: "10.82481"
+        password:
+          type: string
+          description: The password of the repository in Datacite.
+        appWritesEnabled:
+          type: boolean
+          description: Whether users are able to edit RAiDs in the in the app. This can cause conflicts when also creating/updating RAiDs through the API.
+        enabled:
+          type: boolean
+          description: Whether the service point is able to create or update RAiDs
+    ServicePointUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/ServicePointCreateRequest'
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The name of the service point
+          example: 1232323
+    ServicePoint:
+      description: The response for all service point requests
+      type: object
+      required: [ id, name, identifierOwner, adminEmail, techEmail, enabled ]
+      properties:
+        id: { $ref: '#/components/schemas/SurrogateKey' }
+        name: { type: string }
+        identifierOwner: { type: string }
+        repositoryId:
+          type: string
+          description: The Datacite repository id. This needs to be created in Fabrica.
+          example: VBGR.QJYTRX
+        prefix:
+          type: string
+          description: The prefix used in the handle when minting RAiDs. Assigned when the repository is created.
+          example: "10.82481"
+        groupId:
+          type: string
+          description: The Keycloak group id (UUID) associated with the service point.
+          example: ba0b01a6-726f-464f-b501-454a10096826
+        searchContent: { type: string }
+        techEmail: { type: string }
+        adminEmail: { type: string }
+        enabled: { type: boolean }
+        appWritesEnabled: { type: boolean }
+    SurrogateKey:
+      type: integer
+      format: int64
+    ValidationFailure:
+      type: object
+      required: [ fieldId, errorType, message ]
+      properties:
+        fieldId: { type: string }
+        errorType: { type: string }
+        message: { type: string }
+    FailureResponse:
+      type: object
+      required: [ type, title, status, detail, instance ]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+    ValidationFailureResponse:
+      allOf:
+        - $ref: '#/components/schemas/FailureResponse'
+      required:
+        - failures
+      properties:
+        failures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationFailure'
+    RaidCountResponse:
+      type: object
+      required: [ count ]
+      properties:
+        count:
+          type: integer
+          format: int64
+          description: Total number of RAiDs matching the filters
+        servicePointId:
+          type: integer
+          format: int64
+          description: The service point ID filter applied (if any)
+        servicePointName:
+          type: string
+          description: The name of the filtered service point (if any)
+        startDate:
+          type: string
+          format: date
+          description: The start date filter applied (if any)
+        endDate:
+          type: string
+          format: date
+          description: The end date filter applied (if any)
+        organisations:
+          type: array
+          description: Breakdown of RAiD counts by owner organisation
+          items:
+            $ref: '#/components/schemas/OrganisationCount'
+    OrganisationCount:
+      type: object
+      required: [ id, count ]
+      properties:
+        id:
+          type: string
+          description: The ROR identifier of the organisation
+          example: https://ror.org/038sjwq14
+        name:
+          type: string
+          description: The name of the organisation (resolved from ROR API)
+          example: Australian Research Data Commons
+        count:
+          type: integer
+          format: int64
+          description: Number of RAiDs owned by this organisation
+        servicePoints:
+          type: array
+          description: Breakdown of RAiD counts by service point within this organisation
+          items:
+            $ref: '#/components/schemas/ServicePointCount'
+    ServicePointCount:
+      type: object
+      required: [ id, count ]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The service point ID
+        name:
+          type: string
+          description: The name of the service point
+        count:
+          type: integer
+          format: int64
+          description: Number of RAiDs at this service point for the parent organisation

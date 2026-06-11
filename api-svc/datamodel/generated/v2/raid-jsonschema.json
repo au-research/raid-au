@@ -1,0 +1,1422 @@
+{
+    "$defs": {
+        "AbstractRaidDynamicEnum": {
+            "description": "This dynamic enumeration is part of the Research Activity Identifier (RAiD) controlled lists available at https://vocabulary.raid.org/.",
+            "title": "AbstractRaidDynamicEnum",
+            "type": "string"
+        },
+        "Access": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing RAiD access information",
+            "properties": {
+                "embargoExpiry": {
+                    "description": "the date any embargo on access to the RAiD metadata ends",
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statement": {
+                    "$ref": "#/$defs/AccessStatement",
+                    "description": "a metadata schema block containing an explanation for any access type that is not \u2018open\u2019, with the explanation\u2019s associated properties"
+                },
+                "type": {
+                    "$ref": "#/$defs/AccessType",
+                    "description": "a metadata schema block containing RAiD access type information"
+                }
+            },
+            "required": [
+                "type",
+                "statement"
+            ],
+            "title": "Access",
+            "type": "object"
+        },
+        "AccessStatement": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing an explanation for any access type that is not \u2018open\u2019, with the explanation\u2019s associated properties.",
+            "properties": {
+                "language": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Language"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "a metadata schema block declaring the language of the text"
+                },
+                "text": {
+                    "description": "the text of an access statement that explains any restrictions on access",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "AccessStatement",
+            "type": "object"
+        },
+        "AccessType": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/AccessTypeIdEnum",
+                    "description": "the type of access granted to a RAiD metadata record"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/AccessTypeSchemaUriEnum",
+                    "description": "the URI of the access type schema"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "AccessType",
+            "type": "object"
+        },
+        "AccessTypeIdEnum": {
+            "description": "",
+            "title": "AccessTypeIdEnum",
+            "type": "string"
+        },
+        "AccessTypeSchemaUriEnum": {
+            "description": "",
+            "title": "AccessTypeSchemaUriEnum",
+            "type": "string"
+        },
+        "AlternateIdentifier": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing alternative local or global identifiers for the project or activity associated with the RAiD",
+            "properties": {
+                "id": {
+                    "description": "an identifier other than the RAiD applied to the project or activity",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "free text description of the type of alternateIdentifier supplied",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "type"
+            ],
+            "title": "AlternateIdentifier",
+            "type": "object"
+        },
+        "AlternateUrl": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing alternative URLs for the project",
+            "properties": {
+                "url": {
+                    "description": "a link to another website related to the project or activity",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "url"
+            ],
+            "title": "AlternateUrl",
+            "type": "object"
+        },
+        "ClosedRaid": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "access": {
+                    "$ref": "#/$defs/Access"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "access"
+            ],
+            "title": "ClosedRaid",
+            "type": "object"
+        },
+        "Contributor": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing a contributor to a RAiD and their associated properties",
+            "properties": {
+                "contact": {
+                    "description": "flag indicating that the contributor as a project contact",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "email": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "the contributor (person) associated with a project or activity identified by a persistent identifier (PID)",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "leader": {
+                    "description": "flag indicating that the contributor as a project leader",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "position": {
+                    "description": "a metadata schema sub-block describing a contributor\u2019s administrative position on a project or activity",
+                    "items": {
+                        "$ref": "#/$defs/ContributorPosition"
+                    },
+                    "type": "array"
+                },
+                "role": {
+                    "description": "metadata schema sub-block describing a contributor\u2019s scientific or scholarly role on a project using the CRediT vocabulary",
+                    "items": {
+                        "$ref": "#/$defs/ContributorRole"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/ContributorSchemaUriEnum",
+                    "description": "the URI of the contributor identifier schema"
+                },
+                "status": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statusMessage": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "uuid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "schemaUri",
+                "position"
+            ],
+            "title": "Contributor",
+            "type": "object"
+        },
+        "ContributorPosition": {
+            "additionalProperties": false,
+            "description": "a metadata schema sub-block describing a contributor\u2019s administrative position on a project or activity",
+            "properties": {
+                "endDate": {
+                    "description": "date the contributor terminated position associated with the project or activity",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "$ref": "#/$defs/ContributorPositionIdEnum",
+                    "description": "a contributor\u2019s administrative position in the project"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/ContributorPositionSchemaUriEnum",
+                    "description": "the URI of the position schema used"
+                },
+                "startDate": {
+                    "description": "date the contributor began position associated with the project or activity",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "startDate",
+                "id",
+                "schemaUri"
+            ],
+            "title": "ContributorPosition",
+            "type": "object"
+        },
+        "ContributorPositionIdEnum": {
+            "description": "",
+            "title": "ContributorPositionIdEnum",
+            "type": "string"
+        },
+        "ContributorPositionSchemaUriEnum": {
+            "description": "",
+            "title": "ContributorPositionSchemaUriEnum",
+            "type": "string"
+        },
+        "ContributorRole": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/ContributorRoleIdEnum",
+                    "description": "a contributor\u2019s (person) role(s) on the Project"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/ContributorRoleSchemaUriEnum",
+                    "description": "the URI of the role schema used"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "ContributorRole",
+            "type": "object"
+        },
+        "ContributorRoleIdEnum": {
+            "description": "",
+            "title": "ContributorRoleIdEnum",
+            "type": "string"
+        },
+        "ContributorRoleSchemaUriEnum": {
+            "description": "",
+            "title": "ContributorRoleSchemaUriEnum",
+            "type": "string"
+        },
+        "ContributorSchemaUriEnum": {
+            "description": "",
+            "title": "ContributorSchemaUriEnum",
+            "type": "string"
+        },
+        "ContributorStatusEnum": {
+            "description": "",
+            "enum": [
+                "UNVERIFIED"
+            ],
+            "title": "ContributorStatusEnum",
+            "type": "string"
+        },
+        "Date": {
+            "additionalProperties": false,
+            "description": "Metadata schema block containing the start and end date of the RAiD.",
+            "properties": {
+                "endDate": {
+                    "description": "the project or activity\u2019s end date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "startDate": {
+                    "description": "the project or activity\u2019s start date",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "startDate"
+            ],
+            "title": "Date",
+            "type": "object"
+        },
+        "Description": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing the description of the RAiD and associated properties",
+            "properties": {
+                "language": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Language"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "a metadata schema block declaring the language of the text"
+                },
+                "text": {
+                    "description": "the text of an access statement that explains any restrictions on access",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/$defs/DescriptionType",
+                    "description": "a metadata schema block declaring the type of description"
+                }
+            },
+            "required": [
+                "type",
+                "text"
+            ],
+            "title": "Description",
+            "type": "object"
+        },
+        "DescriptionType": {
+            "additionalProperties": false,
+            "description": "a metadata schema block declaring the type of description",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/DescriptionTypeIdEnum",
+                    "description": "the type of description."
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/DescriptionTypeSchemaURIEnum",
+                    "description": "the URI of the description type schema"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "DescriptionType",
+            "type": "object"
+        },
+        "DescriptionTypeIdEnum": {
+            "description": "",
+            "title": "DescriptionTypeIdEnum",
+            "type": "string"
+        },
+        "DescriptionTypeSchemaURIEnum": {
+            "description": "",
+            "title": "DescriptionTypeSchemaURIEnum",
+            "type": "string"
+        },
+        "Id": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing the RAiD name and associated properties.",
+            "properties": {
+                "id": {
+                    "description": "The identifier of the raid, e.g. https://raid.org.au/102.100.100/zzz",
+                    "type": "string"
+                },
+                "license": {
+                    "description": "The license under which the RAiD Metadata Record associated with this Identifier has been issued.",
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/$defs/Owner",
+                    "description": "a metadata schema sub-block that declares the owner of the RAiD (i.e. the organisation requesting the RAiD)"
+                },
+                "raidAgencyUrl": {
+                    "description": "The URL for the raid via the minting raid agency system\n",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "registrationAgency": {
+                    "$ref": "#/$defs/RegistrationAgency",
+                    "description": "metadata schema sub-block declaring the Registration Agency that minted the RAiD."
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RaidIdentifierSchemaURIEnum",
+                    "description": "The URI of the Identifier scheme. For example, https://raid.org"
+                },
+                "version": {
+                    "description": "The version of the resource. Read-only. Increments automatically on update.",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri",
+                "registrationAgency",
+                "owner",
+                "license",
+                "version"
+            ],
+            "title": "Id",
+            "type": "object"
+        },
+        "Language": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "description": "the language used for the access statement text, identified by a code or other identifier",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/LanguageSchemaURIEnum",
+                    "description": "the URI of the language identifier schema"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "Language",
+            "type": "object"
+        },
+        "LanguageSchemaURIEnum": {
+            "description": "",
+            "title": "LanguageSchemaURIEnum",
+            "type": "string"
+        },
+        "Metadata": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "created": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "raidModelVersion": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "updated": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                }
+            },
+            "title": "Metadata",
+            "type": "object"
+        },
+        "Organisation": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing the organisation associated with a RAiD and its associated properties",
+            "properties": {
+                "id": {
+                    "description": "an organisation associated with a project or activity",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "role": {
+                    "description": "a metadata schema sub-block describing an organisation\u2019s role on a project",
+                    "items": {
+                        "$ref": "#/$defs/OrganisationRole"
+                    },
+                    "type": "array"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/OrganizationSchemaUriEnum",
+                    "description": "the URI of the organisation identifier schema"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri",
+                "role"
+            ],
+            "title": "Organisation",
+            "type": "object"
+        },
+        "OrganisationRole": {
+            "additionalProperties": false,
+            "description": "a metadata schema sub-block describing an organisation\u2019s role on a project",
+            "properties": {
+                "endDate": {
+                    "description": "the date that the organisation terminated a role associated with the project or activity",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "$ref": "#/$defs/OrganizationRoleIdEnum",
+                    "description": "the organisation\u2019s role"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/OrganizationRoleSchemaUriEnum",
+                    "description": "the URI of the role schema used"
+                },
+                "startDate": {
+                    "description": "the date that the organisation began a role associated with the project or activity",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "startDate",
+                "id",
+                "schemaUri"
+            ],
+            "title": "OrganisationRole",
+            "type": "object"
+        },
+        "OrganizationRoleIdEnum": {
+            "description": "",
+            "title": "OrganizationRoleIdEnum",
+            "type": "string"
+        },
+        "OrganizationRoleSchemaUriEnum": {
+            "description": "",
+            "title": "OrganizationRoleSchemaUriEnum",
+            "type": "string"
+        },
+        "OrganizationSchemaUriEnum": {
+            "description": "",
+            "title": "OrganizationSchemaUriEnum",
+            "type": "string"
+        },
+        "Owner": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "description": "the persistent identifier of the legal entity responsible for the RAiD (i.e. the \u2018owner\u2019 of a RAiD); as recognised by their Registration Agency",
+                    "pattern": "^https:\\/\\/ror[.]org/.*$",
+                    "type": "string"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RegistrationAgencySchemaURIEnum",
+                    "description": "the URI of the identifier scheme that is used to identify RAiD owners"
+                },
+                "servicePoint": {
+                    "description": "the Service Point (SP) that requested the RAiD. SPs belong to an owner, RAiD owners can have multiple SPs; SPs do not need to be legal entities",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri",
+                "servicePoint"
+            ],
+            "title": "Owner",
+            "type": "object"
+        },
+        "RaidCreateRequest": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "access": {
+                    "$ref": "#/$defs/Access"
+                },
+                "alternateIdentifier": {
+                    "items": {
+                        "$ref": "#/$defs/AlternateIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "alternateUrl": {
+                    "items": {
+                        "$ref": "#/$defs/AlternateUrl"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "contributor": {
+                    "items": {
+                        "$ref": "#/$defs/Contributor"
+                    },
+                    "type": "array"
+                },
+                "date": {
+                    "$ref": "#/$defs/Date"
+                },
+                "description": {
+                    "items": {
+                        "$ref": "#/$defs/Description"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Id"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "metadata": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Metadata"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "organisation": {
+                    "items": {
+                        "$ref": "#/$defs/Organisation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "relatedObject": {
+                    "items": {
+                        "$ref": "#/$defs/RelatedObject"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "relatedRaid": {
+                    "items": {
+                        "$ref": "#/$defs/RelatedRaid"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "spatialCoverage": {
+                    "description": "metadata schema block containing information about any spatial region(s) or named place(s) targeted by the project",
+                    "items": {
+                        "$ref": "#/$defs/SpatialCoverage"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "subject": {
+                    "description": "metadata schema block containing the subject area of the RAiD plus associated properties",
+                    "items": {
+                        "$ref": "#/$defs/Subject"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "title": {
+                    "items": {
+                        "$ref": "#/$defs/Title"
+                    },
+                    "type": "array"
+                },
+                "traditionalKnowledgeLabel": {
+                    "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
+                    "items": {
+                        "$ref": "#/$defs/TraditionalKnowledgeLabel"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "title",
+                "date",
+                "access",
+                "contributor"
+            ],
+            "title": "RaidCreateRequest",
+            "type": "object"
+        },
+        "RaidDto": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "access": {
+                    "$ref": "#/$defs/Access"
+                },
+                "alternateIdentifier": {
+                    "items": {
+                        "$ref": "#/$defs/AlternateIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "alternateUrl": {
+                    "items": {
+                        "$ref": "#/$defs/AlternateUrl"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "contributor": {
+                    "items": {
+                        "$ref": "#/$defs/Contributor"
+                    },
+                    "type": "array"
+                },
+                "date": {
+                    "$ref": "#/$defs/Date"
+                },
+                "description": {
+                    "items": {
+                        "$ref": "#/$defs/Description"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "$ref": "#/$defs/Id"
+                },
+                "metadata": {
+                    "$ref": "#/$defs/Metadata"
+                },
+                "organisation": {
+                    "items": {
+                        "$ref": "#/$defs/Organisation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "relatedObject": {
+                    "items": {
+                        "$ref": "#/$defs/RelatedObject"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "relatedRaid": {
+                    "items": {
+                        "$ref": "#/$defs/RelatedRaid"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "spatialCoverage": {
+                    "description": "metadata schema block containing information about any spatial region(s) or named place(s) targeted by the project",
+                    "items": {
+                        "$ref": "#/$defs/SpatialCoverage"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "subject": {
+                    "description": "metadata schema block containing the subject area of the RAiD plus associated properties",
+                    "items": {
+                        "$ref": "#/$defs/Subject"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "title": {
+                    "items": {
+                        "$ref": "#/$defs/Title"
+                    },
+                    "type": "array"
+                },
+                "traditionalKnowledgeLabel": {
+                    "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
+                    "items": {
+                        "$ref": "#/$defs/TraditionalKnowledgeLabel"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "metadata",
+                "title",
+                "date",
+                "access",
+                "contributor",
+                "identifier"
+            ],
+            "title": "RaidDto",
+            "type": "object"
+        },
+        "RaidIdentifierSchemaURIEnum": {
+            "description": "",
+            "title": "RaidIdentifierSchemaURIEnum",
+            "type": "string"
+        },
+        "RaidPatchRequest": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "contributor": {
+                    "items": {
+                        "$ref": "#/$defs/Contributor"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "contributor"
+            ],
+            "title": "RaidPatchRequest",
+            "type": "object"
+        },
+        "RaidUpdateRequest": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "access": {
+                    "$ref": "#/$defs/Access"
+                },
+                "alternateIdentifier": {
+                    "items": {
+                        "$ref": "#/$defs/AlternateIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "alternateUrl": {
+                    "items": {
+                        "$ref": "#/$defs/AlternateUrl"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "contributor": {
+                    "items": {
+                        "$ref": "#/$defs/Contributor"
+                    },
+                    "type": "array"
+                },
+                "date": {
+                    "$ref": "#/$defs/Date"
+                },
+                "description": {
+                    "items": {
+                        "$ref": "#/$defs/Description"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Id"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "metadata": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Metadata"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "organisation": {
+                    "items": {
+                        "$ref": "#/$defs/Organisation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "relatedObject": {
+                    "items": {
+                        "$ref": "#/$defs/RelatedObject"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "relatedRaid": {
+                    "items": {
+                        "$ref": "#/$defs/RelatedRaid"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "spatialCoverage": {
+                    "description": "metadata schema block containing information about any spatial region(s) or named place(s) targeted by the project",
+                    "items": {
+                        "$ref": "#/$defs/SpatialCoverage"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "subject": {
+                    "description": "metadata schema block containing the subject area of the RAiD plus associated properties",
+                    "items": {
+                        "$ref": "#/$defs/Subject"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "title": {
+                    "items": {
+                        "$ref": "#/$defs/Title"
+                    },
+                    "type": "array"
+                },
+                "traditionalKnowledgeLabel": {
+                    "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
+                    "items": {
+                        "$ref": "#/$defs/TraditionalKnowledgeLabel"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "title",
+                "date",
+                "access",
+                "contributor"
+            ],
+            "title": "RaidUpdateRequest",
+            "type": "object"
+        },
+        "RegistrationAgency": {
+            "additionalProperties": false,
+            "description": "metadata schema sub-block declaring the Registration Agency that minted the RAiD.",
+            "properties": {
+                "id": {
+                    "description": "the persistent identifier of the RAiD Registration Agency that minted the RAiD",
+                    "pattern": "^https:\\/\\/ror[.]org/.*$",
+                    "type": "string"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RegistrationAgencySchemaURIEnum",
+                    "description": "the URI of the identifier scheme that is used to identify RAiD Registration Agencies"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "RegistrationAgency",
+            "type": "object"
+        },
+        "RegistrationAgencySchemaURIEnum": {
+            "description": "",
+            "title": "RegistrationAgencySchemaURIEnum",
+            "type": "string"
+        },
+        "RelatedObject": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing inputs, outputs, and process documents related to a RAiD plus associated properties",
+            "properties": {
+                "category": {
+                    "description": "a metadata schema sub-block declaring that a relatedObject is an input, output and/or process document",
+                    "items": {
+                        "$ref": "#/$defs/RelatedObjectCategory"
+                    },
+                    "type": "array"
+                },
+                "id": {
+                    "description": "any (a) input or resource used by a project or activity, (b) output or product created by a project or activity, and/or (c) internal process documentation used within a project or activity, that is identified by a persistent identifier (PID).",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RelatedObjectSchemaUriEnum",
+                    "description": "The URI of the relatedObject identifier schema"
+                },
+                "type": {
+                    "$ref": "#/$defs/RelatedObjectType",
+                    "description": "a metadata schema sub-block describing a relatedObject\u2019s type"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri",
+                "type",
+                "category"
+            ],
+            "title": "RelatedObject",
+            "type": "object"
+        },
+        "RelatedObjectCategory": {
+            "additionalProperties": false,
+            "description": "a metadata schema sub-block declaring that a relatedObject is an input, output and/or process document",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/RelatedObjectCategoryIdEnum",
+                    "description": "a declaration of an object as an input, output, or other"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RelatedObjectCategorySchemaUriEnum",
+                    "description": "the URI of the category schema used."
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "RelatedObjectCategory",
+            "type": "object"
+        },
+        "RelatedObjectCategoryIdEnum": {
+            "description": "",
+            "title": "RelatedObjectCategoryIdEnum",
+            "type": "string"
+        },
+        "RelatedObjectCategorySchemaUriEnum": {
+            "description": "",
+            "title": "RelatedObjectCategorySchemaUriEnum",
+            "type": "string"
+        },
+        "RelatedObjectSchemaUriEnum": {
+            "description": "",
+            "title": "RelatedObjectSchemaUriEnum",
+            "type": "string"
+        },
+        "RelatedObjectType": {
+            "additionalProperties": false,
+            "description": "a metadata schema sub-block describing a relatedObject\u2019s type",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/RelatedObjectTypeIdEnum",
+                    "description": "a type of input, output, or process document"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RelatedObjectTypeSchemaUriEnum",
+                    "description": "the URI of the type schema used"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "RelatedObjectType",
+            "type": "object"
+        },
+        "RelatedObjectTypeIdEnum": {
+            "description": "",
+            "title": "RelatedObjectTypeIdEnum",
+            "type": "string"
+        },
+        "RelatedObjectTypeSchemaUriEnum": {
+            "description": "",
+            "title": "RelatedObjectTypeSchemaUriEnum",
+            "type": "string"
+        },
+        "RelatedRaid": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing related RAiDs and qualifying the relationship",
+            "properties": {
+                "id": {
+                    "description": "a subsidiary or otherwise related RAiD",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/$defs/RelatedRaidType",
+                    "description": "a metadata schema sub-block qualifying the relationship with a related Raid"
+                }
+            },
+            "required": [
+                "id",
+                "type"
+            ],
+            "title": "RelatedRaid",
+            "type": "object"
+        },
+        "RelatedRaidType": {
+            "additionalProperties": false,
+            "description": "a metadata schema sub-block qualifying the relationship with a related Raid",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/RelatedRaidTypeIdEnum",
+                    "description": "a description of the relationship between the activity being registered and the related resource"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/RelatedRaidTypeSchemaUriEnum",
+                    "description": "The URI of the relationship schema used"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "RelatedRaidType",
+            "type": "object"
+        },
+        "RelatedRaidTypeIdEnum": {
+            "description": "",
+            "title": "RelatedRaidTypeIdEnum",
+            "type": "string"
+        },
+        "RelatedRaidTypeSchemaUriEnum": {
+            "description": "",
+            "title": "RelatedRaidTypeSchemaUriEnum",
+            "type": "string"
+        },
+        "SpatialCoverage": {
+            "additionalProperties": false,
+            "description": "metadata schema block containing information about any spatial region(s) or named place(s) targeted by the project",
+            "properties": {
+                "id": {
+                    "description": "spatial region or named place that is the subject or target of the project or activity. Repeat this property as necessary to indicate different locations. Do not duplicate organisational locations",
+                    "type": "string"
+                },
+                "place": {
+                    "description": "metadata schema sub-block containing free-text place names or descriptions plus associated metadata properties",
+                    "items": {
+                        "$ref": "#/$defs/SpatialCoveragePlace"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/SpatialCoverageSchemaUriEnum",
+                    "description": "the URI of the geolocation schema used for spatialCoverage"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "SpatialCoverage",
+            "type": "object"
+        },
+        "SpatialCoveragePlace": {
+            "additionalProperties": false,
+            "description": "metadata schema sub-block containing free-text place names or descriptions plus associated metadata properties",
+            "properties": {
+                "language": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Language"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "a metadata schema block declaring the language of the text"
+                },
+                "text": {
+                    "description": "free text description of one or more geographic locations that are the subject or target of the project or activity; use to specify or describe a geographic location in a manner not covered by spatialCoverage.id",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "SpatialCoveragePlace",
+            "type": "object"
+        },
+        "SpatialCoverageSchemaUriEnum": {
+            "description": "",
+            "title": "SpatialCoverageSchemaUriEnum",
+            "type": "string"
+        },
+        "Subject": {
+            "additionalProperties": false,
+            "description": "metadata schema block containing the subject area of the RAiD plus associated properties",
+            "properties": {
+                "id": {
+                    "description": "identifier (URI) for a subject area or classification code describing the project or activity",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "keyword": {
+                    "description": "metadata schema sub-block containing free-text keyword describing a project plus associated properties",
+                    "items": {
+                        "$ref": "#/$defs/SubjectKeyword"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/SubjectSchemaURIEnum",
+                    "description": "the URI of the subject identifier schema"
+                }
+            },
+            "title": "Subject",
+            "type": "object"
+        },
+        "SubjectKeyword": {
+            "additionalProperties": false,
+            "description": "metadata schema sub-block containing free-text keyword describing a project plus associated properties",
+            "properties": {
+                "annotations": {},
+                "language": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Language"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "a metadata schema block declaring the language of the text"
+                },
+                "text": {
+                    "description": "unconstrained keyword or key phrase describing the project or activity",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "SubjectKeyword",
+            "type": "object"
+        },
+        "SubjectSchemaURIEnum": {
+            "description": "",
+            "title": "SubjectSchemaURIEnum",
+            "type": "string"
+        },
+        "Title": {
+            "additionalProperties": false,
+            "description": "a metadata schema block containing the title of the RAiD and associated properties",
+            "properties": {
+                "endDate": {
+                    "description": "the date the project or activity title was changed or stopped being used",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "language": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Language"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "a metadata schema block declaring the language of the text"
+                },
+                "startDate": {
+                    "description": "the date the project or activity\u2019s title began being used",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "text": {
+                    "description": "a name or title by which the project or activity is known",
+                    "pattern": "^\\s*\\S.*$",
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/$defs/TitleType",
+                    "description": "a metadata schema block containing information about the title type"
+                }
+            },
+            "required": [
+                "startDate",
+                "text",
+                "type"
+            ],
+            "title": "Title",
+            "type": "object"
+        },
+        "TitleType": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/TitleTypeIdEnum"
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/TitleTypeSchemaURIEnum"
+                }
+            },
+            "required": [
+                "id",
+                "schemaUri"
+            ],
+            "title": "TitleType",
+            "type": "object"
+        },
+        "TitleTypeIdEnum": {
+            "description": "",
+            "title": "TitleTypeIdEnum",
+            "type": "string"
+        },
+        "TitleTypeSchemaURIEnum": {
+            "description": "",
+            "title": "TitleTypeSchemaURIEnum",
+            "type": "string"
+        },
+        "TraditionalKnowledgeLabel": {
+            "additionalProperties": false,
+            "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
+            "properties": {
+                "id": {
+                    "description": "identifier (URI) linking to a verified source for Traditional Knowledge (TK) or Biocultural (BC) Labels or Notices pertaining to a project or activity",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "schemaUri": {
+                    "$ref": "#/$defs/TraditionalKnowledgeLabelSchemaUriEnum",
+                    "description": "the URI of the Traditional Knowledge or Biocultural label identifier schema"
+                }
+            },
+            "title": "TraditionalKnowledgeLabel",
+            "type": "object"
+        },
+        "TraditionalKnowledgeLabelSchemaUriEnum": {
+            "description": "",
+            "title": "TraditionalKnowledgeLabelSchemaUriEnum",
+            "type": "string"
+        }
+    },
+    "$id": "https://datamodel.raid.org/core/",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": true,
+    "metamodel_version": "1.7.0",
+    "title": "RAiD-core",
+    "type": "object",
+    "version": "2"
+}

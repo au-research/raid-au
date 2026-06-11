@@ -1,0 +1,18 @@
+# {% if schema.title %}{{ schema.title }}{% else %}{{ schema.name }}{% endif %}
+
+{% if schema.description %}{{ schema.description }}{% endif %}
+
+URI: {{ schema.id }}
+
+Name: {{ schema.name }}
+
+{% if include_top_level_diagram %}
+
+## Schema Diagram
+
+```{{ gen.mermaid_directive() }}
+{{ gen.mermaid_diagram() }}
+```
+{% endif %}
+
+Add here summary of the docs.

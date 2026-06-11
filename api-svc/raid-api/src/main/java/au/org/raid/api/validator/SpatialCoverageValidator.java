@@ -37,13 +37,13 @@ public class SpatialCoverageValidator {
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
                     }
-                    if (isBlank(spatialCoverage.getSchemaUri())) {
+                    if (spatialCoverage.getSchemaUri() == null) {
                         failures.add(new ValidationFailure()
                                 .fieldId(String.format("spatialCoverage[%d].schemaUri", i))
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
-                    } else if (spatialCoverageUriValidatorMap.containsKey(spatialCoverage.getSchemaUri())) {
-                        final var uriValidatorFunction = spatialCoverageUriValidatorMap.get(spatialCoverage.getSchemaUri());
+                    } else if (spatialCoverageUriValidatorMap.containsKey(spatialCoverage.getSchemaUri().getValue())) {
+                        final var uriValidatorFunction = spatialCoverageUriValidatorMap.get(spatialCoverage.getSchemaUri().getValue());
 
                         failures.addAll(uriValidatorFunction.apply(spatialCoverage.getId(), "spatialCoverage[%d].id".formatted(i)));
                     } else {

@@ -1,0 +1,100 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/198"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Obsoletes"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/199"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "IsSourceOf"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/200"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "IsDerivedFrom"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/201"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "HasPart"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/202"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "IsPartOf"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/203"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "IsContinuedBy"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/204"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Continues"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/relatedRaid.type.schema/205"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "IsObsoletedBy"
+        }
+      }
+    ]
+  }
+}

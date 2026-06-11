@@ -3,6 +3,9 @@ package au.org.raid.inttest;
 import au.org.raid.fixtures.APIFixtures;
 import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.idl.raidv2.model.*;
+import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import au.org.raid.inttest.client.keycloak.KeycloakClient;
 import au.org.raid.inttest.config.IntegrationTestConfig;
 import au.org.raid.inttest.dto.UserContext;
@@ -90,15 +93,15 @@ public class AbstractIntegrationTest {
                 .id(isni)
                 .contact(true)
                 .leader(true)
-                .schemaUri(ISNI_SCHEMA_URI)
+                .schemaUri(ContributorSchemaUriEnum.fromValue(ISNI_SCHEMA_URI))
                 .position(List.of(new ContributorPosition()
-                        .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                        .id(position)
+                        .schemaUri(ContributorPositionSchemaUriEnum.fromValue(CONTRIBUTOR_POSITION_SCHEMA_URI))
+                        .id(ContributorPositionIdEnum.fromValue(position))
                         .startDate(startDate.format(DateTimeFormatter.ISO_LOCAL_DATE))))
                 .role(List.of(
                         new ContributorRole()
-                                .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                .id(role)));
+                                .schemaUri(ContributorRoleSchemaUriEnum.fromValue(CONTRIBUTOR_ROLE_SCHEMA_URI))
+                                .id(ContributorRoleIdEnum.fromValue(role))));
 
         if (status != null) {
             contributor.setStatus(status);

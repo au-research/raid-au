@@ -27,7 +27,25 @@ public class OrganisationRepository {
                 .and(ORGANISATION.SCHEMA_ID.eq(record.getSchemaId()))
                 .fetchOptional();
 
-        return result.orElseGet(() -> create(record));
+        if (result.isPresent()) {
+            return result.get();
+        }
+
+        // A concurrent transaction may insert the same organisation between the
+        // select and the insert, so tolerate the conflict and re-read the row.
+        return dslContext.insertInto(ORGANISATION)
+                .set(ORGANISATION.PID, record.getPid())
+                .set(ORGANISATION.SCHEMA_ID, record.getSchemaId())
+                .onConflict(ORGANISATION.PID, ORGANISATION.SCHEMA_ID)
+                .doNothing()
+                .returning()
+                .fetchOptional()
+                .orElseGet(() -> dslContext.selectFrom(ORGANISATION)
+                        .where(ORGANISATION.PID.eq(record.getPid()))
+                        .and(ORGANISATION.SCHEMA_ID.eq(record.getSchemaId()))
+                        .fetchOptional()
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Organisation not found after insert conflict: %s".formatted(record.getPid()))));
     }
 
     public Optional<OrganisationRecord> findByUriAndSchemaId(final String uri, final int schemaId) {

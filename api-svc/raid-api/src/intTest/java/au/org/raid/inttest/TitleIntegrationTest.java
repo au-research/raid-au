@@ -3,6 +3,8 @@ package au.org.raid.inttest;
 import au.org.raid.fixtures.TestConstants;
 import au.org.raid.idl.raidv2.model.Title;
 import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
+import au.org.raid.idl.raidv2.model.TitleTypeSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +44,7 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Minting a RAiD with a title with an empty language schemaUri fails")
     void emptyLanguageSchemeUri() {
-        createRequest.getTitle().get(0).getLanguage().schemaUri("");
+        createRequest.getTitle().get(0).getLanguage().setSchemaUri(null);
 
         try {
             raidApi.mintRaid(createRequest);
@@ -126,7 +128,7 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Minting a RAiD with a title with an invalid language schema fails")
     void invalidLanguageScheme() {
-        createRequest.getTitle().get(0).getLanguage().schemaUri("http://localhost");
+        createRequest.getTitle().get(0).getLanguage().setSchemaUri(null);
 
         try {
             raidApi.mintRaid(createRequest);
@@ -136,8 +138,8 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
             assertThat(failures).hasSize(1);
             assertThat(failures).contains(new ValidationFailure()
                     .fieldId("title[0].language.schemaUri")
-                    .errorType("invalidValue")
-                    .message("schema is unknown/unsupported")
+                    .errorType("notSet")
+                    .message("field must be set")
             );
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -190,8 +192,8 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Minting a RAiD with no primary title fails")
     void alternativeTitleOnly() {
         createRequest.getTitle().get(0).setType(new TitleType()
-                .id(TestConstants.ALTERNATIVE_TITLE_TYPE)
-                .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI));
+                .id(TitleTypeIdEnum.fromValue(TestConstants.ALTERNATIVE_TITLE_TYPE))
+                .schemaUri(TitleTypeSchemaURIEnum.fromValue(TestConstants.TITLE_TYPE_SCHEMA_URI)));
 
         try {
             raidApi.mintRaid(createRequest);
@@ -214,7 +216,7 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Minting a RAiD with missing schemaUri fails")
     void missingTitleScheme() {
         createRequest.getTitle().get(0).setType(new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE)
+                .id(TitleTypeIdEnum.fromValue(TestConstants.PRIMARY_TITLE_TYPE))
         );
 
         try {
@@ -237,9 +239,10 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Minting a RAiD with invalid schemaUri fails")
     void invalidTitleScheme() {
-        createRequest.getTitle().get(0).setType(new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE)
-                .schemaUri("https://github.com/au-research/raid-metadata/blob/main/scheme/title/type/v2"));
+        final var invalidSchemeType = new TitleType()
+                .id(TitleTypeIdEnum.fromValue(TestConstants.PRIMARY_TITLE_TYPE));
+        invalidSchemeType.setSchemaUri(null);
+        createRequest.getTitle().get(0).setType(invalidSchemeType);
 
         try {
             raidApi.mintRaid(createRequest);
@@ -250,8 +253,8 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
             assertThat(failures).contains(
                     new ValidationFailure()
                             .fieldId("title[0].type.schemaUri")
-                            .errorType("invalidValue")
-                            .message("schema is unknown/unsupported")
+                            .errorType("notSet")
+                            .message("field must be set")
             );
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -266,7 +269,7 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
         titles.add(new Title()
                 .text("Test Title")
                 .type(new TitleType()
-                        .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI)
+                        .schemaUri(TitleTypeSchemaURIEnum.fromValue(TestConstants.TITLE_TYPE_SCHEMA_URI))
                 )
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
         );
@@ -295,11 +298,11 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
     void invalidTitleType() {
         final var titles = new ArrayList<>(createRequest.getTitle());
 
+        final var invalidIdType = new TitleType()
+                .schemaUri(TitleTypeSchemaURIEnum.fromValue(TestConstants.TITLE_TYPE_SCHEMA_URI));
+        invalidIdType.setId(null);
         titles.add(new Title()
-                .type(new TitleType()
-                        .id("https://github.com/au-research/raid-metadata/blob/main/scheme/title/type/v1/invalid.json")
-                        .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI)
-                )
+                .type(invalidIdType)
                 .text("Test Title")
                 .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
         );
@@ -314,9 +317,9 @@ public class TitleIntegrationTest extends AbstractIntegrationTest {
             assertThat(failures).hasSize(1);
             assertThat(failures).contains(
                     new ValidationFailure()
-                            .message("id does not exist within the given schema")
+                            .message("field must be set")
                             .fieldId("title[1].type.id")
-                            .errorType("invalidValue")
+                            .errorType("notSet")
             );
         } catch (Exception e) {
             throw new RuntimeException(e);

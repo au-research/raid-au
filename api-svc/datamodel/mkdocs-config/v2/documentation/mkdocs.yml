@@ -1,0 +1,23 @@
+site_name: RAiD data model documentation
+site_url: https://docs.raid.org/
+site_dir: site
+theme:
+  name: material
+  features:
+    - navigation.path
+docs_dir: docs
+plugins:
+  - search
+  - awesome-nav
+  - mike:
+      deploy_prefix: 'docs'
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+extra:
+  version:
+    provider: mike
+    alias: true

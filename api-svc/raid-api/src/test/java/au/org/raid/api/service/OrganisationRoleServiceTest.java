@@ -11,6 +11,8 @@ import au.org.raid.db.jooq.tables.records.OrganisationRoleRecord;
 import au.org.raid.db.jooq.tables.records.OrganisationRoleSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidOrganisationRoleRecord;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.OrganizationRoleIdEnum;
+import au.org.raid.idl.raidv2.model.OrganizationRoleSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,17 +46,17 @@ class OrganisationRoleServiceTest {
     @Test
     @DisplayName("create() saves organisation")
     void createSavesOrganisation() {
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359.getValue();
         final var raidOrganisationId = 123;
-        final var uri = "_id";
+        final var uri = OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182.getValue();
         final var id = 234;
         final var schemaId = 345;
         final var startDate = "2021";
         final var endDate = "2022";
 
         final var role = new OrganisationRole()
-                .schemaUri(schemaUri)
-                .id(uri)
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
                 .startDate(startDate)
                 .endDate(endDate);
 
@@ -84,15 +86,15 @@ class OrganisationRoleServiceTest {
     @Test
     @DisplayName("create() throws OrganisationRoleSchemaNotFoundException")
     void createSavesOrganisationThrowsOrganisationRoleSchemaNotFoundException() {
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359.getValue();
         final var raidOrganisationId = 123;
-        final var uri = "_id";
+        final var uri = OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182.getValue();
         final var startDate = "2021";
         final var endDate = "2022";
 
         final var role = new OrganisationRole()
-                .schemaUri(schemaUri)
-                .id(uri)
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
                 .startDate(startDate)
                 .endDate(endDate);
 
@@ -109,16 +111,16 @@ class OrganisationRoleServiceTest {
     @Test
     @DisplayName("create() saves organisation throws OrganisationRoleNotFoundException")
     void createSavesOrganisationThrowsOrganisationRoleNotFoundException() {
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359.getValue();
         final var raidOrganisationId = 123;
-        final var uri = "_id";
+        final var uri = OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182.getValue();
         final var schemaId = 345;
         final var startDate = "2021";
         final var endDate = "2022";
 
         final var role = new OrganisationRole()
-                .schemaUri(schemaUri)
-                .id(uri)
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
                 .startDate(startDate)
                 .endDate(endDate);
 

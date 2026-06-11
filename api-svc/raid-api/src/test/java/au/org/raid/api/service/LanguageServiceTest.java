@@ -8,6 +8,7 @@ import au.org.raid.api.repository.LanguageSchemaRepository;
 import au.org.raid.db.jooq.tables.records.LanguageRecord;
 import au.org.raid.db.jooq.tables.records.LanguageSchemaRecord;
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,11 +42,11 @@ class LanguageServiceTest {
         final var id = 123;
         final var code = "_code";
         final var schemaId = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var language = new Language()
                 .id(code)
-                .schemaUri(schemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var languageSchemaRecord = new LanguageSchemaRecord()
                 .setId(schemaId)
@@ -74,11 +75,11 @@ class LanguageServiceTest {
     @Test
     @DisplayName("findLanguageId() throws LanguageSchemaNotFoundException")
     void findLanguageIdThrowsLanguageSchemaNotFoundException() {
-        final var schemaUri = "schema-uri";
+        final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var language = new Language()
                 .id("eng")
-                .schemaUri(schemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         when(languageSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
 
@@ -92,11 +93,11 @@ class LanguageServiceTest {
     void findLanguageIdThrowsLanguageNotFoundException() {
         final var code = "_code";
         final var schemaId = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue();
 
         final var language = new Language()
                 .id(code)
-                .schemaUri(schemaUri);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var languageSchemaRecord = new LanguageSchemaRecord()
                 .setId(schemaId)
@@ -180,7 +181,7 @@ class LanguageServiceTest {
     @DisplayName("findLanguageId() returns null when language has null id and set schemaUri")
     void findLanguageIdReturnsNullForNullIdWithSchemaUri() {
         final var language = new Language()
-                .schemaUri("https://www.iso.org/standard/74575.html");
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         assertThat(languageService.findLanguageId(language), nullValue());
 

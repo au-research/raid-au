@@ -1,0 +1,22 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/contributor.position.schema/305"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "RAiD contributor position schema"
+        }
+      }
+    ]
+  }
+}

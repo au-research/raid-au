@@ -1,5 +1,7 @@
 package au.org.raid.api.factory;
 
+import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
+import au.org.raid.idl.raidv2.model.AccessTypeSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,10 +14,10 @@ class AccessTypeFactoryTest {
     @Test
     @DisplayName("Sets all fields")
     void setsAllFields() {
-        final var id = "_id";
-        final var schemaUri = "schema-uri";
+        final var id = AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_;
+        final var schemaUri = AccessTypeSchemaUriEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_;
 
-        final var result = factory.create(id, schemaUri);
+        final var result = factory.create(id.getValue(), schemaUri.getValue());
 
         assertThat(result.getId(), is(id));
         assertThat(result.getSchemaUri(), is(schemaUri));

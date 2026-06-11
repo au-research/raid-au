@@ -87,11 +87,11 @@
       ],
       "role": [
         {
-          "schemaUri": "https://credit.niso.org",
+          "schemaUri": "https://credit.niso.org/",
           "id": "https://credit.niso.org/contributor-roles/formal-analysis/"
         },
         {
-          "schemaUri": "https://credit.niso.org",
+          "schemaUri": "https://credit.niso.org/",
           "id": "https://credit.niso.org/contributor-roles/investigation/"
         }
       ]
@@ -109,7 +109,7 @@
       ],
       "role": [
         {
-          "schemaUri": "https://credit.niso.org",
+          "schemaUri": "https://credit.niso.org/",
           "id": "https://credit.niso.org/contributor-roles/project-administration/"
         }
       ]
@@ -150,8 +150,8 @@
       },
       "category": [
         {
-          "id": "https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/category/v1/input.json",
-          "schemaUri": "https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/category/v1"
+          "id": "https://vocabulary.raid.org/relatedObject.category.id/190",
+          "schemaUri": "https://vocabulary.raid.org/relatedObject.category.schemaUri/386"
         }
       ]
     },
@@ -164,8 +164,8 @@
       },
       "category": [
         {
-          "id": "https://github.com/au-research/raid-metadata/blob/main/scheme/related-object/category/v1/input.json",
-          "schemaUri": "https://github.com/au-research/raid-metadata/tree/main/scheme/related-object/category/v1"
+          "id": "https://vocabulary.raid.org/relatedObject.category.id/190",
+          "schemaUri": "https://vocabulary.raid.org/relatedObject.category.schemaUri/386"
         }
       ]
     }
@@ -191,7 +191,7 @@
   "subject": [
     {
       "id": "https://linked.data.gov.au/def/anzsrc-for/2020/430106",
-      "schemaUri": "https://linked.data.gov.au/def/anzsrc-for/2020/",
+      "schemaUri": "https://linked.data.gov.au/def/anzsrc-for/2020",
       "keyword": [
         {
           "text": "Digital Archeology",
@@ -204,7 +204,7 @@
     },
     {
       "id": "https://linked.data.gov.au/def/anzsrc-for/2020/4301",
-      "schemaUri": "https://linked.data.gov.au/def/anzsrc-for/2020/",
+      "schemaUri": "https://linked.data.gov.au/def/anzsrc-for/2020",
       "keyword": [
         {
           "text": "Archeology",

@@ -1,0 +1,56 @@
+{
+  "head" : {
+    "vars" : [
+      "prefLabel",
+      "uri"
+    ]
+  },
+  "results" : {
+    "bindings" : [
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/title.type.schema/156"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Acronym"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/title.type.schema/4"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Alternative"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/title.type.schema/5"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Primary"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
+          "value" : "https://vocabulary.raid.org/title.type.schema/157"
+        },
+        "prefLabel" : {
+          "xml:lang" : "en",
+          "type" : "literal",
+          "value" : "Short"
+        }
+      }
+    ]
+  }
+}

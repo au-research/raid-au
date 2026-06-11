@@ -2,7 +2,12 @@ package au.org.raid.inttest;
 
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
+import au.org.raid.idl.raidv2.model.RelatedObjectCategoryIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedObjectCategorySchemaUriEnum;
+import au.org.raid.idl.raidv2.model.RelatedObjectSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.RelatedObjectType;
+import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedObjectTypeSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import org.junit.jupiter.api.DisplayName;
@@ -24,13 +29,13 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
     private RelatedObject webArchiveRelatedObject(String id) {
         return new RelatedObject()
                 .id(id)
-                .schemaUri(WEB_ARCHIVE_SCHEMA_URI)
+                .schemaUri(RelatedObjectSchemaUriEnum.fromValue(WEB_ARCHIVE_SCHEMA_URI))
                 .type(new RelatedObjectType()
-                        .id(BOOK_CHAPTER_RELATED_OBJECT_TYPE)
-                        .schemaUri(RELATED_OBJECT_TYPE_SCHEMA_URI))
+                        .id(RelatedObjectTypeIdEnum.fromValue(BOOK_CHAPTER_RELATED_OBJECT_TYPE))
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.fromValue(RELATED_OBJECT_TYPE_SCHEMA_URI)))
                 .category(List.of(new RelatedObjectCategory()
-                        .id(INPUT_RELATED_OBJECT_CATEGORY_ID)
-                        .schemaUri(RELATED_OBJECT_CATEGORY_SCHEMA_URI)));
+                        .id(RelatedObjectCategoryIdEnum.fromValue(INPUT_RELATED_OBJECT_CATEGORY_ID))
+                        .schemaUri(RelatedObjectCategorySchemaUriEnum.fromValue(RELATED_OBJECT_CATEGORY_SCHEMA_URI))));
     }
 
     @Test
@@ -44,7 +49,7 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
             assertThat(raid).isNotNull();
             assertThat(raid.getRelatedObject()).hasSize(1);
             assertThat(raid.getRelatedObject().get(0).getId()).isEqualTo(VALID_WEB_ARCHIVE_URL);
-            assertThat(raid.getRelatedObject().get(0).getSchemaUri()).isEqualTo(WEB_ARCHIVE_SCHEMA_URI);
+            assertThat(raid.getRelatedObject().get(0).getSchemaUri()).isEqualTo(RelatedObjectSchemaUriEnum.fromValue(WEB_ARCHIVE_SCHEMA_URI));
         } catch (Exception e) {
             failOnError(e);
         }
@@ -71,30 +76,30 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Minting a RAiD with an unsupported related object schemaUri fails validation")
-    void unsupportedSchemaUri() {
+    @DisplayName("Minting a RAiD with web archive schemaUri but invalid id fails validation")
+    void webArchiveSchemaUriWithInvalidId() {
         final var relatedObject = new RelatedObject()
                 .id("https://example.com/some-object")
-                .schemaUri("https://example.com/")
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_)
                 .type(new RelatedObjectType()
-                        .id(BOOK_CHAPTER_RELATED_OBJECT_TYPE)
-                        .schemaUri(RELATED_OBJECT_TYPE_SCHEMA_URI))
+                        .id(RelatedObjectTypeIdEnum.fromValue(BOOK_CHAPTER_RELATED_OBJECT_TYPE))
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.fromValue(RELATED_OBJECT_TYPE_SCHEMA_URI)))
                 .category(List.of(new RelatedObjectCategory()
-                        .id(INPUT_RELATED_OBJECT_CATEGORY_ID)
-                        .schemaUri(RELATED_OBJECT_CATEGORY_SCHEMA_URI)));
+                        .id(RelatedObjectCategoryIdEnum.fromValue(INPUT_RELATED_OBJECT_CATEGORY_ID))
+                        .schemaUri(RelatedObjectCategorySchemaUriEnum.fromValue(RELATED_OBJECT_CATEGORY_SCHEMA_URI))));
 
         createRequest.setRelatedObject(List.of(relatedObject));
 
         try {
             raidApi.mintRaid(createRequest);
-            fail("No exception thrown with unsupported schemaUri");
+            fail("No exception thrown with invalid web archive id");
         } catch (RaidApiValidationException e) {
             final var failures = e.getFailures();
             assertThat(failures).hasSize(1);
             assertThat(failures).contains(new ValidationFailure()
-                    .fieldId("relatedObject[0].schemaUri")
+                    .fieldId("relatedObject[0].id")
                     .errorType("invalid")
-                    .message("Only [https://doi.org/, https://web.archive.org/] is supported."));
+                    .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)"));
         } catch (Exception e) {
             failOnError(e);
         }

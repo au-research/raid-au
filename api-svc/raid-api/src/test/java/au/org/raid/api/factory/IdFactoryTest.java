@@ -4,7 +4,9 @@ import au.org.raid.api.config.properties.IdentifierProperties;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
 import au.org.raid.idl.raidv2.model.Id;
 import au.org.raid.idl.raidv2.model.Owner;
+import au.org.raid.idl.raidv2.model.RaidIdentifierSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.RegistrationAgency;
+import au.org.raid.idl.raidv2.model.RegistrationAgencySchemaURIEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,13 +14,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IdFactoryTest {
-    private static final String SCHEMA_URI = "__schema-uri__";
+    private static final String SCHEMA_URI = RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_.getValue();
     private static final String IDENTIFIER_REGISTRATION_AGENCY = "identifier-registration-agency";
     private static final String IDENTIFIER_OWNER = "identifier-owner";
     private static final Long IDENTIFIER_SERVICE_POINT = 999L;
@@ -41,7 +45,6 @@ class IdFactoryTest {
         final var servicePointRecord = new ServicePointRecord()
                 .setIdentifierOwner(IDENTIFIER_OWNER)
                 .setId(IDENTIFIER_SERVICE_POINT);
-        final var rorSchemaUri = "https://ror.org/";
 
         when(identifierProperties.getRegistrationAgencyIdentifier()).thenReturn(IDENTIFIER_REGISTRATION_AGENCY);
         when(identifierProperties.getLicense()).thenReturn(LICENSE);
@@ -53,14 +56,14 @@ class IdFactoryTest {
 
         assertThat(id, is(new Id()
                 .id("%s%s/%s".formatted(NAME_PREFIX, prefix, suffix))
-                .schemaUri(SCHEMA_URI)
+                .schemaUri(RaidIdentifierSchemaURIEnum.HTTPS_RAID_ORG_)
                 .registrationAgency(new RegistrationAgency()
                         .id(IDENTIFIER_REGISTRATION_AGENCY)
-                        .schemaUri(rorSchemaUri))
+                        .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_))
                 .owner(new Owner()
                         .id(IDENTIFIER_OWNER)
-                        .schemaUri(rorSchemaUri)
-                        .servicePoint(IDENTIFIER_SERVICE_POINT))
+                        .schemaUri(RegistrationAgencySchemaURIEnum.HTTPS_ROR_ORG_)
+                        .servicePoint(BigDecimal.valueOf(IDENTIFIER_SERVICE_POINT)))
                 .raidAgencyUrl("%s%s/%s".formatted(LANDING_PREFIX, prefix, suffix))
                 .license(LICENSE)
                 .version(1)));

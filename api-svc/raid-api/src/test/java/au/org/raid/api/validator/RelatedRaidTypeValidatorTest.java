@@ -2,10 +2,11 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.repository.RelatedRaidTypeRepository;
 import au.org.raid.api.repository.RelatedRaidTypeSchemaRepository;
-import au.org.raid.api.util.TestConstants;
 import au.org.raid.db.jooq.tables.records.RelatedRaidTypeRecord;
 import au.org.raid.db.jooq.tables.records.RelatedRaidTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.RelatedRaidType;
+import au.org.raid.idl.raidv2.model.RelatedRaidTypeIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedRaidTypeSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,11 +28,11 @@ class RelatedRaidTypeValidatorTest {
 
     private static final RelatedRaidTypeSchemaRecord RELATED_RAID_TYPE_SCHEMA_RECORD = new RelatedRaidTypeSchemaRecord()
             .setId(RELATED_RAID_TYPE_SCHEMA_ID)
-            .setUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
+            .setUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue());
 
     private static final RelatedRaidTypeRecord RELATED_RAID_TYPE_RECORD = new RelatedRaidTypeRecord()
             .setSchemaId(RELATED_RAID_TYPE_SCHEMA_ID)
-            .setUri(TestConstants.CONTINUES_RELATED_RAID_TYPE);
+            .setUri(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue());
 
     @Mock
     private RelatedRaidTypeSchemaRepository relatedRaidTypeSchemaRepository;
@@ -44,50 +45,29 @@ class RelatedRaidTypeValidatorTest {
     @DisplayName("Validation passes with valid related raid type")
     void validRelatedRaidType() {
         final var relatedRaidType = new RelatedRaidType()
-                .id(TestConstants.CONTINUES_RELATED_RAID_TYPE)
-                .schemaUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
-        when(relatedRaidTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI))
+        when(relatedRaidTypeSchemaRepository.findActiveByUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue()))
                 .thenReturn(Optional.of(RELATED_RAID_TYPE_SCHEMA_RECORD));
-        when(relatedRaidTypeRepository.findByUriAndSchemaId(TestConstants.CONTINUES_RELATED_RAID_TYPE, RELATED_RAID_TYPE_SCHEMA_ID))
+        when(relatedRaidTypeRepository.findByUriAndSchemaId(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue(), RELATED_RAID_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.of(RELATED_RAID_TYPE_RECORD));
 
         final var failures = validationService.validate(relatedRaidType, INDEX);
 
         assertThat(failures, empty());
 
-        verify(relatedRaidTypeSchemaRepository).findActiveByUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
-        verify(relatedRaidTypeRepository).findByUriAndSchemaId(TestConstants.CONTINUES_RELATED_RAID_TYPE, RELATED_RAID_TYPE_SCHEMA_ID);
+        verify(relatedRaidTypeSchemaRepository).findActiveByUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue());
+        verify(relatedRaidTypeRepository).findByUriAndSchemaId(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue(), RELATED_RAID_TYPE_SCHEMA_ID);
     }
 
     @Test
     @DisplayName("Validation fails when id is null")
     void nullId() {
         final var relatedRaidType = new RelatedRaidType()
-                .schemaUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
-        when(relatedRaidTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI))
-                .thenReturn(Optional.of(RELATED_RAID_TYPE_SCHEMA_RECORD));
-
-        final var failures = validationService.validate(relatedRaidType, INDEX);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("relatedRaid[3].type.id")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-    }
-
-    @Test
-    @DisplayName("Validation fails when id is empty string")
-    void emptyId() {
-        final var relatedRaidType = new RelatedRaidType()
-                .id("")
-                .schemaUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
-
-        when(relatedRaidTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI))
+        when(relatedRaidTypeSchemaRepository.findActiveByUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue()))
                 .thenReturn(Optional.of(RELATED_RAID_TYPE_SCHEMA_RECORD));
 
         final var failures = validationService.validate(relatedRaidType, INDEX);
@@ -105,25 +85,7 @@ class RelatedRaidTypeValidatorTest {
     @DisplayName("Validation fails when schemaUri is null")
     void nullSchemaUri() {
         final var relatedRaidType = new RelatedRaidType()
-                .id(TestConstants.CONTINUES_RELATED_RAID_TYPE);
-
-        final var failures = validationService.validate(relatedRaidType, INDEX);
-
-        assertThat(failures, hasSize(1));
-        assertThat(failures, hasItem(
-                new ValidationFailure()
-                        .fieldId("relatedRaid[3].type.schemaUri")
-                        .errorType("notSet")
-                        .message("field must be set")
-        ));
-    }
-
-    @Test
-    @DisplayName("Validation fails when schemaUri is empty")
-    void emptySchemaUri() {
-        final var relatedRaidType = new RelatedRaidType()
-                .id(TestConstants.CONTINUES_RELATED_RAID_TYPE)
-                .schemaUri("");
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198);
 
         final var failures = validationService.validate(relatedRaidType, INDEX);
 
@@ -140,10 +102,10 @@ class RelatedRaidTypeValidatorTest {
     @DisplayName("Validation fails when schemaUri is invalid")
     void invalidSchemaUri() {
         final var relatedRaidType = new RelatedRaidType()
-                .id(TestConstants.CONTINUES_RELATED_RAID_TYPE)
-                .schemaUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
-        when(relatedRaidTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI))
+        when(relatedRaidTypeSchemaRepository.findActiveByUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue()))
                 .thenReturn(Optional.empty());
 
         final var failures = validationService.validate(relatedRaidType, INDEX);
@@ -178,13 +140,13 @@ class RelatedRaidTypeValidatorTest {
     @DisplayName("Validation fails when id not found in schema")
     void invalidTypeForSchema() {
         final var relatedRaidType = new RelatedRaidType()
-                .id(TestConstants.CONTINUES_RELATED_RAID_TYPE)
-                .schemaUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI);
+                .id(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198)
+                .schemaUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367);
 
-        when(relatedRaidTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_RAID_TYPE_SCHEMA_URI))
+        when(relatedRaidTypeSchemaRepository.findActiveByUri(RelatedRaidTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_367.getValue()))
                 .thenReturn(Optional.of(RELATED_RAID_TYPE_SCHEMA_RECORD));
 
-        when(relatedRaidTypeRepository.findByUriAndSchemaId(TestConstants.CONTINUES_RELATED_RAID_TYPE, RELATED_RAID_TYPE_SCHEMA_ID))
+        when(relatedRaidTypeRepository.findByUriAndSchemaId(RelatedRaidTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_RAID_TYPE_SCHEMA_198.getValue(), RELATED_RAID_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.empty());
 
         final var failures = validationService.validate(relatedRaidType, INDEX);

@@ -1,0 +1,280 @@
+id: https://datamodel.raid.org/core/
+version: 2
+name: Core-enumerations
+imports:
+  - linkml:types
+
+enums:
+  AbstractRaidDynamicEnum:
+    abstract: true
+    description: This dynamic enumeration is part of the Research Activity Identifier (RAiD) controlled lists available at https://vocabulary.raid.org/.
+  RaidIdentifierSchemaURIEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/identifier.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+  
+  RegistrationAgencySchemaURIEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/shared.organization.id.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false  
+
+  TitleTypeIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/title.type.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false     
+
+  TitleTypeSchemaURIEnum:
+    reachable_from:
+      source_ontology:  https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/title.type.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false       
+
+  DescriptionTypeIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/description.type.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false     
+
+  DescriptionTypeSchemaURIEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/description.type.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false         
+
+  LanguageSchemaURIEnum:
+    from_schema: https://datamodel.raid.org/core/
+    imported_from: https://datamodel.raid.org/core/
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/shared.language.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false          
+
+  AccessTypeIdEnum:
+    is_a: AbstractRaidDynamicEnum
+    title: Controlled list of RAiD access type id values.
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/access.type.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false                
+  AccessTypeSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/access.type.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false 
+  
+  ContributorStatusEnum:    
+    permissible_values:
+      UNVERIFIED
+
+  ContributorSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/contributor.id.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false 
+  
+  ContributorPositionSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/contributor.position.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false   
+
+  ContributorPositionIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/contributor.position.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false         
+  
+  ContributorRoleSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/contributor.role.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false  
+
+  ContributorRoleIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/contributor.role.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false   
+
+  OrganizationSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/shared.organization.id.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+
+  OrganizationRoleSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/organisation.role.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+
+  OrganizationRoleIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/organisation.role.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false             
+
+  RelatedRaidTypeSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        -  https://vocabulary.raid.org/relatedRaid.type.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+
+  RelatedRaidTypeIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/relatedRaid.type.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false             
+
+  RelatedObjectSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/relatedObject.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+
+  RelatedObjectTypeSchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/relatedObject.type.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+
+  RelatedObjectTypeIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/relatedObject.type.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false        
+
+  RelatedObjectCategorySchemaUriEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/relatedObject.category.schemaUri/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false
+
+  RelatedObjectCategoryIdEnum:
+    reachable_from:
+      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
+      source_nodes:
+        - https://vocabulary.raid.org/relatedObject.category.id/scheme
+      relationship_types:
+        - skos:hasTopConcept
+      is_direct: true
+      traverse_up: false
+      include_self: false              

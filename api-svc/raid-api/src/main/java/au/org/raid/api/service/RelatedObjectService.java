@@ -37,8 +37,8 @@ public class RelatedObjectService {
         }
 
         for (final var relatedObject : relatedObjects) {
-            final var relatedObjectSchemaRecord = relatedObjectSchemaRepository.findByUri(relatedObject.getSchemaUri())
-                    .orElseThrow(() -> new RelatedObjectSchemaNotFoundException(relatedObject.getSchemaUri()));
+            final var relatedObjectSchemaRecord = relatedObjectSchemaRepository.findByUri(relatedObject.getSchemaUri().getValue())
+                    .orElseThrow(() -> new RelatedObjectSchemaNotFoundException(relatedObject.getSchemaUri().getValue()));
 
             final var relatedObjectRecord =
                     relatedObjectRecordFactory.create(relatedObject.getId(), relatedObjectSchemaRecord.getId());
@@ -46,14 +46,14 @@ public class RelatedObjectService {
             final var savedRelatedObjectRecord = relatedObjectRepository.findOrCreate(relatedObjectRecord);
 
             final var relatedObjectTypeSchemaRecord =
-                    relatedObjectTypeSchemaRepository.findByUri(relatedObject.getType().getSchemaUri())
+                    relatedObjectTypeSchemaRepository.findByUri(relatedObject.getType().getSchemaUri().getValue())
                             .orElseThrow(() ->
-                                    new RelatedObjectTypeSchemaNotFoundException(relatedObject.getSchemaUri()));
+                                    new RelatedObjectTypeSchemaNotFoundException(relatedObject.getSchemaUri().getValue()));
 
             final var relatedObjectTypeRecord = relatedObjectTypeRepository.findByUriAndSchemaId(
-                    relatedObject.getType().getId(),
+                    relatedObject.getType().getId().getValue(),
                     relatedObjectTypeSchemaRecord.getId()).orElseThrow(() ->
-                        new RelatedObjectTypeNotFoundException(relatedObject.getId(), relatedObject.getSchemaUri()));
+                        new RelatedObjectTypeNotFoundException(relatedObject.getId(), relatedObject.getSchemaUri().getValue()));
 
             final var raidRelatedObjectRecord = raidRelatedObjectRepository.create(raidRelatedObjectRecordFactory.create(
                     handle, savedRelatedObjectRecord.getId(), relatedObjectTypeRecord.getId()));

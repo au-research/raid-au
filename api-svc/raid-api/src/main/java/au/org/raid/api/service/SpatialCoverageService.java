@@ -30,8 +30,8 @@ public class SpatialCoverageService {
 
         for (final var spatialCoverage : spatialCoverages) {
 
-            final var spatialCoverageSchemaRecord = spatialCoverageSchemaRepository.findByUri(spatialCoverage.getSchemaUri())
-                    .orElseThrow(() -> new SpatialCoverageSchemaNotFoundException(spatialCoverage.getSchemaUri()));
+            final var spatialCoverageSchemaRecord = spatialCoverageSchemaRepository.findByUri(spatialCoverage.getSchemaUri().getValue())
+                    .orElseThrow(() -> new SpatialCoverageSchemaNotFoundException(spatialCoverage.getSchemaUri().getValue()));
 
             final var record = raidSpatialCoverageRepository.create(raidSpatialCoverageRecordFactory.create(
                     spatialCoverage.getId(),

@@ -1,0 +1,6 @@
+title: RAiD metadata schema
+sort:
+  direction: asc
+  by: title  
+ignore:
+  - AccessStatement.md

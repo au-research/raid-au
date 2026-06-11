@@ -155,6 +155,22 @@ export const raidRequest = (data: RaidDto): RaidDto => {
 };
 
 /**
+ * Builds the request payload for minting a new RAID
+ *
+ * The API generates the identifier when a RAID is minted and rejects a
+ * create request that carries an empty identifier object, so the
+ * identifier is omitted from the payload entirely.
+ *
+ * @param data - The source RAID data from the create form
+ * @returns A RaidCreateRequest without an identifier
+ */
+export const raidCreateRequest = (data: RaidDto): RaidCreateRequest => {
+  const { identifier, ...request } = raidRequest(data);
+  void identifier;
+  return request;
+};
+
+/**
  * Template for creating a new RAID with minimum required fields
  * 
  * This constant provides a template with the minimum required fields

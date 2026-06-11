@@ -11,7 +11,10 @@ import au.org.raid.api.repository.*;
 import au.org.raid.db.jooq.tables.records.*;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
+import au.org.raid.idl.raidv2.model.RelatedObjectSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.RelatedObjectType;
+import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedObjectTypeSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,21 +61,21 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_.getValue();
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue();
         final var typeSchemaId = 345;
-        final var typeUri = "type-uri";
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue();
         final var typeId = 456;
         final var category = new RelatedObjectCategory();
         final var raidRelatedObjectId = 567;
 
         final var relatedObject = new RelatedObject()
                 .id(uri)
-                .schemaUri(schemaUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType()
-                        .id(typeUri)
-                        .schemaUri(typeSchemaUri))
+                        .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
                 .category(List.of(category));
 
         final var relatedObjectSchemaRecord = new RelatedObjectSchemaRecord()
@@ -113,17 +116,17 @@ class RelatedObjectServiceTest {
     void createThrowsRelatedObjectSchemaNotFoundException() {
         final var handle = "_handle";
         final var uri = "_uri";
-        final var schemaUri = "schema-uri";
-        final var typeSchemaUri = "type-schema-uri";
-        final var typeUri = "type-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_.getValue();
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue();
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue();
         final var category = new RelatedObjectCategory();
 
         final var relatedObject = new RelatedObject()
                 .id(uri)
-                .schemaUri(schemaUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType()
-                        .id(typeUri)
-                        .schemaUri(typeSchemaUri))
+                        .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
                 .category(List.of(category));
 
         when(relatedObjectSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
@@ -146,18 +149,18 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_.getValue();
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
-        final var typeUri = "type-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue();
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue();
         final var category = new RelatedObjectCategory();
 
         final var relatedObject = new RelatedObject()
                 .id(uri)
-                .schemaUri(schemaUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType()
-                        .id(typeUri)
-                        .schemaUri(typeSchemaUri))
+                        .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
                 .category(List.of(category));
 
         final var relatedObjectSchemaRecord = new RelatedObjectSchemaRecord()
@@ -188,19 +191,19 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_.getValue();
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue();
         final var typeSchemaId = 345;
-        final var typeUri = "type-uri";
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue();
         final var category = new RelatedObjectCategory();
 
         final var relatedObject = new RelatedObject()
                 .id(uri)
-                .schemaUri(schemaUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType()
-                        .id(typeUri)
-                        .schemaUri(typeSchemaUri))
+                        .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
                 .category(List.of(category));
 
         final var relatedObjectSchemaRecord = new RelatedObjectSchemaRecord()
@@ -328,21 +331,21 @@ class RelatedObjectServiceTest {
         final var handle = "_handle";
         final var uri = "_uri";
         final var id = 234;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_.getValue();
         final var schemaId = 123;
-        final var typeSchemaUri = "type-schema-uri";
+        final var typeSchemaUri = RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue();
         final var typeSchemaId = 345;
-        final var typeUri = "type-uri";
+        final var typeUri = RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue();
         final var typeId = 456;
         final var category = new RelatedObjectCategory();
         final var raidRelatedObjectId = 567;
 
         final var relatedObject = new RelatedObject()
                 .id(uri)
-                .schemaUri(schemaUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_)
                 .type(new RelatedObjectType()
-                        .id(typeUri)
-                        .schemaUri(typeSchemaUri))
+                        .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329))
                 .category(List.of(category));
 
         final var relatedObjectSchemaRecord = new RelatedObjectSchemaRecord()

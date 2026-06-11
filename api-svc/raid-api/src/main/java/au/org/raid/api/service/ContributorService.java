@@ -39,8 +39,8 @@ public class ContributorService {
         }
 
         for (var contributor : contributors) {
-            final var contributorSchema = contributorSchemaRepository.findByUri(contributor.getSchemaUri())
-                    .orElseThrow(() -> new ContributorSchemaNotFoundException(contributor.getSchemaUri()));
+            final var contributorSchema = contributorSchemaRepository.findByUri(contributor.getSchemaUri().getValue())
+                    .orElseThrow(() -> new ContributorSchemaNotFoundException(contributor.getSchemaUri().getValue()));
 
             final var contributorRecord = contributorRecordFactory.create(contributor, contributorSchema.getId());
             final var contributorId = contributorRepository.updateOrCreate(contributorRecord).getId();

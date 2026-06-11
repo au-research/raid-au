@@ -4,6 +4,8 @@ import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.ServicePointService;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
+
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -103,13 +105,13 @@ class RaidAuthorizationServiceTest {
         var raid = new RaidDto();
         var identifier = new Id();
         var owner = new Owner();
-        owner.setServicePoint(TEST_SERVICE_POINT_ID);
+        owner.setServicePoint(new BigDecimal(TEST_SERVICE_POINT_ID));
         identifier.setOwner(owner);
         raid.setIdentifier(identifier);
 
         var access = new Access();
         var accessType = new AccessType();
-        accessType.setId(embargoed ? SchemaValues.ACCESS_TYPE_EMBARGOED.getUri() : "open");
+        accessType.setId(embargoed ? AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_ : AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_);
         access.setType(accessType);
         raid.setAccess(access);
 

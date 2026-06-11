@@ -13,6 +13,7 @@ import java.util.List;
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 import static au.org.raid.api.util.StringUtil.isBlank;
 
+
 @Component
 public class ContributorPositionValidator {
     private final ContributorPositionSchemaRepository contributorPositionSchemaRepository;
@@ -41,7 +42,7 @@ public class ContributorPositionValidator {
                             .message(END_DATE_BEFORE_START_DATE));
         }
 
-        if (isBlank(position.getId())) {
+        if (position.getId() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("contributor[%d].position[%d].id".formatted(contributorIndex, positionIndex))
@@ -49,7 +50,7 @@ public class ContributorPositionValidator {
                             .message(NOT_SET_MESSAGE));
         }
 
-        if (isBlank(position.getSchemaUri())) {
+        if (position.getSchemaUri() == null) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("contributor[%d].position[%d].schemaUri".formatted(contributorIndex, positionIndex))
@@ -58,7 +59,7 @@ public class ContributorPositionValidator {
             );
         } else {
             final var positionScheme =
-                    contributorPositionSchemaRepository.findActiveByUri(position.getSchemaUri());
+                    contributorPositionSchemaRepository.findActiveByUri(position.getSchemaUri().getValue());
 
             if (positionScheme.isEmpty()) {
                 failures.add(
@@ -67,8 +68,8 @@ public class ContributorPositionValidator {
                                 .errorType(INVALID_VALUE_TYPE)
                                 .message(INVALID_SCHEMA)
                 );
-            } else if (!isBlank(position.getId()) &&
-                    contributorPositionRepository.findByUriAndSchemaId(position.getId(), positionScheme.get().getId()).isEmpty()) {
+            } else if (position.getId() != null &&
+                    contributorPositionRepository.findByUriAndSchemaId(position.getId().getValue(), positionScheme.get().getId()).isEmpty()) {
                 failures.add(
                         new ValidationFailure()
                                 .fieldId("contributor[%d].position[%d].id".formatted(contributorIndex, positionIndex))

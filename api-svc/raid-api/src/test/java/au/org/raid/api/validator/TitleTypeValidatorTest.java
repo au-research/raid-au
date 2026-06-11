@@ -6,6 +6,8 @@ import au.org.raid.api.util.TestConstants;
 import au.org.raid.db.jooq.tables.records.TitleTypeRecord;
 import au.org.raid.db.jooq.tables.records.TitleTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.TitleType;
+import au.org.raid.idl.raidv2.model.TitleTypeIdEnum;
+import au.org.raid.idl.raidv2.model.TitleTypeSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,29 +47,29 @@ class TitleTypeValidatorTest {
     @DisplayName("Validation passes with valid title type")
     void validTitleType() {
         final var titleType = new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE_ID)
-                .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI);
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
 
-        when(titleTypeSchemaRepository.findActiveByUri(TestConstants.TITLE_TYPE_SCHEMA_URI))
+        when(titleTypeSchemaRepository.findActiveByUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue()))
                 .thenReturn(Optional.of(TITLE_TYPE_SCHEMA_RECORD));
-        when(titleTypeRepository.findByUriAndSchemaId(TestConstants.PRIMARY_TITLE_TYPE_ID, TITLE_TYPE_SCHEMA_ID))
+        when(titleTypeRepository.findByUriAndSchemaId(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5.getValue(), TITLE_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.of(TITLE_TYPE_RECORD));
 
         final var failures = validationService.validate(titleType, INDEX);
 
         assertThat(failures, empty());
 
-        verify(titleTypeSchemaRepository).findActiveByUri(TestConstants.TITLE_TYPE_SCHEMA_URI);
-        verify(titleTypeRepository).findByUriAndSchemaId(TestConstants.PRIMARY_TITLE_TYPE_ID, TITLE_TYPE_SCHEMA_ID);
+        verify(titleTypeSchemaRepository).findActiveByUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue());
+        verify(titleTypeRepository).findByUriAndSchemaId(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5.getValue(), TITLE_TYPE_SCHEMA_ID);
     }
 
     @Test
     @DisplayName("Validation fails when id is null")
     void nullId() {
         final var titleType = new TitleType()
-                .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI);
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
 
-        when(titleTypeSchemaRepository.findActiveByUri(TestConstants.TITLE_TYPE_SCHEMA_URI))
+        when(titleTypeSchemaRepository.findActiveByUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue()))
                 .thenReturn(Optional.of(TITLE_TYPE_SCHEMA_RECORD));
 
         final var failures = validationService.validate(titleType, INDEX);
@@ -85,10 +87,10 @@ class TitleTypeValidatorTest {
     @DisplayName("Validation fails when id is empty string")
     void emptyId() {
         final var titleType = new TitleType()
-                .id("")
-                .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI);
+                .id((TitleTypeIdEnum) null)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
 
-        when(titleTypeSchemaRepository.findActiveByUri(TestConstants.TITLE_TYPE_SCHEMA_URI))
+        when(titleTypeSchemaRepository.findActiveByUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue()))
                 .thenReturn(Optional.of(TITLE_TYPE_SCHEMA_RECORD));
 
         final var failures = validationService.validate(titleType, INDEX);
@@ -106,7 +108,7 @@ class TitleTypeValidatorTest {
     @DisplayName("Validation fails when schemaUri is null")
     void nullSchemaUri() {
         final var titleType = new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE_ID);
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5);
 
         final var failures = validationService.validate(titleType, INDEX);
 
@@ -123,8 +125,8 @@ class TitleTypeValidatorTest {
     @DisplayName("Validation fails when schemaUri is empty")
     void emptySchemaUri() {
         final var titleType = new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE_ID)
-                .schemaUri("");
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri((TitleTypeSchemaURIEnum) null);
 
         final var failures = validationService.validate(titleType, INDEX);
 
@@ -141,10 +143,10 @@ class TitleTypeValidatorTest {
     @DisplayName("Validation fails when schemaUri is invalid")
     void invalidSchemaUri() {
         final var titleType = new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE_ID)
-                .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI);
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
 
-        when(titleTypeSchemaRepository.findActiveByUri(TestConstants.TITLE_TYPE_SCHEMA_URI))
+        when(titleTypeSchemaRepository.findActiveByUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue()))
                 .thenReturn(Optional.empty());
 
         final var failures = validationService.validate(titleType, INDEX);
@@ -179,13 +181,13 @@ class TitleTypeValidatorTest {
     @DisplayName("Validation fails when id not found in schema")
     void invalidTypeForSchema() {
         final var titleType = new TitleType()
-                .id(TestConstants.PRIMARY_TITLE_TYPE_ID)
-                .schemaUri(TestConstants.TITLE_TYPE_SCHEMA_URI);
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
 
-        when(titleTypeSchemaRepository.findActiveByUri(TestConstants.TITLE_TYPE_SCHEMA_URI))
+        when(titleTypeSchemaRepository.findActiveByUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376.getValue()))
                 .thenReturn(Optional.of(TITLE_TYPE_SCHEMA_RECORD));
 
-        when(titleTypeRepository.findByUriAndSchemaId(TestConstants.PRIMARY_TITLE_TYPE_ID, TITLE_TYPE_SCHEMA_ID))
+        when(titleTypeRepository.findByUriAndSchemaId(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5.getValue(), TITLE_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.empty());
 
         final var failures = validationService.validate(titleType, INDEX);

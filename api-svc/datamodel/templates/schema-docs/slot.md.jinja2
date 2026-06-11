@@ -1,0 +1,49 @@
+{% if not level -%}
+{% set level = 1 -%}
+{% endif -%}
+{{ "#"|safe*level*1 }}{{parent}}.{{element.name}}
+
+**Description**:
+
+{{element.description}}
+
+**Requirement**:
+{% if element.required -%}
+mandatory
+{% else -%}
+optional
+{% endif %}
+
+
+**Cardinality**:
+{{ gen.cardinality(element) }}
+
+{%-for a in element.annotations %}
+{% if a|string|first != '_' %}
+ **{{a}}**:
+{{ element.annotations[a].value }}
+
+{%- endif -%}
+{%- endfor -%}
+
+{% if element.range in schemaview.all_enums().keys() -%}
+
+{% with element= schemaview.get_enum(element.range) %}
+{% include "enum.md.jinja2" %}
+ {% endwith %}
+
+{% endif %}
+
+{% if element.pattern %}
+**Regex pattern**: {{ '`' }}{{  element.pattern }}{{ '`' }}
+{% endif -%}
+
+{% if gen.example_object_blobs(element.name) -%}
+**Examples**
+{% for name, blob in gen.example_object_blobs(element.name) -%}
+```json
+{{ blob }}
+```
+{% endfor %}
+{% endif %}
+

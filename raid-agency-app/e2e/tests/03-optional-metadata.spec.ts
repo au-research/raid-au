@@ -48,6 +48,7 @@ import {
   waitForSnackbar,
   extractPrefixSuffixFromUrl,
 } from "../utils/wait-helpers";
+import { validEmbargoExpiry } from "../utils/date-helpers";
 
 // Unique title for this test run so the record is identifiable on the list page
 const TEST_TITLE = `E2E Optional Metadata Test ${Date.now()}`;
@@ -56,7 +57,7 @@ const START_DATE = "2024-03-01";
 // Required access fields — Embargoed so the statement text field is visible
 const EMBARGOED_LABEL = "Embargoed Access";
 const ACCESS_STATEMENT = "Embargoed for optional metadata e2e testing";
-const EMBARGO_EXPIRY = "2030-06-01";
+const EMBARGO_EXPIRY = validEmbargoExpiry();
 
 // Contributor ORCID IDs accepted by the local mock server
 const ORCID_PRIMARY = "https://sandbox.orcid.org/0009-0002-5128-5184";

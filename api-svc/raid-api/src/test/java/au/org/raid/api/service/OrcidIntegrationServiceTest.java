@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -131,7 +132,7 @@ class OrcidIntegrationServiceTest {
         final var servicePointId = 99L;
         final var id = new Id()
                 .id("raid123")
-                .owner(new Owner().servicePoint(servicePointId));
+                .owner(new Owner().servicePoint(BigDecimal.valueOf(servicePointId)));
         final var titles = List.of(new Title().text("Test Raid"));
 
         final var raid = new RaidDto()

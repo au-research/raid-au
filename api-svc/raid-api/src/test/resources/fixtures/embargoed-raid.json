@@ -62,7 +62,7 @@
       "text": "This RAiD is embargoed",
       "language": {
         "id": "eng",
-        "schemaUri": "https://www.iso.org/standard/39534.html"
+        "schemaUri": "https://www.iso.org/standard/74575.html"
       }
     },
     "embargoExpiry": "2024-12-31"
@@ -88,11 +88,11 @@
       ],
       "role": [
         {
-          "schemaUri": "https://credit.niso.org",
+          "schemaUri": "https://credit.niso.org/",
           "id": "https://credit.niso.org/contributor-roles/formal-analysis/"
         },
         {
-          "schemaUri": "https://credit.niso.org",
+          "schemaUri": "https://credit.niso.org/",
           "id": "https://credit.niso.org/contributor-roles/investigation/"
         }
       ]
@@ -109,7 +109,7 @@
       ],
       "role": [
         {
-          "schemaUri": "https://credit.niso.org",
+          "schemaUri": "https://credit.niso.org/",
           "id": "https://credit.niso.org/contributor-roles/project-administration/"
         }
       ]
@@ -197,7 +197,7 @@
           "text": "Digital Archeology",
           "language": {
             "id": "eng",
-            "schemaUri": "https://www.iso.org/standard/39534.html"
+            "schemaUri": "https://www.iso.org/standard/74575.html"
           }
         }
       ]
@@ -210,7 +210,7 @@
           "text": "Archeology",
           "language": {
             "id": "eng",
-            "schemaUri": "https://www.iso.org/standard/39534.html"
+            "schemaUri": "https://www.iso.org/standard/74575.html"
           }
         }
       ]

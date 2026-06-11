@@ -29,11 +29,11 @@ public class TitleService {
     public void create(final List<Title> titles, final String handle) {
 
         for (final var title : titles) {
-            final var titleTypeSchema = titleTypeSchemaRepository.findByUri(title.getType().getSchemaUri())
-                    .orElseThrow(() -> new TitleTypeSchemaNotFoundException(title.getType().getSchemaUri()));
+            final var titleTypeSchema = titleTypeSchemaRepository.findByUri(title.getType().getSchemaUri().getValue())
+                    .orElseThrow(() -> new TitleTypeSchemaNotFoundException(title.getType().getSchemaUri().getValue()));
 
-            final var titleType = titleTypeRepository.findByUriAndSchemaId(title.getType().getId(), titleTypeSchema.getId())
-                    .orElseThrow(() -> new TitleTypeNotFoundException(title.getType().getId(), title.getType().getSchemaUri()));
+            final var titleType = titleTypeRepository.findByUriAndSchemaId(title.getType().getId().getValue(), titleTypeSchema.getId())
+                    .orElseThrow(() -> new TitleTypeNotFoundException(title.getType().getId().getValue(), title.getType().getSchemaUri().getValue()));
 
             final var languageId = languageService.findLanguageId(title.getLanguage());
 

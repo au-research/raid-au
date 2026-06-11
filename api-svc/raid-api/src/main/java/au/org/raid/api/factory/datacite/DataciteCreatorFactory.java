@@ -30,12 +30,12 @@ public class DataciteCreatorFactory {
         final var creator = new DataciteCreator();
         String name;
 
-        if (contributor.getSchemaUri().equals(ORCID_SCHEMA_URI)) {
+        if (contributor.getSchemaUri().getValue().equals(ORCID_SCHEMA_URI)) {
             name = orcidClient.getName(contributor.getId());
-        } else if (contributor.getSchemaUri().equals(ISNI_SCHEMA_URI)) {
+        } else if (contributor.getSchemaUri().getValue().equals(ISNI_SCHEMA_URI)) {
             name = isniClient.getName(contributor.getId());
         } else {
-            throw new RuntimeException("Unsupported contributor schema %s".formatted(contributor.getSchemaUri()));
+            throw new RuntimeException("Unsupported contributor schema %s".formatted(contributor.getSchemaUri().getValue()));
         }
 
         creator.setName(name);
@@ -44,8 +44,8 @@ public class DataciteCreatorFactory {
         creator.setNameIdentifiers(List.of(
                 new NameIdentifier()
                         .setNameIdentifier(contributor.getId())
-                        .setSchemeUri(contributor.getSchemaUri())
-                        .setNameIdentifierScheme(NAME_IDENTIFIER_SCHEMA_MAP.get(contributor.getSchemaUri()))
+                        .setSchemeUri(contributor.getSchemaUri().getValue())
+                        .setNameIdentifierScheme(NAME_IDENTIFIER_SCHEMA_MAP.get(contributor.getSchemaUri().getValue()))
         ));
 
         return creator;

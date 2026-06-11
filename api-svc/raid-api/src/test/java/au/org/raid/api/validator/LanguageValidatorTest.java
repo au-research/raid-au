@@ -5,6 +5,7 @@ import au.org.raid.api.repository.LanguageSchemaRepository;
 import au.org.raid.db.jooq.tables.records.LanguageRecord;
 import au.org.raid.db.jooq.tables.records.LanguageSchemaRecord;
 import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,6 @@ import static org.mockito.Mockito.when;
 class LanguageValidatorTest {
     private static final String LANGUAGE_ID = "eng";
     private static final int LANGUAGE_SCHEMA_ID = 1;
-    private static final String LANGUAGE_SCHEMA_URI = "https://www.iso.org/standard/39534.html";
 
     private static final LanguageRecord LANGUAGE_RECORD = new LanguageRecord()
             .setCode(LANGUAGE_ID)
@@ -34,7 +34,7 @@ class LanguageValidatorTest {
 
     private static final LanguageSchemaRecord LANGUAGE_SCHEMA_RECORD = new LanguageSchemaRecord()
             .setId(LANGUAGE_SCHEMA_ID)
-            .setUri(LANGUAGE_SCHEMA_URI);
+            .setUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue());
 
     @Mock
     private LanguageRepository languageRepository;
@@ -54,9 +54,10 @@ class LanguageValidatorTest {
     @Test
     @DisplayName("Returns failure if id is null")
     void nullId() {
-        final var language = new Language().id(null).schemaUri(LANGUAGE_SCHEMA_URI);
+        final var language = new Language().id(null).schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
-        when(languageSchemaRepository.findActiveByUri(LANGUAGE_SCHEMA_URI)).thenReturn(Optional.of(LANGUAGE_SCHEMA_RECORD));
+        when(languageSchemaRepository.findActiveByUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue()))
+                .thenReturn(Optional.of(LANGUAGE_SCHEMA_RECORD));
 
         final var failures = languageValidator.validate(language, "parent");
 
@@ -71,9 +72,10 @@ class LanguageValidatorTest {
     @Test
     @DisplayName("Returns failure if id is empty string")
     void emptyId() {
-        final var language = new Language().id("").schemaUri(LANGUAGE_SCHEMA_URI);
+        final var language = new Language().id("").schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
-        when(languageSchemaRepository.findActiveByUri(LANGUAGE_SCHEMA_URI)).thenReturn(Optional.of(LANGUAGE_SCHEMA_RECORD));
+        when(languageSchemaRepository.findActiveByUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue()))
+                .thenReturn(Optional.of(LANGUAGE_SCHEMA_RECORD));
 
         final var failures = languageValidator.validate(language, "parent");
 
@@ -88,7 +90,7 @@ class LanguageValidatorTest {
     @Test
     @DisplayName("Returns failure if schemaUri is empty string")
     void emptySchemaUri() {
-        final var language = new Language().id("eng").schemaUri("");
+        final var language = new Language().id("eng").schemaUri((LanguageSchemaURIEnum) null);
 
         final var failures = languageValidator.validate(language, "parent");
 
@@ -120,9 +122,10 @@ class LanguageValidatorTest {
     void invalidSchemaUri() {
         final var language = new Language()
                 .id("eng")
-                .schemaUri(LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
-        when(languageSchemaRepository.findActiveByUri(LANGUAGE_SCHEMA_URI)).thenReturn(Optional.empty());
+        when(languageSchemaRepository.findActiveByUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue()))
+                .thenReturn(Optional.empty());
 
         final var failures = languageValidator.validate(language, "parent");
 
@@ -139,11 +142,12 @@ class LanguageValidatorTest {
     void invalidId() {
         final var language = new Language()
                 .id(LANGUAGE_ID)
-                .schemaUri(LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
         final var languageSchema = new LanguageSchemaRecord().setId(LANGUAGE_SCHEMA_ID);
 
-        when(languageSchemaRepository.findActiveByUri(LANGUAGE_SCHEMA_URI)).thenReturn(Optional.of(languageSchema));
+        when(languageSchemaRepository.findActiveByUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue()))
+                .thenReturn(Optional.of(languageSchema));
         when(languageRepository.findByIdAndSchemaId(LANGUAGE_ID, LANGUAGE_SCHEMA_ID)).thenReturn(Optional.empty());
 
         final var failures = languageValidator.validate(language, "parent");
@@ -161,9 +165,10 @@ class LanguageValidatorTest {
     void validLanguage() {
         final var language = new Language()
                 .id(LANGUAGE_ID)
-                .schemaUri(LANGUAGE_SCHEMA_URI);
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
 
-        when(languageSchemaRepository.findActiveByUri(LANGUAGE_SCHEMA_URI)).thenReturn(Optional.of(LANGUAGE_SCHEMA_RECORD));
+        when(languageSchemaRepository.findActiveByUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML.getValue()))
+                .thenReturn(Optional.of(LANGUAGE_SCHEMA_RECORD));
         when(languageRepository.findByIdAndSchemaId(LANGUAGE_ID, LANGUAGE_SCHEMA_ID))
                 .thenReturn(Optional.of(LANGUAGE_RECORD));
 

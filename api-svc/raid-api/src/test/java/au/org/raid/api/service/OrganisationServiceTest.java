@@ -13,6 +13,7 @@ import au.org.raid.db.jooq.tables.records.OrganisationSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidOrganisationRecord;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.OrganizationSchemaUriEnum;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ class OrganisationServiceTest {
     void create() {
 
         final var handle = "_handle";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationSchemaUriEnum.HTTPS_ROR_ORG_.getValue();
         final var schemaId = 123;
         final var id = 234;
         final var raidOrganisationId = 345;
@@ -60,7 +61,7 @@ class OrganisationServiceTest {
         final var role = new OrganisationRole();
         final var organisation = new Organisation()
                 .role(List.of(role))
-                .schemaUri(schemaUri);
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_);
 
         final var organisationSchemaRecord = new OrganisationSchemaRecord()
                 .setId(schemaId);
@@ -88,12 +89,12 @@ class OrganisationServiceTest {
     @DisplayName("create() throws OrganisationSchemaNotFoundException")
     void createThrowsOrganisationSchemaNotFoundException() {
         final var handle = "_handle";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationSchemaUriEnum.HTTPS_ROR_ORG_.getValue();
 
         final var role = new OrganisationRole();
         final var organisation = new Organisation()
                 .role(List.of(role))
-                .schemaUri(schemaUri);
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_);
 
         when(organisationSchemaRepository.findByUri(schemaUri)).thenReturn(Optional.empty());
 
@@ -309,7 +310,7 @@ class OrganisationServiceTest {
     @DisplayName("update() deletes snd re-inserts organisation and descendants")
     void update() {
         final var handle = "_handle";
-        final var schemaUri = "schema-uri";
+        final var schemaUri = OrganizationSchemaUriEnum.HTTPS_ROR_ORG_.getValue();
         final var schemaId = 123;
         final var id = 234;
         final var raidOrganisationId = 345;
@@ -317,7 +318,7 @@ class OrganisationServiceTest {
         final var role = new OrganisationRole();
         final var organisation = new Organisation()
                 .role(List.of(role))
-                .schemaUri(schemaUri);
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_);
 
         final var organisationSchemaRecord = new OrganisationSchemaRecord()
                 .setId(schemaId);

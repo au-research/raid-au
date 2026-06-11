@@ -26,12 +26,12 @@ public class RaidRelatedObjectCategoryService {
     private final RelatedObjectCategoryFactory relatedObjectCategoryFactory;
 
     public void create(final RelatedObjectCategory category, final Integer raidRelatedObjectId) {
-        final var schemaRecord = relatedObjectCategorySchemaRepository.findByUri(category.getSchemaUri())
-                .orElseThrow(() -> new RelatedObjectCategorySchemaNotFoundException(category.getSchemaUri()));
+        final var schemaRecord = relatedObjectCategorySchemaRepository.findByUri(category.getSchemaUri().getValue())
+                .orElseThrow(() -> new RelatedObjectCategorySchemaNotFoundException(category.getSchemaUri().getValue()));
 
         final var categoryRecord = relatedObjectCategoryRepository
-                .findByUriAndSchemaId(category.getId(), schemaRecord.getId())
-                .orElseThrow(() -> new RelatedObjectCategoryNotFoundException(category.getId(), category.getSchemaUri()));
+                .findByUriAndSchemaId(category.getId().getValue(), schemaRecord.getId())
+                .orElseThrow(() -> new RelatedObjectCategoryNotFoundException(category.getId().getValue(), category.getSchemaUri().getValue()));
 
         final var raidRelatedObjectCategoryRecord =
                 raidRelatedObjectCategoryRecordFactory.create(raidRelatedObjectId, categoryRecord.getId());

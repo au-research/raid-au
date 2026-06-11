@@ -1,0 +1,88 @@
+- enumID: AccessTypeSchemaUriEnum
+  table: access_type_schema
+  source: uri
+  values:
+    enumID: AccessTypeIdEnum
+    table: access_type      
+    source: uri
+- enumID: ContributorPositionSchemaUriEnum
+  table: contributor_position_schema
+  source: uri
+  values:
+    enumID: ContributorPositionIdEnum
+    table: contributor_position
+    source: uri
+- enumID: ContributorRoleSchemaUriEnum
+  table: contributor_role_schema
+  source: uri
+  values:
+    enumID: ContributorRoleIdEnum
+    table: contributor_role
+    source: uri
+- enumID: ContributorSchemaUriEnum
+  table: contributor_schema
+  source: uri
+- enumID: DescriptionTypeSchemaURIEnum
+  table: description_type_schema
+  source: uri
+  values:
+    enumID: DescriptionTypeIdEnum
+    table: description_type
+    source: uri
+- enumID: OrganizationSchemaUriEnum
+  table: organisation_schema
+  source: uri
+- enumID: OrganizationRoleSchemaUriEnum
+  table: organisation_role_schema
+  source: uri
+  values:
+    enumID: OrganizationRoleIdEnum
+    table: organisation_role
+    source: uri
+- enumID: RaidIdentifierSchemaURIEnum
+  #table: related_object_schema
+  source: uri
+- enumID: RegistrationAgencySchemaURIEnum
+  #table: related_object_schema
+  source: uri
+- enumID: RelatedObjectSchemaUriEnum
+  table: related_object_schema
+  source: uri
+- enumID: RelatedObjectTypeSchemaUriEnum
+  table: related_object_type_schema
+  source: uri
+  values:
+    enumID: RelatedObjectTypeIdEnum
+    table: related_object_type
+    source: uri
+- enumID: RelatedObjectCategorySchemaUriEnum
+  table: related_object_category_schema
+  source: uri
+  values:
+    enumID: RelatedObjectCategoryIdEnum
+    table: related_object_category
+    source: uri
+- enumID: RelatedRaidTypeSchemaUriEnum 
+  table: related_raid_type_schema
+  source: uri
+  values:
+    enumID: RelatedRaidTypeIdEnum
+    table: related_raid_type
+    source: uri
+#- enumID: SpatialCoverageSchemaUriEnum
+#  table: spatial_coverage_schema
+#- enumID: SubjectSchemaURIEnum
+#  table: subject_type_schema
+- enumID: TitleTypeSchemaURIEnum
+  table: title_type_schema
+  source: uri
+  values:
+    enumID: TitleTypeIdEnum
+    table: title_type
+    source: uri
+- enumID: LanguageSchemaURIEnum
+  table: language_schema
+  source: uri
+#  values:
+#    enumID: LanguageIdEnum
+#    table: language

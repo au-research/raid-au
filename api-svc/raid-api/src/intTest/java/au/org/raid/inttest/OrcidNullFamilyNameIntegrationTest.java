@@ -2,7 +2,12 @@ package au.org.raid.inttest;
 
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
+import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ContributorRole;
+import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
 import au.org.raid.inttest.service.Handle;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,20 +34,20 @@ public class OrcidNullFamilyNameIntegrationTest extends AbstractIntegrationTest 
         @DisplayName("should succeed when contributor ORCID profile has no family name")
         void shouldSucceedWhenContributorHasNoFamilyName() {
             final var contributor = new Contributor()
-                    .schemaUri(ORCID_SCHEMA_URI)
+                    .schemaUri(ContributorSchemaUriEnum.fromValue(ORCID_SCHEMA_URI))
                     .id(ORCID_WITH_NULL_FAMILY_NAME)
                     .contact(true)
                     .leader(true)
                     .position(List.of(
                             new ContributorPosition()
                                     .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                                    .schemaUri(CONTRIBUTOR_POSITION_SCHEMA_URI)
-                                    .id(PRINCIPAL_INVESTIGATOR_POSITION)
+                                    .schemaUri(ContributorPositionSchemaUriEnum.fromValue(CONTRIBUTOR_POSITION_SCHEMA_URI))
+                                    .id(ContributorPositionIdEnum.fromValue(PRINCIPAL_INVESTIGATOR_POSITION))
                     ))
                     .role(List.of(
                             new ContributorRole()
-                                    .schemaUri(CONTRIBUTOR_ROLE_SCHEMA_URI)
-                                    .id(SOFTWARE_CONTRIBUTOR_ROLE)
+                                    .schemaUri(ContributorRoleSchemaUriEnum.fromValue(CONTRIBUTOR_ROLE_SCHEMA_URI))
+                                    .id(ContributorRoleIdEnum.fromValue(SOFTWARE_CONTRIBUTOR_ROLE))
                     ));
 
             createRequest.setContributor(List.of(contributor));

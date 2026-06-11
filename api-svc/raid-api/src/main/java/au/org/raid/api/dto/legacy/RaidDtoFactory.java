@@ -5,6 +5,7 @@ import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -37,27 +38,27 @@ public class RaidDtoFactory {
         final var access = new Access()
                 .type(
                         new AccessType()
-                                .id(ACCESS_TYPE_MAP.get(legacyRaid.getAccess().getType()))
-                                .schemaUri(SchemaValues.ACCESS_TYPE_SCHEMA.getUri())
+                                .id(AccessTypeIdEnum.fromValue(ACCESS_TYPE_MAP.get(legacyRaid.getAccess().getType())))
+                                .schemaUri(AccessTypeSchemaUriEnum.fromValue(SchemaValues.ACCESS_TYPE_SCHEMA.getUri()))
                 )
                 .embargoExpiry(legacyRaid.getAccess().getType().equals("Closed") ? embargoExpiry : null)
                 .statement(new AccessStatement().text("Set to embargoed from closed during metadata uplift %s".formatted(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)))
-                        .language(new Language().id("eng").schemaUri(SchemaValues.LANGUAGE_SCHEMA.getUri())));
+                        .language(new Language().id("eng").schemaUri(LanguageSchemaURIEnum.fromValue(SchemaValues.LANGUAGE_SCHEMA.getUri()))));
 
 
         return new RaidDto()
                 .identifier(new Id()
                                 .id(legacyRaid.getId().getIdentifier())
                                 .owner(new Owner()
-                                        .schemaUri(SchemaValues.ROR_SCHEMA_URI.getUri())
+                                        .schemaUri(RegistrationAgencySchemaURIEnum.fromValue(SchemaValues.ROR_SCHEMA_URI.getUri()))
                                         .id(legacyRaid.getId().getIdentifierOwner())
-                                        .servicePoint(legacyRaid.getId().getIdentifierServicePoint())
+                                        .servicePoint(BigDecimal.valueOf(legacyRaid.getId().getIdentifierServicePoint()))
                                 )
                                 .license("Creative Commons CC-0")
-                                .schemaUri(SchemaValues.RAID_SCHEMA_URI.getUri())
+                                .schemaUri(RaidIdentifierSchemaURIEnum.fromValue(SchemaValues.RAID_SCHEMA_URI.getUri()))
                                 .registrationAgency(new RegistrationAgency()
                                         .id(legacyRaid.getId().getRaidAgencyUrl())
-                                        .schemaUri(SchemaValues.ROR_SCHEMA_URI.getUri()))
+                                        .schemaUri(RegistrationAgencySchemaURIEnum.fromValue(SchemaValues.ROR_SCHEMA_URI.getUri())))
                                 .version(legacyRaid.getId().getVersion())
                         // TODO: set raidAgencyUrl depending on environment
 
@@ -66,8 +67,8 @@ public class RaidDtoFactory {
                         new Title()
                                 .text(legacyTitle.getTitle())
                                 .type(new TitleType()
-                                        .id(TITLE_TYPE_MAP.get(legacyTitle.getType()))
-                                        .schemaUri(SchemaValues.TITLE_TYPE_SCHEMA.getUri()))
+                                        .id(TitleTypeIdEnum.fromValue(TITLE_TYPE_MAP.get(legacyTitle.getType())))
+                                        .schemaUri(TitleTypeSchemaURIEnum.fromValue(SchemaValues.TITLE_TYPE_SCHEMA.getUri())))
                                 .startDate(legacyTitle.getStartDate())
                                 .endDate(legacyTitle.getEndDate())
 
@@ -77,8 +78,8 @@ public class RaidDtoFactory {
                                 new Description()
                                         .text(legacyDescription.getDescription())
                                         .type(new DescriptionType()
-                                                .schemaUri(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri())
-                                                .id(DESCRIPTION_TYPE_MAP.get(legacyDescription.getType())))
+                                                .schemaUri(DescriptionTypeSchemaURIEnum.fromValue(SchemaValues.DESCRIPTION_TYPE_SCHEMA.getUri()))
+                                                .id(DescriptionTypeIdEnum.fromValue(DESCRIPTION_TYPE_MAP.get(legacyDescription.getType()))))
                         ).toList()
                 )
                 .date(new Date()

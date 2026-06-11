@@ -6,6 +6,8 @@ import au.org.raid.api.util.TestConstants;
 import au.org.raid.db.jooq.tables.records.RelatedObjectTypeRecord;
 import au.org.raid.db.jooq.tables.records.RelatedObjectTypeSchemaRecord;
 import au.org.raid.idl.raidv2.model.RelatedObjectType;
+import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
+import au.org.raid.idl.raidv2.model.RelatedObjectTypeSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,14 +51,14 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation passes with valid related object type")
     void validRelatedObjectType() {
         var relatedObjectType = new RelatedObjectType()
-                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
-                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
 
-        when(relatedObjectTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI))
+        when(relatedObjectTypeSchemaRepository.findActiveByUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue()))
                 .thenReturn(Optional.of(RELATED_OBJECT_TYPE_SCHEMA_RECORD));
 
         when(relatedObjectTypeRepository
-                .findByUriAndSchemaId(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE, RELATED_OBJECT_TYPE_SCHEMA_ID))
+                .findByUriAndSchemaId(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue(), RELATED_OBJECT_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.of(RELATED_OBJECT_TYPE_RECORD));
 
         final var failures = validationService.validate(relatedObjectType, INDEX);
@@ -68,9 +70,9 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation fails with null id")
     void nullId() {
         var relatedObjectType = new RelatedObjectType()
-                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
 
-        when(relatedObjectTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI))
+        when(relatedObjectTypeSchemaRepository.findActiveByUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue()))
                 .thenReturn(Optional.of(RELATED_OBJECT_TYPE_SCHEMA_RECORD));
 
         final var failures = validationService.validate(relatedObjectType, INDEX);
@@ -90,10 +92,10 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation fails with empty id")
     void emptyId() {
         var relatedObjectType = new RelatedObjectType()
-                .id("")
-                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+                .id((RelatedObjectTypeIdEnum) null)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
 
-        when(relatedObjectTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI))
+        when(relatedObjectTypeSchemaRepository.findActiveByUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue()))
                 .thenReturn(Optional.of(RELATED_OBJECT_TYPE_SCHEMA_RECORD));
 
         final var failures = validationService.validate(relatedObjectType, INDEX);
@@ -112,7 +114,7 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation fails with null schemaUri")
     void nullSchemaUri() {
         var relatedObjectType = new RelatedObjectType()
-                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE);
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247);
 
         final var failures = validationService.validate(relatedObjectType, INDEX);
 
@@ -131,8 +133,8 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation fails with empty schemaUri")
     void emptySchemaUri() {
         var relatedObjectType = new RelatedObjectType()
-                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
-                .schemaUri("");
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri((RelatedObjectTypeSchemaUriEnum) null);
 
         final var failures = validationService.validate(relatedObjectType, INDEX);
 
@@ -151,10 +153,10 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation fails if schemaUri does not exist")
     void nonExistentSchemaUri() {
         var relatedObjectType = new RelatedObjectType()
-                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
-                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
 
-        when(relatedObjectTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI))
+        when(relatedObjectTypeSchemaRepository.findActiveByUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue()))
                 .thenReturn(Optional.empty());
 
         final var failures = validationService.validate(relatedObjectType, INDEX);
@@ -172,14 +174,14 @@ class RelatedObjectTypeValidatorTest {
     @DisplayName("Validation fails if type does not exist with schema")
     void invalidTypeForSchema() {
         var relatedObjectType = new RelatedObjectType()
-                .id(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE)
-                .schemaUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI);
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
 
-        when(relatedObjectTypeSchemaRepository.findActiveByUri(TestConstants.RELATED_OBJECT_TYPE_SCHEMA_URI))
+        when(relatedObjectTypeSchemaRepository.findActiveByUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329.getValue()))
                 .thenReturn(Optional.of(RELATED_OBJECT_TYPE_SCHEMA_RECORD));
 
         when(relatedObjectTypeRepository
-                .findByUriAndSchemaId(TestConstants.BOOK_CHAPTER_RELATED_OBJECT_TYPE, RELATED_OBJECT_TYPE_SCHEMA_ID))
+                .findByUriAndSchemaId(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247.getValue(), RELATED_OBJECT_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.empty());
 
         final var failures = validationService.validate(relatedObjectType, INDEX);

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 public class RelatedObjectCategoryValidator {
@@ -29,14 +28,14 @@ public class RelatedObjectCategoryValidator {
         IntStream.range(0, categories.size()).forEach(i -> {
             final var relatedObjectCategory = categories.get(i);
 
-            if (isBlank(relatedObjectCategory.getId())) {
+            if (relatedObjectCategory.getId() == null) {
                 failures.add(new ValidationFailure()
                         .fieldId("relatedObject[%d].category[%d].id".formatted(index, i))
                         .errorType(NOT_SET_TYPE)
                         .message(NOT_SET_MESSAGE)
                 );
             }
-            if (isBlank(relatedObjectCategory.getSchemaUri())) {
+            if (relatedObjectCategory.getSchemaUri() == null) {
                 failures.add(new ValidationFailure()
                         .fieldId("relatedObject[%d].category[%d].schemaUri".formatted(index, i))
                         .errorType(NOT_SET_TYPE)
@@ -44,7 +43,7 @@ public class RelatedObjectCategoryValidator {
                 );
             } else {
                 final var relatedObjectCategoryScheme =
-                        relatedObjectCategorySchemaRepository.findActiveByUri(relatedObjectCategory.getSchemaUri());
+                        relatedObjectCategorySchemaRepository.findActiveByUri(relatedObjectCategory.getSchemaUri().getValue());
 
                 if (relatedObjectCategoryScheme.isEmpty()) {
                     failures.add(new ValidationFailure()
@@ -52,8 +51,8 @@ public class RelatedObjectCategoryValidator {
                             .errorType(INVALID_VALUE_TYPE)
                             .message(INVALID_SCHEMA)
                     );
-                } else if (!isBlank(relatedObjectCategory.getId()) &&
-                        relatedObjectCategoryRepository.findByUriAndSchemaId(relatedObjectCategory.getId(), relatedObjectCategoryScheme.get().getId()).isEmpty()) {
+                } else if (relatedObjectCategory.getId() != null &&
+                        relatedObjectCategoryRepository.findByUriAndSchemaId(relatedObjectCategory.getId().getValue(), relatedObjectCategoryScheme.get().getId()).isEmpty()) {
                     failures.add(new ValidationFailure()
                             .fieldId("relatedObject[%d].category[%d].id".formatted(index, i))
                             .errorType(INVALID_VALUE_TYPE)

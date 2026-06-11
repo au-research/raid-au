@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
-import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class RelatedRaidTypeValidator {
             );
         }
 
-        if (isBlank(relatedRaidType.getId())) {
+        if (relatedRaidType.getId() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("relatedRaid[%d].type.id".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -38,7 +37,7 @@ public class RelatedRaidTypeValidator {
             );
         }
 
-        if (isBlank(relatedRaidType.getSchemaUri())) {
+        if (relatedRaidType.getSchemaUri() == null) {
             failures.add(new ValidationFailure()
                     .fieldId("relatedRaid[%d].type.schemaUri".formatted(index))
                     .errorType(NOT_SET_TYPE)
@@ -46,15 +45,15 @@ public class RelatedRaidTypeValidator {
             );
         } else {
             final var relatedRaidTypeScheme =
-                    relatedRaidTypeSchemaRepository.findActiveByUri(relatedRaidType.getSchemaUri());
+                    relatedRaidTypeSchemaRepository.findActiveByUri(relatedRaidType.getSchemaUri().getValue());
 
             if (relatedRaidTypeScheme.isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("relatedRaid[%d].type.schemaUri".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)
                         .message(INVALID_SCHEMA));
-            } else if (!isBlank(relatedRaidType.getId()) &&
-                    relatedRaidTypeRepository.findByUriAndSchemaId(relatedRaidType.getId(), relatedRaidTypeScheme.get().getId()).isEmpty()) {
+            } else if (relatedRaidType.getId() != null &&
+                    relatedRaidTypeRepository.findByUriAndSchemaId(relatedRaidType.getId().getValue(), relatedRaidTypeScheme.get().getId()).isEmpty()) {
                 failures.add(new ValidationFailure()
                         .fieldId("relatedRaid[%d].type.id".formatted(index))
                         .errorType(INVALID_VALUE_TYPE)

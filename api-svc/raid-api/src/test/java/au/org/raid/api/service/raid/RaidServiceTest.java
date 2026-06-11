@@ -13,7 +13,6 @@ import au.org.raid.api.service.datacite.DataciteService;
 import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.service.raid.id.IdentifierParser;
 import au.org.raid.api.util.FileUtil;
-import au.org.raid.api.util.SchemaValues;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
@@ -42,6 +41,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
@@ -175,7 +175,7 @@ class RaidServiceTest {
 
         final var contributor = new Contributor()
                 .id("https://orcid.org/0009-0002-5128-5184")
-                .schemaUri("https://orcid.org")
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .contact(true)
                 .leader(true);
 
@@ -366,10 +366,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
             .identifier(new Id()
                     .owner(new Owner()
-                        .servicePoint(servicePointId)))
+                        .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                     .type(new AccessType()
-                        .id(SchemaValues.ACCESS_TYPE_OPEN.getUri())));
+                        .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 
@@ -409,10 +409,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
                 .identifier(new Id()
                         .owner(new Owner()
-                                .servicePoint(servicePointId)))
+                                .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                         .type(new AccessType()
-                                .id(SchemaValues.ACCESS_TYPE_OPEN.getUri())));
+                                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 
@@ -457,10 +457,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
                 .identifier(new Id()
                         .owner(new Owner()
-                                .servicePoint(servicePointId)))
+                                .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                         .type(new AccessType()
-                                .id(SchemaValues.ACCESS_TYPE_OPEN.getUri())));
+                                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 
@@ -504,10 +504,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
                 .identifier(new Id()
                         .owner(new Owner()
-                                .servicePoint(servicePointId)))
+                                .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                         .type(new AccessType()
-                                .id(SchemaValues.ACCESS_TYPE_OPEN.getUri())));
+                                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 
@@ -551,10 +551,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
                 .identifier(new Id()
                         .owner(new Owner()
-                                .servicePoint(servicePointId)))
+                                .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                         .type(new AccessType()
-                                .id(SchemaValues.ACCESS_TYPE_EMBARGOED.getUri())));
+                                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 
@@ -598,10 +598,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
                 .identifier(new Id()
                         .owner(new Owner()
-                                .servicePoint(servicePointId)))
+                                .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                         .type(new AccessType()
-                                .id(SchemaValues.ACCESS_TYPE_EMBARGOED.getUri())));
+                                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_F1CF_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 
@@ -645,10 +645,10 @@ class RaidServiceTest {
         final var raid = new RaidDto()
                 .identifier(new Id()
                         .owner(new Owner()
-                                .servicePoint(servicePointId)))
+                                .servicePoint(BigDecimal.valueOf(servicePointId))))
                 .access(new Access()
                         .type(new AccessType()
-                                .id(SchemaValues.ACCESS_TYPE_OPEN.getUri())));
+                                .id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_)));
 
         when(raidHistoryService.findByHandle(handle)).thenReturn(Optional.of(raid));
 

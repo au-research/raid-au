@@ -11,6 +11,8 @@ import au.org.raid.db.jooq.tables.records.ContributorPositionRecord;
 import au.org.raid.db.jooq.tables.records.ContributorPositionSchemaRecord;
 import au.org.raid.db.jooq.tables.records.RaidContributorPositionRecord;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
+import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorPositionSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -151,12 +153,12 @@ class ContributorPositionServiceTest {
     @DisplayName("create() saves all contributor positions")
     void create() {
         final var raidContributorId = 123;
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307.getValue();
+        final var schemaUri = ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305.getValue();
         final var schemaId = 234;
         final var contributorPosition = new ContributorPosition()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305);
         final var contributorPositionId = 345;
 
         final var contributorPositionSchemaRecord = new ContributorPositionSchemaRecord()
@@ -198,9 +200,9 @@ class ContributorPositionServiceTest {
     @DisplayName("create() throws ContributorPositionSchemaNotFoundException")
     void createThrowsContributorPositionSchemaNotFoundException() {
         final var raidContributorId = 123;
-        final var schemaUri = "schema-uri";
+        final var schemaUri = ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305.getValue();
         final var contributorPosition = new ContributorPosition()
-                .schemaUri(schemaUri);
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305);
 
         when(contributorPositionSchemaRepository.findByUri(schemaUri))
                 .thenReturn(Optional.empty());
@@ -217,12 +219,12 @@ class ContributorPositionServiceTest {
     @DisplayName("create() throws ContributorPositionNotFoundException")
     void createThrowsContributorPositionNotFoundException() {
         final var raidContributorId = 123;
-        final var uri = "_uri";
-        final var schemaUri = "schema-uri";
+        final var uri = ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307.getValue();
+        final var schemaUri = ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305.getValue();
         final var schemaId = 234;
         final var contributorPosition = new ContributorPosition()
-                .id(uri)
-                .schemaUri(schemaUri);
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305);
 
         final var contributorPositionSchemaRecord = new ContributorPositionSchemaRecord()
                 .setId(schemaId);

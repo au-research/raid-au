@@ -60,16 +60,18 @@ public class RelatedObjectValidator {
 
                     log.debug("Validating relatedObject: {}", relatedObject);
 
+                    final var schemaUriValue = relatedObject.getSchemaUri() == null ? null : relatedObject.getSchemaUri().getValue();
+
                     if (isBlank(relatedObject.getId())) {
                         failures.add(new ValidationFailure()
                                 .fieldId(String.format("relatedObject[%d].id", index))
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
-                    }   else if (DOI_SCHEMA_URI.equals(relatedObject.getSchemaUri())) {
+                    }   else if (DOI_SCHEMA_URI.equals(schemaUriValue)) {
                         failures.addAll(
                                 doiService.validate(relatedObject.getId(), String.format("relatedObject[%d].id", index))
                         );
-                    } else if (WEB_ARCHIVE_SCHEMA_URI.equals(relatedObject.getSchemaUri())) {
+                    } else if (WEB_ARCHIVE_SCHEMA_URI.equals(schemaUriValue)) {
                         // validate web archive URL format
                         if (!WEB_ARCHIVE_URL_PATTERN.matcher(relatedObject.getId()).matches()) {
                             failures.add(new ValidationFailure()
@@ -81,12 +83,12 @@ public class RelatedObjectValidator {
 
                     log.debug("relatedObject.schemaUri = {}", relatedObject.getSchemaUri());
 
-                    if (isBlank(relatedObject.getSchemaUri())) {
+                    if (schemaUriValue == null) {
                         failures.add(new ValidationFailure()
                                 .fieldId(String.format("relatedObject[%d].schemaUri", index))
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
-                    } else if (!RELATED_OBJECT_SCHEMA_URI.contains(relatedObject.getSchemaUri())) {
+                    } else if (!RELATED_OBJECT_SCHEMA_URI.contains(schemaUriValue)) {
                         failures.add(new ValidationFailure()
                                 .fieldId(String.format("relatedObject[%d].schemaUri", index))
                                 .errorType("invalid")

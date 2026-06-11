@@ -99,6 +99,6 @@ public class TestConstants {
 
     public static final String LANGUAGE_ID = "eng";
 
-    public static final String LANGUAGE_SCHEMA_URI = "https://www.iso.org/standard/39534.html";
+    public static final String LANGUAGE_SCHEMA_URI = "https://www.iso.org/standard/74575.html";
     public static final String ALTERNATIVE_DESCRIPTION_TYPE = "https://github.com/au-research/raid-metadata/blob/main/scheme/description/type/v1/alternative.json";
 }

@@ -1,5 +1,7 @@
 package au.org.raid.api.factory;
 
+import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
+import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,10 +14,10 @@ class ContributorRoleFactoryTest {
     @Test
     @DisplayName("Sets all fields")
     void setsAllFields() {
-        final var id = "_id";
-        final var schemaUri = "schema-uri";
+        final var id = ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_CONCEPTUALIZATION_;
+        final var schemaUri = ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_;
 
-        final var result = factory.create(id, schemaUri);
+        final var result = factory.create(id.getValue(), schemaUri.getValue());
 
         assertThat(result.getId(), is(id));
         assertThat(result.getSchemaUri(), is(schemaUri));
