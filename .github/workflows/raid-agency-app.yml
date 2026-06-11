@@ -6,7 +6,6 @@ on:
     paths:
       - .github/**
       - raid-agency-app/**
-      - raid-agency-app-static/**
 
 jobs:
   build:
