@@ -178,8 +178,8 @@ function makeRequest(url, options = {}) {
 // Get bearer token from IAM for a given client
 async function getTokenForClient(clientId, clientSecret) {
   const tokenUrl = `${config.iamEndpoint}/realms/raid/protocol/openid-connect/token`;
-  const bodyParams = `grant_type=client_credentials&client_id=${clientId}`;
-  const body = clientSecret ? `${bodyParams}&client_secret=${clientSecret}` : bodyParams;
+  const bodyParams = `grant_type=client_credentials&client_id=${encodeURIComponent(clientId)}`;
+  const body = clientSecret ? `${bodyParams}&client_secret=${encodeURIComponent(clientSecret)}` : bodyParams;
 
   const response = await makeRequestWithRetry(tokenUrl, {
     method: 'POST',
@@ -200,9 +200,11 @@ async function getTokenForClient(clientId, clientSecret) {
 // Get bearer token from IAM
 async function getBearerToken() {
   console.log('Getting bearer token...');
+  console.log(`  iamEndpoint : ${config.iamEndpoint}`);
+  console.log(`  iamClientId : ${config.iamClientId}`);
 
   const tokenUrl = `${config.iamEndpoint}/realms/raid/protocol/openid-connect/token`;
-  const body = `grant_type=client_credentials&client_id=${config.iamClientId}&client_secret=${config.iamClientSecret}`;
+  const body = `grant_type=client_credentials&client_id=${encodeURIComponent(config.iamClientId)}&client_secret=${encodeURIComponent(config.iamClientSecret)}`;
   
   try {
     const response = await makeRequestWithRetry(tokenUrl, {
