@@ -22,5 +22,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: raid-agency-app-static/package-lock.json
       - run: npm ci
+      - name: Create raw-data stubs for CI build
+        run: |
+          mkdir -p src/raw-data
+          echo '[]' > src/raw-data/raids.json
+          echo '[]' > src/raw-data/handles.json
+          echo '[]' > src/raw-data/embargoed-raids.json
       - run: npx astro check && npx astro build
       - run: npm test
