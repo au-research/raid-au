@@ -308,4 +308,18 @@ class RaidPermissionsControllerTest {
         var response = controller.addAdminRaid(request);
         assertThat(response.getStatus(), is(401));
     }
+
+    @Test
+    void addAdminRaid_throwsUserNotFoundWhenUserDoesNotExist() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        when(session.users()).thenReturn(userProvider);
+        when(userProvider.getUserById(realm, "missing")).thenReturn(null);
+
+        var request = new AdminRaidsRequest();
+        request.setUserId("missing");
+        request.setHandle("test-handle");
+
+        assertThrows(UserNotFoundException.class, () -> controller.addAdminRaid(request));
+    }
 }
