@@ -174,7 +174,7 @@ public class RaidController implements RaidApi {
         return ResponseEntity.ok(raidService.findAllPublic());
     }
 
-    @GetMapping(value = "/raid/embargoed")
+    @GetMapping(value = "/raid/all-embargoed")
     public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids() {
         return ResponseEntity.ok(raidService.findAllEmbargoed());
     }
