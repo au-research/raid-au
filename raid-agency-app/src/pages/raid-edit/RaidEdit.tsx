@@ -22,7 +22,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {raidService} from "@/services/raid-service.ts";
 import { useSnackbar } from "@/components/snackbar/hooks/useSnackbar";
 import {messages} from "@/constants/messages";
-import { addMissingEndDateInPlace } from "./TransformResponseData";
+import { addMissingEndDate } from "./TransformResponseData";
 
 function createEditRaidPageBreadcrumbs({
   prefix,
@@ -142,9 +142,10 @@ export const RaidEdit = () => {
     return <ErrorAlertComponent error="Service points could not be fetched" />;
   }
 
-  const raidData: RaidDto | RaidCreateRequest = {
-    ...(addMissingEndDateInPlace(query.data) as RaidDto),
-  };
+  const raidData = useMemo<RaidDto | RaidCreateRequest>(
+    () => addMissingEndDate(query.data) as RaidDto,
+    [query.data]
+  );
 
   return (
     <Container
