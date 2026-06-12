@@ -122,6 +122,11 @@ export const RaidEdit = () => {
     },
   });
 
+  const raidData = useMemo<RaidDto | RaidCreateRequest | undefined>(
+    () => query.data ? addMissingEndDate(query.data) as RaidDto : undefined,
+    [query.data]
+  );
+
   const handleSubmit = async (data: RaidDto) => {
     updateMutation.mutate(raidRequest(data));
   };
@@ -142,11 +147,6 @@ export const RaidEdit = () => {
     return <ErrorAlertComponent error="Service points could not be fetched" />;
   }
 
-  const raidData = useMemo<RaidDto | RaidCreateRequest>(
-    () => addMissingEndDate(query.data) as RaidDto,
-    [query.data]
-  );
-
   return (
     <Container
       maxWidth="lg"
@@ -166,7 +166,7 @@ export const RaidEdit = () => {
         : (<RaidForm
           prefix={prefix}
           suffix={suffix}
-          raidData={raidData}
+          raidData={raidData!}
           onSubmit={handleSubmit}
           isSubmitting={updateMutation.isPending}
         />)
