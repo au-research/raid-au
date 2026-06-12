@@ -29,7 +29,6 @@ export const relatedObjectValidationSchema = z
       category: relatedObjectCategoryValidationSchema,
     })
   )
-  .max(100, "Related Objects cannot exceed 100 items. Please remove some before saving.")
   .superRefine((items, ctx) => {
     // Group indices by URL only — one DOI/URL can only be linked to one type
     const keyToIndices = new Map<string, number[]>();
