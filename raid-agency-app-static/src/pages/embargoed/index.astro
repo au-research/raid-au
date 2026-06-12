@@ -3,9 +3,10 @@ import Breadcrumbs from "@/components/breadcrumbs.astro";
 import EmbargoedRaidsTable from "@/components/embargoed-raids-table.astro";
 import Layout from "@/layouts/main.astro";
 import { embargoedRaids } from "@/store/embargoed-raids";
+const buildTime = new Date().toISOString();
 ---
 
-<Layout title="Embargoed RAiDs" noindex={true}>
+<Layout title="Embargoed RAiDs" noindex={true} lastModified={buildTime}>
   <div class="overflow-hidden rounded-md bg-white border border-gray-300">
     <Breadcrumbs elements={[{ to: "/embargoed", label: "Embargoed RAiDs" }]} />
     <div class="p-4 sm:p-6 lg:p-8">
@@ -22,5 +23,8 @@ import { embargoedRaids } from "@/store/embargoed-raids";
       </div>
       <EmbargoedRaidsTable raids={embargoedRaids} />
     </div>
+    <p class="px-4 pb-4 text-xs text-gray-500 text-right">
+      Page generated: <time datetime={buildTime}>{buildTime}</time>
+    </p>
   </div>
 </Layout>

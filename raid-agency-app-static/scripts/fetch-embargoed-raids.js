@@ -139,7 +139,7 @@ function extractHandle(identifierId) {
  * Fetch all embargoed RAiD records from the API.
  */
 async function fetchAllEmbargoedRaids(bearerToken, config, makeRequestWithRetry) {
-  const url = `${config.apiEndpoint}/raid/all-embargoed`;
+  const url = `${config.apiEndpoint}/raid/embargoed`;
 
   try {
     const response = await makeRequestWithRetry(url, {
