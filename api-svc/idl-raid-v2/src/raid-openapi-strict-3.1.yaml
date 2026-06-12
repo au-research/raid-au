@@ -702,7 +702,9 @@ components:
           - "string"
           - "null"
         statement:
-          $ref: "#/components/schemas/AccessStatement"
+          anyOf:
+          - $ref: "#/components/schemas/AccessStatement"
+          - type: "null"
           description: "a metadata schema block containing an explanation for any\
             \ access type that is not ‘open’, with the explanation’s associated properties"
         type:
@@ -710,7 +712,6 @@ components:
           description: "a metadata schema block containing RAiD access type information"
       required:
       - "type"
-      - "statement"
       title: "Access"
       type: "object"
     AccessStatement:

@@ -723,7 +723,6 @@ components:
         }
     AccessStatement:
       type: object
-      required: [statement]
       properties:
         text: { type: string }
         language:

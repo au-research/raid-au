@@ -4,6 +4,8 @@ import au.org.raid.idl.raidv2.model.AccessStatement;
 import au.org.raid.idl.raidv2.model.AccessType;
 import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
 import au.org.raid.idl.raidv2.model.AccessTypeSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.Language;
+import au.org.raid.idl.raidv2.model.LanguageSchemaURIEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import java.time.LocalDate;
 
 import static au.org.raid.fixtures.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
 public class AccessIntegrationTest extends AbstractIntegrationTest {
@@ -160,6 +163,45 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    @Test
+    @DisplayName("Mint open access with null statement succeeds")
+    void mintOpenAccessWithNullStatement() {
+        createRequest.getAccess()
+                .type(new AccessType()
+                        .id(AccessTypeIdEnum.fromValue(OPEN_ACCESS_TYPE))
+                        .schemaUri(AccessTypeSchemaUriEnum.fromValue(ACCESS_TYPE_SCHEMA_URI))
+                )
+                .statement(null)
+                .embargoExpiry(null);
+
+        try {
+            raidApi.mintRaid(createRequest);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Mint open access with statement also succeeds")
+    void mintOpenAccessWithStatement() {
+        createRequest.getAccess()
+                .type(new AccessType()
+                        .id(AccessTypeIdEnum.fromValue(OPEN_ACCESS_TYPE))
+                        .schemaUri(AccessTypeSchemaUriEnum.fromValue(ACCESS_TYPE_SCHEMA_URI))
+                )
+                .statement(new AccessStatement()
+                        .text("Open access statement")
+                        .language(new Language()
+                                .id(LANGUAGE_ID)
+                                .schemaUri(LanguageSchemaURIEnum.fromValue(LANGUAGE_SCHEMA_URI))))
+                .embargoExpiry(null);
+
+        try {
+            raidApi.mintRaid(createRequest);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
 
     @Test
     @DisplayName("Mint with valid embargoed access type")
@@ -186,13 +228,73 @@ public class AccessIntegrationTest extends AbstractIntegrationTest {
                         .id(AccessTypeIdEnum.fromValue(EMBARGOED_ACCESS_TYPE))
                         .schemaUri(AccessTypeSchemaUriEnum.fromValue(ACCESS_TYPE_SCHEMA_URI))
                 )
-                .statement(new AccessStatement().text("Embargoed"));
+                .statement(new AccessStatement().text("Embargoed"))
+                .embargoExpiry(null);
         try {
             raidApi.mintRaid(createRequest);
+            fail("Expected RaidApiValidationException");
         } catch (RaidApiValidationException e) {
             final var failures = e.getFailures();
             assertThat(failures).hasSize(1);
             assertThat(failures).contains(
+                    new ValidationFailure()
+                            .fieldId("access.embargoExpiry")
+                            .errorType("notSet")
+                            .message("field must be set")
+            );
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Mint with embargoed access type fails with missing statement")
+    void missingStatementForEmbargoed() {
+        createRequest.getAccess()
+                .type(new AccessType()
+                        .id(AccessTypeIdEnum.fromValue(EMBARGOED_ACCESS_TYPE))
+                        .schemaUri(AccessTypeSchemaUriEnum.fromValue(ACCESS_TYPE_SCHEMA_URI))
+                )
+                .statement(null)
+                .embargoExpiry(LocalDate.now());
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("Expected RaidApiValidationException");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(
+                    new ValidationFailure()
+                            .fieldId("access.statement")
+                            .errorType("notSet")
+                            .message("field must be set")
+            );
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Mint with embargoed access type fails with missing statement and embargoExpiry")
+    void missingStatementAndEmbargoExpiryForEmbargoed() {
+        createRequest.getAccess()
+                .type(new AccessType()
+                        .id(AccessTypeIdEnum.fromValue(EMBARGOED_ACCESS_TYPE))
+                        .schemaUri(AccessTypeSchemaUriEnum.fromValue(ACCESS_TYPE_SCHEMA_URI))
+                )
+                .statement(null)
+                .embargoExpiry(null);
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("Expected RaidApiValidationException");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(2);
+            assertThat(failures).contains(
+                    new ValidationFailure()
+                            .fieldId("access.statement")
+                            .errorType("notSet")
+                            .message("field must be set"),
                     new ValidationFailure()
                             .fieldId("access.embargoExpiry")
                             .errorType("notSet")
