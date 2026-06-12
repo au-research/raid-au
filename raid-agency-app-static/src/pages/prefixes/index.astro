@@ -9,6 +9,7 @@ interface OwnerWithServicePointName {
   [key: string]: unknown;
 }
 
+const buildTime = new Date().toISOString();
 const prefixData = new Map<string, { count: number; servicePointName: string }>();
 
 for (const el of raids) {
@@ -27,7 +28,7 @@ for (const el of raids) {
 }
 ---
 
-<Layout title="main">
+<Layout title="main" lastModified={buildTime}>
   <div class="overflow-hidden rounded-md bg-white border border-gray-300">
     <Breadcrumbs elements={[{ to: "/prefixes", label: "Prefixes" }]} />
     <div class="p-4 sm:p-6 lg:p-8">
@@ -41,5 +42,8 @@ for (const el of raids) {
       </div>
       <PrefixesTable prefixes={prefixData} />
     </div>
+    <p class="px-4 pb-4 text-xs text-gray-500 text-right">
+      Page generated: <time datetime={buildTime}>{buildTime}</time>
+    </p>
   </div>
 </Layout>
