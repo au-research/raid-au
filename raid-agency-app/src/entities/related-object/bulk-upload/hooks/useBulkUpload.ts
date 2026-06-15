@@ -850,13 +850,6 @@ export function useBulkUpload(
 
   const handleConfirm = useCallback(
     async (addRelatedObjects: (objs: ParsedRelatedObject[]) => Promise<void>) => {
-      if (editableRows.length > MAX_ROWS) {
-        setSubmissionError(
-          `Too many rows: ${editableRows.length} rows present but the maximum allowed is ${MAX_ROWS}. Please remove some rows before uploading.`
-        );
-        return;
-      }
-
       // Re-validate every row and collect expanded objects in a single pass.
       type RowResult = { row: EditableRow; expanded: ParsedRelatedObject[] };
       const results: RowResult[] = editableRows.map((row) => {
