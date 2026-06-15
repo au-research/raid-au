@@ -14,13 +14,13 @@ See the [Changelog audience](#changelog-audience) section for info about
 * Fixed a static pages rendering defect.
 
 ## API
-* LinkML data model restoration — enum values for subjects, titles, descriptions, contributor
+* LinkML data model introduction — enum values for subjects, titles, descriptions, contributor
   roles/positions, access types, related object types/categories, and traditional knowledge labels
   are now generated from SPARQL queries against external vocabularies (ANZSRC, COAR, etc.) with
   retry logic and local caching.
 * String `schemaUri` fields migrated to typed enums across all API models — replaces free-text
   URIs with OpenAPI-generated enum types for stronger compile-time validation.
-* RDF content negotiation restored — the `/raid/{prefix}/{suffix}` endpoint now serves Turtle,
+* RDF content negotiation added — the `/raid/{prefix}/{suffix}` endpoint now serves Turtle,
   RDF/XML, N-Triples, and JSON-LD representations via `Accept` header negotiation.
 * Fixed `access.statement` conditional validation — Jakarta `@NotNull` on the generated
   `Statement` model caused blanket rejection before the custom validator could apply conditional
@@ -33,15 +33,6 @@ See the [Changelog audience](#changelog-audience) section for info about
   duplicate key violations under concurrent requests.
 * Null-guard in `addAdminRaid` — throws `UserNotFoundException` when Keycloak returns a null
   user instead of propagating a NullPointerException.
-* Fixed embargoed endpoint path regression.
-
-## Database
-* Added `ON DELETE CASCADE` to all foreign keys on raid child/grandchild tables.
-* Schema-agnostic Flyway migrations for branch deployments.
-* Stage-only migration to remove a broken raid causing HTTP 500 on the list endpoint.
-
-## Dependencies
-* Dependency updates across `raid-agency-app` and `raid-agency-app-static`.
 
 # 2.9.1
 
