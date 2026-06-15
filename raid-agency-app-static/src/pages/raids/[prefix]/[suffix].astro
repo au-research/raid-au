@@ -79,9 +79,11 @@ const pageTitle = isEmbargoed
   : primaryTitle
     ? `${primaryTitle} — RAiD ${handle}`
     : `RAiD ${handle}`;
+
+const buildTime = new Date().toISOString();
 ---
 
-<Layout title={pageTitle} description={metaDescription} noindex={isEmbargoed}>
+<Layout title={pageTitle} description={metaDescription} noindex={isEmbargoed} lastModified={buildTime}>
   {!isEmbargoed && raid && (
     <script
       is:inline
@@ -130,5 +132,8 @@ const pageTitle = isEmbargoed
         </div>
       )}
     </div>
+    <p class="px-4 pb-4 text-xs text-gray-500 text-right">
+      Page generated: <time datetime={buildTime}>{buildTime}</time>
+    </p>
   </div>
 </Layout>
