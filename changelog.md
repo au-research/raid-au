@@ -34,6 +34,34 @@ See the [Changelog audience](#changelog-audience) section for info about
 * Null-guard in `addAdminRaid` — throws `UserNotFoundException` when Keycloak returns a null
   user instead of propagating a NullPointerException.
 
+# 2.9.2
+
+## Database
+* Made the API schema-configurable for branch deployments by decoupling JOOQ schema references
+  and adding `currentSchema` to the datasource URL (RAID-652, RAID-661).
+* Converted schema grant to a repeatable migration with existing object grants (RAID-661).
+* Migrated all raid `schemaUri` values to `https://raid.org/` and cleaned up legacy
+  `localcontexts.org` vocabulary references (RAID-549).
+
+## Static Landing Pages
+* Enriched JSON-LD metadata for RDA harvesting with `name` and `headline` fields, and filtered
+  the sitemap to exclude embargoed RAiDs (RAID-619, RAID-644).
+* Added `robots.txt` with sitemap reference (RAID-619).
+* Upgraded to Astro 6 and migrated Tailwind to PostCSS (RAID-628).
+
+## App-client UI
+* Added embargoed RAiD view with locale-formatted expiry dates in ISO 8601 UTC.
+* Implemented SEO improvements with `noindex` on embargoed RAiDs and accessibility
+  enhancements.
+
+## Infrastructure
+* Verified and validated the end-to-end Build-Push-Deploy-V2 pipeline including Keycloak
+  auto-configuration and IAM policy integration (RAID-646).
+
+## Dependencies
+* `astro` 5.x to 6.4.4 in `raid-agency-app-static`.
+* Various minor dependency updates in `raid-agency-app` and `raid-agency-app-static`.
+
 # 2.9.1
 
 ## Database

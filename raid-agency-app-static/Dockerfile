@@ -3,8 +3,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install deps (cached layer)
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
 
@@ -21,7 +21,7 @@ ENV IAM_CLIENT_SECRET=$IAM_CLIENT_SECRET \
     RAID_DUMPER_CLIENT_SECRET=$RAID_DUMPER_CLIENT_SECRET
 
 # Fetch RAiD data then build the static site
-RUN yarn build
+RUN npm run build
 
 # Stage 2: serve the pre-built static files
 FROM nginx:alpine

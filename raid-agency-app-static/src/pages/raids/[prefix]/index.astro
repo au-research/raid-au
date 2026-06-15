@@ -39,9 +39,10 @@ const tableRaids = [
 ];
 
 const raidAppUrl = getRaidAppUrl();
+const buildTime = new Date().toISOString();
 ---
 
-<Layout title="main">
+<Layout title="main" lastModified={buildTime}>
   <div class="overflow-hidden rounded-md bg-white border border-gray-300">
     <Breadcrumbs
       elements={[
@@ -70,5 +71,8 @@ const raidAppUrl = getRaidAppUrl();
       </div>
       <RaidsTable raids={tableRaids} />
     </div>
+    <p class="px-4 pb-4 text-xs text-gray-500 text-right">
+      Page generated: <time datetime={buildTime}>{buildTime}</time>
+    </p>
   </div>
 </Layout>

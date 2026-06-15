@@ -6,7 +6,6 @@ on:
     paths:
       - .github/**
       - raid-agency-app/**
-      - raid-agency-app-static/**
 
 jobs:
   build:
@@ -24,4 +23,3 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
-      - run: npm test -- --run

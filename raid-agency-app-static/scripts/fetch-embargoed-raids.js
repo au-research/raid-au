@@ -71,9 +71,9 @@ async function makeRequestWithRetry(url, options = {}, retries = config.maxRetri
 
 async function getDumperToken() {
   const tokenUrl = `${config.iamEndpoint}/realms/raid/protocol/openid-connect/token`;
-  const bodyParams = `grant_type=client_credentials&client_id=${config.raidDumperClientId}`;
+  const bodyParams = `grant_type=client_credentials&client_id=${encodeURIComponent(config.raidDumperClientId)}`;
   const body = config.raidDumperClientSecret
-    ? `${bodyParams}&client_secret=${config.raidDumperClientSecret}`
+    ? `${bodyParams}&client_secret=${encodeURIComponent(config.raidDumperClientSecret)}`
     : bodyParams;
 
   const response = await makeRequestWithRetry(tokenUrl, {

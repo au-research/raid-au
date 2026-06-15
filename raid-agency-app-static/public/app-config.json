@@ -1,5 +1,5 @@
 {
-  "apiEndpoint": "https://app.demo.raid.org.au",
+  "apiEndpoint": "https://api.demo.raid.org.au",
   "iamEndpoint": "https://iam.demo.raid.org.au",
   "iamClientId": "static-page-client",
   "raidDumperClientId": "raid-access-handler",

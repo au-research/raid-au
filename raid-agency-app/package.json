@@ -41,6 +41,8 @@
     "zod": "3.22.4"
   },
   "devDependencies": {
+    "@emnapi/core": "^1.11.0",
+    "@emnapi/runtime": "^1.11.0",
     "@playwright/test": "1.59.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "6.9.1",
