@@ -1,7 +1,7 @@
 ---
 // ArdcFooter.astro
 // Renders the full-width footer with logos, description, links, and acknowledgement.
-// Only shown when PUBLIC_USE_CUSTOM_CONFIG=true and footer.show=true
+// Only shown when footer.show=true in app-config.json
 import { getSiteConfig } from "@/config";
 
 const { show, main, links, copyright } = getSiteConfig().footer;

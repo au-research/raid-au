@@ -1,6 +1,8 @@
+import { getSiteConfig } from "@/config";
+
 export function getRaidAppUrl(): string {
   const localWebAppPort = 7080;
-  const raidEnv = import.meta.env.RAID_ENV;
+  const raidEnv = getSiteConfig().raidEnv;
   const environment =
     raidEnv === "test"
       ? "test"
@@ -16,11 +18,11 @@ export function getRaidAppUrl(): string {
     return `http://localhost:${localWebAppPort}`;
   }
 
-  if (environment === "test" || "dev") {
+  if (environment === "test") {
     console.log("environment", environment);
   }
 
   return `https://app.${environment}.raid.org.au`;
 }
 
-export const getRAIDUrl = import.meta.env.RAID_URL || 'https://raid.org/';
+export const getRAIDUrl: string = getSiteConfig().raidUrl ?? 'https://raid.org/';

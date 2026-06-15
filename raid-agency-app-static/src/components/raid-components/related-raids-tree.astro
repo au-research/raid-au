@@ -12,6 +12,7 @@ interface Props {
 
 const { relatedRaids, currentRaidId } = Astro.props as Props;
 const baseUrl = import.meta.env.PUBLIC_BASE_URL || 'https://static.prod.raid.org.au/raids/';
+
 interface RelatedRaidWithLevel extends RelatedRaid {
   level: number;
   title: string | undefined;
@@ -52,10 +53,16 @@ function findAllRelatedRaids(
   return allRelated;
 }
 
-// Then update how you call it:
-const allNestedRaids = relatedRaids.flatMap(
-  (raid) => findAllRelatedRaids(raid, 0, new Set()) // Initialize with new Set
-);
+function getRaidTitle(id: string | undefined): string {
+  if (!id) return "";
+  const handle = id.split("/").slice(-2).join("/");
+  return raids.find((r) => r.identifier.id.split("/").slice(-2).join("/") === handle)
+    ?.title?.at(0)?.text ?? "";
+}
+
+const allNestedRaids = [...relatedRaids]
+  .sort((a, b) => getRaidTitle(a.id).localeCompare(getRaidTitle(b.id), undefined, { sensitivity: "base" }))
+  .flatMap((raid) => findAllRelatedRaids(raid, 0, new Set()));
 
 function findReverseRelations(
   raidId: string,
@@ -102,8 +109,8 @@ function findReverseRelations(
   return reverseRelations;
 }
 
-// And call it with:
-const reverseRelations = findReverseRelations(currentRaidId, 0, new Set());
+const reverseRelations = findReverseRelations(currentRaidId, 0, new Set())
+  .sort((a, b) => (a.title ?? "").localeCompare(b.title ?? "", undefined, { sensitivity: "base" }));
 ---
 
 <section class="py-5">

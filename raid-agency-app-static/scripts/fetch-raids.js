@@ -53,49 +53,19 @@
  */
 
 import fs from 'fs/promises';
-import path, {dirname} from 'path';
+import path from 'path';
 import https from 'https';
 import http from 'http';
-import {config as dotenvConfig} from 'dotenv';
-import {fileURLToPath} from 'url';
 import {fetchCitation} from './fetch-citation.js'
 import {extractHandles} from './fetch-handles.js';
 import { addOrcidInfoToRaidData } from './fetch-orcidData.js';
 import { addRorDetailsToRaidData } from './fetch-ror.js';
 import { addServicePointNameToRaidData } from './fetch-sp.js';
 import { fetchEmbargoedRaids } from './fetch-embargoed-raids.js';
+import { loadAppConfig } from './loadAppConfig.js';
 
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Load environment variables
-dotenvConfig();
-
-// Configuration with defaults
-const config = {
-  iamEndpoint: process.env.IAM_ENDPOINT,
-  apiEndpoint: process.env.API_ENDPOINT,
-  iamClientId: process.env.IAM_CLIENT_ID,
-  iamClientSecret: process.env.IAM_CLIENT_SECRET,
-  raidDumperClientId: process.env.RAID_DUMPER_CLIENT_ID,
-  raidDumperClientSecret: process.env.RAID_DUMPER_CLIENT_SECRET,
-  raidEnv: process.env.RAID_ENV,
-  dataDir: process.env.DATA_DIR || './src/raw-data',
-  // Performance tuning
-  concurrentDOIRequests: parseInt(process.env.CONCURRENT_DOI_REQUESTS) || 5,
-  doiRequestDelay: parseInt(process.env.DOI_REQUEST_DELAY) || 100,
-  requestTimeout: parseInt(process.env.REQUEST_TIMEOUT) || 30000,
-  maxRetries: parseInt(process.env.MAX_RETRIES) || 3,
-  // Feature flags
-  enableCaching: process.env.ENABLE_CACHING === 'true',
-  cachingTime: parseInt(process.env.CACHING_TIME) || 5 * 24 * 60 * 60 * 1000, // 5 days
-  verboseLogging: process.env.VERBOSE_LOGGING === 'true',
-  orcidEnv: process.env.RAID_ENV || 'prod',
-  concurrentRorRequests: parseInt(process.env.CONCURRENT_ROR_REQUESTS) || 5,
-  rorRequestDelay: parseInt(process.env.ROR_REQUEST_DELAY) || 100,
-
-};
+// Load config from public/app-config.json (falls back to env vars)
+const config = loadAppConfig();
 
 // Simple in-memory cache for DOI citations
 const citationCache = new Map();
@@ -122,15 +92,21 @@ const stats = {
   failedServicePointFetches: 0,
 };
 
-// Validate required environment variables
+// Validate required config values
 function validateConfig() {
-  const required = ['IAM_ENDPOINT', 'API_ENDPOINT', 'IAM_CLIENT_ID', 'IAM_CLIENT_SECRET', 'RAID_ENV'];
-  const missing = required.filter(key => !process.env[key]);
-  // Check if any required environment variables are missing
+  const required = {
+    apiEndpoint: config.apiEndpoint,
+    iamEndpoint: config.iamEndpoint,
+    iamClientId: config.iamClientId,
+    iamClientSecret: config.iamClientSecret,
+    raidEnv: config.raidEnv,
+  };
+  const missing = Object.entries(required).filter(([, v]) => !v).map(([k]) => k);
   if (missing.length > 0) {
-    console.error('Error: The following required environment variables are not set:');
+    console.error('Error: The following required config values are not set:');
     missing.forEach(key => console.error(`  - ${key}`));
-    console.error('Please set these variables before running the script.');
+    console.error('Set them in public/app-config.json or as environment variables.');
+    console.error('Secrets (iamClientSecret) must always be environment variables.');
     process.exit(1);
   }
 }
