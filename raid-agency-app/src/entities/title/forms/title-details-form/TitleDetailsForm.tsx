@@ -1,3 +1,4 @@
+import { DatePickerField } from "@/components/fields/DatePickerField";
 import LanguageSelector from "@/components/fields/LanguageSelector";
 import { TextInputField } from "@/components/fields/TextInputField";
 import { TextSelectField } from "@/components/fields/TextSelectField";
@@ -62,18 +63,16 @@ function FieldGrid({
 
       <LanguageSelector name={`title.${index}.language.id`} width={3} />
 
-      <TextInputField
+      <DatePickerField
         name={`title.${index}.startDate`}
         label="Start Date"
-        placeholder="Start Date"
         required
         width={3}
       />
 
-      <TextInputField
+      <DatePickerField
         name={`title.${index}.endDate`}
         label="End Date"
-        placeholder="End Date"
         width={3}
       />
     </Grid>
