@@ -1,15 +1,25 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.10.1
+
+> Note: 2.10.0 was never deployed to production. Its migration of `schemaUri` fields to typed
+> enums (see below) rejected existing ANZSRC-FOR subject URIs stored with a trailing slash
+> (`.../anzsrc-for/2020/`), causing HTTP 500s on the `/raid/` list endpoint. 2.10.1 carries all
+> of the 2.10.0 changes plus the data fix below.
+
+## API
+* Normalised legacy ANZSRC-FOR subject `schemaUri` values to the canonical no-trailing-slash form
+  (`https://linked.data.gov.au/def/anzsrc-for/2020`) required by the new typed enums, via a
+  prod-only Flyway migration (V41.1). The same migration repairs subject IDs in `raid_history`
+  that an earlier prod-only fix (V40.1) corrupted with a blind text replace.
+
 # 2.10.0
 
 ## App-client UI
 * Removed bulk upload limit — CSV/Excel imports are no longer capped at 100 items.
 * Title and description now display on static landing pages.
 * Localised date formatting on static landing pages.
-* Embargoed raids now render on the static site with appropriate access restrictions.
-* SEO improvements — embargoed raids are excluded from search engine indexing via `noindex`
-  meta tags.
 * Runtime `app-config` support for static landing pages, replacing build-time configuration.
 * Fixed a static pages rendering defect.
 
