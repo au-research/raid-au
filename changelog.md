@@ -1,6 +1,49 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.10.1
+
+> Note: 2.10.0 was never deployed to production. Its migration of `schemaUri` fields to typed
+> enums (see below) rejected existing ANZSRC-FOR subject URIs stored with a trailing slash
+> (`.../anzsrc-for/2020/`), causing HTTP 500s on the `/raid/` list endpoint. 2.10.1 carries all
+> of the 2.10.0 changes plus the data fix below.
+
+## API
+* Normalised legacy ANZSRC-FOR subject `schemaUri` values to the canonical no-trailing-slash form
+  (`https://linked.data.gov.au/def/anzsrc-for/2020`) required by the new typed enums, via a
+  prod-only Flyway migration (V41.1). The same migration repairs subject IDs in `raid_history`
+  that an earlier prod-only fix (V40.1) corrupted with a blind text replace.
+
+# 2.10.0
+
+## App-client UI
+* Removed bulk upload limit — CSV/Excel imports are no longer capped at 100 items.
+* Title and description now display on static landing pages.
+* Localised date formatting on static landing pages.
+* Runtime `app-config` support for static landing pages, replacing build-time configuration.
+* Fixed a static pages rendering defect.
+
+## API
+* LinkML data model introduction — enum values for subjects, titles, descriptions, contributor
+  roles/positions, access types, related object types/categories, and traditional knowledge labels
+  are now generated from SPARQL queries against external vocabularies (ANZSRC, COAR, etc.) with
+  retry logic and local caching.
+* String `schemaUri` fields migrated to typed enums across all API models — replaces free-text
+  URIs with OpenAPI-generated enum types for stronger compile-time validation.
+* RDF content negotiation added — the `/raid/{prefix}/{suffix}` endpoint now serves Turtle,
+  RDF/XML, N-Triples, and JSON-LD representations via `Accept` header negotiation.
+* Fixed `access.statement` conditional validation — Jakarta `@NotNull` on the generated
+  `Statement` model caused blanket rejection before the custom validator could apply conditional
+  logic (required for Embargoed, optional for Open). Fixed by making the field optional in the
+  LinkML data model and letting the custom `AccessValidator` enforce the rule.
+* Unified Jakarta Bean Validation and custom `ValidationService` error responses — overrode
+  `handleMethodArgumentNotValid` in the exception handler to return `ValidationFailureResponse`
+  instead of Spring's default `ProblemDetail` format.
+* `OrganisationRepository.findOrCreate` made race-safe with `INSERT ... ON CONFLICT` to prevent
+  duplicate key violations under concurrent requests.
+* Null-guard in `addAdminRaid` — throws `UserNotFoundException` when Keycloak returns a null
+  user instead of propagating a NullPointerException.
+
 # 2.9.2
 
 ## Database
