@@ -4,11 +4,13 @@ import dayjs from "dayjs";
 
 import { ContributorPosition } from "@/generated/raid";
 
-export const contributorPositionDataGenerator = (): ContributorPosition => {
+export const contributorPositionDataGenerator = (
+  startDate?: string
+): ContributorPosition => {
   return {
     schemaUri: contributorPositionSchema[0].uri,
     id: contributorPosition[0].uri,
-    startDate: dayjs().format("YYYY-MM-DD"),
+    startDate: startDate ?? dayjs().format("YYYY-MM-DD"),
     endDate: "",
   };
 };
