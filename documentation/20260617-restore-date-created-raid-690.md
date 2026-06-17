@@ -33,4 +33,4 @@ Post-migration verification: 0 remaining inconsistencies across all 796 raids. 1
 
 ## PR
 
-- TBD (branch: `feature/RAID-690`)
+- [PR #525](https://github.com/au-research/raid-au/pull/525)
