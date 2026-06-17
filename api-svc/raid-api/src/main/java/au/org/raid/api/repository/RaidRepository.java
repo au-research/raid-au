@@ -69,7 +69,6 @@ public class RaidRepository {
                 .set(RAID.METADATA, record.getMetadata())
                 .set(RAID.METADATA_SCHEMA, record.getMetadataSchema())
                 .set(RAID.START_DATE, record.getStartDate())
-                .set(RAID.DATE_CREATED, LocalDateTime.now())
                 .set(RAID.CONFIDENTIAL, record.getConfidential())
                 .set(RAID.VERSION, record.getVersion())
                 .set(RAID.START_DATE_STRING, record.getStartDateString())

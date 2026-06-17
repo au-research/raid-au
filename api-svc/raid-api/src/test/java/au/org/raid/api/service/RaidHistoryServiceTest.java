@@ -22,7 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -201,6 +203,59 @@ class RaidHistoryServiceTest {
             assertThat(result, is(raidDto));
 
             verify(raidHistoryRepository).insert(patchRaidHistoryRecord);
+        }
+
+        @Test
+        @DisplayName("Ignores client-supplied metadata.created and uses database value")
+        void ignoresClientSuppliedCreated() throws JsonProcessingException {
+            final var revision = 123;
+            final var request = new RaidUpdateRequest();
+            final var identifier = mock(Id.class);
+            request.setIdentifier(identifier);
+
+            final var clientSuppliedCreated = BigDecimal.valueOf(1000000L);
+            request.setMetadata(new Metadata().created(clientSuppliedCreated));
+
+            final var raidJson = "{}";
+            final var handleString = "123.456/abcde";
+            final var handle = new Handle(handleString);
+            final var diff = mock(JsonPatch.class);
+            final var patchRaidHistoryRecord = new RaidHistoryRecord();
+            final var raidJsonValue = mock(JsonValue.class);
+            final var raidDto = new RaidDto();
+            final var raidJsonValueAsString = "raid-json-value";
+            final var history1 = new RaidHistoryRecord();
+            final var diffString1 = "diff1";
+            history1.setDiff(diffString1);
+            final var history1Diff = mock(JsonValue.class);
+            final var existingRaid = mock(JsonValue.class);
+            final var existingRaidString = "existing-raid";
+
+            final var dbCreatedTime = LocalDateTime.of(2025, 3, 15, 10, 30, 0);
+            final var raidRecord = new RaidRecord();
+            raidRecord.setDateCreated(dbCreatedTime);
+
+            when(raidRepository.findByHandle(handleString)).thenReturn(Optional.of(raidRecord));
+            when(jsonValueFactory.create(diffString1)).thenReturn(history1Diff);
+            when(jsonValueFactory.create(List.of(history1Diff))).thenReturn(existingRaid);
+            when(existingRaid.toString()).thenReturn(existingRaidString);
+            when(objectMapper.writeValueAsString(request)).thenReturn(raidJson);
+            when(identifier.getId()).thenReturn(handleString);
+            when(identifier.getVersion()).thenReturn(revision);
+            when(handleFactory.create(handleString)).thenReturn(handle);
+            when(raidHistoryRepository.findAllByHandle(handleString)).thenReturn(List.of(history1));
+            when(jsonPatchFactory.create(existingRaidString, raidJson)).thenReturn(diff);
+            when(raidHistoryRecordFactory.create(eq(handle), eq(124), eq(ChangeType.PATCH), eq(diff))).thenReturn(patchRaidHistoryRecord);
+            when(jsonValueFactory.create(List.of(history1Diff), diff)).thenReturn(raidJsonValue);
+            when(raidJsonValue.toString()).thenReturn(raidJsonValueAsString);
+            when(objectMapper.readValue(eq(raidJsonValueAsString), eq(RaidDto.class))).thenReturn(raidDto);
+            when(raidHistoryRepository.insert(patchRaidHistoryRecord)).thenReturn(1);
+
+            raidHistoryService.save(request);
+
+            final var expectedCreated = BigDecimal.valueOf(
+                    dbCreatedTime.toEpochSecond(ZoneOffset.UTC));
+            assertThat(request.getMetadata().getCreated(), is(expectedCreated));
         }
 
         @Test
