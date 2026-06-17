@@ -28,10 +28,14 @@ export const dateGenerator = (fields: [Title]): string => {
   return dayjs(lastEndDate || new Date()).format("YYYY-MM-DD");
 }
 
-export const titleDataGenerator = (fields: [Title]): Title => ({
+export const titleDataGenerator = (
+  fields: [Title],
+  startDate?: string,
+  endDate?: string
+): Title => ({
   text: "",
   type: titleTypeGenerator(),
   language: undefined,
-  startDate: dateGenerator(fields),
-  endDate: dayjs(new Date()).add(1, "year").format("YYYY-MM-DD"),
+  startDate: startDate ?? dateGenerator(fields),
+  endDate: endDate ?? dayjs(new Date()).add(1, "year").format("YYYY-MM-DD"),
 });

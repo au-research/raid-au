@@ -9,13 +9,14 @@ type ContributorExtended = Contributor &
   );
 
 export const contributorDataGenerator = (
-  startDate?: string
+  startDate?: string,
+  endDate?: string
 ): ContributorExtended => {
   const baseData: Omit<Contributor, "id" | "uuid"> = {
     leader: true,
     contact: true,
     schemaUri: "https://orcid.org/",
-    position: [contributorPositionDataGenerator(startDate)],
+    position: [contributorPositionDataGenerator(startDate, endDate)],
     role: [contributorRoleDataGenerator(), contributorRoleDataGenerator()],
   };
 

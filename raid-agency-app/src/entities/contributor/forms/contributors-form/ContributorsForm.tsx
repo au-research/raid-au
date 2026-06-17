@@ -50,7 +50,12 @@ export function ContributorsForm({
   const errorMessage = errors[key]?.message;
 
   const handleAddItem = () => {
-    append(generator(getValues("date.startDate") || undefined));
+    append(
+      generator(
+        getValues("date.startDate") || undefined,
+        getValues("date.endDate") || undefined
+      )
+    );
     trigger(key);
   };
 
