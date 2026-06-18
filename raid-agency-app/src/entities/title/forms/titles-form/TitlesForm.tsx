@@ -18,6 +18,7 @@ import {
   FieldErrors,
   UseFormTrigger,
   useFieldArray,
+  useFormContext,
 } from "react-hook-form";
 import { Title} from "@/generated/raid";
 import { MetadataContext } from "@/components/raid-form/RaidForm";
@@ -40,9 +41,17 @@ export function TitlesForm({
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const { fields, append, remove } = useFieldArray({ control, name: key });
+  const { getValues } = useFormContext();
   const errorMessage = errors[key]?.message;
+
   const handleAddItem = () => {
-    append(generator(fields as unknown as [Title]));
+    append(
+      generator(
+        fields as unknown as [Title],
+        getValues("date.startDate") || undefined,
+        getValues("date.endDate") || undefined
+      )
+    );
     trigger(key);
   };
   const metadata = useContext(MetadataContext);

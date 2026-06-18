@@ -1,3 +1,4 @@
+import { DatePickerField } from "@/components/fields/DatePickerField";
 import LanguageSelector from "@/components/fields/LanguageSelector";
 import { TextInputField } from "@/components/fields/TextInputField";
 import { TextSelectField } from "@/components/fields/TextSelectField";
@@ -111,10 +112,9 @@ const AccessForm = memo(
                   width={6}
                 />
 
-                <TextInputField
+                <DatePickerField
                   name={`access.embargoExpiry`}
                   label="Embargo Expiry Date"
-                  placeholder="Embargo Expiry Date"
                   required={true}
                   width={6}
                 />
