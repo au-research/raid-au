@@ -17,6 +17,7 @@ import {
   FieldErrors,
   UseFormTrigger,
   useFieldArray,
+  useFormContext,
 } from "react-hook-form";
 
 import { ContributorPositionsForm } from "@/entities/contributor-position/forms/contributor-positions-form";
@@ -45,10 +46,16 @@ export function ContributorsForm({
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const { fields, append, remove } = useFieldArray({ control, name: key });
+  const { getValues } = useFormContext();
   const errorMessage = errors[key]?.message;
 
   const handleAddItem = () => {
-    append(generator());
+    append(
+      generator(
+        getValues("date.startDate") || undefined,
+        getValues("date.endDate") || undefined
+      )
+    );
     trigger(key);
   };
 

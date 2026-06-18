@@ -1,4 +1,4 @@
-import { TextInputField } from "@/components/fields/TextInputField";
+import { DatePickerField } from "@/components/fields/DatePickerField";
 import { RaidDto } from "@/generated/raid";
 import { Card, CardContent, CardHeader, Grid, Stack } from "@mui/material";
 import { memo, useContext } from "react";
@@ -41,13 +41,13 @@ const DateForm = memo(
         </Stack>
         <CardContent>
           <Grid container spacing={2}>
-            <TextInputField
+            <DatePickerField
               name="date.startDate"
               label="Start Date"
               required={true}
               width={3}
             />
-            <TextInputField
+            <DatePickerField
               name="date.endDate"
               label="End Date"
               required={false}

@@ -47,12 +47,17 @@ export function OrganisationRolesForm({
     name: `${parentKey}.${parentIndex}.${key}`,
   });
 
+  const { formState, watch, getValues } = useFormContext<RaidDto>();
+
   const handleAddItem = () => {
-    append(generator());
+    append(
+      generator(
+        getValues("date.startDate") || undefined,
+        getValues("date.endDate") || undefined
+      )
+    );
     trigger(`${parentKey}.${parentIndex}.${key}`);
   };
-
-  const { formState, watch } = useFormContext<RaidDto>();
   const orgRole = watch([`${parentKey}.${parentIndex}.${key}`]) as OrganisationRole[][]; // Adjust type to OrganisationRole[]
   const isDirty = formState.isDirty;
 
