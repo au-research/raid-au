@@ -84,7 +84,7 @@ test.describe.serial("RAiD edit lifecycle", () => {
 
       // Contributor — at least one sandbox ORCID is required
       await contributorSection.addItem();
-      await contributorSection.fillOrcidId(0, TEST_ORCID);
+      await contributorSection.searchAndSelectOrcid(0, TEST_ORCID);
 
       await formPage.save();
       await formPage.waitForSuccessfulSave();

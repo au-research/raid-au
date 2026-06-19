@@ -84,7 +84,7 @@ test.describe.serial("Create RAiD with required fields", () => {
       // ORCID. The local dev environment only accepts sandbox ORCIDs. The data
       // generator pre-fills position and role, so we only need the ORCID ID.
       await contributorSection.addItem();
-      await contributorSection.fillOrcidId(0, TEST_ORCID);
+      await contributorSection.searchAndSelectOrcid(0, TEST_ORCID);
 
       // Save
       await formPage.save();
