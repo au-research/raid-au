@@ -616,7 +616,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
   }
 
   formMethods?.setValue?.(fieldName, orcidUrl, { shouldValidate: true, shouldDirty: true });
-  setSearchValue(orcidName);
+  setSearchValue(mode === 'validation-only' ? orcidUrl : orcidName);
   setVerifiedORCID(true);
   setDropBox(false);
   setOrcidDetails?.(item);
