@@ -1,7 +1,11 @@
-import type { Contributor, Organisation, RaidDto } from "@/generated/raid";
+import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
 
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
 const FUNDER_ORGANISATION_ROLE = "https://vocabulary.raid.org/organisation.role.schema/186";
+
+const RELATED_RAID_TYPE_IS_PART_OF = "https://vocabulary.raid.org/relatedRaid.type.schema/202";
+const RELATED_RAID_TYPE_HAS_PART = "https://vocabulary.raid.org/relatedRaid.type.schema/201";
+const RELATED_RAID_TYPE_IS_DERIVED_FROM = "https://vocabulary.raid.org/relatedRaid.type.schema/200";
 
 interface PropertyValue {
   "@type": "PropertyValue";
@@ -29,6 +33,13 @@ interface DefinedTerm {
   inDefinedTermSet: string;
 }
 
+interface RelatedResearchProject {
+  "@type": "ResearchProject";
+  "@id": string;
+  identifier: string;
+  relationshipType?: string;
+}
+
 interface ResearchProjectJsonLd {
   "@context": "https://schema.org";
   "@type": "ResearchProject";
@@ -47,6 +58,10 @@ interface ResearchProjectJsonLd {
   member: Role[];
   funder: Role[];
   knowsAbout: DefinedTerm[];
+  isPartOf?: RelatedResearchProject[];
+  hasPart?: RelatedResearchProject[];
+  isBasedOn?: RelatedResearchProject[];
+  isRelatedTo?: RelatedResearchProject[];
 }
 
 function buildContributorRoles(contributor: Contributor): Role[] {
@@ -112,6 +127,44 @@ function buildFunderRoles(organisation: Organisation): Role[] {
     .map((r) => buildOrganisationRole(organisation, r));
 }
 
+function schemaOrgPropertyForRelationType(typeId: string): "isPartOf" | "hasPart" | "isBasedOn" | "isRelatedTo" {
+  switch (typeId) {
+    case RELATED_RAID_TYPE_IS_PART_OF:
+      return "isPartOf";
+    case RELATED_RAID_TYPE_HAS_PART:
+      return "hasPart";
+    case RELATED_RAID_TYPE_IS_DERIVED_FROM:
+      return "isBasedOn";
+    default:
+      return "isRelatedTo";
+  }
+}
+
+function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchProjectJsonLd, "isPartOf" | "hasPart" | "isBasedOn" | "isRelatedTo"> {
+  const groups: Record<string, RelatedResearchProject[]> = {};
+
+  for (const related of relatedRaids) {
+    if (!related.id) continue;
+    const property = schemaOrgPropertyForRelationType(related.type?.id ?? "");
+    const entry: RelatedResearchProject = {
+      "@type": "ResearchProject",
+      "@id": related.id,
+      identifier: related.id,
+    };
+    if (property === "isRelatedTo" && related.type?.id) {
+      entry.relationshipType = related.type.id;
+    }
+    (groups[property] ??= []).push(entry);
+  }
+
+  return {
+    ...(groups.isPartOf && { isPartOf: groups.isPartOf }),
+    ...(groups.hasPart && { hasPart: groups.hasPart }),
+    ...(groups.isBasedOn && { isBasedOn: groups.isBasedOn }),
+    ...(groups.isRelatedTo && { isRelatedTo: groups.isRelatedTo }),
+  };
+}
+
 export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProjectJsonLd {
   const registrationAgencyId = raid.identifier?.registrationAgency?.id ?? "";
 
@@ -168,5 +221,6 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     member: memberRoles,
     funder: funderRoles,
     knowsAbout: subjects,
+    ...buildRelatedRaidProperties(raid.relatedRaid ?? []),
   };
 }

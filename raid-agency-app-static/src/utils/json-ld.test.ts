@@ -296,5 +296,167 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result.member).toEqual([]);
     expect(result.funder).toEqual([]);
     expect(result.knowsAbout).toEqual([]);
+    expect(result).not.toHaveProperty("isPartOf");
+    expect(result).not.toHaveProperty("hasPart");
+    expect(result).not.toHaveProperty("isBasedOn");
+    expect(result).not.toHaveProperty("isRelatedTo");
+  });
+
+  it("maps IsPartOf related raid to isPartOf", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.71821/a945d761",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/202",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.isPartOf).toEqual([
+      {
+        "@type": "ResearchProject",
+        "@id": "https://raid.org/10.71821/a945d761",
+        identifier: "https://raid.org/10.71821/a945d761",
+      },
+    ]);
+    expect(result).not.toHaveProperty("hasPart");
+    expect(result).not.toHaveProperty("isBasedOn");
+    expect(result).not.toHaveProperty("isRelatedTo");
+  });
+
+  it("maps HasPart related raid to hasPart", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.71821/23fcbc6f",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/201",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.hasPart).toEqual([
+      {
+        "@type": "ResearchProject",
+        "@id": "https://raid.org/10.71821/23fcbc6f",
+        identifier: "https://raid.org/10.71821/23fcbc6f",
+      },
+    ]);
+  });
+
+  it("maps IsDerivedFrom related raid to isBasedOn", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.26259/abcd1234",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/200",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.isBasedOn).toEqual([
+      {
+        "@type": "ResearchProject",
+        "@id": "https://raid.org/10.26259/abcd1234",
+        identifier: "https://raid.org/10.26259/abcd1234",
+      },
+    ]);
+  });
+
+  it("maps other relationship types to isRelatedTo with relationshipType", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.26259/efgh5678",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/204",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.isRelatedTo).toEqual([
+      {
+        "@type": "ResearchProject",
+        "@id": "https://raid.org/10.26259/efgh5678",
+        identifier: "https://raid.org/10.26259/efgh5678",
+        relationshipType: "https://vocabulary.raid.org/relatedRaid.type.schema/204",
+      },
+    ]);
+  });
+
+  it("groups multiple related raids under correct properties", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.71821/a945d761",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/202",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+      {
+        id: "https://raid.org/10.71821/bbb11111",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/202",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+      {
+        id: "https://raid.org/10.26259/child1234",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/201",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+      {
+        id: "https://raid.org/10.26259/cont5678",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/204",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.isPartOf).toHaveLength(2);
+    expect(result.hasPart).toHaveLength(1);
+    expect(result.isRelatedTo).toHaveLength(1);
+    expect(result).not.toHaveProperty("isBasedOn");
+  });
+
+  it("skips related raids without an id", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/202",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result).not.toHaveProperty("isPartOf");
+  });
+
+  it("omits relationship properties when relatedRaid is empty", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result).not.toHaveProperty("isPartOf");
+    expect(result).not.toHaveProperty("hasPart");
+    expect(result).not.toHaveProperty("isBasedOn");
+    expect(result).not.toHaveProperty("isRelatedTo");
   });
 });
