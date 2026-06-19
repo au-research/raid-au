@@ -60,25 +60,20 @@ public class RaidHistoryService {
     public RaidDto save(final RaidUpdateRequest raid) {
         final var now = new BigDecimal(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond());
 
-        Metadata metadata =  raid.getMetadata();
+        final var handle = handleFactory.create(raid.getIdentifier().getId());
+        final var existing = raidRepository.findByHandle(handle.toString())
+                .orElseThrow(() -> new ResourceNotFoundException(handle.toString()));
 
-        if (metadata == null) {
-            final var handle = new Handle(raid.getIdentifier().getId());
-            final var existing = raidRepository.findByHandle(handle.toString())
-                    .orElseThrow(() -> new ResourceNotFoundException(handle.toString()));
+        final var created = BigDecimal.valueOf(
+                existing.getDateCreated().toEpochSecond(ZoneOffset.UTC));
 
-            metadata = new Metadata().created(
-                    BigDecimal.valueOf(existing.getDateCreated().toEpochSecond(ZoneOffset.UTC)));
-        }
-        raid.metadata(metadata.updated(now));
+        raid.metadata(new Metadata().created(created).updated(now));
 
         final var version = raid.getIdentifier().getVersion();
         final var newVersion = version + 1;
         raid.getIdentifier().setVersion(newVersion);
 
         final var raidString = objectMapper.writeValueAsString(raid);
-
-        final var handle = handleFactory.create(raid.getIdentifier().getId());
 
         final var history = raidHistoryRepository.findAllByHandle(handle.toString()).stream()
                 .map(RaidHistoryRecord::getDiff)
@@ -110,24 +105,19 @@ public class RaidHistoryService {
     public RaidDto save(final RaidDto raid) {
         final var now = new BigDecimal(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond());
 
-        Metadata metadata =  raid.getMetadata();
+        final var handle = handleFactory.create(raid.getIdentifier().getId());
+        final var existing = raidRepository.findByHandle(handle.toString())
+                .orElseThrow(() -> new ResourceNotFoundException(handle.toString()));
 
-        if (metadata == null) {
-            final var handle = new Handle(raid.getIdentifier().getId());
-            final var existing = raidRepository.findByHandle(handle.toString())
-                    .orElseThrow(() -> new ResourceNotFoundException(handle.toString()));
+        final var created = BigDecimal.valueOf(
+                existing.getDateCreated().toEpochSecond(ZoneOffset.UTC));
 
-            metadata = new Metadata().created(
-                    BigDecimal.valueOf(existing.getDateCreated().toEpochSecond(ZoneOffset.UTC)));
-        }
-        raid.metadata(metadata.updated(now));
+        raid.metadata(new Metadata().created(created).updated(now));
         final var version = raid.getIdentifier().getVersion();
         final var newVersion = version + 1;
         raid.getIdentifier().setVersion(newVersion);
 
         final var raidString = objectMapper.writeValueAsString(raid);
-
-        final var handle = handleFactory.create(raid.getIdentifier().getId());
 
         final var history = raidHistoryRepository.findAllByHandle(handle.toString()).stream()
                 .map(RaidHistoryRecord::getDiff)
