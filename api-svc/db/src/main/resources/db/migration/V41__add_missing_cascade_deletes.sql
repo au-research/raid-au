@@ -1,34 +1,34 @@
 -- Add ON DELETE CASCADE to foreign keys that are missing it.
 
 -- raid_title: has FK to raid(handle) but without cascade
-alter table api_svc.raid_title
+alter table raid_title
     drop constraint raid_title_handle_fkey,
     add constraint raid_title_handle_fkey
-        foreign key (handle) references api_svc.raid (handle) on delete cascade;
+        foreign key (handle) references raid (handle) on delete cascade;
 
 -- raid_organisation: has no FK to raid(handle) at all
-alter table api_svc.raid_organisation
+alter table raid_organisation
     add constraint raid_organisation_handle_fkey
-        foreign key (handle) references api_svc.raid (handle) on delete cascade;
+        foreign key (handle) references raid (handle) on delete cascade;
 
 -- raid_subject_keyword: has FK to raid_subject(id) but without cascade
-alter table api_svc.raid_subject_keyword
+alter table raid_subject_keyword
     drop constraint raid_subject_keyword_raid_subject_id_fkey,
     add constraint raid_subject_keyword_raid_subject_id_fkey
-        foreign key (raid_subject_id) references api_svc.raid_subject (id) on delete cascade;
+        foreign key (raid_subject_id) references raid_subject (id) on delete cascade;
 
 -- Archive and remove all raids with handles beginning with '102.100' or '10378'.
 -- These are legacy handles from the old registration agency.
 
 -- Create archive tables (same structure as originals, without foreign keys)
-create table api_svc.raid_archive (
+create table raid_archive (
     handle              varchar(128) primary key not null,
     service_point_id    bigint not null,
     url                 varchar(512),
     url_index           integer,
     primary_title       varchar(256),
     confidential        boolean,
-    metadata_schema     api_svc.metaschema not null,
+    metadata_schema     metaschema not null,
     metadata            jsonb,
     start_date          date,
     date_created        timestamp without time zone not null,
@@ -45,7 +45,7 @@ create table api_svc.raid_archive (
     owner_organisation_id int
 );
 
-create table api_svc.raid_history_archive (
+create table raid_history_archive (
     handle      varchar(255) not null,
     revision    int not null,
     change_type varchar(8) not null,
@@ -55,18 +55,18 @@ create table api_svc.raid_history_archive (
 );
 
 -- Archive matching raids
-insert into api_svc.raid_archive
-select * from api_svc.raid
+insert into raid_archive
+select * from raid
 where handle like '102.100%' or handle like '10378%';
 
-insert into api_svc.raid_history_archive
-select * from api_svc.raid_history
+insert into raid_history_archive
+select * from raid_history
 where handle like '102.100%' or handle like '10378%';
 
 -- Delete raid_history (no FK to raid)
-delete from api_svc.raid_history
+delete from raid_history
 where handle like '102.100%' or handle like '10378%';
 
 -- Delete raids (cascades to all related tables)
-delete from api_svc.raid
+delete from raid
 where handle like '102.100%' or handle like '10378%';
