@@ -976,7 +976,7 @@ components:
         text:
           description: "the text of an access statement that explains any restrictions\
             \ on access"
-          pattern: "^\\s*\\S.*$"
+          pattern: "^\\s*\\S[\\s\\S]*$"
           type: "string"
         type:
           $ref: "#/components/schemas/DescriptionType"
