@@ -16,7 +16,15 @@ export class ContributorSection {
   }
 
   async fillOrcidId(index: number, value: string): Promise<void> {
-    await this.page.locator(`#contributor\\.${index}\\.id`).fill(value);
+    await this.page.locator(`input[name="contributor.${index}.id"]`).fill(value);
+  }
+
+  async searchAndSelectOrcid(index: number, orcidId: string): Promise<void> {
+    await this.page.locator(`input[name="contributor.${index}.id"]`).fill(orcidId);
+    await this.page.locator('[aria-label="directions"]').nth(index).click();
+    const card = this.page.locator('.MuiPopover-root .MuiCard-root').first();
+    await card.waitFor({ state: 'visible', timeout: 15000 });
+    await card.click();
   }
 
   async checkLeader(index: number): Promise<void> {

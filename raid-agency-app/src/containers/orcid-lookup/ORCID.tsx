@@ -20,10 +20,9 @@ import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { CircleCheckBig, ScanSearch } from 'lucide-react';
-import { ClipLoader } from 'react-spinners';
+import { ClipLoader, PulseLoader } from 'react-spinners';
 import { useQueryClient } from '@tanstack/react-query';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import PulseLoader from "react-spinners/PulseLoader";
 import { CustomStyledTooltip } from '@/components/tooltips/StyledTooltip';
 
 // localStorage keys
@@ -216,6 +215,24 @@ const getErrorMessage = (responseCode: number): string => {
   }
 };
 
+async function fetchFromOrcidPublicApi(orcidId: string) {
+  const base = getRuntimeConfig().environment === 'prod'
+    ? 'https://pub.orcid.org'
+    : 'https://pub.sandbox.orcid.org';
+  const res = await fetch(`${base}/v3.0/${orcidId}/person`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error(String(res.status));
+  const data = await res.json();
+  const name = data?.name;
+  return {
+    orcid: orcidId,
+    creditName: (name?.['credit-name']?.value as string) ?? '',
+    givenName: (name?.['given-names']?.value as string) ?? '',
+    lastName: (name?.['family-name']?.value as string) ?? '',
+  };
+}
+
 const searchAPI = async (url: string): Promise<unknown> => {
   try {
     const response = await fetchJSONP(url);
@@ -247,13 +264,17 @@ export default function ORCIDLookup({
     path,
     setOrcidDetails,
     formMethods,
+    mode = 'full',
+    defaultValue,
   }:{
     path: { name: string };
-    setOrcidDetails: React.Dispatch<React.SetStateAction<unknown>>;
+    setOrcidDetails?: React.Dispatch<React.SetStateAction<unknown>>;
     formMethods?: Partial<{
       setValue: (name: string, value: unknown, options?: { shouldValidate?: boolean; shouldDirty?: boolean }) => void;
       formState?: { errors?: Record<string, unknown> };
     }>;
+    mode?: 'full' | 'validation-only';
+    defaultValue?: string;
   }) {
   const [searchMode, setSearchMode] = useState<'lookup' | 'search'>('lookup');
   const [searchValue, setSearchValue] = useState('');
@@ -264,11 +285,24 @@ export default function ORCIDLookup({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cachedResult, setCachedResult] = useState<boolean>(false);
+  const [resolvedName, setResolvedName] = useState<string | null>(null);
   const fieldName = path?.name;
 
   // Cleanup expired cache on mount
   React.useEffect(() => {
     orcidLookupCache.cleanup();
+  }, []);
+
+  // Resolve display name on mount when a default ORCID value is already present (validation-only mode)
+  React.useEffect(() => {
+    if (mode !== 'validation-only' || !defaultValue) return;
+    const normalised = normalizeOrcidId(defaultValue);
+    fetchFromOrcidPublicApi(normalised)
+      .then((data) => {
+        const name = data.creditName || [data.givenName, data.lastName].filter(Boolean).join(' ') || null;
+        setResolvedName(name);
+      })
+      .catch(() => setResolvedName(null));
   }, []);
 
   // Typed shapes for results
@@ -374,6 +408,32 @@ export default function ORCIDLookup({
       ? orcid[0]
       : (orcid[0].match(/.{1,4}/g)?.join('-') || orcid[0]);
 
+    // validation-only mode: call ORCID public API directly, skip cache, show result in popover for user to confirm
+    if (mode === 'validation-only') {
+      setIsLoading(true);
+      setDropBox(true);
+      try {
+        const data = await fetchFromOrcidPublicApi(orcidParts);
+        setResults({
+          type: 'orcid',
+          data: {
+            orcid: data.orcid,
+            creditName: data.creditName,
+            givenName: data.givenName,
+            lastName: data.lastName,
+          }
+        });
+      } catch (err) {
+        const message = (err as Error).message;
+        const code = parseInt(message);
+        setError(isNaN(code) ? message : getErrorMessage(code));
+        setVerifiedORCID(false);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     // Check localStorage first
     const cachedData = orcidLookupCache.get<LookupResponse>(orcidParts);
     if (cachedData) {
@@ -406,6 +466,11 @@ export default function ORCIDLookup({
       setIsLoading(false);
     }
   } else {
+    // validation-only mode: reject non-ORCID input with a format error
+    if (mode === 'validation-only') {
+      setError(getErrorMessage(400));
+      return;
+    }
     // SEARCH MODE - No caching
     setSearchMode('search');
     setIsLoading(true);
@@ -448,8 +513,11 @@ export default function ORCIDLookup({
     const orcid = value.trim().replace(getOrcidReplaceText(), '').match(/^\d{4}-?\d{4}-?\d{4}-?\d{3}[0-9X]$/);
     if (orcid) {
       setSearchMode('lookup');
-    } else {
+    } else if (mode !== 'validation-only') {
       setSearchMode('search');
+    }
+    if (mode === 'validation-only') {
+      setResolvedName(null);
     }
   };
 
@@ -523,31 +591,35 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
   const orcidUrl = getRuntimeConfig().environment === 'prod' ? `https://orcid.org/${item?.orcid}` : `https://sandbox.orcid.org/${item?.orcid}`;
   const orcidName = item?.creditName ? item.creditName : `${item?.givenName || ''} ${item?.lastName || ''}`.trim();
 
-  // Save selected ORCID to localStorage
-  const lookupData: LookupResponse = {
-    orcid: item.orcid,
-    person: {
-      name: {
-        'credit-name': { value: item.creditName },
-        'given-names': { value: item.givenName },
-        'family-name': { value: item.lastName },
-      },
-      addresses: item.country ? {
-        address: [{
-          country: { value: item.country }
-        }]
-      } : undefined
-    }
-  };
+  if (mode !== 'validation-only') {
+    // Save selected ORCID to localStorage (full mode only)
+    const lookupData: LookupResponse = {
+      orcid: item.orcid,
+      person: {
+        name: {
+          'credit-name': { value: item.creditName },
+          'given-names': { value: item.givenName },
+          'family-name': { value: item.lastName },
+        },
+        addresses: item.country ? {
+          address: [{
+            country: { value: item.country }
+          }]
+        } : undefined
+      }
+    };
+    orcidLookupCache.set(item.orcid, lookupData, orcidName);
+  }
 
-  // Save with display name
-  orcidLookupCache.set(item.orcid, lookupData, orcidName);
+  if (mode === 'validation-only') {
+    setResolvedName(orcidName || null);
+  }
 
   formMethods?.setValue?.(fieldName, orcidUrl, { shouldValidate: true, shouldDirty: true });
-  setSearchValue(orcidName);
+  setSearchValue(mode === 'validation-only' ? orcidUrl : orcidName);
   setVerifiedORCID(true);
   setDropBox(false);
-  setOrcidDetails(item);
+  setOrcidDetails?.(item);
   updateContributorNamesCache(orcidName);
 }
   const _errors = formMethods?.formState?.errors as Record<string, unknown> | undefined;
@@ -557,6 +629,11 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
   return (
     <Box sx={{ p: 1 }}>
       <Paper elevation={0} sx={{ p: 1, borderRadius: 2 }}>
+        {mode === 'validation-only' && (
+          <Typography variant="subtitle2" gutterBottom>
+            Name: {resolvedName ?? '—'}
+          </Typography>
+        )}
         <Paper
           sx={{
             p: '2px 4px',
@@ -569,7 +646,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
           }}
           className={getStatusColor()}
         >
-          {cachedResult && searchMode === 'lookup' && (
+          {mode !== 'validation-only' && cachedResult && searchMode === 'lookup' && (
             <Chip
               label="Cached"
               size="small"
@@ -618,8 +695,15 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
           </IconButton>
         </Paper>
         {searchMode === 'lookup' && <FormHelperText sx={{ fontSize: '0.875rem', color: 'error.main', mr: 1 }}>{helperTextError}</FormHelperText>}
+        {mode === 'validation-only' && error && (
+          <FormHelperText sx={{ fontSize: '0.875rem', color: 'error.main', mr: 1 }}>{error}</FormHelperText>
+        )}
         <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between' }}>
-          <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{searchConfig?.genericPlaceholder}</FormHelperText>
+          <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+            {mode === 'validation-only'
+              ? 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'
+              : searchConfig?.genericPlaceholder}
+          </FormHelperText>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CustomStyledTooltip
               title={"ORCID Lookup Info"}
