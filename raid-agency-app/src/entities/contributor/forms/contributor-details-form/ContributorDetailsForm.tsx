@@ -1,23 +1,26 @@
 import { DisplayItem } from "@/components/display-item";
 import { CheckboxField } from "@/components/fields/CheckboxField";
-import { TextInputField } from "@/components/fields/TextInputField";
+import ORCIDLookup from "@/containers/orcid-lookup/ORCID";
 import { Contributor } from "@/generated/raid";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import React from "react";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-// Commented out the ORCID widget changes
+
 function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
+  const { setValue, getValues, formState: { errors } } = useFormContext();
   return (
     <Grid container spacing={2}>
       {(!data || !data[index] || !Object.hasOwn(data[index], "status")) && (
-        <TextInputField
-          name={`contributor.${index}.id`}
-          label="ORCID ID"
-          placeholder="Full ORCID ID, e.g. https://orcid.org/0000-0000-0000-0000"
-          width={12}
-        />
+        <Grid item xs={12}>
+          <ORCIDLookup
+            mode="validation-only"
+            defaultValue={getValues(`contributor.${index}.id`)}
+            path={{ name: `contributor.${index}.id` }}
+            formMethods={{ setValue, formState: { errors } }}
+          />
+        </Grid>
       )}
       {data[index] && Object.hasOwn(data[index], "status") && (
         <DisplayItem
@@ -73,7 +76,6 @@ export function ContributorDetailsForm({
       </Typography>
 
       <Stack direction="row" alignItems="flex-start" gap={1}>
-        {/* <ContributorForm index={index} data={data} /> */}
         <FieldGrid data={data} index={index} />
 
         <Tooltip title={`Remove ${label}`} placement="right">

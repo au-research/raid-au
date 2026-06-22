@@ -46,7 +46,7 @@ export const ApiKey = () => {
       openSnackbar("✅ New API key generated successfully", 2000);
     } catch (error) {
       console.error("Failed to create API token:", error);
-      openSnackbar("❌ Failed to generate API key", 2000);
+      openSnackbar("❌ Failed to generate API token", 2000);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +88,7 @@ export const ApiKey = () => {
         <Card>
           <CardHeader
             title="API Tokens"
-            subheader="Manage your API and refresh tokens"
+            subheader="Manage your API tokens"
           />
           <CardContent>
             <Stack direction="column" gap={4}>

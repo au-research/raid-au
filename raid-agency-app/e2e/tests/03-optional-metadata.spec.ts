@@ -131,13 +131,13 @@ test.describe.serial("Create RAiD with optional metadata blocks", () => {
 
       // Contributors — primary (leader + contact) and a second contributor
       await contributorSection.addItem();
-      await contributorSection.fillOrcidId(0, ORCID_PRIMARY);
+      await contributorSection.searchAndSelectOrcid(0, ORCID_PRIMARY);
       // Note: CheckboxField does not set an HTML id, so checkLeader/checkContact
       // cannot be addressed by #contributor\.N\.leader. The data generator
       // pre-fills leader=true for the first contributor, so this is not needed.
 
       await contributorSection.addItem();
-      await contributorSection.fillOrcidId(1, ORCID_SECONDARY);
+      await contributorSection.searchAndSelectOrcid(1, ORCID_SECONDARY);
 
       // =========================================================
       // OPTIONAL: Description

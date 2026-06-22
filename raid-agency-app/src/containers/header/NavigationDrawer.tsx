@@ -57,7 +57,7 @@ function CombinedMenu({ setDrawerOpen }: { setDrawerOpen: (open: boolean) => voi
       isNavLink: true,
     },
     {
-      label: "Create API key",
+      label: "Create API token",
       link: "/api-key",
       icon: <KeyIcon />,
       isNavLink: true,
