@@ -311,7 +311,7 @@ classes:
         description: the text of an access statement that explains any restrictions on access
         range: string
         required: true
-        pattern: "^\\s*\\S.*$"
+        pattern: "^\\s*\\S[\\s\\S]*$"
         exact_mappings:
           - dct:description
           - schema:description

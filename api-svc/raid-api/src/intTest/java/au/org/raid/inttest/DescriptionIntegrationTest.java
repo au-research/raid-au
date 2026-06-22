@@ -512,6 +512,67 @@ public class DescriptionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("Minting a RAiD with a multi-line description succeeds (RAID-704)")
+    void multiLineDescriptionMint() {
+        final var multiLineText = "First line of description.\nSecond line with more detail.\nThird line.";
+        createRequest.getDescription().get(0).setText(multiLineText);
+
+        try {
+            final var mintResponse = raidApi.mintRaid(createRequest);
+            final var mintedRaid = mintResponse.getBody();
+            assertThat(mintedRaid).isNotNull();
+
+            final var handle = new Handle(mintedRaid.getIdentifier().getId());
+            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
+            assertThat(readResponse.getBody().getDescription().get(0).getText()).isEqualTo(multiLineText);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Updating a RAiD description to multi-line text succeeds (RAID-704)")
+    void multiLineDescriptionUpdate() {
+        final var mintResponse = raidApi.mintRaid(createRequest);
+        final var mintedRaid = mintResponse.getBody();
+        final var handle = new Handle(mintedRaid.getIdentifier().getId());
+
+        final var multiLineText = "Updated first line.\nUpdated second line.\nUpdated third line.";
+        mintedRaid.getDescription().get(0).setText(multiLineText);
+
+        try {
+            final var updateResponse = raidApi.updateRaid(
+                    handle.getPrefix(), handle.getSuffix(), updateRequestFactory.create(mintedRaid)
+            );
+            final var updatedRaid = updateResponse.getBody();
+            assertThat(updatedRaid.getDescription().get(0).getText()).isEqualTo(multiLineText);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Whitespace-only description text is still rejected after RAID-704 fix")
+    void whitespaceOnlyDescription() {
+        createRequest.getDescription().get(0).setText("   ");
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown with whitespace-only description");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(new ValidationFailure()
+                    .fieldId("description[0].text")
+                    .errorType("notSet")
+                    .message("field must be set")
+            );
+        } catch (Exception e) {
+            fail("Expected RaidApiValidationException");
+        }
+    }
+
+    @Test
     @DisplayName("Description should handle multiple updates")
     void multipleUpdates() {
         final var mintResponse = raidApi.mintRaid(createRequest);
