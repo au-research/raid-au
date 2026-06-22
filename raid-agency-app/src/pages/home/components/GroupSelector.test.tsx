@@ -55,6 +55,7 @@ describe("GroupSelector", () => {
   });
 
   it("displays the default message when localization fetch fails", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     mockFetchKeycloakLocalization.mockRejectedValue(new Error("Not found"));
 
     renderComponent();
@@ -64,6 +65,12 @@ describe("GroupSelector", () => {
         screen.getByText(/To use RAiD you must belong to a 'Service Point'/i)
       ).toBeInTheDocument();
     });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      "Failed to fetch localization, using default text:",
+      expect.any(Error)
+    );
+    warnSpy.mockRestore();
   });
 
   it("displays the default message when localization is still loading", async () => {
