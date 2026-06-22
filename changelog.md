@@ -1,6 +1,23 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.11.0
+
+## API
+* Description `text` field now accepts line breaks -- changed the validation pattern from
+  `^\s*\S.*$` to `^\s*\S[\s\S]*$` so that multi-line content is no longer rejected
+  (RAID-704, PR #534).
+* `metadata.created` is now immutable on update -- the API preserves the original creation
+  timestamp instead of allowing it to be overwritten (RAID-690, PR #525).
+
+## App-client UI
+* ORCID integration uplift -- contributor widget now validates ORCID iDs and displays the
+  resolved identity after lookup (RAID-676, PR #532).
+* New date picker component integrated throughout the RAiD form, replacing raw text inputs
+  (RAID-674, PR #521).
+* Contributor start and end dates now default to the RAiD's own start and end dates.
+* Corrected "Create API key" label to "Create API token".
+
 # 2.10.1
 
 > Note: 2.10.0 was never deployed to production. Its migration of `schemaUri` fields to typed
