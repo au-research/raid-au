@@ -1,7 +1,9 @@
 import { ServicePoint } from "@/generated/raid";
+import { ServicePointWithMembers } from "@/types";
 import {
   Cancel as CancelIcon,
   CheckCircleOutline as CheckCircleOutlineIcon,
+  ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
 import { Button, Tooltip } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -46,22 +48,34 @@ const columns: GridColDef[] = [
   {
     field: "groupId",
     headerName: "Group ID?",
-    renderCell: ({ row }) => {
-      return row.groupId ? (
-        <Tooltip title={row.groupId} placement="left">
-          <CheckCircleOutlineIcon sx={{ color: "success.main" }} />
-        </Tooltip>
-      ) : (
-        <CancelIcon sx={{ color: "error.main" }} />
-      );
-    },
+    width: 120,
+    renderCell: ({ row }) => <GroupIdCell row={row as ServicePointWithMembers} />,
   },
 ];
+
+export function GroupIdCell({ row }: { row: ServicePointWithMembers }) {
+  if (row.groupIdError) {
+    return (
+      <Tooltip title="Group ID is invalid" placement="left">
+        <ErrorOutlineIcon sx={{ color: "error.main", pointerEvents: "auto", cursor: "help" }} />
+      </Tooltip>
+    );
+  }
+  return row.groupId ? (
+    <Tooltip title={row.groupId} placement="left">
+      <CheckCircleOutlineIcon sx={{ color: "success.main" }} />
+    </Tooltip>
+  ) : (
+    <Tooltip title="No group ID configured" placement="left">
+      <CancelIcon sx={{ color: "error.main", pointerEvents: "auto", cursor: "help" }} />
+    </Tooltip>
+  );
+}
 
 export function ServicePointsTable({
   servicePoints,
 }: {
-  servicePoints: ServicePoint[];
+  servicePoints: (ServicePoint | ServicePointWithMembers)[];
 }) {
   return (
     <DataGrid
@@ -71,6 +85,9 @@ export function ServicePointsTable({
       density="compact"
       autoHeight
       isRowSelectable={() => false}
+      getRowClassName={({ row }) =>
+        (row as ServicePointWithMembers).groupIdError ? "row--group-id-error" : ""
+      }
       initialState={{
         sorting: {
           sortModel: [{ field: "id", sort: "asc" }],
@@ -84,11 +101,13 @@ export function ServicePointsTable({
       pageSizeOptions={[5, 10, 25, 50]}
       disableRowSelectionOnClick
       sx={{
-        // Neutralize the hover colour (causing a flash)
+        "& .row--group-id-error": {
+          opacity: 0.5,
+          pointerEvents: "none",
+        },
         "& .MuiDataGrid-row.Mui-hovered": {
           backgroundColor: "transparent",
         },
-        // Take out the hover colour
         "& .MuiDataGrid-row:hover": {
           backgroundColor: "transparent",
         },

@@ -11,6 +11,6 @@ export const organisationRoleDataGenerator = (
     id: organisationRole[0].uri,
     schemaUri: organisationRoleSchema[0].uri,
     startDate: startDate ?? dayjs().format("YYYY-MM-DD"),
-    endDate: endDate ?? "",
+    endDate: endDate ?? dayjs().format("YYYY-MM-DD"),
   };
 };

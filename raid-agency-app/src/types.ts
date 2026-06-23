@@ -56,6 +56,8 @@ export type ServicePointMember = {
 export type ServicePointWithMembers = ServicePoint & {
   /** List of members associated with this service point */
   members: ServicePointMember[];
+  /** True when the groupId exists but is not found in Keycloak */
+  groupIdError?: boolean;
 };
 
 /**

@@ -35,6 +35,7 @@ export const fetchServicePointsWithMembers = async ({
   token: string;
 }): Promise<ServicePointWithMembers[]> => {
   const members = new Map<string, ServicePointMember[]>();
+  const groupIdErrors = new Set<string>();
 
   const servicePointResponse = await authService.fetchWithAuth(API_CONSTANTS.SERVICE_POINT.ALL, {
     method: "GET",
@@ -47,18 +48,28 @@ export const fetchServicePointsWithMembers = async ({
 
   for (const servicePoint of servicePoints) {
     if (servicePoint.groupId && servicePoint.groupId.trim() !== "") {
-      const servicePointMembersResponse = await authService.fetchWithAuth(
-        `${kcGroupBase()}?groupId=${servicePoint.groupId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      try {
+        const servicePointMembersResponse = await authService.fetchWithAuth(
+          `${kcGroupBase()}?groupId=${servicePoint.groupId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!servicePointMembersResponse.ok) {
+          groupIdErrors.add(servicePoint.groupId);
+          members.set(servicePoint.groupId, []);
+        } else {
+          const servicePointMembers = await servicePointMembersResponse.json();
+          members.set(servicePoint.groupId, servicePointMembers.members as ServicePointMember[]);
         }
-      );
-      const servicePointMembers = await servicePointMembersResponse.json();
-      members.set(servicePoint.groupId, servicePointMembers.members as ServicePointMember[]);
+      } catch {
+        groupIdErrors.add(servicePoint.groupId);
+        members.set(servicePoint.groupId, []);
+      }
     } else {
       members.set(servicePoint.groupId, []);
     }
@@ -69,6 +80,7 @@ export const fetchServicePointsWithMembers = async ({
     members: members.has(servicePoint?.groupId as string)
       ? members.get(servicePoint.groupId as string)
       : [],
+    groupIdError: servicePoint.groupId ? groupIdErrors.has(servicePoint.groupId) : false,
   }));
 };
 
@@ -99,23 +111,27 @@ export const fetchServicePointWithMembers = async ({
   const servicePoint = await servicePointResponse.json();
 
   if (servicePoint.groupId) {
-    const servicePointMembersResponse = await authService.fetchWithAuth(
-      `${kcGroupBase()}?groupId=${servicePoint.groupId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+    try {
+      const servicePointMembersResponse = await authService.fetchWithAuth(
+        `${kcGroupBase()}?groupId=${servicePoint.groupId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!servicePointMembersResponse.ok) {
+        return { ...servicePoint, members: [], groupIdError: true };
       }
-    );
 
-    if (!servicePointMembersResponse.ok) {
-      throw new Error(`Failed to fetch service point members: ${servicePointMembersResponse.status}`);
+      const servicePointMembers = await servicePointMembersResponse.json();
+      members.set(servicePoint.groupId, servicePointMembers.members as ServicePointMember[]);
+    } catch {
+      return { ...servicePoint, members: [], groupIdError: true };
     }
-
-    const servicePointMembers = await servicePointMembersResponse.json();
-    members.set(servicePoint.groupId, servicePointMembers.members as ServicePointMember[]);
   } else {
     members.set(servicePoint.groupId, []);
   }
