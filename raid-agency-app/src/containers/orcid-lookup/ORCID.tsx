@@ -624,7 +624,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
 }
   const _errors = formMethods?.formState?.errors as Record<string, unknown> | undefined;
   const helperTextError = Array.isArray((_errors as Record<string, any>)?.contributor) && !!((_errors as Record<string, any>)[path.name]?.message) ?
-  "Enter a valid ORCID iD e.g. 0000-0002-1825-0097 or free text to search" as string : '';
+  (orcid.helpText || "Enter a valid ORCID iD e.g. 0000-0002-1825-0097 or free text to search") : '';
 
   return (
     <Box sx={{ p: 1 }}>
@@ -701,7 +701,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
         <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between' }}>
           <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             {mode === 'validation-only'
-              ? 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'
+              ? (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097')
               : searchConfig?.genericPlaceholder}
           </FormHelperText>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

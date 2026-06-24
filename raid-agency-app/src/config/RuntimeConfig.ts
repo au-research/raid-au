@@ -20,6 +20,7 @@ export interface RuntimeConfig {
   app: {
     orcid: {
       placeholder: string;
+      helpText: string;
     };
   };
 }

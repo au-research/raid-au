@@ -16,6 +16,7 @@ const mockConfig: RuntimeConfig = {
   app: {
     orcid: {
       placeholder: "Enter ORCID iD (e.g., 0000-0002-1825-0097)",
+      helpText: "Enter a valid ORCID iD",
     },
   },
 };
