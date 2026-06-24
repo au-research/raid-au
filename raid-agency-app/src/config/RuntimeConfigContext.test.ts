@@ -13,6 +13,11 @@ const mockConfig: RuntimeConfig = {
     staticProd: "https://static.prod.raid.org.au",
     staticBase: "https://static.{env}.raid.org.au",
   },
+  app: {
+    orcid: {
+      placeholder: "Enter ORCID iD (e.g., 0000-0002-1825-0097)",
+    },
+  },
 };
 
 // Reset the module before each test to clear the module-level _runtimeConfig variable
