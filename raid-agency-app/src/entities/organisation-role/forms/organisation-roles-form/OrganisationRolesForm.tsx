@@ -104,7 +104,6 @@ export function OrganisationRolesForm({
           onClick={handleAddItem}
           onMouseEnter={() => setIsRowHighlighted(true)}
           onMouseLeave={() => setIsRowHighlighted(false)}
-          disabled={useEnableAddFields(orgRole as unknown as SubSections, isDirty)}
         >
           Add {label}
         </Button>

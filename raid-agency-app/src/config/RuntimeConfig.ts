@@ -17,4 +17,10 @@ export interface RuntimeConfig {
     staticProd: string;
     staticBase: string;
   };
+  app: {
+    orcid: {
+      placeholder: string;
+      helpText: string;
+    };
+  };
 }

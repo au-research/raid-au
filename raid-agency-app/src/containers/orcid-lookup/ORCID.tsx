@@ -287,7 +287,7 @@ export default function ORCIDLookup({
   const [cachedResult, setCachedResult] = useState<boolean>(false);
   const [resolvedName, setResolvedName] = useState<string | null>(null);
   const fieldName = path?.name;
-
+  const { orcid } = getRuntimeConfig().app;
   // Cleanup expired cache on mount
   React.useEffect(() => {
     orcidLookupCache.cleanup();
@@ -369,7 +369,7 @@ export default function ORCIDLookup({
 
   const searchConfig = {
     lookup: {
-      placeholder: 'Type to search',
+      placeholder: orcid.placeholder || 'Enter ORCID iD (e.g., 0000-0002-1825-0097)',
       endpoint: `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(searchValue)}/?api_key=public&callback=?`,
       label: 'ORCID ID',
       description: 'Search by unique ORCID identifier',
@@ -624,7 +624,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
 }
   const _errors = formMethods?.formState?.errors as Record<string, unknown> | undefined;
   const helperTextError = Array.isArray((_errors as Record<string, any>)?.contributor) && !!((_errors as Record<string, any>)[path.name]?.message) ?
-  "Enter a valid ORCID iD e.g. 0000-0002-1825-0097 or free text to search" as string : '';
+  (orcid.helpText || "Enter a valid ORCID iD e.g. 0000-0002-1825-0097 or free text to search") : '';
 
   return (
     <Box sx={{ p: 1 }}>
@@ -701,7 +701,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
         <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between' }}>
           <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             {mode === 'validation-only'
-              ? 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'
+              ? (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097')
               : searchConfig?.genericPlaceholder}
           </FormHelperText>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

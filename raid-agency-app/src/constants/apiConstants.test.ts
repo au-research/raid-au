@@ -8,13 +8,19 @@ vi.mock("@/config", () => ({
 import { getRuntimeConfig } from "@/config";
 import { API_CONSTANTS } from "./apiConstants";
 
-const mockConfig: Pick<RuntimeConfig, "apiBaseUrl" | "services"> = {
+const mockConfig: Pick<RuntimeConfig, "apiBaseUrl" | "services" | "app"> = {
   apiBaseUrl: "https://api.test.raid.org.au",
   services: {
     orcid: "https://orcid.test.raid.org.au",
     invite: "https://invite.test.raid.org.au",
     staticProd: "https://static.prod.raid.org.au",
     staticBase: "https://static.{env}.raid.org.au",
+  },
+  app: {
+    orcid: {
+      placeholder: "Enter ORCID iD (e.g., 0000-0002-1825-0097)",
+      helpText: "Enter a valid ORCID iD",
+    },
   },
 };
 

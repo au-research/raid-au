@@ -25,6 +25,12 @@
     "staticProd": "https://static.prod.raid.org.au",
     "staticBase": "https://static.{env}.raid.org.au"
   },
+  "app": {
+    "orcid": {
+      "placeholder": "Enter valid sandbox ORCID iD",
+      "helpText": "Use the ORCID sandbox (https://orcid.org/sandbox)"
+    }
+  },
   "_brandingComment": "The branding section below is optional. Remove it or any of its fields to fall back to the built-in defaults.",
   "branding": {
     "default": false,

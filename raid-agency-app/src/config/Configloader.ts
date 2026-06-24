@@ -76,6 +76,7 @@ export async function loadConfig(): Promise<{
     supportEmail: raw.supportEmail,
     googleAnalytics: raw.googleAnalytics ?? {},
     services: raw.services,
+    app: raw.app ?? {},
   };
 
   const branding = raw.branding ?? {};
