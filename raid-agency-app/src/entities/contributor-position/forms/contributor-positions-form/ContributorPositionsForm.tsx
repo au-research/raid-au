@@ -104,7 +104,6 @@ export function ContributorPositionsForm({
           onClick={handleAddItem}
           onMouseEnter={() => setIsRowHighlighted(true)}
           onMouseLeave={() => setIsRowHighlighted(false)}
-          disabled={useEnableAddFields(positions as unknown as SubSections, isDirty)}
         >
           Add {label}
         </Button>

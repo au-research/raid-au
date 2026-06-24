@@ -287,7 +287,7 @@ export default function ORCIDLookup({
   const [cachedResult, setCachedResult] = useState<boolean>(false);
   const [resolvedName, setResolvedName] = useState<string | null>(null);
   const fieldName = path?.name;
-
+  const { orcid } = getRuntimeConfig().app;
   // Cleanup expired cache on mount
   React.useEffect(() => {
     orcidLookupCache.cleanup();
@@ -369,7 +369,7 @@ export default function ORCIDLookup({
 
   const searchConfig = {
     lookup: {
-      placeholder: 'Type to search',
+      placeholder: orcid.placeholder || 'Enter ORCID iD (e.g., 0000-0002-1825-0097)',
       endpoint: `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(searchValue)}/?api_key=public&callback=?`,
       label: 'ORCID ID',
       description: 'Search by unique ORCID identifier',
