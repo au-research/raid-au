@@ -48,20 +48,20 @@ raid-au/
 ### Frontend - raid-agency-app (from `raid-agency-app/`)
 
 ```bash
-yarn install              # Install dependencies
-yarn build                # TypeScript check + Vite build (tsc && vite build)
-yarn test                 # Unit tests (Vitest)
-yarn dev                  # Dev server on port 7080
-yarn e2e                  # Playwright E2E tests
-yarn lint                 # ESLint
+npm install               # Install dependencies
+npm run build             # TypeScript check + Vite build (tsc && vite build)
+npm test                  # Unit tests (Vitest)
+npm run dev               # Dev server on port 7080
+npm run e2e               # Playwright E2E tests
+npm run lint              # ESLint
 ```
 
 ### Frontend - raid-agency-app-static (from `raid-agency-app-static/`)
 
 ```bash
-yarn install
-yarn build                # Fetch data + Astro check + build
-yarn dev                  # Dev server (fetches data first)
+npm install
+npm run build             # Fetch data + Astro check + build
+npm run dev               # Dev server (fetches data first)
 ```
 
 ## Tech Stack
@@ -69,7 +69,7 @@ yarn dev                  # Dev server (fetches data first)
 - **Backend**: Java 17, Spring Boot 3.4.x, PostgreSQL, JOOQ, Flyway, Keycloak 26.x
 - **Frontend**: React 18, TypeScript 5.3, Vite, Material-UI 5, TanStack Query, React Hook Form + Zod
 - **Static site**: Astro 5, TypeScript, Tailwind CSS
-- **Package manager**: Yarn 1.22 (frontend apps)
+- **Package manager**: npm (frontend apps)
 - **Testing**: JUnit 5 + Mockito (backend), Vitest + Playwright (frontend)
 - **Auth**: Keycloak (OAuth2/OIDC), SATOSA (SAML/eduGAIN federation)
 - **External integrations**: ROR, ORCID, ISNI, DataCite, GeoNames
