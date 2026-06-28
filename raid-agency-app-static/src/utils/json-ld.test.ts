@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildResearchProjectJsonLd } from "./json-ld";
 import type { RaidDto } from "@/generated/raid";
 
+const PRIMARY_TITLE_TYPE = "https://vocabulary.raid.org/title.type.schema/5";
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
 const FUNDER_ORGANISATION_ROLE = "https://vocabulary.raid.org/organisation.role.schema/186";
 
@@ -41,7 +42,7 @@ describe("buildResearchProjectJsonLd", () => {
     raid.title = [
       {
         text: "Researching the lived experience of First Nations Peoples",
-        type: { id: "https://vocabulary.raid.org/title.type.schema/5", schemaUri: "" },
+        type: { id: PRIMARY_TITLE_TYPE, schemaUri: "" },
         startDate: "2025-01-01",
         language: { id: "eng", schemaUri: "https://www.iso.org/standard/74575.html" },
       },
@@ -50,6 +51,41 @@ describe("buildResearchProjectJsonLd", () => {
     const result = buildResearchProjectJsonLd(raid);
     expect(result.name).toBe("Researching the lived experience of First Nations Peoples");
     expect(result.headline).toBe("Researching the lived experience of First Nations Peoples");
+  });
+
+  it("prefers primary title over alternative title", () => {
+    const raid = minimalRaid();
+    raid.title = [
+      {
+        text: "Alternative name",
+        type: { id: "https://vocabulary.raid.org/title.type.schema/4", schemaUri: "" },
+        startDate: "2025-01-01",
+      },
+      {
+        text: "Primary name",
+        type: { id: PRIMARY_TITLE_TYPE, schemaUri: "" },
+        startDate: "2025-01-01",
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.name).toBe("Primary name");
+    expect(result.headline).toBe("Primary name");
+  });
+
+  it("falls back to first title when no primary title exists", () => {
+    const raid = minimalRaid();
+    raid.title = [
+      {
+        text: "Alternative name",
+        type: { id: "https://vocabulary.raid.org/title.type.schema/4", schemaUri: "" },
+        startDate: "2025-01-01",
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.name).toBe("Alternative name");
+    expect(result.headline).toBe("Alternative name");
   });
 
   it("defaults name and headline to empty string when no title", () => {
