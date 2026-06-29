@@ -162,9 +162,9 @@ export default function CustomizedInputBase({
   
     const handleListItemClick = (org: GroupedOrganization) => {
       setDropBox(false);
-      setSelectedValue({ id: org.id, name: org.displayName });
+      setSelectedValue({ id: org.id.trim(), name: org.displayName });
       clearSearchText(true);
-      setInputText(org.id);
+      setInputText(org.id.trim());
     };
   
     const formatSecondaryText = (links: RORLink[]) => {
