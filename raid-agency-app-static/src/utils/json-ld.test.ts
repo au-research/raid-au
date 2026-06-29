@@ -53,7 +53,7 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result.headline).toBe("Researching the lived experience of First Nations Peoples");
   });
 
-  it("prefers primary title over alternative title", () => {
+  it("joins all titles with pipe separator in name, uses primary for headline", () => {
     const raid = minimalRaid();
     raid.title = [
       {
@@ -69,11 +69,11 @@ describe("buildResearchProjectJsonLd", () => {
     ];
 
     const result = buildResearchProjectJsonLd(raid);
-    expect(result.name).toBe("Primary name");
+    expect(result.name).toBe("Alternative name | Primary name");
     expect(result.headline).toBe("Primary name");
   });
 
-  it("falls back to first title when no primary title exists", () => {
+  it("falls back to first title for headline when no primary title exists", () => {
     const raid = minimalRaid();
     raid.title = [
       {

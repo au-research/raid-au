@@ -192,16 +192,19 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     inDefinedTermSet: subject.schemaUri,
   }));
 
-  const name = raid.title?.find((t) => t.type?.id === PRIMARY_TITLE_TYPE)?.text
+  const primaryTitle = raid.title?.find((t) => t.type?.id === PRIMARY_TITLE_TYPE)?.text
     ?? raid.title?.at(0)?.text
     ?? "";
+
+  const allTitles = raid.title?.map((t) => t.text).filter(Boolean) ?? [];
+  const name = allTitles.length > 0 ? allTitles.join(" | ") : "";
 
   return {
     "@context": "https://schema.org",
     "@type": "ResearchProject",
     "@id": raid.identifier?.id ?? "",
     name,
-    headline: name,
+    headline: primaryTitle,
     identifier: {
       "@type": "PropertyValue",
       propertyID: "https://registry.identifiers.org/registry/raid",
