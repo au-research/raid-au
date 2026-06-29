@@ -1,5 +1,6 @@
 import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
 
+const PRIMARY_TITLE_TYPE = "https://vocabulary.raid.org/title.type.schema/5";
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
 const FUNDER_ORGANISATION_ROLE = "https://vocabulary.raid.org/organisation.role.schema/186";
 
@@ -191,7 +192,9 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     inDefinedTermSet: subject.schemaUri,
   }));
 
-  const name = raid.title?.at(0)?.text ?? "";
+  const name = raid.title?.find((t) => t.type?.id === PRIMARY_TITLE_TYPE)?.text
+    ?? raid.title?.at(0)?.text
+    ?? "";
 
   return {
     "@context": "https://schema.org",
