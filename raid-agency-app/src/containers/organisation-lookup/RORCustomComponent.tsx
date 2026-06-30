@@ -97,7 +97,7 @@ const transformToGroupedData = (items: RORItem[] = []): GroupedData => {
 
 
 interface CustomizedInputBaseProps {
-  setSelectedValue: React.Dispatch<React.SetStateAction<{ id: string; name?: string } | null>>;
+  setSelectedValue: (value: { id: string; name?: string } | null) => void;
   name: string;
   defaultValue?: string;
   styles?: React.CSSProperties;
@@ -115,6 +115,7 @@ export default function CustomizedInputBase({
 }: CustomizedInputBaseProps) {
   const [searchText, clearSearchText] = React.useState(false);
   const [inputText, setInputText] = React.useState(defaultValue || '');
+  const isSelected = React.useRef(!!defaultValue);
   const [dropBox, setDropBox] = React.useState(false);
   const { watch, formState: { isDirty } } = useFormContext();
   const value = watch(`${name}`);
@@ -155,16 +156,18 @@ export default function CustomizedInputBase({
       e.preventDefault();
       e.stopPropagation();
       if (inputText.trim()) {
+        isSelected.current = false;
         searchMutation.mutate(inputText.trim());
         setDropBox(true);
       }
     };
-  
+
     const handleListItemClick = (org: GroupedOrganization) => {
       setDropBox(false);
-      setSelectedValue({ id: org.id, name: org.displayName });
+      setSelectedValue({ id: org.id.trim(), name: org.displayName });
       clearSearchText(true);
-      setInputText(org.id);
+      setInputText(org.id.trim());
+      isSelected.current = true;
     };
   
     const formatSecondaryText = (links: RORLink[]) => {
@@ -223,7 +226,13 @@ export default function CustomizedInputBase({
           placeholder={`Search Text or lookup ROR ID ${required ? '*' : ''}`}
           inputProps={{ 'aria-label': 'Search Text or lookup ROR ID' }}
           value={inputText}
-          onChange={(e) => {setInputText(e.target.value),clearSearchText(true)}}
+          onChange={(e) => {
+            setInputText(e.target.value);
+            clearSearchText(true);
+            if (isSelected.current) {
+              setSelectedValue({ id: e.target.value });
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               handleSearch(e);
@@ -231,7 +240,7 @@ export default function CustomizedInputBase({
           }}
           required={required}
         />
-        {searchText && <CloseRoundedIcon onClick={() => {clearSearchText(false), setInputText('')}} />}
+        {searchText && <CloseRoundedIcon onClick={() => { clearSearchText(false); setInputText(''); setSelectedValue(null); isSelected.current = false; }} />}
         <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
         <IconButton  onClick={(e) => handleSearch(e)}  color="primary" sx={{ p: '10px' }} aria-label="directions">
           {searchMutation.status === 'pending' ? <ClipLoader color="#36a5dd" size={25}/> : <TravelExploreIcon />}
