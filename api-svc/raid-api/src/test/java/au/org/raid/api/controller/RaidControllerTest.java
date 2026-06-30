@@ -993,6 +993,51 @@ class RaidControllerTest {
                 .andExpect(jsonPath("$.organisations[1].servicePoints", Matchers.hasSize(2)));
     }
 
+    @Test
+    void postToDatacite_ReturnsNoContent() throws Exception {
+        final var input = APIFixtures.newUpdateRequest();
+        input.getIdentifier().setId("10.12345/abc123");
+
+        mockMvc.perform(post("/raid/post-to-datacite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input))
+                        .characterEncoding("utf-8"))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        verify(raidService).postToDatacite(any(RaidUpdateRequest.class));
+    }
+
+    @Test
+    void postToDatacite_NonDoiHandle_ReturnsBadRequest() throws Exception {
+        final var input = APIFixtures.newUpdateRequest();
+
+        mockMvc.perform(post("/raid/post-to-datacite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input))
+                        .characterEncoding("utf-8"))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    void postToDatacite_NullMetadata_ReturnsNoContent() throws Exception {
+        final var input = APIFixtures.newUpdateRequest();
+        input.getIdentifier().setId("10.12345/abc123");
+        input.setMetadata(null);
+
+        mockMvc.perform(post("/raid/post-to-datacite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input))
+                        .characterEncoding("utf-8"))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        verify(raidService).postToDatacite(any(RaidUpdateRequest.class));
+    }
+
     private RaidDto createRaidForGet(final String title, final LocalDate startDate) throws IOException {
         final String json = FileUtil.resourceContent("/fixtures/raid.json");
 
