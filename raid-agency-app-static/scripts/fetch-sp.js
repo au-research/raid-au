@@ -7,6 +7,9 @@
  * API: GET <apiEndpoint>/service-point
  */
 
+import { readFile, writeFile } from 'fs/promises';
+import path from 'path';
+
 /**
  * Fetch all service points and return a Map of id -> name.
  *
@@ -38,11 +41,38 @@ export async function fetchAllServicePoints({ makeRequestWithRetry, config }) {
   return servicePointMap;
 }
 
+const SP_CACHE_FILE = '.sp-cache.json';
+
+async function loadServicePointCache(config) {
+  if (!config.enableCaching) return null;
+  try {
+    const filePath = path.join(config.dataDir, SP_CACHE_FILE);
+    const raw = await readFile(filePath, 'utf-8');
+    const { timestamp, entries } = JSON.parse(raw);
+    if ((Date.now() - timestamp) < config.cachingTime) {
+      return new Map(entries);
+    }
+  } catch {
+    // File missing or expired — fall through to live fetch
+  }
+  return null;
+}
+
+async function saveServicePointCache(servicePointMap, config) {
+  if (!config.enableCaching) return;
+  const filePath = path.join(config.dataDir, SP_CACHE_FILE);
+  await writeFile(filePath, JSON.stringify({
+    timestamp: Date.now(),
+    entries: Array.from(servicePointMap.entries()),
+  }, null, 2));
+}
+
 /**
  * Enrich RAID data by adding the service point name to identifier.owner.
  *
- * Fetches all service points in one request, then applies names to
- * every RAID record.
+ * Loads from cache when caching is enabled and the cache is fresh;
+ * otherwise fetches all service points in one request, then applies
+ * names to every RAID record.
  *
  * @param {Array} raidData - Array of RAID records
  * @param {Function} makeRequestWithRetry - Shared HTTP helper
@@ -64,10 +94,14 @@ export async function addServicePointNameToRaidData(
   }
 
   try {
-    const servicePointMap = await fetchAllServicePoints({
-      makeRequestWithRetry,
-      config,
-    });
+    let servicePointMap = await loadServicePointCache(config);
+
+    if (servicePointMap) {
+      console.log(`Service point cache hit (${servicePointMap.size} entries)`);
+    } else {
+      servicePointMap = await fetchAllServicePoints({ makeRequestWithRetry, config });
+      await saveServicePointCache(servicePointMap, config);
+    }
 
     stats.totalServicePoints = servicePointMap.size;
     stats.successfulServicePointFetches = servicePointMap.size;

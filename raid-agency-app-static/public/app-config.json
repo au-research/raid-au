@@ -12,7 +12,7 @@
   },
   "caching": {
     "enabled": true,
-    "ttlMs": 432000000
+    "ttlMs": 2592000000
   },
   "header": {
     "topBar": {
