@@ -6,7 +6,6 @@ import { z } from "zod";
 const servicePointBaseSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   identifierOwner: z.string()
-    .trim()
     .min(1, "Identifier owner is required")
     .regex(
       /^https:\/\/ror\.org\/[a-z0-9]{9}$/,
