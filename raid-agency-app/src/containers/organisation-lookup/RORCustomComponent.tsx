@@ -97,7 +97,7 @@ const transformToGroupedData = (items: RORItem[] = []): GroupedData => {
 
 
 interface CustomizedInputBaseProps {
-  setSelectedValue: React.Dispatch<React.SetStateAction<{ id: string; name?: string } | null>>;
+  setSelectedValue: (value: { id: string; name?: string } | null) => void;
   name: string;
   defaultValue?: string;
   styles?: React.CSSProperties;

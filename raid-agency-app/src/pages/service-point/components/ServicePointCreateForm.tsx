@@ -66,6 +66,15 @@ export const ServicePointCreateForm = () => {
     defaultValues: { ...initalServicePointValues },
   });
 
+  const handleSetSelectedValue = (value: { id: string; name?: string } | null) => {
+    setSelectedValue(value);
+    form.setValue(
+      'servicePointCreateRequest.identifierOwner',
+      value?.id ?? '',
+      { shouldValidate: true }
+    );
+  };
+
   const handleCreateSuccess = async () => {
     queryClient.invalidateQueries({ queryKey: ["createServicePoint"] });
     // Show success snackbar
@@ -99,12 +108,6 @@ export const ServicePointCreateForm = () => {
   });
 
 const onSubmit = (item: CreateServicePointRequest) => {
-  // Set identifier owner if selected
-  if (selectedValue) {
-    item.servicePointCreateRequest.identifierOwner = selectedValue.id;
-  }
-
-  // Proceed with mutation
   createServicePointMutation.mutate(item);
   setAppState({ ...appState, loading: true });
 };
@@ -193,7 +196,7 @@ const onSubmit = (item: CreateServicePointRequest) => {
                     >
                       <div>
                         <CustomizedInputBase
-                          setSelectedValue={setSelectedValue}
+                          setSelectedValue={handleSetSelectedValue}
                           name={`servicePointCreateRequest.identifierOwner`}
                           defaultValue={selectedValue?.id || ""}
                           styles={{ width: '100%' }}

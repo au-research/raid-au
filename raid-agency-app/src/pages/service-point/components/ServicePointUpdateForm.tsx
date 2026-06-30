@@ -69,6 +69,15 @@ export const ServicePointUpdateForm = ({
     defaultValues: { ...initalServicePointValues },
   });
 
+  const handleSetSelectedValue = (value: { id: string; name?: string } | null) => {
+    setSelectedValue(value);
+    form.setValue(
+      'servicePointUpdateRequest.identifierOwner',
+      value?.id ?? '',
+      { shouldValidate: true }
+    );
+  };
+
   const handleUpdateSuccess = async() => {
     await queryClient.invalidateQueries({
       queryKey: ["servicePoints", servicePoint.id.toString()],
@@ -102,9 +111,6 @@ export const ServicePointUpdateForm = ({
   });
 
   const onSubmit = (item: UpdateServicePointRequest) => {
-    if (selectedValue) {
-      item.servicePointUpdateRequest.identifierOwner = selectedValue.id;
-    }
     setAppState({ ...appState, loading: true });
     updateServicePointMutation.mutate(item);
   };
@@ -180,7 +186,7 @@ export const ServicePointUpdateForm = ({
                             >
                                 <div>
                                     <CustomizedInputBase
-                                        setSelectedValue={setSelectedValue}
+                                        setSelectedValue={handleSetSelectedValue}
                                         name={`servicePointUpdateRequest.identifierOwner`}
                                         defaultValue={form.getValues("servicePointUpdateRequest.identifierOwner")}
                                         styles={{width: '100%'}}
