@@ -142,15 +142,14 @@ public class RaidController implements RaidApi {
     }
 
     @PostMapping("/raid/post-to-datacite")
-    public ResponseEntity<RaidDto> postToDatacite(@Valid @RequestBody final RaidDto raidDto) {
-        final var handle = new Handle(raidDto.getIdentifier().getId());
+    public ResponseEntity<Void> postToDatacite(@Valid @RequestBody final RaidUpdateRequest raid) {
+        final var handle = new Handle(raid.getIdentifier().getId());
 
-        // return bad request if not a doi
         if (!handle.toString().startsWith("10.")) {
             return ResponseEntity.badRequest().build();
         }
 
-        raidService.postToDatacite(raidDto);
+        raidService.postToDatacite(raid);
 
         return ResponseEntity.noContent().build();
     }

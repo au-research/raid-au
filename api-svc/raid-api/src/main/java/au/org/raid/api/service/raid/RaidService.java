@@ -343,10 +343,8 @@ public class RaidService {
                 .organisations(organisations);
     }
 
-    public void postToDatacite(@Valid RaidDto raid) {
+    public void postToDatacite(RaidUpdateRequest raid) {
         final var handle = new Handle(raid.getIdentifier().getId());
-
-        //TODO: Check prefix
 
         final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValueExact();
 
