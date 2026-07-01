@@ -28,4 +28,6 @@ See [2022-07-21_example-adr.md](./2022-07-21_example-adr.md)
 * [2022-07-21_jdk-platform.md](./2022-07-21_jdk-platform.md) - Use LTS JDK 17, Amazon Corretto
 * [2022-07-21_nodejs-platform.md](./2022-07-21_nodejs-platform.md) - Use LTS Node.js
 * [2022-07-21_typescript.md](./2022-07-21_typescript.md) - Use TypeScript where possible
+* [2026-04-17_sparql-cache-fallback.md](./2026-04-17_sparql-cache-fallback.md) - Schema generation resilience via SPARQL retry + read-through cache
+* [2026-07-01_test-environment-migration-and-release-process.md](./2026-07-01_test-environment-migration-and-release-process.md) - Migrate test environment to raid.org and introduce RC-based release process
 
