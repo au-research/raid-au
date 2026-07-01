@@ -63,9 +63,16 @@ import { addRorDetailsToRaidData } from './fetch-ror.js';
 import { addServicePointNameToRaidData } from './fetch-sp.js';
 import { fetchEmbargoedRaids } from './fetch-embargoed-raids.js';
 import { loadAppConfig } from './loadAppConfig.js';
+import { orcidCache, rorCache } from './apiCache.js';
 
 // Load config from public/app-config.json (falls back to env vars)
 const config = loadAppConfig();
+
+// Configure ORCID and ROR caches with the TTL from app-config
+if (config.enableCaching) {
+  orcidCache.configure({ ttlMs: config.cachingTime });
+  rorCache.configure({ ttlMs: config.cachingTime });
+}
 
 // Simple in-memory cache for DOI citations
 const citationCache = new Map();
@@ -347,17 +354,35 @@ async function loadCache() {
     } catch (error) {
       // Cache file doesn't exist or is invalid, start fresh
     }
+
+    const orcidLoaded = await orcidCache.loadFromFile(path.join(config.dataDir, '.orcid-cache.json'));
+    if (orcidLoaded > 0) console.log(`ORCID cache loaded (${orcidLoaded} entries)`);
+
+    const rorLoaded = await rorCache.loadFromFile(path.join(config.dataDir, '.ror-cache.json'));
+    if (rorLoaded > 0) console.log(`ROR cache loaded (${rorLoaded} entries)`);
   }
 }
 
 // Load cache from file (if enabled and exists)
 // Save cache to file (if enabled)
 async function saveCache() {
-  if (config.enableCaching && citationCache.size > 0) {
-    const cacheFile = path.join(config.dataDir, '.citation-cache.json');
-    const cacheData = Object.fromEntries(citationCache);
-    await fs.writeFile(cacheFile, JSON.stringify(cacheData, null, 2));
-    console.log(`Citation cache saved (${citationCache.size} entries)`);
+  if (config.enableCaching) {
+    if (citationCache.size > 0) {
+      const cacheFile = path.join(config.dataDir, '.citation-cache.json');
+      const cacheData = Object.fromEntries(citationCache);
+      await fs.writeFile(cacheFile, JSON.stringify(cacheData, null, 2));
+      console.log(`Citation cache saved (${citationCache.size} entries)`);
+    }
+
+    if (orcidCache.size > 0) {
+      await orcidCache.saveToFile(path.join(config.dataDir, '.orcid-cache.json'));
+      console.log(`ORCID cache saved (${orcidCache.size} entries)`);
+    }
+
+    if (rorCache.size > 0) {
+      await rorCache.saveToFile(path.join(config.dataDir, '.ror-cache.json'));
+      console.log(`ROR cache saved (${rorCache.size} entries)`);
+    }
   }
 }
 // Main execution
