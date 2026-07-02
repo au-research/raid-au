@@ -60,6 +60,52 @@ public class RaidPermissionsController {
     }
 
     @OPTIONS
+    @Path("/permissions")
+    public Response getPermissionsPreflight() {
+        return addCorsHeaders("GET")
+                .preflight()
+                .add(Response.ok());
+    }
+
+    @GET
+    @Path("/permissions")
+    @SneakyThrows
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPermissions(@QueryParam("userId") String userId) {
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var client = auth.client();
+
+        if (client.getRolesStream().noneMatch(role -> role.getName().equals("raid-permissions-admin"))) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (userId == null || userId.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"userId is required\"}")
+                    .build();
+        }
+
+        final var user = session.users().getUserById(session.getContext().getRealm(), userId);
+
+        if (user == null) {
+            throw new UserNotFoundException(userId);
+        }
+
+        final var userRaids = user.getAttributeStream(USER_RAIDS_ATTRIBUTE).collect(Collectors.toList());
+        final var adminRaids = user.getAttributeStream(ADMIN_RAIDS_ATTRIBUTE).collect(Collectors.toList());
+
+        final var response = new RaidPermissionsResponse(userRaids, adminRaids);
+
+        return addCorsHeaders("GET")
+                .add(Response.ok()
+                        .entity(objectMapper.writeValueAsString(response))
+                        .type(MediaType.APPLICATION_JSON));
+    }
+
+    @OPTIONS
     @Path("/raid-user")
     public Response addRaidUserPreflight() {
         return addCorsHeaders("POST", "DELETE")

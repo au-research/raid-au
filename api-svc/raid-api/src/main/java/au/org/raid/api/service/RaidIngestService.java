@@ -4,6 +4,7 @@ import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
+import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
@@ -43,6 +44,7 @@ public class RaidIngestService {
     private final RaidHistoryService raidHistoryService;
     private final RaidDtoReadService raidDtoReadService;
     private final ObjectMapper objectMapper;
+    private final KeycloakService keycloakService;
 
     public void create(final RaidDto raid) {
         final var handle = handleFactory.create(raid.getIdentifier().getId()).toString();
@@ -178,8 +180,10 @@ public class RaidIngestService {
     }
 
     public List<RaidDto> findAllByServicePointIdOrHandleIn(final Long servicePointId) {
-        final var handles = new ArrayList<>(TokenUtil.getAdminRaids());
-        handles.addAll(TokenUtil.getUserRaids());
+        final var userId = TokenUtil.getUserId();
+        final var permissions = keycloakService.getRaidPermissions(userId);
+        final var handles = new ArrayList<>(permissions.getAdminRaids());
+        handles.addAll(permissions.getUserRaids());
 
         final var isServicePointUser = TokenUtil.hasRole(TokenUtil.SERVICE_POINT_USER_ROLE);
 

@@ -322,4 +322,125 @@ class RaidPermissionsControllerTest {
 
         assertThrows(UserNotFoundException.class, () -> controller.addAdminRaid(request));
     }
+
+    // --- getPermissionsPreflight ---
+
+    @Test
+    void getPermissionsPreflight_returnsOk() {
+        var controller = createAuthenticatedController();
+        var response = controller.getPermissionsPreflight();
+        assertThat(response.getStatus(), is(200));
+        verify(keycloakCors).preflight();
+    }
+
+    // --- getPermissions ---
+
+    @Test
+    void getPermissions_returnsUnauthorizedWhenNotAuthenticated() {
+        var controller = createUnauthenticatedController();
+        var response = controller.getPermissions("u1");
+        assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    void getPermissions_returnsUnauthorizedWithoutAdminRole() {
+        var controller = createAuthenticatedController();
+        setupNoClientRoles();
+        var response = controller.getPermissions("u1");
+        assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    void getPermissions_returnsBadRequestWhenUserIdMissing() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        var response = controller.getPermissions(null);
+        assertThat(response.getStatus(), is(400));
+    }
+
+    @Test
+    void getPermissions_returnsBadRequestWhenUserIdBlank() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        var response = controller.getPermissions("  ");
+        assertThat(response.getStatus(), is(400));
+    }
+
+    @Test
+    void getPermissions_throwsUserNotFoundWhenUserDoesNotExist() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        when(session.users()).thenReturn(userProvider);
+        when(userProvider.getUserById(realm, "missing")).thenReturn(null);
+
+        assertThrows(UserNotFoundException.class, () -> controller.getPermissions("missing"));
+    }
+
+    @Test
+    void getPermissions_returnsUserRaidHandles() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        when(session.users()).thenReturn(userProvider);
+
+        var targetUser = mock(UserModel.class);
+        when(targetUser.getAttributeStream("userRaids")).thenReturn(Stream.of("test/handle"));
+        when(targetUser.getAttributeStream("adminRaids")).thenReturn(Stream.empty());
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var response = controller.getPermissions("u1");
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.getEntity().toString(), containsString("\"userRaids\":[\"test/handle\"]"));
+        assertThat(response.getEntity().toString(), containsString("\"adminRaids\":[]"));
+    }
+
+    @Test
+    void getPermissions_returnsAdminRaidHandles() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        when(session.users()).thenReturn(userProvider);
+
+        var targetUser = mock(UserModel.class);
+        when(targetUser.getAttributeStream("userRaids")).thenReturn(Stream.empty());
+        when(targetUser.getAttributeStream("adminRaids")).thenReturn(Stream.of("test/handle"));
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var response = controller.getPermissions("u1");
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.getEntity().toString(), containsString("\"userRaids\":[]"));
+        assertThat(response.getEntity().toString(), containsString("\"adminRaids\":[\"test/handle\"]"));
+    }
+
+    @Test
+    void getPermissions_returnsBothHandleLists() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        when(session.users()).thenReturn(userProvider);
+
+        var targetUser = mock(UserModel.class);
+        when(targetUser.getAttributeStream("userRaids")).thenReturn(Stream.of("user/handle"));
+        when(targetUser.getAttributeStream("adminRaids")).thenReturn(Stream.of("admin/handle"));
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var response = controller.getPermissions("u1");
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.getEntity().toString(), containsString("\"userRaids\":[\"user/handle\"]"));
+        assertThat(response.getEntity().toString(), containsString("\"adminRaids\":[\"admin/handle\"]"));
+    }
+
+    @Test
+    void getPermissions_returnsEmptyListsWhenNoAttributes() {
+        var controller = createAuthenticatedController();
+        setupRaidPermissionsAdminRole();
+        when(session.users()).thenReturn(userProvider);
+
+        var targetUser = mock(UserModel.class);
+        when(targetUser.getAttributeStream("userRaids")).thenReturn(Stream.empty());
+        when(targetUser.getAttributeStream("adminRaids")).thenReturn(Stream.empty());
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var response = controller.getPermissions("u1");
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.getEntity().toString(), containsString("\"userRaids\":[]"));
+        assertThat(response.getEntity().toString(), containsString("\"adminRaids\":[]"));
+    }
 }

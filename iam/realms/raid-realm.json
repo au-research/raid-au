@@ -1003,7 +1003,7 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : true,
     "nodeReRegistrationTimeout" : -1,
-    "defaultClientScopes" : [ "web-origins", "acr", "roles", "user_raids", "basic", "admin_raids", "service_point_group_id" ],
+    "defaultClientScopes" : [ "web-origins", "acr", "roles", "basic", "service_point_group_id" ],
     "optionalClientScopes" : [ ]
   }, {
     "id" : "b5ded15a-4576-4fdf-b95b-f1adf9a8de9e",
@@ -1318,35 +1318,6 @@
       "display.on.consent.screen" : "true"
     }
   }, {
-    "id" : "8c822622-53e6-4374-9091-53ea05b611d3",
-    "name" : "user_raids",
-    "description" : "",
-    "protocol" : "openid-connect",
-    "attributes" : {
-      "include.in.token.scope" : "false",
-      "display.on.consent.screen" : "true",
-      "gui.order" : "",
-      "consent.screen.text" : ""
-    },
-    "protocolMappers" : [ {
-      "id" : "8e5799f2-c755-4006-a3e1-4f4c755e3ed0",
-      "name" : "user_raids",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "introspection.token.claim" : "true",
-        "userinfo.token.claim" : "true",
-        "multivalued" : "true",
-        "user.attribute" : "userRaids",
-        "id.token.claim" : "true",
-        "lightweight.claim" : "false",
-        "access.token.claim" : "true",
-        "claim.name" : "user_raids",
-        "jsonType.label" : "String"
-      }
-    } ]
-  }, {
     "id" : "7065ed5a-9643-4b52-a394-4c38371b7b66",
     "name" : "acr",
     "description" : "OpenID Connect scope for add acr (authentication context class reference) to the token",
@@ -1453,35 +1424,6 @@
         "access.token.claim" : "true",
         "claim.name" : "auth_time",
         "jsonType.label" : "long"
-      }
-    } ]
-  }, {
-    "id" : "29b46320-465a-44ab-8218-61796e9a6a63",
-    "name" : "admin_raids",
-    "description" : "",
-    "protocol" : "openid-connect",
-    "attributes" : {
-      "include.in.token.scope" : "false",
-      "display.on.consent.screen" : "true",
-      "gui.order" : "",
-      "consent.screen.text" : ""
-    },
-    "protocolMappers" : [ {
-      "id" : "56116218-7754-4d65-9ffd-f2713b658f0f",
-      "name" : "admin_raids",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "introspection.token.claim" : "true",
-        "userinfo.token.claim" : "true",
-        "multivalued" : "true",
-        "user.attribute" : "adminRaids",
-        "id.token.claim" : "true",
-        "lightweight.claim" : "false",
-        "access.token.claim" : "true",
-        "claim.name" : "admin_raids",
-        "jsonType.label" : "String"
       }
     } ]
   }, {

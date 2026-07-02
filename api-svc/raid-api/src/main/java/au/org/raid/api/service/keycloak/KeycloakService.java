@@ -2,6 +2,7 @@ package au.org.raid.api.service.keycloak;
 
 import au.org.raid.api.config.RaidPermissionsAuthProps;
 import au.org.raid.api.service.keycloak.dto.AdminRaidsRequest;
+import au.org.raid.api.service.keycloak.dto.RaidPermissionsResponse;
 import au.org.raid.api.service.keycloak.dto.TokenRequest;
 import au.org.raid.api.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,4 +37,17 @@ public class KeycloakService {
                         .build());
     }
 
+    public RaidPermissionsResponse getRaidPermissions(final String userId) {
+        final var tokenResponse = keycloakApi.getToken(TokenRequest.builder()
+                .clientId(authProps.getClientId())
+                .clientSecret(authProps.getClientSecret())
+                .grantType("client_credentials")
+                .build());
+
+        final var response = keycloakApi.getRaidPermissions(
+                "Bearer %s".formatted(Objects.requireNonNull(tokenResponse.getBody()).getAccessToken()),
+                userId);
+
+        return Objects.requireNonNull(response.getBody());
+    }
 }

@@ -41,9 +41,6 @@ public class SecurityConfig {
         public static final String REALM_ACCESS_CLAIM = "realm_access";
         public static final String ROLES_CLAIM = "roles";
         public static final String GROUPS = "groups";
-        public static final String ADMIN_RAIDS_CLAIM = "admin_raids";
-        public static final String USER_RAIDS_CLAIM = "user_raids";
-
         // Roles
         public static final String RAID_USER_ROLE = "raid-user";
         public static final String RAID_DUMPER_ROLE = "raid-dumper";

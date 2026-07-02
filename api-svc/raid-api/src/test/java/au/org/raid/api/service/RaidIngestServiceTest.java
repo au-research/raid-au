@@ -3,6 +3,7 @@ package au.org.raid.api.service;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
+import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,6 +65,8 @@ class RaidIngestServiceTest {
     RaidDtoReadService raidDtoReadService;
     @Mock
     ObjectMapper objectMapper;
+    @Mock
+    KeycloakService keycloakService;
     @InjectMocks
     RaidIngestService raidIngestService;
 

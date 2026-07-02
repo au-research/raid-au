@@ -4,6 +4,8 @@ import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.ServicePointService;
+import au.org.raid.api.service.keycloak.KeycloakService;
+import au.org.raid.api.service.keycloak.dto.RaidPermissionsResponse;
 import au.org.raid.idl.raidv2.model.AccessTypeIdEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,14 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.function.Supplier;
 
 import static au.org.raid.api.config.SecurityConfig.SecurityConstants.*;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.ADMIN_RAIDS_CLAIM;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.CONTRIBUTOR_WRITER_ROLE;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.OPERATOR_ROLE;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.RAID_ADMIN_ROLE;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.RAID_USER_ROLE;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.SERVICE_POINT_GROUP_ID_CLAIM;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.SERVICE_POINT_USER_ROLE;
-import static au.org.raid.api.config.SecurityConfig.SecurityConstants.USER_RAIDS_CLAIM;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +29,7 @@ public class RaidAuthorizationService {
 
     private final ServicePointService servicePointService;
     private final RaidHistoryService raidHistoryService;
+    private final KeycloakService keycloakService;
 
     public AuthorizationManager<RequestAuthorizationContext> createReadAccessManager() {
         return AuthorizationManagers.anyOf(
@@ -181,17 +176,17 @@ public class RaidAuthorizationService {
     }
 
     private AuthorizationDecision hasRaidAdminPermissions(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
-        return hasRaidPermissions(authentication, context, RAID_ADMIN_ROLE, ADMIN_RAIDS_CLAIM);
+        return hasRaidPermissions(authentication, context, RAID_ADMIN_ROLE, (permissions, handle) -> permissions.getAdminRaids().contains(handle));
     }
 
     private AuthorizationDecision hasRaidUserPermissions(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
-        return hasRaidPermissions(authentication, context, RAID_USER_ROLE, USER_RAIDS_CLAIM);
+        return hasRaidPermissions(authentication, context, RAID_USER_ROLE, (permissions, handle) -> permissions.getUserRaids().contains(handle));
     }
 
     private AuthorizationDecision hasRaidPermissions(Supplier<Authentication> authentication,
                                                      RequestAuthorizationContext context,
                                                      String roleName,
-                                                     String claimName) {
+                                                     java.util.function.BiFunction<RaidPermissionsResponse, String, Boolean> permissionChecker) {
         if (isPidSearch(context)) {
             return new AuthorizationDecision(false);
         }
@@ -206,8 +201,14 @@ public class RaidAuthorizationService {
             return new AuthorizationDecision(false);
         }
 
-        var validRaids = token.getClaimAsStringList(claimName);
-        return new AuthorizationDecision(validRaids != null && validRaids.contains(handle));
+        try {
+            var userId = token.getSubject();
+            var permissions = keycloakService.getRaidPermissions(userId);
+            return new AuthorizationDecision(permissionChecker.apply(permissions, handle));
+        } catch (Exception e) {
+            log.error("Error checking raid permissions", e);
+            return new AuthorizationDecision(false);
+        }
     }
 
     // Helper methods

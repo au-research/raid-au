@@ -225,20 +225,18 @@ public class RaidService {
             }
         }
 
-        if (authorities.contains(RAID_USER_ROLE)) {
-            final var userRaids = token.getClaims().get("user_raids");
+        if (authorities.contains(RAID_USER_ROLE) || authorities.contains(RAID_ADMIN_ROLE)) {
+            final var userId = token.getSubject();
+            final var permissions = keycloakService.getRaidPermissions(userId);
 
-            if (userRaids instanceof List) {
-                canRead = (canRead) ? canRead : ((List<?>) userRaids).contains(handle);
-                canWrite = ((List<?>) userRaids).contains(handle);
+            if (permissions.getUserRaids().contains(handle)) {
+                canRead = true;
+                canWrite = true;
             }
-        }
 
-        if (authorities.contains(RAID_ADMIN_ROLE)) {
-            final var adminRaids = token.getClaims().get("admin_raids");
-            if (adminRaids instanceof List) {
-                canRead = (canRead) ? canRead : ((List<?>) adminRaids).contains(handle);
-                canWrite = (canWrite) ? canWrite : ((List<?>) adminRaids).contains(handle);
+            if (permissions.getAdminRaids().contains(handle)) {
+                canRead = true;
+                canWrite = true;
             }
         }
 

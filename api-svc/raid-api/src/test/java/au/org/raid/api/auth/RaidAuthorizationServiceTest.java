@@ -2,6 +2,8 @@ package au.org.raid.api.auth;
 
 import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.ServicePointService;
+import au.org.raid.api.service.keycloak.KeycloakService;
+import au.org.raid.api.service.keycloak.dto.RaidPermissionsResponse;
 import au.org.raid.api.util.SchemaValues;
 import au.org.raid.idl.raidv2.model.*;
 
@@ -30,6 +32,7 @@ import static au.org.raid.api.config.SecurityConfig.SecurityConstants.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +45,9 @@ class RaidAuthorizationServiceTest {
     @Mock
     private RaidHistoryService raidHistoryService;
 
+    @Mock
+    private KeycloakService keycloakService;
+
     @InjectMocks
     private RaidAuthorizationService raidAuthorizationService;
 
@@ -52,6 +58,7 @@ class RaidAuthorizationServiceTest {
 
     private static final String TEST_HANDLE = "test/handle";
     private static final String TEST_GROUP_ID = "test-group-id";
+    private static final String TEST_USER_ID = "test-user-id";
     private static final Long TEST_SERVICE_POINT_ID = 1L;
 
     @BeforeEach
@@ -61,9 +68,8 @@ class RaidAuthorizationServiceTest {
 
         jwt = Jwt.withTokenValue("token")
                 .header("alg", "RS256")
+                .subject(TEST_USER_ID)
                 .claim(SERVICE_POINT_GROUP_ID_CLAIM, TEST_GROUP_ID)
-                .claim(ADMIN_RAIDS_CLAIM, List.of(TEST_HANDLE))
-                .claim(USER_RAIDS_CLAIM, List.of(TEST_HANDLE))
                 .build();
     }
 
@@ -185,6 +191,8 @@ class RaidAuthorizationServiceTest {
             // Given
             request.setRequestURI("/raid/test/handle");
             var auth = createJwtToken(RAID_ADMIN_ROLE);
+            var permissions = new RaidPermissionsResponse(List.of(), List.of(TEST_HANDLE));
+            when(keycloakService.getRaidPermissions(eq(TEST_USER_ID))).thenReturn(permissions);
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
@@ -200,6 +208,8 @@ class RaidAuthorizationServiceTest {
             // Given
             request.setRequestURI("/raid/test/handle");
             var auth = createJwtToken(RAID_USER_ROLE);
+            var permissions = new RaidPermissionsResponse(List.of(TEST_HANDLE), List.of());
+            when(keycloakService.getRaidPermissions(eq(TEST_USER_ID))).thenReturn(permissions);
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
@@ -317,6 +327,8 @@ class RaidAuthorizationServiceTest {
             // Given
             request.setRequestURI("/raid/test/handle");
             var auth = createJwtToken(RAID_ADMIN_ROLE);
+            var permissions = new RaidPermissionsResponse(List.of(), List.of(TEST_HANDLE));
+            when(keycloakService.getRaidPermissions(eq(TEST_USER_ID))).thenReturn(permissions);
             var manager = raidAuthorizationService.createWriteAccessManager();
 
             // When
@@ -516,11 +528,9 @@ class RaidAuthorizationServiceTest {
         void shouldDenyRaidUserWithInvalidHandle() {
             // Given
             request.setRequestURI("/raid/invalid/handle");
-            jwt = Jwt.withTokenValue("token")
-                    .header("alg", "RS256")
-                    .claim(USER_RAIDS_CLAIM, List.of(TEST_HANDLE)) // Different handle than in URL
-                    .build();
-            var auth = new JwtAuthenticationToken(jwt, List.of(new SimpleGrantedAuthority("ROLE_" + RAID_USER_ROLE)));
+            var permissions = new RaidPermissionsResponse(List.of(), List.of());
+            when(keycloakService.getRaidPermissions(eq(TEST_USER_ID))).thenReturn(permissions);
+            var auth = createJwtToken(RAID_USER_ROLE);
             var manager = raidAuthorizationService.createReadAccessManager();
 
             // When
