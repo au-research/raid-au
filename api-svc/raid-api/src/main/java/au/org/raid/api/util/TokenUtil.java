@@ -5,15 +5,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-import java.util.Collections;
 import java.util.List;
 
 public class TokenUtil {
     public static final String OPERATOR_ROLE = "operator";
     public static final String SERVICE_POINT_USER_ROLE = "service-point-user";
     private static final String SUBJECT_CLAIM = "sub";
-    private static final String USER_RAIDS_CLAIM = "user_raids";
-    private static final String ADMIN_RAIDS_CLAIM = "admin_raids";
     private static final String REALM_ACCESS_CLAIM = "realm_access";
     private static final String ROLES_CLAIM = "roles";
 
@@ -23,26 +20,6 @@ public class TokenUtil {
 
     public static String getUserId() {
         return (String) getToken().getClaims().get(SUBJECT_CLAIM);
-    }
-
-    public static List<String> getUserRaids() {
-        if (getToken().getClaims().get(USER_RAIDS_CLAIM) != null) {
-            return ((List<?>) getToken().getClaims().get(USER_RAIDS_CLAIM)).stream()
-                    .filter(handle -> handle instanceof String)
-                    .map(handle -> (String) handle)
-                    .toList();
-        }
-        return Collections.emptyList();
-    }
-
-    public static List<String> getAdminRaids() {
-        if (getToken().getClaims().get(ADMIN_RAIDS_CLAIM) != null) {
-            return ((List<?>) getToken().getClaims().get(ADMIN_RAIDS_CLAIM)).stream()
-                    .filter(handle -> handle instanceof String)
-                    .map(handle -> (String) handle)
-                    .toList();
-        }
-        return Collections.emptyList();
     }
 
     public static boolean hasRole(final String role) {

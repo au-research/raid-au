@@ -11,6 +11,7 @@ import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.api.service.*;
 import au.org.raid.api.service.datacite.DataciteService;
 import au.org.raid.api.service.keycloak.KeycloakService;
+import au.org.raid.api.service.keycloak.dto.RaidPermissionsResponse;
 import au.org.raid.api.service.raid.id.IdentifierParser;
 import au.org.raid.api.util.FileUtil;
 import au.org.raid.api.util.TokenUtil;
@@ -420,11 +421,7 @@ class RaidServiceTest {
             final var securityContext = mock(SecurityContext.class);
             final var authentication = mock(JwtAuthenticationToken.class);
             final var token = mock(Jwt.class);
-            final var claims = Map.of(
-                    "service_point_group_id", servicePointGroupId,
-                    "user_raids", List.of(handle)
-            );
-
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
             final var authorities = List.of((GrantedAuthority) () -> "ROLE_raid-user");
 
@@ -432,9 +429,13 @@ class RaidServiceTest {
             when(securityContext.getAuthentication()).thenReturn(authentication);
             when(authentication.getToken()).thenReturn(token);
             when(token.getClaims()).thenReturn(claims);
+            when(token.getSubject()).thenReturn(USER_ID);
             when(authentication.getAuthorities()).thenReturn(authorities);
 
             when(servicePointRepository.findByGroupId(servicePointGroupId)).thenReturn(Optional.of(servicePointRecord));
+
+            var permissionsResponse = new RaidPermissionsResponse(List.of(handle), List.of());
+            when(keycloakService.getRaidPermissions(USER_ID)).thenReturn(permissionsResponse);
 
             final var permissions = raidService.getPermissions(prefix, suffix)
                     .orElseThrow();
@@ -468,10 +469,7 @@ class RaidServiceTest {
             final var securityContext = mock(SecurityContext.class);
             final var authentication = mock(JwtAuthenticationToken.class);
             final var token = mock(Jwt.class);
-            final var claims = Map.of(
-                    "service_point_group_id", servicePointGroupId,
-                    "user_raids", Collections.emptyList()
-            );
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
             final var authorities = List.of((GrantedAuthority) () -> "ROLE_raid-user");
 
@@ -479,9 +477,12 @@ class RaidServiceTest {
             when(securityContext.getAuthentication()).thenReturn(authentication);
             when(authentication.getToken()).thenReturn(token);
             when(token.getClaims()).thenReturn(claims);
+            when(token.getSubject()).thenReturn(USER_ID);
             when(authentication.getAuthorities()).thenReturn(authorities);
 
             when(servicePointRepository.findByGroupId(servicePointGroupId)).thenReturn(Optional.of(servicePointRecord));
+
+            when(keycloakService.getRaidPermissions(USER_ID)).thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
 
             final var permissions = raidService.getPermissions(prefix, suffix)
                     .orElseThrow();
@@ -515,10 +516,7 @@ class RaidServiceTest {
             final var securityContext = mock(SecurityContext.class);
             final var authentication = mock(JwtAuthenticationToken.class);
             final var token = mock(Jwt.class);
-            final var claims = Map.of(
-                    "service_point_group_id", servicePointGroupId,
-                    "user_raids", Collections.emptyList()
-            );
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
             final var authorities = List.of((GrantedAuthority) () -> "ROLE_raid-admin");
 
@@ -526,9 +524,12 @@ class RaidServiceTest {
             when(securityContext.getAuthentication()).thenReturn(authentication);
             when(authentication.getToken()).thenReturn(token);
             when(token.getClaims()).thenReturn(claims);
+            when(token.getSubject()).thenReturn(USER_ID);
             when(authentication.getAuthorities()).thenReturn(authorities);
 
             when(servicePointRepository.findByGroupId(servicePointGroupId)).thenReturn(Optional.of(servicePointRecord));
+
+            when(keycloakService.getRaidPermissions(USER_ID)).thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
 
             final var permissions = raidService.getPermissions(prefix, suffix)
                     .orElseThrow();
@@ -562,10 +563,7 @@ class RaidServiceTest {
             final var securityContext = mock(SecurityContext.class);
             final var authentication = mock(JwtAuthenticationToken.class);
             final var token = mock(Jwt.class);
-            final var claims = Map.of(
-                    "service_point_group_id", servicePointGroupId,
-                    "user_raids", Collections.emptyList()
-            );
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
             final var authorities = List.of((GrantedAuthority) () -> "ROLE_raid-user");
 
@@ -573,9 +571,12 @@ class RaidServiceTest {
             when(securityContext.getAuthentication()).thenReturn(authentication);
             when(authentication.getToken()).thenReturn(token);
             when(token.getClaims()).thenReturn(claims);
+            when(token.getSubject()).thenReturn(USER_ID);
             when(authentication.getAuthorities()).thenReturn(authorities);
 
             when(servicePointRepository.findByGroupId(servicePointGroupId)).thenReturn(Optional.of(servicePointRecord));
+
+            when(keycloakService.getRaidPermissions(USER_ID)).thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
 
             final var permissions = raidService.getPermissions(prefix, suffix)
                     .orElseThrow();
@@ -609,10 +610,7 @@ class RaidServiceTest {
             final var securityContext = mock(SecurityContext.class);
             final var authentication = mock(JwtAuthenticationToken.class);
             final var token = mock(Jwt.class);
-            final var claims = Map.of(
-                    "service_point_group_id", servicePointGroupId,
-                    "user_raids", Collections.emptyList()
-            );
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
             final var authorities = List.of((GrantedAuthority) () -> "ROLE_raid-admin");
 
@@ -620,9 +618,12 @@ class RaidServiceTest {
             when(securityContext.getAuthentication()).thenReturn(authentication);
             when(authentication.getToken()).thenReturn(token);
             when(token.getClaims()).thenReturn(claims);
+            when(token.getSubject()).thenReturn(USER_ID);
             when(authentication.getAuthorities()).thenReturn(authorities);
 
             when(servicePointRepository.findByGroupId(servicePointGroupId)).thenReturn(Optional.of(servicePointRecord));
+
+            when(keycloakService.getRaidPermissions(USER_ID)).thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
 
             final var permissions = raidService.getPermissions(prefix, suffix)
                     .orElseThrow();
@@ -656,11 +657,7 @@ class RaidServiceTest {
             final var securityContext = mock(SecurityContext.class);
             final var authentication = mock(JwtAuthenticationToken.class);
             final var token = mock(Jwt.class);
-            final var claims = Map.of(
-                    "service_point_group_id", servicePointGroupId,
-                    "admin_raids", List.of(handle)
-            );
-
+            final var claims = Map.<String, Object>of("service_point_group_id", servicePointGroupId);
 
             final var authorities = List.of((GrantedAuthority) () -> "ROLE_raid-admin");
 
@@ -668,9 +665,13 @@ class RaidServiceTest {
             when(securityContext.getAuthentication()).thenReturn(authentication);
             when(authentication.getToken()).thenReturn(token);
             when(token.getClaims()).thenReturn(claims);
+            when(token.getSubject()).thenReturn(USER_ID);
             when(authentication.getAuthorities()).thenReturn(authorities);
 
             when(servicePointRepository.findByGroupId(servicePointGroupId)).thenReturn(Optional.of(servicePointRecord));
+
+            var permissionsResponse = new RaidPermissionsResponse(List.of(), List.of(handle));
+            when(keycloakService.getRaidPermissions(USER_ID)).thenReturn(permissionsResponse);
 
             final var permissions = raidService.getPermissions(prefix, suffix)
                     .orElseThrow();
