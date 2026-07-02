@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
   Badge,
+  Box,
+  Chip,
   IconButton,
   Popper,
   Paper,
   ClickAwayListener,
-  Box,
   Typography,
   Divider,
   Accordion,
@@ -15,7 +16,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Chip,
+  Tab,
+  Tabs,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -32,9 +34,29 @@ interface NotificationBellProps {
 export const NotificationBell: React.FC<NotificationBellProps> = ({ className }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
+  const [selectedTab, setSelectedTab] = useState<string>('');
   const { notifications, totalCount } = useNotificationContext();
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+
+  // Group notifications by type; fall back to 'general' / 'General' for untyped entries
+  const groupedNotifications = Object.entries(notifications).reduce(
+    (acc, [key, notification]) => {
+      const typeKey = notification.type ?? 'general';
+      const typeLabel = notification.typeLabel ?? 'General';
+      if (!acc[typeKey]) {
+        acc[typeKey] = { label: typeLabel, items: {} };
+      }
+      acc[typeKey].items[key] = notification;
+      return acc;
+    },
+    {} as Record<string, { label: string; items: Record<string, typeof notifications[string]> }>,
+  );
+
+  const tabKeys = Object.keys(groupedNotifications);
+  // Derive the active tab: keep the current selection if it still exists, else use the first tab
+  const activeTab = (selectedTab && groupedNotifications[selectedTab]) ? selectedTab : (tabKeys[0] ?? '');
+
   const handleClick = (event: React.MouseEvent<HTMLElement>): void => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
@@ -43,11 +65,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
     setAnchorEl(null);
   };
 
-  const handleAccordionChange = (key: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [key]: isExpanded,
-    }));
+  const handleAccordionChange = (key: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpandedSections(prev => ({ ...prev, [key]: isExpanded }));
   };
 
   return (
@@ -58,10 +77,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
         </Badge>
       </IconButton>
 
-      <Popper 
-        open={open} 
-        anchorEl={anchorEl} 
-        placement="bottom-end" 
+      <Popper
+        open={open}
+        anchorEl={anchorEl}
+        placement="bottom-end"
         sx={{ zIndex: 1300 }}
       >
         <ClickAwayListener onClickAway={handleClose}>
@@ -103,138 +122,163 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
             </Box>
 
             {/* Content */}
-            <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default' }}>
+            <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
               {totalCount === 0 ? (
                 <Box sx={{ p: 8, textAlign: 'center' }}>
                   <NotificationsIcon sx={{ fontSize: 64, color: 'action.disabled', mb: 2 }} />
                   <Typography color="text.secondary">No notifications</Typography>
                 </Box>
               ) : (
-                <Box sx={{ p: 1 }}>
-                  {Object.entries(notifications).map(([key, notification]) => (
-                    <Accordion
-                      disableGutters={true}
-                      key={key}
-                      expanded={expandedSections[key] !== false}
-                      onChange={handleAccordionChange(key)}
-                      sx={{
-                        mb: 1,
-                        '&:before': { display: 'none' },
-                        boxShadow: 1,
-                      }}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        sx={{
-                          borderLeft: `${expandedSections[key] ? 4 : 0}px solid`,
-                          borderColor: 'primary.main',
-                          '&:hover': { bgcolor: 'action.hover' },
-                        }}
+                <>
+                  {/* Notification type tabs */}
+                  <Tabs
+                    value={activeTab}
+                    onChange={(_e, v) => setSelectedTab(v)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', minHeight: 48 }}
+                  >
+                    {tabKeys.map((typeKey) => {
+                      const group = groupedNotifications[typeKey];
+                      const count = Object.values(group.items).reduce(
+                        (sum, n) => sum + n.categories.length, 0,
+                      );
+                      return (
+                        <Tab
+                          key={typeKey}
+                          value={typeKey}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                              <Typography variant="body2" fontWeight={500}>
+                                {group.label}
+                              </Typography>
+                              <Chip
+                                label={count}
+                                size="small"
+                                color="primary"
+                                sx={{ height: 18, minWidth: 24, fontSize: '0.7rem' }}
+                              />
+                            </Box>
+                          }
+                          sx={{ minHeight: 48, textTransform: 'none' }}
+                        />
+                      );
+                    })}
+                  </Tabs>
+
+                  {/* Items for the selected tab */}
+                  <Box sx={{ flex: 1, overflow: 'auto', p: 1 }}>
+                    {Object.entries(groupedNotifications[activeTab]?.items ?? {}).map(([key, notification]) => (
+                      <Accordion
+                        disableGutters
+                        key={key}
+                        expanded={expandedSections[key] !== false}
+                        onChange={handleAccordionChange(key)}
+                        sx={{ mb: 1, '&:before': { display: 'none' }, boxShadow: 1 }}
                       >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                          <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1 }}>
-                            {notification.title}
-                          </Typography>
-                          <Chip
-                            label={notification.categories.length}
-                            size="small"
-                            color="primary"
-                            sx={{ minWidth: 25 }}
-                          />
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails sx={{ p: 0, bgcolor: 'background.default' }}>
-                        <List
-                          sx={{ 
-                            p: 1,
-                            maxHeight: 200, // Set maximum height (adjust as needed)
-                            overflowY: 'auto', // Enable vertical scrolling
-                            '&::-webkit-scrollbar': {
-                              width: '8px',
-                            },
-                            '&::-webkit-scrollbar-track': {
-                              backgroundColor: 'background.default',
-                              borderRadius: '4px',
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                              backgroundColor: 'action.hover',
-                              borderRadius: '4px',
-                              '&:hover': {
-                                backgroundColor: 'action.selected',
-                              },
-                            },
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          sx={{
+                            borderLeft: `${expandedSections[key] !== false ? 4 : 0}px solid`,
+                            borderColor: 'primary.main',
+                            '&:hover': { bgcolor: 'action.hover' },
                           }}
                         >
-                          {notification.categories.map((category, index) => (
-                            <ListItem
-                              key={index}
-                              sx={{
-                                bgcolor: 'background.paper',
-                                mb: 1,
-                                borderRadius: 1,
-                                border: 0,
-                                borderColor: 'divider',
-                                '&:hover': {
-                                  boxShadow: 2,
-                                },
-                                '&:last-child': {
-                                  mb: 0,
-                                },
-                              }}
-                            >
-                              <ListItemIcon sx={{ minWidth: 48 }}>
-                                <Box
-                                  sx={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: '50%',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    color: 'white',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  {category.titleIcon}
-                                </Box>
-                              </ListItemIcon>
-                              <ListItemText
-                                primary={
-                                  <Typography variant="body1" fontWeight={600} sx={{ wordBreak: 'break-word' }}>
-                                    {category.name}
-                                  </Typography>
-                                }
-                              />
-                              {category.actions && (
-                                <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
-                                  {category.actions}
-                                </Box>
-                              )}
-                              {category.button && (
-                                <Box sx={{ ml: 1 }}>
-                                  {category.button}
-                                </Box>
-                              )}
-                              <Divider />
-                            </ListItem>
-                          ))}
-                        </List>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
-                </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                            <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1 }}>
+                              {notification.title}
+                            </Typography>
+                            <Chip
+                              label={notification.categories.length}
+                              size="small"
+                              color="primary"
+                              sx={{ minWidth: 25 }}
+                            />
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ p: 0, bgcolor: 'background.default' }}>
+                          <List
+                            sx={{
+                              p: 1,
+                              maxHeight: 200,
+                              overflowY: 'auto',
+                              '&::-webkit-scrollbar': { width: '8px' },
+                              '&::-webkit-scrollbar-track': { backgroundColor: 'background.default', borderRadius: '4px' },
+                              '&::-webkit-scrollbar-thumb': {
+                                backgroundColor: 'action.hover',
+                                borderRadius: '4px',
+                                '&:hover': { backgroundColor: 'action.selected' },
+                              },
+                            }}
+                          >
+                            {notification.categories.map((category, index) => (
+                              <ListItem
+                                key={index}
+                                sx={{
+                                  bgcolor: 'background.paper',
+                                  mb: 1,
+                                  borderRadius: 1,
+                                  '&:hover': { boxShadow: 2 },
+                                  '&:last-child': { mb: 0 },
+                                }}
+                              >
+                                <ListItemIcon sx={{ minWidth: 48 }}>
+                                  <Box
+                                    sx={{
+                                      width: 40,
+                                      height: 40,
+                                      borderRadius: '50%',
+                                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                      color: 'white',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                    }}
+                                  >
+                                    {category.titleIcon}
+                                  </Box>
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={
+                                    <Typography variant="body1" fontWeight={600} sx={{ wordBreak: 'break-word' }}>
+                                      {category.name}
+                                    </Typography>
+                                  }
+                                />
+                                {category.actions && (
+                                  <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+                                    {category.actions}
+                                  </Box>
+                                )}
+                                {category.button && (
+                                  <Box sx={{ ml: 1 }}>
+                                    {category.button}
+                                  </Box>
+                                )}
+                                <Divider />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                  </Box>
+                </>
               )}
             </Box>
 
-            {/* Footer (Optional) */}
+            {/* Footer */}
             {totalCount > 0 && (
-              <>
-                <Box sx={{ p: 1.5, textAlign: 'center', bgcolor: 'background.paper' }}>
-                  <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }} onClick={() => {navigate("/service-points")}}>
-                    View All Notifications
-                  </Typography>
-                </Box>
-              </>
+              <Box sx={{ p: 1.5, textAlign: 'center', bgcolor: 'background.paper' }}>
+                <Typography
+                  variant="body2"
+                  color="primary"
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => { navigate("/service-points"); }}
+                >
+                  View All Notifications
+                </Typography>
+              </Box>
             )}
           </Paper>
         </ClickAwayListener>

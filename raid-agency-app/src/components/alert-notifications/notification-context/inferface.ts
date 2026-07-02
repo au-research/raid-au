@@ -11,6 +11,10 @@ export interface NotificationCategory {
 
 export interface Notification {
   title: string;
+  /** Identifies which tab this notification belongs to, e.g. 'membership-requests' */
+  type?: string;
+  /** Human-readable label shown on the tab, e.g. 'Membership Requests' */
+  typeLabel?: string;
   categories: NotificationCategory[];
 }
 
