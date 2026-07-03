@@ -348,10 +348,19 @@ async function loadCache() {
     try {
       const cacheData = await fs.readFile(cacheFile, 'utf8');
       const cache = JSON.parse(cacheData);
-      Object.entries(cache).forEach(([doi, citation]) => {
-        citationCache.set(doi, citation);
+      let skipped = 0;
+      Object.entries(cache).forEach(([doi, entry]) => {
+        const text = (typeof entry === 'object' ? entry.citation : String(entry)).trimStart();
+        if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
+          skipped++;
+        } else {
+          citationCache.set(doi, entry);
+        }
       });
-      console.log(`Citation cache loaded (${citationCache.size} entries)`);
+      if (skipped > 0) {
+        await fs.writeFile(cacheFile, JSON.stringify(Object.fromEntries(citationCache), null, 2));
+      }
+      console.log(`Citation cache loaded (${citationCache.size} entries${skipped > 0 ? `, ${skipped} bad HTML entries purged` : ''})`);
     } catch (error) {
       // Cache file doesn't exist or is invalid, start fresh
     }
@@ -470,6 +479,9 @@ async function main() {
     console.log(`- Total DOIs found: ${stats.totalDois}`);
     console.log(`- Successful citations fetched: ${stats.successfulCitations}`);
     console.log(`- Failed citations: ${stats.failedCitations}`);
+    if (config.enableCaching) {
+      console.log(`- Cached citations used: ${stats.cachedCitations}`);
+    }
     console.log(`- Total ORCID IDs found: ${stats.totalOrcidIds}`);
     console.log(`- Authenticated & Public ORCIDs: ${stats.authenticatedOrcids}`);
     console.log(`- Authenticated but Private: ${stats.authenticatedButPrivate}`);
@@ -478,9 +490,6 @@ async function main() {
     console.log(`- Total unique service points: ${stats.totalServicePoints}`);
     console.log(`- Successful service point lookups: ${stats.successfulServicePointFetches}`);
     console.log(`- Failed service point lookups: ${stats.failedServicePointFetches}`);
-    if (config.enableCaching) {
-      console.log(`- Cached citations used: ${stats.cachedCitations}`);
-    }
     console.log(`- Total embargoed RAiDs: ${embargoedRaids.length}`);
     console.log(`- Total handles: ${handles.length}`);
     console.log(`- Execution time: ${elapsedTime} seconds`);

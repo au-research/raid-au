@@ -71,7 +71,15 @@ async function fetchCitation(params) {
         'Accept': 'text/bibliography; style=apa, text/x-bibliography; style=apa, text/plain'
       }
     }, 2); // Fewer retries for DOI lookups
-    
+
+    // Reject HTML responses -- doi.org returns an HTML page when it can't resolve
+    // a DOI via content negotiation (e.g. RAiD-style DOIs, unknown prefixes)
+    const trimmed = response.data.trimStart();
+    if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+      stats.failedCitations++;
+      return "DOI exists but metadata could not be retrieved - contact info@doi.org for help with this";
+    }
+
     // Check if we got a valid citation
     const citation = cleanDetailedCitation(response.data);
 
@@ -85,6 +93,7 @@ async function fetchCitation(params) {
       stats.successfulCitations++;
       return citation;
     }
+    stats.failedCitations++;
     return "DOI exists but metadata could not be retrieved - contact info@doi.org for help with this";
   } catch (error) {
     stats.failedCitations++;
