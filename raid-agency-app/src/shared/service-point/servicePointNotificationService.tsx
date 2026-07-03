@@ -44,7 +44,7 @@ export const useServicePointNotification = () => {
     const notification = {
       title: servicePointName,
       type: 'membership-requests',
-      typeLabel: 'Membership Requests',
+      typeLabel: 'Service Point Requests',
       categories: pendingMembers?.map(member => ({
         titleIcon: <PersonAddIcon />,
         name: `${member.attributes.username || ''} (${member.attributes.firstName || ''} ${member.attributes.lastName || ''})`.replace(/\(\s*\)/g, '').trim(),
