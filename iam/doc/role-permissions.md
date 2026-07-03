@@ -91,6 +91,23 @@ The RAID system uses a multi-layered authorization approach combining:
   - `POST /raid/post-to-datacite` - DataCite operations
 - Access to bulk public RAID data (`GET /raid/all-public`)
 
+### 9. **service-point-admin:\<groupId\>** (scoped service point admin)
+**Admin authority over a single service point** (RAID-712)
+
+Dynamic realm roles named `service-point-admin:<groupId>`, where `<groupId>` is the Keycloak group UUID of the service point (the same value as the group's `groupId` attribute, the `service_point_group_id` JWT claim, and the `service_point.group_id` database column).
+
+**Permissions:**
+- Manage members of that specific service point via the IAM group SPI: grant/revoke `service-point-user`, add/remove other service point admins, list group members
+- No admin authority over any other service point, even if the user is a member of it
+
+**Lifecycle:**
+- Created automatically (create-if-absent) when a group is created via the IAM group SPI; the creating user is granted the scoped role
+- Granted/revoked alongside the flat `group-admin` role (dual-write) while the transition to scoped roles is in progress
+
+**Relationship to the legacy `group-admin` role:** the flat `group-admin` realm role historically made a user an admin of *every* group they belonged to. During the transition, the SPI honours the flat role as a fallback (flat `group-admin` + group membership) when the `flat-group-admin-fallback` setting is enabled. Once the RAiD app consumes scoped roles, the fallback will be disabled and the flat role removed.
+
+**Deployment note:** `iam/realms/raid-realm.json` seeds the scoped roles for the two local dev groups only, and the realm JSON is imported on first boot only. In deployed environments (test/stage/prod) the scoped roles are backfilled with the operator-only idempotent migration endpoint `POST /realms/raid/group/migrate-service-point-admins` (RAID-721), which grants `service-point-admin:<groupId>` for every group each flat `group-admin` user belongs to (preserving current effective access).
+
 ## Special Authorization Cases
 
 ### Embargo Protection
