@@ -28,23 +28,23 @@ export const useServicePointNotification = () => {
   const IsnackBar = snackbar as { openSnackbar: (message: string, duration?: number, severity?: string) => void };
   const modifyUserAccessMutation = useModifyUserAccess(IsnackBar);
   const removeUserFromServicePointMutation = useRemoveUserFromServicePoint(IsnackBar);
-  const pendingMembers = [] as ServicePointMember[];
   // Transform service point members to notifications
-  const transformMemberToNotification = (data: ServicePointMember[], token: string) => {
-    // Filter members without 'service-point-user' role
+  const transformMemberToNotification = (data: ServicePointMember[], token: string, servicePointName: string, notificationKey: string) => {
+    // Filter members without any of the required roles
     const requiredRoles = ["service-point-user", "group-admin", "operator"];
-    pendingMembers.push(...data?.filter(
+    const pendingMembers = data?.filter(
       member => !member.roles.some(role => requiredRoles.includes(role))
-    ) || [] as ServicePointMember[]);
+    ) ?? [];
     // If no pending members, remove notification and return
-    if (pendingMembers?.length === 0) {
-      // Remove notification if no pending members
-      removeNotification('servicePointRequests');
+    if (pendingMembers.length === 0) {
+      removeNotification(notificationKey);
       return;
     }
     // Create notification object
     const notification = {
-      title: 'Service Point Pending Requests',
+      title: servicePointName,
+      type: 'membership-requests',
+      typeLabel: 'Service Point Requests',
       categories: pendingMembers?.map(member => ({
         titleIcon: <PersonAddIcon />,
         name: `${member.attributes.username || ''} (${member.attributes.firstName || ''} ${member.attributes.lastName || ''})`.replace(/\(\s*\)/g, '').trim(),
@@ -100,7 +100,7 @@ export const useServicePointNotification = () => {
       })),
     };
 
-    addNotification('servicePointRequests', notification);
+    addNotification(notificationKey, notification);
   };
 
   const handleApprove = ({ member, token }: {
