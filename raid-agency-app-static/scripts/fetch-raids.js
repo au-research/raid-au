@@ -64,6 +64,7 @@ import { addServicePointNameToRaidData } from './fetch-sp.js';
 import { fetchEmbargoedRaids } from './fetch-embargoed-raids.js';
 import { loadAppConfig } from './loadAppConfig.js';
 import { orcidCache, rorCache } from './apiCache.js';
+import { TokenManager } from './tokenManager.js';
 
 // Load config from public/app-config.json (falls back to env vars)
 const config = loadAppConfig();
@@ -399,10 +400,15 @@ async function main() {
     await loadCache();
     
     // Step 1: Get bearer token
-    const bearerToken = await getBearerToken();
-    config.bearerToken = bearerToken; 
+    const mainTokenManager = new TokenManager({
+      iamEndpoint: config.iamEndpoint,
+      clientId: config.iamClientId,
+      clientSecret: config.iamClientSecret,
+      makeRequestWithRetry,
+    });
+    config.bearerToken = await mainTokenManager.getValidToken();
     // Step 2: Fetch RAID data
-    const raidData = await fetchRaidData(bearerToken);
+    const raidData = await fetchRaidData(config.bearerToken);
     
     // Step 3: Add citations to RAID data
     const enrichedData = await addCitationsToRaidData(raidData);
@@ -423,6 +429,7 @@ async function main() {
     );
 
     // Step 6: Add service point names to RAID data  <-- NEW
+    config.bearerToken = await mainTokenManager.getValidToken();
     const enrichedWithServicePoint = await addServicePointNameToRaidData(
       enrichedWithRor,
       makeRequestWithRetry,
@@ -436,7 +443,13 @@ async function main() {
     console.log(`Data successfully saved to ${outputFile}`);
 
     // Step 7b: Fetch and save embargoed RAiD summaries
-    const dumperToken = await getTokenForClient(config.raidDumperClientId, config.raidDumperClientSecret);
+    const dumperTokenManager = new TokenManager({
+      iamEndpoint: config.iamEndpoint,
+      clientId: config.raidDumperClientId,
+      clientSecret: config.raidDumperClientSecret,
+      makeRequestWithRetry,
+    });
+    const dumperToken = await dumperTokenManager.getValidToken();
     const embargoedRaids = await fetchEmbargoedRaids(dumperToken, config, makeRequestWithRetry);
     const embargoedOutputFile = path.join(config.dataDir, 'embargoed-raids.json');
     await fs.writeFile(embargoedOutputFile, JSON.stringify(embargoedRaids, null, 2));
