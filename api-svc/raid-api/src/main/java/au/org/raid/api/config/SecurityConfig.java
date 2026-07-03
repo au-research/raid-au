@@ -51,6 +51,10 @@ public class SecurityConfig {
         public static final String CONTRIBUTOR_WRITER_ROLE = "contributor-writer";
         public static final String RAID_UPGRADER_ROLE = "raid-upgrader";
         public static final String RAID_ACCESS_HANDLER_ROLE = "raid-access-handler";
+        // Prefix for scoped realm roles of the form "service-point-admin:<groupId>", where
+        // groupId is the Keycloak group UUID (see RAID-712). Not yet wired into any endpoint's
+        // authorization rules; consumed by later RAID-712 work.
+        public static final String SERVICE_POINT_ADMIN_ROLE_PREFIX = "service-point-admin";
 
         // API paths
         public static final String RAID_API = "/raid";
