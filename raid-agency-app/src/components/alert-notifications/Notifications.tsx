@@ -31,10 +31,26 @@ interface NotificationBellProps {
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({ className }) => {
   const [open, setOpen] = useState(false);
+  const [topOffset, setTopOffset] = useState(0);
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const [selectedTab, setSelectedTab] = useState<string>('');
   const { notifications, totalCount } = useNotificationContext();
   const navigate = useNavigate();
+
+  const handleOpen = () => {
+    // Measure AppBar height + Banner height (if shown in non-prod) so the drawer starts below both
+    const appBar = document.querySelector<HTMLElement>('[data-testid="app-nav-bar"]');
+    let offset = 0;
+    if (appBar) {
+      offset = appBar.getBoundingClientRect().bottom;
+      const next = appBar.nextElementSibling as HTMLElement | null;
+      if (next?.classList.contains('notification-banner')) {
+        offset += next.getBoundingClientRect().height;
+      }
+    }
+    setTopOffset(Math.max(0, offset));
+    setOpen(true);
+  };
 
   // Group notifications by type; untyped entries fall back to 'general'
   const groupedNotifications = Object.entries(notifications).reduce(
@@ -59,7 +75,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
 
   return (
     <Box className={className}>
-      <IconButton onClick={() => setOpen(true)} sx={{ color: 'grey' }}>
+      <IconButton onClick={handleOpen} sx={{ color: 'grey' }}>
         <Badge badgeContent={totalCount} color="error">
           <NotificationsIcon />
         </Badge>
@@ -70,7 +86,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
         open={open}
         onClose={() => setOpen(false)}
         PaperProps={{
-          sx: { width: { xs: '100vw', sm: 480 }, display: 'flex', flexDirection: 'column' },
+          sx: {
+            width: { xs: '100vw', sm: 480 },
+            top: `${topOffset}px`,
+            height: `calc(100% - ${topOffset}px)`,
+            display: 'flex',
+            flexDirection: 'column',
+          },
         }}
       >
         {/* Header */}
