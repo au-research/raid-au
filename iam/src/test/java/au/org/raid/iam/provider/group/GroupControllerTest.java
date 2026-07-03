@@ -77,6 +77,18 @@ class GroupControllerTest {
         }
     }
 
+    // Uses the package-private test-seam constructor so the flat group-admin fallback flag can be
+    // set directly instead of via the RAID_FLAT_GROUP_ADMIN_FALLBACK environment variable.
+    private GroupController createAuthenticatedController(final boolean flatGroupAdminFallbackEnabled) {
+        try (MockedConstruction<AppAuthManager.BearerTokenAuthenticator> ignored =
+                     mockConstruction(AppAuthManager.BearerTokenAuthenticator.class,
+                             (mock, ctx) -> when(mock.authenticate()).thenReturn(authResult))) {
+            when(authResult.session()).thenReturn(userSession);
+            when(userSession.getUser()).thenReturn(user);
+            return new GroupController(session, flatGroupAdminFallbackEnabled);
+        }
+    }
+
     private void setupOperatorRole() {
         var operatorRole = mock(RoleModel.class);
         when(operatorRole.getName()).thenReturn("operator");
@@ -91,6 +103,33 @@ class GroupControllerTest {
 
     private void setupNoRoles() {
         when(user.getRoleMappingsStream()).thenAnswer(inv -> Stream.empty());
+    }
+
+    private void setupScopedServicePointAdminRole(final String groupId) {
+        var scopedRole = mock(RoleModel.class);
+        when(scopedRole.getName()).thenReturn("service-point-admin:" + groupId);
+        when(user.getRoleMappingsStream()).thenAnswer(inv -> Stream.of(scopedRole));
+    }
+
+    private void setupGroupMembership(final String groupId) {
+        var group = mock(GroupModel.class);
+        when(group.getId()).thenReturn(groupId);
+        when(user.getGroupsStream()).thenAnswer(inv -> Stream.of(group));
+    }
+
+    private void setupNoGroupMembership() {
+        when(user.getGroupsStream()).thenAnswer(inv -> Stream.empty());
+    }
+
+    private void setupServicePointUserRoleGrantTarget(final UserModel targetUser) {
+        when(session.users()).thenReturn(userProvider);
+        when(session.roles()).thenReturn(roleProvider);
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var servicePointUserRole = mock(RoleModel.class);
+        when(servicePointUserRole.getName()).thenReturn("service-point-user");
+        when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
+                .thenAnswer(inv -> Stream.of(servicePointUserRole));
     }
 
     // --- getGroups tests ---
@@ -225,6 +264,130 @@ class GroupControllerTest {
         var response = controller.grant(grant);
         assertThat(response.getStatus(), is(200));
         verify(targetUser).grantRole(servicePointUserRole);
+    }
+
+    // --- scoped group-admin authorization tests (RAID-720) ---
+
+    @Test
+    void grant_allowsScopedServicePointAdminOfGroup() {
+        var controller = createAuthenticatedController();
+        setupScopedServicePointAdminRole("g1");
+        setupNoGroupMembership();
+
+        var targetUser = mock(UserModel.class);
+        setupServicePointUserRoleGrantTarget(targetUser);
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        var response = controller.grant(grant);
+        assertThat(response.getStatus(), is(200));
+        verify(targetUser).grantRole(any(RoleModel.class));
+    }
+
+    @Test
+    void grant_deniesScopedServicePointAdminOfDifferentGroup() {
+        var controller = createAuthenticatedController();
+        setupScopedServicePointAdminRole("other-group");
+        setupNoGroupMembership();
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        assertThrows(NotAuthorizedException.class, () -> controller.grant(grant));
+    }
+
+    @Test
+    void grant_allowsFlatGroupAdminMemberWhenFallbackEnabled() {
+        var controller = createAuthenticatedController(true);
+        setupGroupAdminRole();
+        setupGroupMembership("g1");
+
+        var targetUser = mock(UserModel.class);
+        setupServicePointUserRoleGrantTarget(targetUser);
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        var response = controller.grant(grant);
+        assertThat(response.getStatus(), is(200));
+        verify(targetUser).grantRole(any(RoleModel.class));
+    }
+
+    @Test
+    void grant_deniesFlatGroupAdminNonMemberWhenFallbackEnabled() {
+        var controller = createAuthenticatedController(true);
+        setupGroupAdminRole();
+        setupNoGroupMembership();
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        assertThrows(NotAuthorizedException.class, () -> controller.grant(grant));
+    }
+
+    @Test
+    void grant_deniesFlatGroupAdminMemberWhenFallbackDisabled() {
+        var controller = createAuthenticatedController(false);
+        setupGroupAdminRole();
+        setupGroupMembership("g1");
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        assertThrows(NotAuthorizedException.class, () -> controller.grant(grant));
+    }
+
+    @Test
+    void grant_allowsScopedServicePointAdminWhenFallbackDisabled() {
+        var controller = createAuthenticatedController(false);
+        setupScopedServicePointAdminRole("g1");
+        setupNoGroupMembership();
+
+        var targetUser = mock(UserModel.class);
+        setupServicePointUserRoleGrantTarget(targetUser);
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        var response = controller.grant(grant);
+        assertThat(response.getStatus(), is(200));
+        verify(targetUser).grantRole(any(RoleModel.class));
+    }
+
+    @Test
+    void get_allowsScopedServicePointAdminOfGroup() throws Exception {
+        var controller = createAuthenticatedController();
+        setupScopedServicePointAdminRole("g1");
+        setupNoGroupMembership();
+        when(session.groups()).thenReturn(groupProvider);
+        when(session.users()).thenReturn(userProvider);
+
+        var group = mock(GroupModel.class);
+        when(group.getId()).thenReturn("g1");
+        when(group.getName()).thenReturn("Test Group");
+        when(group.getAttributes()).thenReturn(Map.of());
+        when(groupProvider.getGroupById(realm, "g1")).thenReturn(group);
+        when(userProvider.getGroupMembersStream(realm, group)).thenReturn(Stream.empty());
+        when(user.getId()).thenReturn("current-user");
+
+        var response = controller.get("g1");
+        assertThat(response.getStatus(), is(200));
+    }
+
+    @Test
+    void get_deniesScopedServicePointAdminOfDifferentGroup() {
+        var controller = createAuthenticatedController();
+        setupScopedServicePointAdminRole("other-group");
+        setupNoGroupMembership();
+
+        assertThrows(NotAuthorizedException.class, () -> controller.get("g1"));
     }
 
     // --- revoke tests ---
@@ -585,7 +748,7 @@ class GroupControllerTest {
     // --- group-admin grant/revoke tests ---
 
     @Test
-    void grantGroupAdmin_grantsRole() throws Exception {
+    void grantGroupAdmin_grantsFlatAndScopedRoles() throws Exception {
         var controller = createAuthenticatedController();
         setupOperatorRole();
         when(session.users()).thenReturn(userProvider);
@@ -598,6 +761,10 @@ class GroupControllerTest {
         when(groupAdminRole.getName()).thenReturn("group-admin");
         when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
                 .thenReturn(Stream.of(groupAdminRole));
+
+        when(realm.getRole("service-point-admin:g1")).thenReturn(null);
+        var scopedRole = mock(RoleModel.class);
+        when(realm.addRole("service-point-admin:g1")).thenReturn(scopedRole);
 
         var request = new AddGroupAdminRequest();
         request.setUserId("u1");
@@ -606,10 +773,13 @@ class GroupControllerTest {
         var response = controller.grant(request);
         assertThat(response.getStatus(), is(200));
         verify(targetUser).grantRole(groupAdminRole);
+        verify(targetUser).grantRole(scopedRole);
+        verify(scopedRole).setDescription("Service point admin for group g1");
+        verify(realm, never()).addRole(anyString(), anyString());
     }
 
     @Test
-    void removeGroupAdmin_removesRole() throws Exception {
+    void grantGroupAdmin_reusesExistingScopedRole() throws Exception {
         var controller = createAuthenticatedController();
         setupOperatorRole();
         when(session.users()).thenReturn(userProvider);
@@ -623,6 +793,39 @@ class GroupControllerTest {
         when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
                 .thenReturn(Stream.of(groupAdminRole));
 
+        var scopedRole = mock(RoleModel.class);
+        when(realm.getRole("service-point-admin:g1")).thenReturn(scopedRole);
+
+        var request = new AddGroupAdminRequest();
+        request.setUserId("u1");
+        request.setGroupId("g1");
+
+        var response = controller.grant(request);
+        assertThat(response.getStatus(), is(200));
+        verify(targetUser).grantRole(groupAdminRole);
+        verify(targetUser).grantRole(scopedRole);
+        verify(realm, never()).addRole(anyString());
+        verify(realm, never()).addRole(anyString(), anyString());
+    }
+
+    @Test
+    void removeGroupAdmin_removesFlatAndScopedRoles() throws Exception {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.users()).thenReturn(userProvider);
+        when(session.roles()).thenReturn(roleProvider);
+
+        var targetUser = mock(UserModel.class);
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var groupAdminRole = mock(RoleModel.class);
+        when(groupAdminRole.getName()).thenReturn("group-admin");
+        when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
+                .thenReturn(Stream.of(groupAdminRole));
+
+        var scopedRole = mock(RoleModel.class);
+        when(realm.getRole("service-point-admin:g1")).thenReturn(scopedRole);
+
         var request = new RemoveGroupAdminRequest();
         request.setUserId("u1");
         request.setGroupId("g1");
@@ -630,6 +833,34 @@ class GroupControllerTest {
         var response = controller.grant(request);
         assertThat(response.getStatus(), is(200));
         verify(targetUser).deleteRoleMapping(groupAdminRole);
+        verify(targetUser).deleteRoleMapping(scopedRole);
+    }
+
+    @Test
+    void removeGroupAdmin_skipsScopedRoleWhenAbsent() throws Exception {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.users()).thenReturn(userProvider);
+        when(session.roles()).thenReturn(roleProvider);
+
+        var targetUser = mock(UserModel.class);
+        when(userProvider.getUserById(realm, "u1")).thenReturn(targetUser);
+
+        var groupAdminRole = mock(RoleModel.class);
+        when(groupAdminRole.getName()).thenReturn("group-admin");
+        when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
+                .thenReturn(Stream.of(groupAdminRole));
+
+        when(realm.getRole("service-point-admin:g1")).thenReturn(null);
+
+        var request = new RemoveGroupAdminRequest();
+        request.setUserId("u1");
+        request.setGroupId("g1");
+
+        var response = controller.grant(request);
+        assertThat(response.getStatus(), is(200));
+        verify(targetUser).deleteRoleMapping(groupAdminRole);
+        verify(targetUser, times(1)).deleteRoleMapping(any(RoleModel.class));
     }
     // --- deleteGroup tests ---
 
