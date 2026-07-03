@@ -21,6 +21,7 @@ Manages service point groups — the organisational units that users belong to i
 | GET    | `/user-groups`   | List groups for the current user             |
 | POST   | `/create`        | Create a new group                           |
 | DELETE | `/delete`        | Delete a group                               |
+| POST   | `/migrate-service-point-admins` | Backfill scoped `service-point-admin:<groupId>` roles for flat group-admin holders (operator only, idempotent) |
 
 ## RAiD Permissions Controller
 

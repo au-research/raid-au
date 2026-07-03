@@ -650,4 +650,119 @@ public class GroupController {
                     .build();
         }
     }
+
+    @OPTIONS
+    @Path("/migrate-service-point-admins")
+    public Response migrateServicePointAdminsPreflight() {
+        return cors.buildOptionsResponse("POST", "OPTIONS");
+    }
+
+    /**
+     * One-off, idempotent backfill for RAID-712: grants the scoped
+     * "service-point-admin:&lt;groupId&gt;" realm role to every current holder of the legacy flat
+     * GROUP_ADMIN_ROLE_NAME, for each group they belong to. This preserves each flat
+     * group-admin's existing effective access while service points transition onto scoped roles
+     * (see role-permissions.md section 9).
+     *
+     * <p>Operator-only. Safe to re-run: users who already hold the scoped role for a group are
+     * counted as skipped rather than re-granted, and existing scoped roles are reused rather than
+     * recreated.
+     *
+     * <p>Note: this intentionally over-grants - a flat group-admin is granted the scoped admin
+     * role for every group they are a member of, not just the group(s) they were originally
+     * intended to administer. Pruning any resulting excess scoped grants is deferred to a future
+     * RAID-712 follow-up once service points have reviewed their membership.
+     */
+    @POST
+    @Path("/migrate-service-point-admins")
+    @Produces(MediaType.APPLICATION_JSON)
+    @SneakyThrows
+    public Response migrateServicePointAdmins() {
+        log.debug("Migrating flat group-admin holders to scoped service-point-admin roles");
+
+        if (this.auth == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        final var user = auth.session().getUser();
+        if (user == null) {
+            throw new NotAuthorizedException("Bearer");
+        }
+
+        if (!isOperator(user)) {
+            throw new NotAuthorizedException("Permission denied - not authorized to migrate service point admins");
+        }
+
+        final var realm = session.getContext().getRealm();
+        final var flatGroupAdminRole = realm.getRole(GROUP_ADMIN_ROLE_NAME);
+
+        if (flatGroupAdminRole == null) {
+            final var responseBody = new MigrationResult(0, 0, 0, 0,
+                    "Flat group-admin role not present; nothing to migrate");
+            return cors.buildCorsResponse("POST",
+                    Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
+        }
+
+        try {
+            var flatGroupAdminUsers = 0;
+            var rolesCreated = 0;
+            var grantsAdded = 0;
+            var grantsSkipped = 0;
+
+            var firstResult = 0;
+            final var pageSize = 100;
+            while (true) {
+                final var page = session.users()
+                        .getRoleMembersStream(realm, flatGroupAdminRole, firstResult, pageSize)
+                        .toList();
+
+                if (page.isEmpty()) {
+                    break;
+                }
+
+                for (final var member : page) {
+                    flatGroupAdminUsers++;
+
+                    // Materialise before granting roles below - member.grantRole mutates this
+                    // user's role mappings, and we must not mutate them while consuming a live
+                    // stream over the same underlying data.
+                    final var groups = member.getGroupsStream().toList();
+
+                    for (final var group : groups) {
+                        final var roleName = servicePointAdminRoleName(group.getId());
+                        final var existed = realm.getRole(roleName) != null;
+                        final var scopedRole = getOrCreateServicePointAdminRole(realm, group.getId());
+
+                        if (!existed) {
+                            rolesCreated++;
+                        }
+
+                        if (member.hasDirectRole(scopedRole)) {
+                            grantsSkipped++;
+                        } else {
+                            member.grantRole(scopedRole);
+                            grantsAdded++;
+                        }
+                    }
+                }
+
+                firstResult += pageSize;
+            }
+
+            final var responseBody = new MigrationResult(
+                    flatGroupAdminUsers, rolesCreated, grantsAdded, grantsSkipped, "Migration complete");
+
+            return cors.buildCorsResponse("POST",
+                    Response.ok().entity(objectMapper.writeValueAsString(responseBody)));
+
+        } catch (Exception e) {
+            log.error("Error migrating service point admins: {}", e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Failed to migrate service point admins\"}")
+                    .build();
+        }
+    }
+
+    private record MigrationResult(
+            int flatGroupAdminUsers, int rolesCreated, int grantsAdded, int grantsSkipped, String message) {}
 }

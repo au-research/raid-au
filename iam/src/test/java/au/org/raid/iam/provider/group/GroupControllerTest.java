@@ -974,4 +974,177 @@ class GroupControllerTest {
             assertThat(response.getStatus(), is(200));
         }
     }
+
+    // --- migrateServicePointAdmins tests (RAID-721) ---
+
+    @Test
+    void migrate_returnsUnauthorizedWhenNotAuthenticated() {
+        var controller = createUnauthenticatedController();
+
+        var response = controller.migrateServicePointAdmins();
+        assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    void migrate_throwsNotAuthorizedForNonOperator() {
+        var controller = createAuthenticatedController();
+        setupNoRoles();
+
+        assertThrows(NotAuthorizedException.class, controller::migrateServicePointAdmins);
+    }
+
+    @Test
+    void migrate_throwsNotAuthorizedForGroupAdmin() {
+        var controller = createAuthenticatedController();
+        setupGroupAdminRole();
+
+        assertThrows(NotAuthorizedException.class, controller::migrateServicePointAdmins);
+    }
+
+    @Test
+    void migrate_returnsZeroCountsWhenFlatRoleAbsent() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(realm.getRole("group-admin")).thenReturn(null);
+
+        var response = controller.migrateServicePointAdmins();
+        assertThat(response.getStatus(), is(200));
+
+        var body = response.getEntity().toString();
+        assertThat(body, containsString("\"flatGroupAdminUsers\":0"));
+        assertThat(body, containsString("\"rolesCreated\":0"));
+        assertThat(body, containsString("\"grantsAdded\":0"));
+        assertThat(body, containsString("\"grantsSkipped\":0"));
+        assertThat(body, containsString("Flat group-admin role not present; nothing to migrate"));
+
+        verify(session, never()).users();
+    }
+
+    @Test
+    void migrate_grantsScopedRoleForEachGroupOfFlatAdmin() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        var flatGroupAdminRole = mock(RoleModel.class);
+        when(realm.getRole("group-admin")).thenReturn(flatGroupAdminRole);
+
+        when(session.users()).thenReturn(userProvider);
+
+        var member = mock(UserModel.class);
+        when(userProvider.getRoleMembersStream(eq(realm), eq(flatGroupAdminRole), anyInt(), anyInt()))
+                .thenReturn(Stream.of(member), Stream.empty());
+
+        var g1 = mock(GroupModel.class);
+        when(g1.getId()).thenReturn("g1");
+        var g2 = mock(GroupModel.class);
+        when(g2.getId()).thenReturn("g2");
+        when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(g1, g2));
+
+        when(realm.getRole("service-point-admin:g1")).thenReturn(null);
+        var scopedRole1 = mock(RoleModel.class);
+        when(realm.addRole("service-point-admin:g1")).thenReturn(scopedRole1);
+
+        when(realm.getRole("service-point-admin:g2")).thenReturn(null);
+        var scopedRole2 = mock(RoleModel.class);
+        when(realm.addRole("service-point-admin:g2")).thenReturn(scopedRole2);
+
+        when(member.hasDirectRole(scopedRole1)).thenReturn(false);
+        when(member.hasDirectRole(scopedRole2)).thenReturn(false);
+
+        var response = controller.migrateServicePointAdmins();
+        assertThat(response.getStatus(), is(200));
+
+        verify(member).grantRole(scopedRole1);
+        verify(member).grantRole(scopedRole2);
+        verify(realm).addRole("service-point-admin:g1");
+        verify(realm).addRole("service-point-admin:g2");
+        verify(realm, never()).addRole(anyString(), anyString());
+        verify(scopedRole1).setDescription("Service point admin for group g1");
+        verify(scopedRole2).setDescription("Service point admin for group g2");
+
+        var body = response.getEntity().toString();
+        assertThat(body, containsString("\"flatGroupAdminUsers\":1"));
+        assertThat(body, containsString("\"rolesCreated\":2"));
+        assertThat(body, containsString("\"grantsAdded\":2"));
+        assertThat(body, containsString("\"grantsSkipped\":0"));
+    }
+
+    @Test
+    void migrate_isIdempotentOnSecondRun() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        var flatGroupAdminRole = mock(RoleModel.class);
+        when(realm.getRole("group-admin")).thenReturn(flatGroupAdminRole);
+
+        when(session.users()).thenReturn(userProvider);
+
+        var member = mock(UserModel.class);
+        when(userProvider.getRoleMembersStream(eq(realm), eq(flatGroupAdminRole), anyInt(), anyInt()))
+                .thenReturn(Stream.of(member), Stream.empty());
+
+        var g1 = mock(GroupModel.class);
+        when(g1.getId()).thenReturn("g1");
+        when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(g1));
+
+        var scopedRole1 = mock(RoleModel.class);
+        when(realm.getRole("service-point-admin:g1")).thenReturn(scopedRole1);
+        when(member.hasDirectRole(scopedRole1)).thenReturn(true);
+
+        var response = controller.migrateServicePointAdmins();
+        assertThat(response.getStatus(), is(200));
+
+        verify(member, never()).grantRole(any(RoleModel.class));
+        verify(realm, never()).addRole(anyString());
+        verify(realm, never()).addRole(anyString(), anyString());
+
+        var body = response.getEntity().toString();
+        assertThat(body, containsString("\"flatGroupAdminUsers\":1"));
+        assertThat(body, containsString("\"rolesCreated\":0"));
+        assertThat(body, containsString("\"grantsAdded\":0"));
+        assertThat(body, containsString("\"grantsSkipped\":1"));
+    }
+
+    @Test
+    void migrate_addsGrantWhenScopedRoleAlreadyExists() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        var flatGroupAdminRole = mock(RoleModel.class);
+        when(realm.getRole("group-admin")).thenReturn(flatGroupAdminRole);
+
+        when(session.users()).thenReturn(userProvider);
+
+        var member = mock(UserModel.class);
+        when(userProvider.getRoleMembersStream(eq(realm), eq(flatGroupAdminRole), anyInt(), anyInt()))
+                .thenReturn(Stream.of(member), Stream.empty());
+
+        var g1 = mock(GroupModel.class);
+        when(g1.getId()).thenReturn("g1");
+        when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(g1));
+
+        var scopedRole1 = mock(RoleModel.class);
+        when(realm.getRole("service-point-admin:g1")).thenReturn(scopedRole1);
+        when(member.hasDirectRole(scopedRole1)).thenReturn(false);
+
+        var response = controller.migrateServicePointAdmins();
+        assertThat(response.getStatus(), is(200));
+
+        verify(member).grantRole(scopedRole1);
+        verify(realm, never()).addRole(anyString());
+        verify(realm, never()).addRole(anyString(), anyString());
+
+        var body = response.getEntity().toString();
+        assertThat(body, containsString("\"flatGroupAdminUsers\":1"));
+        assertThat(body, containsString("\"rolesCreated\":0"));
+        assertThat(body, containsString("\"grantsAdded\":1"));
+        assertThat(body, containsString("\"grantsSkipped\":0"));
+    }
+
+    @Test
+    void migratePreflight_returns200() {
+        var controller = createAuthenticatedController();
+        var response = controller.migrateServicePointAdminsPreflight();
+        assertThat(response.getStatus(), is(200));
+    }
 }
