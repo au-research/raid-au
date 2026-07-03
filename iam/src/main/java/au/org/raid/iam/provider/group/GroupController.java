@@ -11,6 +11,7 @@ import jakarta.ws.rs.ext.Provider;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AppAuthManager;
@@ -26,6 +27,9 @@ public class GroupController {
     private static final String OPERATOR_ROLE_NAME = "operator";
     private static final String GROUP_ADMIN_ROLE_NAME = "group-admin";
     private static final String SERVICE_POINT_USER_ROLE = "service-point-user";
+    // Scoped role name format: "service-point-admin:<groupId>". Granted alongside the flat
+    // GROUP_ADMIN_ROLE_NAME on group creation (additive only - not yet enforced anywhere).
+    private static final String SERVICE_POINT_ADMIN_ROLE_PREFIX = "service-point-admin";
     private final AuthenticationManager.AuthResult auth;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -429,6 +433,28 @@ public class GroupController {
                 .toList().isEmpty();
     }
 
+    /**
+     * Looks up the realm role scoped to a single service point group
+     * ("service-point-admin:<groupId>"), creating it if it does not already exist.
+     */
+    private RoleModel getOrCreateServicePointAdminRole(final RealmModel realm, final String groupId) {
+        final var roleName = servicePointAdminRoleName(groupId);
+        final var existingRole = realm.getRole(roleName);
+        if (existingRole != null) {
+            return existingRole;
+        }
+
+        // Note: RoleContainerModel#addRole(String, String) is (id, name) - not (name, description).
+        // Use the single-arg overload (generated id, given name) and set the description separately.
+        final var role = realm.addRole(roleName);
+        role.setDescription("Service point admin for group " + groupId);
+        return role;
+    }
+
+    private static String servicePointAdminRoleName(final String groupId) {
+        return SERVICE_POINT_ADMIN_ROLE_PREFIX + ":" + groupId;
+    }
+
     @OPTIONS
     @Path("/create")
     public Response createGroupPreflight() {
@@ -504,6 +530,12 @@ public class GroupController {
             if (groupAdminRole.isPresent()) {
                 user.grantRole(groupAdminRole.get());
             }
+
+            // Also grant the scoped service-point-admin role for the new group. This is a
+            // dual-write alongside the flat group-admin role above for backward compatibility -
+            // no enforcement changes are made as part of this ticket.
+            final var servicePointAdminRole = getOrCreateServicePointAdminRole(realm, newGroup.getId());
+            user.grantRole(servicePointAdminRole);
 
             // Prepare response
             CreateGroupResponse response = new CreateGroupResponse(

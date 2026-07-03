@@ -459,11 +459,118 @@ class GroupControllerTest {
         when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
                 .thenReturn(Stream.of(groupAdminRole));
 
+        when(realm.getRole("service-point-admin:new-id")).thenReturn(null);
+        var servicePointAdminRole = mock(RoleModel.class);
+        when(realm.addRole("service-point-admin:new-id"))
+                .thenReturn(servicePointAdminRole);
+
         var request = new CreateGroupRequest("New Group", "/new-group");
         var response = controller.createGroup(request);
         assertThat(response.getStatus(), is(201));
         verify(user).joinGroup(newGroup);
         verify(user).grantRole(groupAdminRole);
+        verify(user).grantRole(servicePointAdminRole);
+        verify(servicePointAdminRole).setDescription("Service point admin for group new-id");
+    }
+
+    @Test
+    void createGroup_grantsBothGroupAdminAndScopedServicePointAdminRoles() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.groups()).thenReturn(groupProvider);
+        when(session.roles()).thenReturn(roleProvider);
+
+        when(groupProvider.getGroupsStream(realm)).thenReturn(Stream.empty());
+
+        var newGroup = mock(GroupModel.class);
+        when(newGroup.getId()).thenReturn("new-group-id");
+        when(newGroup.getName()).thenReturn("New Group");
+        when(newGroup.getAttributes()).thenReturn(Map.of());
+        when(groupProvider.createGroup(realm, "New Group")).thenReturn(newGroup);
+
+        var groupAdminRole = mock(RoleModel.class);
+        when(groupAdminRole.getName()).thenReturn("group-admin");
+        when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
+                .thenReturn(Stream.of(groupAdminRole));
+
+        when(realm.getRole("service-point-admin:new-group-id")).thenReturn(null);
+        var servicePointAdminRole = mock(RoleModel.class);
+        when(realm.addRole("service-point-admin:new-group-id"))
+                .thenReturn(servicePointAdminRole);
+
+        var request = new CreateGroupRequest("New Group", "/new-group");
+        var response = controller.createGroup(request);
+
+        assertThat(response.getStatus(), is(201));
+        verify(user).grantRole(groupAdminRole);
+        verify(user).grantRole(servicePointAdminRole);
+    }
+
+    @Test
+    void createGroup_createsScopedServicePointAdminRoleWhenAbsent() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.groups()).thenReturn(groupProvider);
+        when(session.roles()).thenReturn(roleProvider);
+
+        when(groupProvider.getGroupsStream(realm)).thenReturn(Stream.empty());
+
+        var newGroup = mock(GroupModel.class);
+        when(newGroup.getId()).thenReturn("new-group-id");
+        when(newGroup.getName()).thenReturn("New Group");
+        when(newGroup.getAttributes()).thenReturn(Map.of());
+        when(groupProvider.createGroup(realm, "New Group")).thenReturn(newGroup);
+
+        when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
+                .thenReturn(Stream.empty());
+
+        when(realm.getRole("service-point-admin:new-group-id")).thenReturn(null);
+        var servicePointAdminRole = mock(RoleModel.class);
+        when(realm.addRole("service-point-admin:new-group-id"))
+                .thenReturn(servicePointAdminRole);
+
+        var request = new CreateGroupRequest("New Group", "/new-group");
+        var response = controller.createGroup(request);
+
+        assertThat(response.getStatus(), is(201));
+        // Verifies the single-arg addRole(name) overload is used - RoleContainerModel's two-arg
+        // overload is addRole(id, name), not addRole(name, description), so calling it with the
+        // role name and a description sentence would silently corrupt the role's id/name.
+        verify(realm).addRole("service-point-admin:new-group-id");
+        verify(realm, never()).addRole(anyString(), anyString());
+        verify(servicePointAdminRole).setDescription("Service point admin for group new-group-id");
+        verify(user).grantRole(servicePointAdminRole);
+    }
+
+    @Test
+    void createGroup_reusesExistingScopedServicePointAdminRole() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+        when(session.groups()).thenReturn(groupProvider);
+        when(session.roles()).thenReturn(roleProvider);
+
+        when(groupProvider.getGroupsStream(realm)).thenReturn(Stream.empty());
+
+        var newGroup = mock(GroupModel.class);
+        when(newGroup.getId()).thenReturn("new-group-id");
+        when(newGroup.getName()).thenReturn("New Group");
+        when(newGroup.getAttributes()).thenReturn(Map.of());
+        when(groupProvider.createGroup(realm, "New Group")).thenReturn(newGroup);
+
+        when(roleProvider.getRealmRolesStream(eq(realm), any(), any()))
+                .thenReturn(Stream.empty());
+
+        var existingServicePointAdminRole = mock(RoleModel.class);
+        when(realm.getRole("service-point-admin:new-group-id")).thenReturn(existingServicePointAdminRole);
+
+        var request = new CreateGroupRequest("New Group", "/new-group");
+        var response = controller.createGroup(request);
+
+        assertThat(response.getStatus(), is(201));
+        verify(realm, never()).addRole(anyString());
+        verify(realm, never()).addRole(anyString(), anyString());
+        verify(existingServicePointAdminRole, never()).setDescription(anyString());
+        verify(user).grantRole(existingServicePointAdminRole);
     }
 
     // --- preflight tests ---
