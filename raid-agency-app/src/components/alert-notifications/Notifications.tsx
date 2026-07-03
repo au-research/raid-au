@@ -114,7 +114,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
                 Notifications
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {totalCount} pending {totalCount === 1 ? 'item' : 'items'}
+                {totalCount} pending {totalCount === 1 ? 'request' : 'requests'}
               </Typography>
             </Box>
           </Box>
