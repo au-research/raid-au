@@ -13,12 +13,16 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static au.org.raid.api.config.SecurityConfig.SecurityConstants.*;
 
@@ -131,6 +135,19 @@ public class RaidAuthorizationService {
         );
     }
 
+    /**
+     * Authorization manager that grants access when the authenticated user holds a scoped
+     * {@code service-point-admin:<groupId>} realm role (see RAID-712) for the service point
+     * that owns the raid being accessed.
+     *
+     * <p>Not yet wired into {@link au.org.raid.api.config.SecurityConfig}'s authorization
+     * rules for any endpoint. This is preparatory plumbing added in RAID-723; it will be
+     * consumed by later RAID-712 work.
+     */
+    public AuthorizationManager<RequestAuthorizationContext> isServicePointAdmin() {
+        return this::isServicePointAdmin;
+    }
+
     private AuthorizationDecision isOperator(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         return new AuthorizationDecision(hasRole(authentication.get(), OPERATOR_ROLE));
     }
@@ -173,6 +190,63 @@ public class RaidAuthorizationService {
             log.error("Error checking service point ownership", e);
             return new AuthorizationDecision(false);
         }
+    }
+
+    private AuthorizationDecision isServicePointAdmin(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+        if (isPidSearch(context)) {
+            return new AuthorizationDecision(false);
+        }
+
+        var administeredGroupIds = getAdministeredGroupIds(authentication.get());
+        if (administeredGroupIds.isEmpty()) {
+            return new AuthorizationDecision(false);
+        }
+
+        var handle = extractHandle(context);
+        if (handle == null) {
+            return new AuthorizationDecision(false);
+        }
+
+        try {
+            var raid = raidHistoryService.findByHandle(handle)
+                    .orElseThrow(() -> new ResourceNotFoundException(handle));
+
+            var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValue();
+            var servicePoint = servicePointService.findById(servicePointId)
+                    .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
+
+            return new AuthorizationDecision(administeredGroupIds.contains(servicePoint.getGroupId()));
+        } catch (Exception e) {
+            log.error("Error checking service point admin access", e);
+            return new AuthorizationDecision(false);
+        }
+    }
+
+    /**
+     * Extracts the Keycloak group IDs for which the given authentication holds a scoped
+     * {@code service-point-admin:<groupId>} realm role (see RAID-712).
+     *
+     * <p>Granted authorities of this form are already passed through by
+     * {@link au.org.raid.api.config.SecurityConfig#extractAuthorities}; this method gives
+     * callers the vocabulary to recognise and resolve them. Not yet consumed by any
+     * endpoint's authorization rules.
+     */
+    public Set<String> getAdministeredGroupIds(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(this::extractScopedAdminGroupId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    private String extractScopedAdminGroupId(String authority) {
+        var prefix = "ROLE_" + SERVICE_POINT_ADMIN_ROLE_PREFIX + ":";
+        if (!authority.startsWith(prefix)) {
+            return null;
+        }
+
+        var groupId = authority.substring(prefix.length());
+        return groupId.isBlank() ? null : groupId;
     }
 
     private AuthorizationDecision hasRaidAdminPermissions(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
