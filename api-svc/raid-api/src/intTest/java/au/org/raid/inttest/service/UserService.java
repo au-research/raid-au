@@ -3,6 +3,7 @@ package au.org.raid.inttest.service;
 import au.org.raid.inttest.client.keycloak.KeycloakClient;
 import au.org.raid.inttest.config.AuthConfig;
 import au.org.raid.inttest.dto.UserContext;
+import au.org.raid.inttest.dto.keycloak.CreateGroupRequest;
 import au.org.raid.inttest.dto.keycloak.KeycloakCredentialsFactory;
 import au.org.raid.inttest.dto.keycloak.KeycloakUserFactory;
 import lombok.RequiredArgsConstructor;
@@ -72,5 +73,37 @@ public class UserService {
             log.error("Failed to delete user", e);
 
         }
+    }
+
+    /**
+     * RAID-724: removes a realm role mapping from a user via the Keycloak admin API, mirroring
+     * the role-granting loop in {@link #createUser}. Used by tests that need to strip a role
+     * (e.g. the flat group-admin role) after user creation, to prove a scoped
+     * "service-point-admin:&lt;groupId&gt;" role is independently sufficient for authorization.
+     */
+    public void removeRole(final String userId, final String roleName) {
+        final var role = keycloakClient.keycloakApi(authConfig.getIntegrationTestClient())
+                .findRoleByName(roleName)
+                .getBody();
+
+        if (role != null) {
+            keycloakClient.keycloakApi(authConfig.getIntegrationTestClient())
+                    .removeUserFromRole(userId, Collections.singletonList(role));
+        }
+    }
+
+    /**
+     * RAID-724: creates a group directly via the Keycloak admin API, bypassing the
+     * "/realms/raid/group/create" SPI endpoint entirely. Unlike the SPI endpoint, this does not
+     * auto-create a scoped "service-point-admin:&lt;groupId&gt;" role or grant any roles to a
+     * creator - used by tests that need a group in a known "not yet migrated" state.
+     *
+     * @return the id of the newly created group
+     */
+    public String createGroup(final String name, final String path) {
+        final var request = new CreateGroupRequest(name, path);
+        final var response = keycloakClient.keycloakApi(authConfig.getIntegrationTestClient()).createGroup(request);
+        final var location = response.getHeaders().get("Location").get(0);
+        return location.substring(location.lastIndexOf("/") + 1);
     }
 }
