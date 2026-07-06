@@ -28,7 +28,7 @@ are follow-up tickets.
 | [RAID-721](https://ardc.atlassian.net/browse/RAID-721) | SPI: operator-only idempotent `POST /group/migrate-service-point-admins` backfill | [#556](https://github.com/au-research/raid-au/pull/556) |
 | [RAID-724](https://ardc.atlassian.net/browse/RAID-724) | Integration tests: cross-SP admin matrix, new-group access, migration gating/idempotency, dual-write/dual-revoke | [#557](https://github.com/au-research/raid-au/pull/557) |
 
-Final PR (`feature/RAID-712` → `main`): _link added when opened_.
+Final PR (`feature/RAID-712` → `main`): [#558](https://github.com/au-research/raid-au/pull/558).
 
 ## Deployment notes
 
