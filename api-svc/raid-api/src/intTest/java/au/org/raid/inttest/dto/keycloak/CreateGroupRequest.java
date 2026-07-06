@@ -1,8 +1,8 @@
 package au.org.raid.inttest.dto.keycloak;
 
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
+@Data
 public class CreateGroupRequest {
     // Getters and Setters
     private String name;
