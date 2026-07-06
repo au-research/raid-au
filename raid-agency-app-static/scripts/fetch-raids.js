@@ -2,23 +2,29 @@
 
 /**
  * RAID Data Collection Script with Citation Enhancement
- * 
+ *
  * This script fetches RAID (Research Activity Identifier) data from a designated API
- * and enriches it with citation information from DOI.org.
- * 
+ * and enriches it with citation, ORCID, ROR, and service point information.
+ *
  * Main Operations:
- * 1. Loads environment variables from .env file
+ * 1. Loads configuration from public/app-config.json and secrets from environment variables
  * 2. Validates required configuration
- * 3. Authenticates with IAM endpoint to obtain bearer token
+ * 3. Authenticates with IAM endpoint using OAuth 2.0 client credentials
  * 4. Fetches all public RAID data from the API
  * 5. Fetches citation data for all DOIs found in relatedObjects
- * 6. Adds citation text to corresponding relatedObjects
- * 7. Saves enriched data to raids.json
- * 8. Extracts and saves unique handles from all environments
- * 
+ * 6. Enriches contributor data with ORCID display names
+ * 7. Enriches organisation data with ROR names
+ * 8. Adds service point names to each RAID record
+ * 9. Saves enriched RAID data to raids.json
+ * 10. Fetches and saves embargoed RAID summaries (separate dumper client)
+ * 11. Extracts and saves unique handles
+ *
  * Features:
+ * - Automatic token refresh: tokens are re-fetched via client credentials before expiry,
+ *   so long-running scripts (30+ min) never send an expired token
  * - Concurrent DOI processing for better performance
- * - Smart caching to avoid redundant API calls
+ * - Smart caching to avoid redundant API calls (citations, ORCID, ROR, service points)
+ * - HTML response detection: doi.org HTML error pages are rejected and never cached
  * - Retry logic with exponential backoff
  * - Progress tracking with real-time updates
  * - Configurable rate limiting to respect API limits
