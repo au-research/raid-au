@@ -5,21 +5,27 @@ This directory contains Node.js modules used to fetch RAiD data from APIs, enric
 ## Overview
 
 The scripts in this directory are responsible for:
-1. Authenticating with the RAiD API using OAuth2
-2. Fetching all public RAiD data
-3. Enriching RAiD data with citation information from DOI.org
-4. Fetching handles from multiple environments
-5. Processing and transforming the data
-6. Implementing smart caching to optimize performance
+1. Authenticating with the RAiD API using OAuth2 client credentials
+2. Automatically refreshing tokens so long-running scripts never send an expired token
+3. Fetching all public and embargoed RAiD data
+4. Enriching RAiD data with citations, ORCID names, ROR organisation names, and service point names
+5. Fetching handles from multiple environments
+6. Implementing smart caching to optimise performance
 7. Saving processed data for the build process
 
 ## Architecture
 
 The system is built using modular Node.js ES modules:
 - **loadAppConfig.js** - Shared config loader (reads `public/app-config.json`, falls back to env vars)
+- **tokenManager.js** - OAuth token lifecycle manager (auto-refreshes before expiry)
 - **fetch-raids.js** - Main orchestration module
+- **fetch-embargoed-raids.js** - Fetches embargoed RAiD summaries via a separate dumper client
 - **fetch-citation.js** - Citation fetching and caching module
+- **fetch-orcidData.js** - ORCID contributor name enrichment
+- **fetch-ror.js** - ROR organisation name enrichment
+- **fetch-sp.js** - Service point name enrichment
 - **fetch-handles.js** - Multi-environment handle fetching module
+- **apiCache.js** - Generic file-backed cache utility (used by ORCID and ROR modules)
 
 ## Scripts
 
@@ -28,9 +34,10 @@ The system is built using modular Node.js ES modules:
 **Purpose:** Main module that orchestrates the entire data fetching process.
 
 **Features:**
-- OAuth2 authentication with automatic token management
+- Automatic token refresh — tokens are re-fetched before expiry so scripts running 30+ minutes never fail with an expired token
 - Concurrent DOI processing with configurable batch sizes
-- Smart citation caching with TTL (Time To Live)
+- HTML response detection — rejects doi.org HTML error pages so they are never cached as citations
+- Smart caching for citations, ORCID, ROR, and service points with TTL
 - Progress tracking with real-time updates
 - Retry logic with exponential backoff
 - Cross-platform compatibility (Windows/Mac/Linux)
@@ -38,11 +45,12 @@ The system is built using modular Node.js ES modules:
 **Flow:**
 1. Loads config from `public/app-config.json` via `loadAppConfig.js` (falls back to env vars)
 2. Validates required configuration
-3. Authenticates with IAM endpoint to obtain bearer token
+3. Authenticates with IAM using OAuth2 client credentials; token managed by `TokenManager`
 4. Fetches all public RAiD data from the API
-5. Enriches data with citations from DOI.org and save them to `src/raw-data/raids.json`
-6. Extracts unique handles and saves them to `src/raw-data/handles.json`
-7. Fetches handles from all environments and save them to `src/raw-data/all-handles.json`
+5. Enriches data with DOI citations, ORCID contributor names, ROR organisation names, and service point names
+6. Saves enriched RAiD data to `src/raw-data/raids.json`
+7. Fetches embargoed RAiD summaries using the dumper client
+8. Extracts unique handles and saves them to `src/raw-data/handles.json`
 
 **Requirements:**
 - Node.js v14+ with ES module support
@@ -72,9 +80,7 @@ node scripts/fetch-raids.js
 - Statistics tracking
 
 **Exported Functions:**
-- `fetchCitation(doi, makeRequestWithRetry, stats, citationCache, config)` - Fetch a single citation
-- `processDOIBatch(doi, makeRequestWithRetry, stats, citationCache, config)` - Process multiple DOIs concurrently
-- `saveCache(cacheFile)` / `loadCache(cacheFile)` - Cache management
+- `fetchCitation({ doi, makeRequestWithRetry, stats, citationCache, config })` - Fetch a single citation
 
 ### fetch-handles.js
 
@@ -160,7 +166,7 @@ VERBOSE_LOGGING=false          # Enable detailed logging (default: false)
 node scripts/fetch-raids.js
 
 # Or using npm scripts
-npm run script
+npm run scripts
 ```
 
 ### Automatic Execution:
@@ -169,15 +175,6 @@ Scripts are automatically executed:
 - Before building the site (`npm run build`)
 
 This happens through the `predev` and `prebuild` npm scripts defined in `package.json`.
-
-## Performance
-
-### Improvements Over Shell Scripts:
-- **98.7% citation success rate** (up from ~60%)
-- **3x faster execution** with concurrent processing
-- **Zero parsing errors** with native JSON handling
-- **Smart caching** reduces redundant API calls
-- **Better error handling** with automatic retries
 
 ## Troubleshooting
 
@@ -214,15 +211,3 @@ Enable verbose logging for detailed output:
 VERBOSE_LOGGING=true node scripts/fetch-raids.js
 ```
 
-## Migration from Shell Scripts
-
-This Node.js implementation replaces the previous bash scripts (`fetch-raids.sh` and `fetch-handles.sh`) with the following improvements:
-
-- ✅ Eliminated jq parsing errors
-- ✅ Cross-platform compatibility
-- ✅ Better error handling and recovery
-- ✅ Citation enrichment with 98%+ success rate
-- ✅ Performance optimization through caching and concurrency
-- ✅ Modular, maintainable code structure
-
-The output format remains compatible with the existing build process.

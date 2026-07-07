@@ -2,23 +2,29 @@
 
 /**
  * RAID Data Collection Script with Citation Enhancement
- * 
+ *
  * This script fetches RAID (Research Activity Identifier) data from a designated API
- * and enriches it with citation information from DOI.org.
- * 
+ * and enriches it with citation, ORCID, ROR, and service point information.
+ *
  * Main Operations:
- * 1. Loads environment variables from .env file
+ * 1. Loads configuration from public/app-config.json and secrets from environment variables
  * 2. Validates required configuration
- * 3. Authenticates with IAM endpoint to obtain bearer token
+ * 3. Authenticates with IAM endpoint using OAuth 2.0 client credentials
  * 4. Fetches all public RAID data from the API
  * 5. Fetches citation data for all DOIs found in relatedObjects
- * 6. Adds citation text to corresponding relatedObjects
- * 7. Saves enriched data to raids.json
- * 8. Extracts and saves unique handles from all environments
- * 
+ * 6. Enriches contributor data with ORCID display names
+ * 7. Enriches organisation data with ROR names
+ * 8. Adds service point names to each RAID record
+ * 9. Saves enriched RAID data to raids.json
+ * 10. Fetches and saves embargoed RAID summaries (separate dumper client)
+ * 11. Extracts and saves unique handles
+ *
  * Features:
+ * - Automatic token refresh: tokens are re-fetched via client credentials before expiry,
+ *   so long-running scripts (30+ min) never send an expired token
  * - Concurrent DOI processing for better performance
- * - Smart caching to avoid redundant API calls
+ * - Smart caching to avoid redundant API calls (citations, ORCID, ROR, service points)
+ * - HTML response detection: doi.org HTML error pages are rejected and never cached
  * - Retry logic with exponential backoff
  * - Progress tracking with real-time updates
  * - Configurable rate limiting to respect API limits
@@ -64,6 +70,7 @@ import { addServicePointNameToRaidData } from './fetch-sp.js';
 import { fetchEmbargoedRaids } from './fetch-embargoed-raids.js';
 import { loadAppConfig } from './loadAppConfig.js';
 import { orcidCache, rorCache } from './apiCache.js';
+import { TokenManager } from './tokenManager.js';
 
 // Load config from public/app-config.json (falls back to env vars)
 const config = loadAppConfig();
@@ -347,10 +354,19 @@ async function loadCache() {
     try {
       const cacheData = await fs.readFile(cacheFile, 'utf8');
       const cache = JSON.parse(cacheData);
-      Object.entries(cache).forEach(([doi, citation]) => {
-        citationCache.set(doi, citation);
+      let skipped = 0;
+      Object.entries(cache).forEach(([doi, entry]) => {
+        const text = (typeof entry === 'object' ? entry.citation : String(entry)).trimStart();
+        if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
+          skipped++;
+        } else {
+          citationCache.set(doi, entry);
+        }
       });
-      console.log(`Citation cache loaded (${citationCache.size} entries)`);
+      if (skipped > 0) {
+        await fs.writeFile(cacheFile, JSON.stringify(Object.fromEntries(citationCache), null, 2));
+      }
+      console.log(`Citation cache loaded (${citationCache.size} entries${skipped > 0 ? `, ${skipped} bad HTML entries purged` : ''})`);
     } catch (error) {
       // Cache file doesn't exist or is invalid, start fresh
     }
@@ -399,10 +415,15 @@ async function main() {
     await loadCache();
     
     // Step 1: Get bearer token
-    const bearerToken = await getBearerToken();
-    config.bearerToken = bearerToken; 
+    const mainTokenManager = new TokenManager({
+      iamEndpoint: config.iamEndpoint,
+      clientId: config.iamClientId,
+      clientSecret: config.iamClientSecret,
+      makeRequestWithRetry,
+    });
+    config.bearerToken = await mainTokenManager.getValidToken();
     // Step 2: Fetch RAID data
-    const raidData = await fetchRaidData(bearerToken);
+    const raidData = await fetchRaidData(config.bearerToken);
     
     // Step 3: Add citations to RAID data
     const enrichedData = await addCitationsToRaidData(raidData);
@@ -423,6 +444,7 @@ async function main() {
     );
 
     // Step 6: Add service point names to RAID data  <-- NEW
+    config.bearerToken = await mainTokenManager.getValidToken();
     const enrichedWithServicePoint = await addServicePointNameToRaidData(
       enrichedWithRor,
       makeRequestWithRetry,
@@ -436,7 +458,13 @@ async function main() {
     console.log(`Data successfully saved to ${outputFile}`);
 
     // Step 7b: Fetch and save embargoed RAiD summaries
-    const dumperToken = await getTokenForClient(config.raidDumperClientId, config.raidDumperClientSecret);
+    const dumperTokenManager = new TokenManager({
+      iamEndpoint: config.iamEndpoint,
+      clientId: config.raidDumperClientId,
+      clientSecret: config.raidDumperClientSecret,
+      makeRequestWithRetry,
+    });
+    const dumperToken = await dumperTokenManager.getValidToken();
     const embargoedRaids = await fetchEmbargoedRaids(dumperToken, config, makeRequestWithRetry);
     const embargoedOutputFile = path.join(config.dataDir, 'embargoed-raids.json');
     await fs.writeFile(embargoedOutputFile, JSON.stringify(embargoedRaids, null, 2));
@@ -457,6 +485,9 @@ async function main() {
     console.log(`- Total DOIs found: ${stats.totalDois}`);
     console.log(`- Successful citations fetched: ${stats.successfulCitations}`);
     console.log(`- Failed citations: ${stats.failedCitations}`);
+    if (config.enableCaching) {
+      console.log(`- Cached citations used: ${stats.cachedCitations}`);
+    }
     console.log(`- Total ORCID IDs found: ${stats.totalOrcidIds}`);
     console.log(`- Authenticated & Public ORCIDs: ${stats.authenticatedOrcids}`);
     console.log(`- Authenticated but Private: ${stats.authenticatedButPrivate}`);
@@ -465,9 +496,6 @@ async function main() {
     console.log(`- Total unique service points: ${stats.totalServicePoints}`);
     console.log(`- Successful service point lookups: ${stats.successfulServicePointFetches}`);
     console.log(`- Failed service point lookups: ${stats.failedServicePointFetches}`);
-    if (config.enableCaching) {
-      console.log(`- Cached citations used: ${stats.cachedCitations}`);
-    }
     console.log(`- Total embargoed RAiDs: ${embargoedRaids.length}`);
     console.log(`- Total handles: ${handles.length}`);
     console.log(`- Execution time: ${elapsedTime} seconds`);
