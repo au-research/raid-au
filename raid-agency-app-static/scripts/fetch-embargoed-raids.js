@@ -25,6 +25,7 @@ import http from 'http';
 import { fetchRorDetails } from './fetch-ror.js';
 import { fetchAllServicePoints } from './fetch-sp.js';
 import { loadAppConfig } from './loadAppConfig.js';
+import { TokenManager } from './tokenManager.js';
 
 // Load config from public/app-config.json (falls back to env vars)
 const config = loadAppConfig();
@@ -69,27 +70,6 @@ async function makeRequestWithRetry(url, options = {}, retries = config.maxRetri
   }
 }
 
-async function getDumperToken() {
-  const tokenUrl = `${config.iamEndpoint}/realms/raid/protocol/openid-connect/token`;
-  const bodyParams = `grant_type=client_credentials&client_id=${encodeURIComponent(config.raidDumperClientId)}`;
-  const body = config.raidDumperClientSecret
-    ? `${bodyParams}&client_secret=${encodeURIComponent(config.raidDumperClientSecret)}`
-    : bodyParams;
-
-  const response = await makeRequestWithRetry(tokenUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(body),
-    },
-    body,
-  });
-
-  const tokenData = JSON.parse(response.data);
-  if (!tokenData.access_token) throw new Error('No access token in response');
-  return tokenData.access_token;
-}
-
 async function main() {
   const requiredFields = { iamEndpoint: config.iamEndpoint, apiEndpoint: config.apiEndpoint, raidDumperClientId: config.raidDumperClientId };
   const missing = Object.entries(requiredFields).filter(([, v]) => !v).map(([k]) => k);
@@ -101,8 +81,13 @@ async function main() {
 
   await fs.mkdir(config.dataDir, { recursive: true });
 
-  console.log('Getting raid-dumper token...');
-  const bearerToken = await getDumperToken();
+  const tokenManager = new TokenManager({
+    iamEndpoint: config.iamEndpoint,
+    clientId: config.raidDumperClientId,
+    clientSecret: config.raidDumperClientSecret,
+    makeRequestWithRetry,
+  });
+  const bearerToken = await tokenManager.getValidToken();
   config.bearerToken = bearerToken;
 
 

@@ -25,18 +25,26 @@ The RAiD Agency Static App is built on the Astro framework, using a static site 
 
 ### Data Acquisition
 
-The application fetches data using shell scripts in the `scripts/` directory:
+The application fetches data using Node.js scripts in the `scripts/` directory:
 
-- `fetch-raids.js`: Authenticates with OAuth and fetches RAiD data
-- `fetch-handles.js`: Fetches handles from multiple environments
-- `fetch-citation.js`: Fetches Citation with optional caching mechanism
+- `fetch-raids.js`: Main orchestrator — authenticates, fetches all public RAiD data, and coordinates all enrichment steps
+- `fetch-embargoed-raids.js`: Fetches embargoed RAiD summaries using a separate dumper client
+- `fetch-citation.js`: Fetches APA citations from DOI.org with optional caching
+- `fetch-orcidData.js`: Enriches contributor data with ORCID display names
+- `fetch-ror.js`: Enriches organisation data with names from the ROR API
+- `fetch-sp.js`: Fetches service point names from the RAiD API
+- `fetch-handles.js`: Extracts unique handles from RAiD data
+- `tokenManager.js`: Manages OAuth token lifecycle — automatically re-fetches tokens before expiry so long-running scripts never send an expired token
 
 The data flow is as follows:
 
-1. Authentication with IAM to get a bearer token
-2. API request to fetch RAiD data
-3. Data stored in JSON format in `src/raw-data/`
-4. JSON data parsed during the build process
+1. Load configuration from `public/app-config.json` and secrets from environment variables
+2. Authenticate with IAM using OAuth 2.0 client credentials to obtain a bearer token
+3. Fetch all public RAiD data from the API
+4. Enrich each RAiD record with DOI citations, ORCID contributor names, ROR organisation names, and service point names
+5. Fetch embargoed RAiD summaries using the dumper client credentials
+6. Save all enriched data to `src/raw-data/` as JSON
+7. JSON data parsed by Astro during the build process
 
 ### Data Processing
 
@@ -92,9 +100,9 @@ The application uses Astro's file-based routing system:
 
 The application integrates with the RAiD API:
 
-1. Authentication via OAuth client credentials flow
-2. Bearer token used for subsequent API requests
-3. API version specified via headers
+1. Authentication via OAuth 2.0 client credentials flow (machine-to-machine — no user session)
+2. Tokens are managed by `TokenManager`, which automatically re-fetches a new token when the current one is within 60 seconds of expiry — this ensures long-running build scripts (30+ minutes) never fail due to an expired token
+3. Bearer token used for authenticated API requests (`/raid/all-public`, `/service-point/`, `/raid/all-embargoed`)
 4. Responses processed and transformed into site content
 
 ## Data Mapping System
@@ -130,8 +138,8 @@ The application uses several techniques to optimize performance:
 
 ### Debugging Tips
 
-- Check the shell script output for API errors
-- Inspect the JSON data files to verify correct format
+- Check the script output for API errors (token acquisition, enrichment failures, cache stats)
+- Inspect the JSON data files in `src/raw-data/` to verify correct format
 - Use TypeScript to catch type errors during development
 - Review Astro build logs for component rendering issues
 
