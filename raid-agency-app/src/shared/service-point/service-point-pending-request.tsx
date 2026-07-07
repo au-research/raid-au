@@ -52,27 +52,38 @@ export const useServicePointPendingRequest = () => {
             ? servicePointsQuery.data
             : [servicePointsQuery.data];
 
-        const adminGroup = servicePoints.find((sp) => {
-            if (sp?.id.toString() === groupId) {
-                sp.members.forEach((member) => {
-                    member.groupId = groupId;
-                });
-                return true;
-            }
-            return false;
-        }) as ServicePointWithMembers | undefined;
-        const accumulatedMembers = servicePoints?.reduce<ServicePointMember[]>((acc, sp) => {
-            if (sp.members && sp.members.length > 0) {
-                const members = sp.members.map(member => ({
+        if (isOperator) {
+            // One notification per service point so operators can see which SP each request belongs to
+            servicePoints.forEach((sp) => {
+                const spMembers = (sp.members ?? []).map(member => ({
                     ...member,
                     groupId: sp.groupId,
-                } as unknown as ServicePointMember))
-                return [...acc, ...members];
-            }
-            return acc;
-        }, [] as ServicePointMember[]);
-        isOperator && transformMemberToNotification(accumulatedMembers as unknown as ServicePointMember[], token as string);
-        isGroupAdmin && transformMemberToNotification(adminGroup?.members  as unknown as ServicePointMember[] || [], token as string);
+                })) as unknown as ServicePointMember[];
+                transformMemberToNotification(
+                    spMembers,
+                    token as string,
+                    sp.name || 'Service Point',
+                    `servicePointRequests_${sp.groupId || sp.id}`,
+                );
+            });
+        } else if (isGroupAdmin) {
+            const adminGroup = servicePoints.find((sp) => {
+                if (sp?.id.toString() === groupId) {
+                    sp.members.forEach((member) => {
+                        member.groupId = groupId;
+                    });
+                    return true;
+                }
+                return false;
+            }) as ServicePointWithMembers | undefined;
+            const spName = adminGroup?.name || (servicePointsQuery.data as ServicePointWithMembers)?.name || 'Service Point';
+            transformMemberToNotification(
+                adminGroup?.members as unknown as ServicePointMember[] ?? [],
+                token as string,
+                spName,
+                `servicePointRequests_${groupId}`,
+            );
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [servicePointsQuery.data, isOperator, isGroupAdmin]);
 
