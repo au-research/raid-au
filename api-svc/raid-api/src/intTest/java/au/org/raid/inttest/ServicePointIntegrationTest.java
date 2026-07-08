@@ -3,12 +3,14 @@ package au.org.raid.inttest;
 import au.org.raid.idl.raidv2.api.ServicePointApi;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
 import au.org.raid.inttest.dto.UserContext;
+import feign.FeignException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class ServicePointIntegrationTest extends AbstractIntegrationTest {
 
@@ -115,5 +117,37 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
                 .groupId(existing.getGroupId());
 
         operatorServicePointApi.updateServicePoint(existing.getId(), restoreRequest);
+    }
+
+    @Test
+    @DisplayName("raid-dumper role can read service points (needed for the service-points.json archive dump)")
+    void raidDumperCanFindAllServicePoints() {
+        final var dumperContext = userService.createUser("raid-au", "raid-dumper");
+
+        try {
+            final var response = testClient.servicePointApi(dumperContext.getToken()).findAllServicePoints();
+            final var servicePoints = response.getBody();
+
+            assertThat(response.getStatusCode().value()).isEqualTo(200);
+            assertThat(servicePoints).isNotNull();
+            assertThat(servicePoints).isNotEmpty();
+        } finally {
+            userService.deleteUser(dumperContext.getId());
+        }
+    }
+
+    @Test
+    @DisplayName("Caller without service-point-user, operator or raid-dumper role cannot read service points")
+    void insufficientRoleCannotFindAllServicePoints() {
+        final var unauthorisedContext = userService.createUser("raid-au", "raid-user");
+
+        try {
+            testClient.servicePointApi(unauthorisedContext.getToken()).findAllServicePoints();
+            fail("Expected findAllServicePoints to be forbidden for a caller without an authorised role");
+        } catch (FeignException e) {
+            assertThat(e.status()).isEqualTo(403);
+        } finally {
+            userService.deleteUser(unauthorisedContext.getId());
+        }
     }
 }
