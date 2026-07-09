@@ -4,42 +4,53 @@ plugins {
 import au.raid.org.api.*
 
 tasks.register('pullLinkMLImage', Exec) {  
-  commandLine '/usr/local/bin/docker', 'pull', 'linkml/linkml:1.9.2'
+  commandLine 'docker', 'pull', 'linkml/linkml:1.9.2'
 }
 
 tasks.register('pullMKdocsImage', Exec) {
-  commandLine '/usr/local/bin/docker', 'pull', 'squidfunk/mkdocs-material:9.6.14'
+  commandLine 'docker', 'pull', 'squidfunk/mkdocs-material:9.6.14'
 }
 
 tasks.register('generateDatamodelDocsV2', Exec) {
   dependsOn "copyDocConfig"
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './:/base', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-doc', 'raid-core.yaml', '-d', '/generated/v2/documentation/docs/datamodel-docs',  '--subfolder-type-separation', '--hierarchical-class-view', '--template-directory', '/base/templates/datamodel-docs', '--example-directory', '/base/examples/'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './:/base', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-doc', 'raid-core.yaml', '-d', '/generated/v2/documentation/docs/datamodel-docs',  '--subfolder-type-separation', '--hierarchical-class-view', '--template-directory', '/base/templates/datamodel-docs', '--example-directory', '/base/examples/'
 }
 
 tasks.register('generateSchemaDocsV2', Exec) {
   dependsOn "copyDocConfig"
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './:/base', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-doc', 'raid-core.yaml', '-d', '/generated/v2/documentation/docs/schema-docs',  '--subfolder-type-separation', '--hierarchical-class-view', '--template-directory', '/base/templates/schema-docs', '--example-directory', '/base/examples/'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './:/base', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-doc', 'raid-core.yaml', '-d', '/generated/v2/documentation/docs/schema-docs',  '--subfolder-type-separation', '--hierarchical-class-view', '--template-directory', '/base/templates/schema-docs', '--example-directory', '/base/examples/'
 }
 
 tasks.register('generateSchemaOrgDocsV2', Exec) {
   dependsOn "copyDocConfig"
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './:/base', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-doc', 'researchproject.yaml', '-d', '/generated/v2/documentation/docs/schemaorg-docs',  '--subfolder-type-separation', '--hierarchical-class-view', '--template-directory', '/base/templates/schemaorg-docs', '--example-directory', '/base/examples/'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './:/base', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-doc', 'researchproject.yaml', '-d', '/generated/v2/documentation/docs/schemaorg-docs',  '--subfolder-type-separation', '--hierarchical-class-view', '--template-directory', '/base/templates/schemaorg-docs', '--example-directory', '/base/examples/'
+}
+
+tasks.register('bridgeGeneratedDocs', Copy) {
+  dependsOn 'generateDatamodelDocsV2', 'generateSchemaDocsV2', 'generateSchemaOrgDocsV2'
+  from 'generated/v2/documentation/docs'
+  into 'generated/mkdocs-config/v2/documentation/docs'
+}
+
+tasks.register('buildDatamodelSite', Exec) {
+  dependsOn 'buildMkdocsImage', 'bridgeGeneratedDocs', 'copyDocConfig'
+  commandLine 'docker', 'run', '-v', './generated/mkdocs-config/v2/documentation:/docs', 'raid-mkdocs-custom', 'build'
 }
 
 tasks.register('copyDocConfig', Exec) {
   commandLine 'cp', '-r', 'mkdocs-config/', 'generated'
 }
 
-tasks.register('buildDatamodelSite', Exec) {
-  commandLine '/usr/local/bin/docker', 'run','-v', 'generated/v2/datamodel-docs:/docs', 'squidfunk/mkdocs-material', 'build'
+tasks.register('buildMkdocsImage', Exec) {
+  commandLine 'docker', 'build', '-t', 'raid-mkdocs-custom', '-f', 'Dockerfile.mkdocs', '.'
 }
 
 tasks.register('generateJSONSchemaV2', Exec) {
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-json-schema', 'raid-core.yaml'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-json-schema', 'raid-core.yaml'
   outputs.file('generated/v2/raid-jsonschema.json')
   doFirst {
     def outputFile = file('generated/v2/raid-jsonschema.json')
@@ -50,7 +61,7 @@ tasks.register('generateJSONSchemaV2', Exec) {
 
 tasks.register('generateJSONSchemaV2ResearchProject', Exec) {
   dependsOn "generateJSONSchemaV2"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-json-schema', 'researchproject.yaml'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-json-schema', 'researchproject.yaml'
   outputs.file('generated/v2/researchproject.json')
   doFirst {
     def outputFile = file('generated/v2/researchproject.json')
@@ -60,7 +71,7 @@ tasks.register('generateJSONSchemaV2ResearchProject', Exec) {
 
 tasks.register('generateSHACLV2', Exec) {
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-shacl', 'raid-core.yaml'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-shacl', 'raid-core.yaml'
   outputs.file("api-svc/datamodel/generated/v2/raid-shapes.ttl")
   doFirst {
     file('api-svc/datamodel/generated/v2').mkdirs()
@@ -69,7 +80,7 @@ tasks.register('generateSHACLV2', Exec) {
 
 tasks.register('generateJSONLDContextV2', Exec) {
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-jsonld-context', 'raid-core.yaml'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-jsonld-context', 'raid-core.yaml'
   outputs.file("api-svc/datamodel/generated/v2/raid-context.jsonld")
   doFirst {
     file('api-svc/datamodel/generated/v2').mkdirs()
@@ -79,7 +90,7 @@ tasks.register('generateJSONLDContextV2', Exec) {
 
 tasks.register('generateOWLContextV2', Exec) {
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-owl', '-f', 'ttl', 'raid-core.yaml'
+  commandLine 'docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-owl', '-f', 'ttl', 'raid-core.yaml'
   outputs.file("api-svc/datamodel/generated/v2/raid-ontology.ttl")
   doFirst {
     file('api-svc/datamodel/generated/v2').mkdirs()
