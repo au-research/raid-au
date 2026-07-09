@@ -405,6 +405,27 @@
     }
   },
   {
+    "priority": 10,
+    "httpRequest": {
+      "method": "POST",
+      "path": "/dois",
+      "body": {
+        "type": "STRING",
+        "string": "RAID-731-DATACITE-ERROR",
+        "subString": true
+      }
+    },
+    "httpResponse": {
+      "statusCode": 429,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "errors": [{"status": "429", "title": "Too Many Requests"}]
+      }
+    }
+  },
+  {
     "httpRequest": {
       "method": "POST",
       "path": "/dois",
