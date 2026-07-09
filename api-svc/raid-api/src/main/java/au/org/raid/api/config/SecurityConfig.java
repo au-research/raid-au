@@ -101,7 +101,7 @@ public class SecurityConfig {
                 // Service Point API endpoints
                 .requestMatchers(PUT, SERVICE_POINT_API + "/**").hasRole(OPERATOR_ROLE)
                 .requestMatchers(POST, SERVICE_POINT_API + "/**").hasRole(OPERATOR_ROLE)
-                .requestMatchers(GET, SERVICE_POINT_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, OPERATOR_ROLE)
+                .requestMatchers(GET, SERVICE_POINT_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, OPERATOR_ROLE, RAID_DUMPER_ROLE)
 
                 // Admin endpoints
                 .requestMatchers(POST, "/admin/**").hasRole(OPERATOR_ROLE)
