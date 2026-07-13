@@ -1,6 +1,58 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.12.0
+
+## API
+* RAiD permissions are now resolved on demand instead of being carried in the access token. The
+  permissions API returns the caller's `userRaids` and `adminRaids` as lists, replacing the previous
+  per-RAiD boolean claim. This stops the access token growing with each RAiD a user administers,
+  which had been pushing request headers past the server's size limit (RAID-617, PR #550).
+* The `raid-dumper` role can now read `GET /service-point/` (RAID-733, PR #561).
+
+## App-client UI
+* Reworked the service point notification experience -- pending service point requests now surface
+  in a drawer instead of a popover, with corrected labels and layout fixes (RAID-403, PR #549).
+
+## IAM
+* The `raid` realm no longer emits the `admin_raids` access-token claim. A new Keycloak SPI endpoint,
+  `GET /permissions`, returns a user's `userRaids` and `adminRaids` from their stored attributes, so
+  the token stays small regardless of how many RAiDs the user can administer (RAID-617, PR #550).
+
+## Static Landing Pages
+* Added caching with a TTL for ORCID, ROR and service point lookups during the static site data
+  fetch, reducing repeated external API calls on rebuilds (RAID-709, PR #546).
+* Reworked access-token handling in the data-fetch scripts with a dedicated token manager that
+  refreshes the token before it expires, corrected the citation-failed and cache counts, and removed
+  the legacy shell fetch scripts in favour of the Node scripts (RAID-710, PR #555).
+
+# 2.11.2
+
+## API
+* `postToDatacite` endpoint now accepts a `RaidUpdateRequest` body and returns `204 No Content`,
+  replacing the previous full `RaidDto` request/response (RAID-610, PR #545).
+
+# 2.11.1
+
+## API
+* DataCite errors are no longer swallowed -- `DataciteService` re-throws `HttpClientErrorException`
+  so upstream DataCite failures propagate to the caller instead of failing silently
+  (RAID-609, PR #447).
+
+## App-client UI
+* Fixed service point create and update form validation, resolving a defect where the ROR field's
+  React Hook Form state and local component state drifted out of sync (RAID-480, PR #542).
+* ROR iDs are now validated and trimmed of surrounding whitespace on entry (PR #542).
+* Service points with an empty or invalid group ID are now handled gracefully instead of erroring,
+  and organisation role end dates default to the RAiD's end date (RAID-659, PR #535).
+* Removed the end-date validation on contributor positions and organisation roles, and made the
+  ORCID placeholder and helper text configurable via `app-config` (RAID-708, PR #537).
+
+## Static Landing Pages
+* JSON-LD now prefers the primary title type for the schema.org `name` field and includes all
+  titles (RAID-707, PRs #541, #544).
+* Related RAiD relationships are now mapped to schema.org properties in JSON-LD (RAID-706, PR #531).
+
 # 2.11.0
 
 ## API
