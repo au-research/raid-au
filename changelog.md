@@ -1,6 +1,28 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.13.0
+
+> Note: This release scopes the service point admin role to a single service point but keeps the
+> existing flat behaviour as a fallback, so there is no functional change for users yet. After
+> deploying to test, stage or prod, an operator must run the one-off backfill endpoint (see IAM
+> below) to grant the new scoped roles.
+
+## IAM
+* Introduced scoped service point admin roles. A user's admin authority is now scoped to a single
+  service point, replacing the previous role that made a user an admin of every service point they
+  belonged to. The scoped role is created, granted and revoked alongside the existing role, so
+  behaviour is unchanged while both are maintained. A fallback flag keeps the previous behaviour in
+  effect until the app consumes the scoped roles (PRs #551, #553).
+* Added an operator-only, idempotent backfill endpoint,
+  `POST /realms/raid/group/migrate-service-point-admins`, that grants the scoped roles to existing
+  group admins. It is safe to re-run (PR #556).
+* Seeded scoped roles for the dev-realm groups and added role-permissions documentation (PR #552).
+
+## API
+* Added support for the scoped service point admin authorisation model. The change is additive and
+  not yet wired into any endpoint, so there is no behaviour change yet (PR #554).
+
 # 2.12.0
 
 ## API
