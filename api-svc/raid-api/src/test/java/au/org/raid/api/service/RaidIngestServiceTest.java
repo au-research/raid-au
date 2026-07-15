@@ -44,8 +44,6 @@ class RaidIngestServiceTest {
     @Mock
     SubjectService subjectService;
     @Mock
-    TraditionalKnowledgeLabelService traditionalKnowledgeLabelService;
-    @Mock
     SpatialCoverageService spatialCoverageService;
     @Mock
     RaidRepository raidRepository;

@@ -509,9 +509,6 @@ components:
         spatialCoverage:
           type: array
           items: { $ref: '#/components/schemas/SpatialCoverage' }
-        traditionalKnowledgeLabel:
-          type: array
-          items: { $ref: '#/components/schemas/TraditionalKnowledgeLabel' }
     RaidUpdateRequest:
       type: object
       required:
@@ -556,9 +553,6 @@ components:
         spatialCoverage:
           type: array
           items: { $ref: '#/components/schemas/SpatialCoverage' }
-        traditionalKnowledgeLabel:
-            type: array
-            items: { $ref: '#/components/schemas/TraditionalKnowledgeLabel' }
     RaidPatchRequest:
       type: object
       properties:
@@ -569,10 +563,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/RaidUpdateRequest'
       type: object
-      properties:
-        traditionalKnowledgeLabel:
-          type: array
-          items: { $ref: '#/components/schemas/TraditionalKnowledgeLabel' }
     Metadata:
       type: object
       properties:
@@ -935,17 +925,6 @@ components:
         }
         language:
           $ref: '#/components/schemas/Language'
-    TraditionalKnowledgeLabel:
-      type: object
-      properties:
-        id: {
-          type: string,
-          example: https://localcontexts.org/label/tk-verified/
-        }
-        schemaUri: {
-          type: string,
-          example: https://localcontexts.org/labels/traditional-knowledge-labels/
-        }
     Language:
       type: object
       required: [ code, schemaUri]

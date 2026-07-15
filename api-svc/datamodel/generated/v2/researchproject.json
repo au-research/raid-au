@@ -157,7 +157,6 @@
         "PropertyIDEnum": {
             "description": "",
             "enum": [
-                "https://datamodel.raid.org/core/traditionalKnowledgeLabel",
                 "https://datamodel.raid.org/core/registrationAgency",
                 "https://datamodel.raid.org/core/owner"
             ],

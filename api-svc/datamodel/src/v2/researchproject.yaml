@@ -277,6 +277,5 @@ enums:
       https://datamodel.raid.org/core/alternativeIdentifier:
   PropertyIDEnum:
     permissible_values:
-      "https://datamodel.raid.org/core/traditionalKnowledgeLabel": {}
       "https://datamodel.raid.org/core/registrationAgency": {}
       "https://datamodel.raid.org/core/owner": {}

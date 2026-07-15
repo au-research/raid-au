@@ -21,7 +21,6 @@ public class CacheableRaidService {
     private final AlternateUrlService alternateUrlService;
     private final RelatedRaidService relatedRaidService;
     private final SubjectService subjectService;
-    private final TraditionalKnowledgeLabelService traditionalKnowledgeLabelService;
     private final SpatialCoverageService spatialCoverageService;
     private final AccessService accessService;
     private final IdService idService;
@@ -40,7 +39,6 @@ public class CacheableRaidService {
         final var alternateUrls = alternateUrlService.findAllByHandle(handle);
         final var relatedRaids = relatedRaidService.findAllByHandle(handle);
         final var subjects = subjectService.findAllByHandle(handle);
-        final var traditionalKnowledgeLabels = traditionalKnowledgeLabelService.findAllByHandle(handle);
         final var spatialCoverages = spatialCoverageService.findAllByHandle(handle);
 
         return new RaidDto()
@@ -56,7 +54,6 @@ public class CacheableRaidService {
                 .relatedRaid(relatedRaids.isEmpty() ? null : relatedRaids)
                 .access(accessService.getAccess(record))
                 .subject(subjects.isEmpty() ? null : subjects)
-                .traditionalKnowledgeLabel(traditionalKnowledgeLabels.isEmpty() ? null : traditionalKnowledgeLabels)
                 .spatialCoverage(spatialCoverages.isEmpty() ? null : spatialCoverages);
     }
 }
