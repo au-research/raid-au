@@ -33,7 +33,6 @@ public class RaidIngestService {
     private final AlternateUrlService alternateUrlService;
     private final RelatedRaidService relatedRaidService;
     private final SubjectService subjectService;
-    private final TraditionalKnowledgeLabelService traditionalKnowledgeLabelService;
     private final SpatialCoverageService spatialCoverageService;
     private final RaidRepository raidRepository;
     private final RaidRecordFactory raidRecordFactory;

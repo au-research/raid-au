@@ -38,16 +38,6 @@ slots:
     exact_mappings:
       - schema:location
       - dce:coverage
-  traditionalKnowledgeLabel:
-    description: metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices
-    slot_uri: raidext:traditionalKnowledgeLabel
-    range: TraditionalKnowledgeLabel
-    multivalued: true
-    inlined_as_list: true
-    in_subset:
-      - extended
-    broad_mappings:
-      - schema:additionalProperty
 classes:
   Subject:
     exact_mappings:
@@ -151,26 +141,3 @@ classes:
         exact_mappings:
           - schema:name
           - dct:spatial
-  TraditionalKnowledgeLabel:
-    broad_mappings:
-      - schema:PropertyValue
-    description: metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices
-    class_uri: raidext:TraditionalKnowledgeLabel
-    in_subset:
-      - extended
-    attributes:
-      id:
-        annotations:
-          notes: Currently only Local Contexts Hub Projects are allowed as a source for validated TK/BC Labels and Notices.
-        description:  identifier (URI) linking to a verified source for Traditional Knowledge (TK) or Biocultural (BC) Labels or Notices pertaining to a project or activity
-        range: string
-        broad_mappings:
-          - schema:value
-        examples:
-          - value: |-
-              [https://localcontextshub.org/projects/03818172-23c1-4dd1-a662-f11aa07cccda/] (Island Sustainability Project 2025, a Project in Local Contexts Hub)
-      schemaUri:
-        annotations:
-          notes: Currently only Local Contexts Hub Projects are allowed as a source for validated TK/BC Labels and Notices.
-        description: the URI of the Traditional Knowledge or Biocultural label identifier schema
-        range: TraditionalKnowledgeLabelSchemaUriEnum

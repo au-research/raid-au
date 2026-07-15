@@ -113,7 +113,6 @@ classes:
       - alternateIdentifier
       - subject
       - spatialCoverage
-      - traditionalKnowledgeLabel
     attributes:
       identifier:
         range: Id

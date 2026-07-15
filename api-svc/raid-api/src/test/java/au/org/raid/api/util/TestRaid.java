@@ -74,9 +74,6 @@ public class TestRaid {
     public static final String SUBJECT_SCHEMA_URI = "https://linked.data.gov.au/def/anzsrc-for/2020/";
     public static final String SUBJECT_KEYWORD_TEXT =
             "unconstrained keyword or key phrase describing the project or activity";
-    public static final String TRADITIONAL_KNOWLEDGE_LABEL_ID = "https://localcontexts.org/label/tk-attribution/";
-    public static final String TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA_URI =
-            "https://localcontexts.org/labels/traditional-knowledge-labels/";
     public static final String SPATIAL_COVERAGE_ID = "https://www.openstreetmap.org/relation/62422";
     public static final String SPATIAL_COVERAGE_SCHEMA_URI = "https://www.openstreetmap.org/";
     public static final String SPATIAL_COVERAGE_PLACE_TEXT = "Berliner Urstromtal";
@@ -170,9 +167,6 @@ public class TestRaid {
             .keyword(List.of(new SubjectKeyword()
                     .text(SUBJECT_KEYWORD_TEXT)
                     .language(LANGUAGE))));
-    public static final List<TraditionalKnowledgeLabel> TRADITIONAL_KNOWLEDGE_LABELS = List.of(new TraditionalKnowledgeLabel()
-            .id(TRADITIONAL_KNOWLEDGE_LABEL_ID)
-            .schemaUri(TraditionalKnowledgeLabelSchemaUriEnum.HTTPS_LOCALCONTEXTS_ORG_LABELS_TRADITIONAL_KNOWLEDGE_LABELS_));
     public static final List<SpatialCoverage> SPATIAL_COVERAGES = List.of(new SpatialCoverage()
             .id(SPATIAL_COVERAGE_ID)
             .schemaUri(SpatialCoverageSchemaUriEnum.HTTPS_WWW_OPENSTREETMAP_ORG_)
@@ -192,6 +186,5 @@ public class TestRaid {
             .relatedRaid(RELATED_RAIDS)
             .access(ACCESS)
             .subject(SUBJECTS)
-            .traditionalKnowledgeLabel(TRADITIONAL_KNOWLEDGE_LABELS)
             .spatialCoverage(SPATIAL_COVERAGES);
 }

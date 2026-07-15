@@ -1221,14 +1221,6 @@ components:
           items:
             $ref: "#/components/schemas/Title"
           type: "array"
-        traditionalKnowledgeLabel:
-          description: "metadata schema block containing information about Traditional\
-            \ Knowledge / Biocultural Labels and Notices"
-          items:
-            $ref: "#/components/schemas/TraditionalKnowledgeLabel"
-          type:
-          - "array"
-          - "null"
       required:
       - "title"
       - "date"
@@ -1308,14 +1300,6 @@ components:
           items:
             $ref: "#/components/schemas/Title"
           type: "array"
-        traditionalKnowledgeLabel:
-          description: "metadata schema block containing information about Traditional\
-            \ Knowledge / Biocultural Labels and Notices"
-          items:
-            $ref: "#/components/schemas/TraditionalKnowledgeLabel"
-          type:
-          - "array"
-          - "null"
       required:
       - "metadata"
       - "title"
@@ -1417,14 +1401,6 @@ components:
           items:
             $ref: "#/components/schemas/Title"
           type: "array"
-        traditionalKnowledgeLabel:
-          description: "metadata schema block containing information about Traditional\
-            \ Knowledge / Biocultural Labels and Notices"
-          items:
-            $ref: "#/components/schemas/TraditionalKnowledgeLabel"
-          type:
-          - "array"
-          - "null"
       required:
       - "title"
       - "date"
@@ -1732,28 +1708,6 @@ components:
       description: ""
       title: "TitleTypeSchemaURIEnum"
       type: "string"
-    TraditionalKnowledgeLabel:
-      additionalProperties: false
-      description: "metadata schema block containing information about Traditional\
-        \ Knowledge / Biocultural Labels and Notices"
-      properties:
-        id:
-          description: "identifier (URI) linking to a verified source for Traditional\
-            \ Knowledge (TK) or Biocultural (BC) Labels or Notices pertaining to a\
-            \ project or activity"
-          type:
-          - "string"
-          - "null"
-        schemaUri:
-          $ref: "#/components/schemas/TraditionalKnowledgeLabelSchemaUriEnum"
-          description: "the URI of the Traditional Knowledge or Biocultural label\
-            \ identifier schema"
-      title: "TraditionalKnowledgeLabel"
-      type: "object"
-    TraditionalKnowledgeLabelSchemaUriEnum:
-      description: ""
-      title: "TraditionalKnowledgeLabelSchemaUriEnum"
-      type: "string"
     AlternativeIdentifierPropertyEnum:
       description: ""
       enum:
@@ -1866,7 +1820,6 @@ components:
     PropertyIDEnum:
       description: ""
       enum:
-      - "https://datamodel.raid.org/core/traditionalKnowledgeLabel"
       - "https://datamodel.raid.org/core/registrationAgency"
       - "https://datamodel.raid.org/core/owner"
       title: "PropertyIDEnum"

@@ -789,16 +789,6 @@
             "$ref": "#/$defs/Title"
           },
           "type": "array"
-        },
-        "traditionalKnowledgeLabel": {
-          "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
-          "items": {
-            "$ref": "#/$defs/TraditionalKnowledgeLabel"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "required": [
@@ -911,16 +901,6 @@
             "$ref": "#/$defs/Title"
           },
           "type": "array"
-        },
-        "traditionalKnowledgeLabel": {
-          "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
-          "items": {
-            "$ref": "#/$defs/TraditionalKnowledgeLabel"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "required": [
@@ -1074,16 +1054,6 @@
             "$ref": "#/$defs/Title"
           },
           "type": "array"
-        },
-        "traditionalKnowledgeLabel": {
-          "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
-          "items": {
-            "$ref": "#/$defs/TraditionalKnowledgeLabel"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "required": [
@@ -1549,33 +1519,6 @@
       "type": "string",
       "enum": [
         "https://vocabulary.raid.org/title.type.schema/376"
-      ]
-    },
-    "TraditionalKnowledgeLabel": {
-      "additionalProperties": false,
-      "description": "metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices",
-      "properties": {
-        "id": {
-          "description": "identifier (URI) linking to a verified source for Traditional Knowledge (TK) or Biocultural (BC) Labels or Notices pertaining to a project or activity",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "schemaUri": {
-          "$ref": "#/$defs/TraditionalKnowledgeLabelSchemaUriEnum",
-          "description": "the URI of the Traditional Knowledge or Biocultural label identifier schema"
-        }
-      },
-      "title": "TraditionalKnowledgeLabel",
-      "type": "object"
-    },
-    "TraditionalKnowledgeLabelSchemaUriEnum": {
-      "description": "",
-      "title": "TraditionalKnowledgeLabelSchemaUriEnum",
-      "type": "string",
-      "enum": [
-        "https://localcontexts.org/labels/traditional-knowledge-labels/"
       ]
     }
   },

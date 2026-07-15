@@ -26,14 +26,3 @@ enums:
       is_direct: true
       traverse_up: false
       include_self: false
-
-  TraditionalKnowledgeLabelSchemaUriEnum:
-    reachable_from:
-      source_ontology: https://demo.vocabs.ardc.edu.au/repository/api/sparql/raid_raid-controlled-lists-v2_1-7-1
-      source_nodes:
-        - https://vocabulary.raid.org/traditionalKnowledgeLabel.schemaUri/scheme
-      relationship_types:
-        - skos:hasTopConcept
-      is_direct: true
-      traverse_up: false
-      include_self: false
