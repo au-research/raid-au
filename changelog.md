@@ -1,6 +1,15 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.14.0
+
+## API
+* Withdrew the `traditionalKnowledgeLabel` field pending co-design with Indigenous communities.
+  The field has been removed from the RAiD schema and API specifications. Mint and update requests
+  that include `traditionalKnowledgeLabel` are now rejected with a `400 Bad Request` and a standard
+  validation error, instead of being silently accepted as before. The field was never rendered or
+  persisted, so no existing data is affected; the underlying database tables are retained (PR #568).
+
 # 2.13.0
 
 > Note: This release scopes the service point admin role to a single service point but keeps the
