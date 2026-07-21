@@ -336,6 +336,224 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result).not.toHaveProperty("hasPart");
     expect(result).not.toHaveProperty("isBasedOn");
     expect(result).not.toHaveProperty("isRelatedTo");
+    expect(result).not.toHaveProperty("citation");
+  });
+
+  it("maps related objects to citation CreativeWork nodes", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/s00442-014-2977-8",
+        schemaUri: "https://doi.org/",
+        type: {
+          id: "https://vocabulary.raid.org/relatedObject.type.schema/250",
+          schemaUri: "https://vocabulary.raid.org/relatedObject.type.schema",
+        },
+        category: [
+          {
+            id: "https://vocabulary.raid.org/relatedObject.category.id/190",
+            schemaUri: "https://vocabulary.raid.org/relatedObject.category.schema",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation).toEqual([
+      {
+        "@type": "CreativeWork",
+        "@id": "https://doi.org/10.1007/s00442-014-2977-8",
+        identifier: {
+          "@type": "PropertyValue",
+          propertyID: "https://registry.identifiers.org/registry/doi",
+          name: "DOI",
+          value: "https://doi.org/10.1007/s00442-014-2977-8",
+        },
+        additionalType: "https://vocabulary.raid.org/relatedObject.category.id/190",
+      },
+    ]);
+  });
+
+  it("carries the formatted citation text on name when present", () => {
+    const raid = minimalRaid();
+    const relatedObject = {
+      id: "https://doi.org/10.1007/s00442-014-2977-8",
+      schemaUri: "https://doi.org/",
+      type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+      category: [
+        { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+      ],
+      citation: {
+        text: "Smith, J. (2014). A study of things. Oecologia, 176(2), 1-10.",
+      },
+    };
+    // citation is added to relatedObject at build time by fetch-raids.js and is
+    // not part of the generated RelatedObject type, so cast through unknown.
+    raid.relatedObject = [relatedObject as unknown as (typeof raid.relatedObject)[number]];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].name).toBe(
+      "Smith, J. (2014). A study of things. Oecologia, 176(2), 1-10."
+    );
+  });
+
+  it("omits name when the related object has no citation text", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/no-citation",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0]).not.toHaveProperty("name");
+  });
+
+  it("includes both outputs and inputs in a single flat citation list", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/s00442-014-2977-8",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+      {
+        id: "https://doi.org/10.4227/05/598bd8a2e9e76",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/269", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/191", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation).toHaveLength(2);
+    expect(result.citation?.map((c) => c["@id"])).toEqual([
+      "https://doi.org/10.1007/s00442-014-2977-8",
+      "https://doi.org/10.4227/05/598bd8a2e9e76",
+    ]);
+    expect(result.citation?.[0].additionalType).toBe(
+      "https://vocabulary.raid.org/relatedObject.category.id/190"
+    );
+    expect(result.citation?.[1].additionalType).toBe(
+      "https://vocabulary.raid.org/relatedObject.category.id/191"
+    );
+  });
+
+  it("falls back to a URL identifier for a schemaUri outside the DOI/ARK/ISBN set", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://scicrunch.org/resolver/RRID:SCR_000000",
+        schemaUri: "https://scicrunch.org/resolver/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/266", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].identifier).toEqual({
+      "@type": "PropertyValue",
+      propertyID: "https://scicrunch.org/resolver/",
+      name: "URL",
+      value: "https://scicrunch.org/resolver/RRID:SCR_000000",
+    });
+  });
+
+  it("maps ARK and ISBN schemaUris to their identifier types", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://arks.org/12345/abcde",
+        schemaUri: "https://arks.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+      },
+      {
+        id: "https://www.isbn-international.org/978-3-16-148410-0",
+        schemaUri: "https://www.isbn-international.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/258", schemaUri: "" },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].identifier.propertyID).toBe(
+      "https://registry.identifiers.org/registry/ark"
+    );
+    expect(result.citation?.[0].identifier.name).toBe("ARK");
+    expect(result.citation?.[1].identifier.propertyID).toBe(
+      "https://registry.identifiers.org/registry/isbn"
+    );
+    expect(result.citation?.[1].identifier.name).toBe("ISBN");
+  });
+
+  it("emits additionalType as an array when a related object has multiple categories", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/example",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/192", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+      "https://vocabulary.raid.org/relatedObject.category.id/192",
+    ]);
+  });
+
+  it("omits additionalType when a related object has no category", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/no-category",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0]).not.toHaveProperty("additionalType");
+  });
+
+  it("skips related objects without an id", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result).not.toHaveProperty("citation");
+  });
+
+  it("omits citation when relatedObject is empty", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result).not.toHaveProperty("citation");
   });
 
   it("maps IsPartOf related raid to isPartOf", () => {
