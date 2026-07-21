@@ -1,4 +1,4 @@
-import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
+import type { Contributor, Organisation, RaidDto, RelatedObject, RelatedRaid } from "@/generated/raid";
 
 const PRIMARY_TITLE_TYPE = "https://vocabulary.raid.org/title.type.schema/5";
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
@@ -7,6 +7,17 @@ const FUNDER_ORGANISATION_ROLE = "https://vocabulary.raid.org/organisation.role.
 const RELATED_RAID_TYPE_IS_PART_OF = "https://vocabulary.raid.org/relatedRaid.type.schema/202";
 const RELATED_RAID_TYPE_HAS_PART = "https://vocabulary.raid.org/relatedRaid.type.schema/201";
 const RELATED_RAID_TYPE_IS_DERIVED_FROM = "https://vocabulary.raid.org/relatedRaid.type.schema/200";
+
+// Maps a related object's schemaUri to the identifier metadata used in the
+// schema.org PropertyValue. Mirrors the backend DataCite export, which only
+// treats ARK/DOI/ISBN as distinct identifier types; every other scheme
+// (Handle, web.archive.org, SciCrunch, etc.) is a plain URL and falls through
+// to the generic URL fallback below.
+const RELATED_OBJECT_IDENTIFIER_TYPES: Record<string, { propertyID: string; name: string }> = {
+  "https://doi.org/": { propertyID: "https://registry.identifiers.org/registry/doi", name: "DOI" },
+  "https://arks.org/": { propertyID: "https://registry.identifiers.org/registry/ark", name: "ARK" },
+  "https://www.isbn-international.org/": { propertyID: "https://registry.identifiers.org/registry/isbn", name: "ISBN" },
+};
 
 interface PropertyValue {
   "@type": "PropertyValue";
@@ -41,6 +52,13 @@ interface RelatedResearchProject {
   relationshipType?: string;
 }
 
+interface CreativeWorkReference {
+  "@type": "CreativeWork";
+  "@id": string;
+  identifier: PropertyValue;
+  additionalType?: string | string[];
+}
+
 interface ResearchProjectJsonLd {
   "@context": "https://schema.org";
   "@type": "ResearchProject";
@@ -59,6 +77,7 @@ interface ResearchProjectJsonLd {
   member: Role[];
   funder: Role[];
   knowsAbout: DefinedTerm[];
+  citation?: CreativeWorkReference[];
   isPartOf?: RelatedResearchProject[];
   hasPart?: RelatedResearchProject[];
   isBasedOn?: RelatedResearchProject[];
@@ -166,6 +185,51 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
   };
 }
 
+// Related objects (inputs/outputs) are emitted as a flat list of schema.org
+// CreativeWork nodes under `citation`. `citation` is strictly a CreativeWork
+// property whereas ResearchProject descends from Organization, but this file
+// already uses CreativeWork properties (isPartOf/hasPart/isBasedOn) on the
+// project loosely, consistent with how harvesters consume the output. The
+// category (Input/Output/Internal) is preserved on `additionalType` rather
+// than split across distinct schema.org properties (see RAID-757).
+function buildRelatedObjectCitations(relatedObjects: RelatedObject[]): CreativeWorkReference[] {
+  const citations: CreativeWorkReference[] = [];
+
+  for (const related of relatedObjects) {
+    if (!related.id) continue;
+
+    const identifierType = RELATED_OBJECT_IDENTIFIER_TYPES[related.schemaUri ?? ""] ?? {
+      propertyID: related.schemaUri ?? "",
+      name: "URL",
+    };
+
+    const categoryIds = (related.category ?? [])
+      .map((c) => c.id)
+      .filter((id): id is string => Boolean(id));
+
+    const citation: CreativeWorkReference = {
+      "@type": "CreativeWork",
+      "@id": related.id,
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: identifierType.propertyID,
+        name: identifierType.name,
+        value: related.id,
+      },
+    };
+
+    if (categoryIds.length === 1) {
+      citation.additionalType = categoryIds[0];
+    } else if (categoryIds.length > 1) {
+      citation.additionalType = categoryIds;
+    }
+
+    citations.push(citation);
+  }
+
+  return citations;
+}
+
 export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProjectJsonLd {
   const registrationAgencyId = raid.identifier?.registrationAgency?.id ?? "";
 
@@ -191,6 +255,8 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     "@id": subject.id,
     inDefinedTermSet: subject.schemaUri,
   }));
+
+  const citations = buildRelatedObjectCitations(raid.relatedObject ?? []);
 
   const primaryTitle = raid.title?.find((t) => t.type?.id === PRIMARY_TITLE_TYPE)?.text
     ?? raid.title?.at(0)?.text
@@ -227,6 +293,7 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     member: memberRoles,
     funder: funderRoles,
     knowsAbout: subjects,
+    ...(citations.length > 0 && { citation: citations }),
     ...buildRelatedRaidProperties(raid.relatedRaid ?? []),
   };
 }
