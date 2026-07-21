@@ -1,4 +1,5 @@
-import type { Contributor, Organisation, RaidDto, RelatedObject, RelatedRaid } from "@/generated/raid";
+import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
+import type { RelatedObjectWithCitation } from "@/model/raid";
 
 const PRIMARY_TITLE_TYPE = "https://vocabulary.raid.org/title.type.schema/5";
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
@@ -55,6 +56,7 @@ interface RelatedResearchProject {
 interface CreativeWorkReference {
   "@type": "CreativeWork";
   "@id": string;
+  name?: string;
   identifier: PropertyValue;
   additionalType?: string | string[];
 }
@@ -192,7 +194,12 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
 // project loosely, consistent with how harvesters consume the output. The
 // category (Input/Output/Internal) is preserved on `additionalType` rather
 // than split across distinct schema.org properties (see RAID-757).
-function buildRelatedObjectCitations(relatedObjects: RelatedObject[]): CreativeWorkReference[] {
+//
+// The formatted citation text (APA string fetched from DOI.org by the
+// fetch-raids build step, and shown on the landing page) is carried on `name`
+// when present, so harvesters get the same human-readable reference the page
+// displays rather than a bare identifier.
+function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]): CreativeWorkReference[] {
   const citations: CreativeWorkReference[] = [];
 
   for (const related of relatedObjects) {
@@ -217,6 +224,11 @@ function buildRelatedObjectCitations(relatedObjects: RelatedObject[]): CreativeW
         value: related.id,
       },
     };
+
+    const citationText = related.citation?.text?.trim();
+    if (citationText) {
+      citation.name = citationText;
+    }
 
     if (categoryIds.length === 1) {
       citation.additionalType = categoryIds[0];
@@ -256,7 +268,9 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     inDefinedTermSet: subject.schemaUri,
   }));
 
-  const citations = buildRelatedObjectCitations(raid.relatedObject ?? []);
+  const citations = buildRelatedObjectCitations(
+    (raid.relatedObject ?? []) as RelatedObjectWithCitation[]
+  );
 
   const primaryTitle = raid.title?.find((t) => t.type?.id === PRIMARY_TITLE_TYPE)?.text
     ?? raid.title?.at(0)?.text

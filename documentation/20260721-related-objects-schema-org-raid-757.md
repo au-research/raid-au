@@ -25,6 +25,10 @@ node carries:
 - `additionalType` — the RAiD category id(s) (Input `.../191`, Output
   `.../190`, Internal process document `.../192`), a scalar when there is one
   and an array when there are several.
+- `name` — the formatted (APA) citation text, when present. This is the same
+  string the landing page shows in its "Citation" field, fetched from DOI.org
+  by the `fetch-raids.js` build step and attached to each related object as
+  `citation.text`. Omitted when no citation text was resolved.
 
 ## Why
 
