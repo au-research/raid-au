@@ -179,8 +179,8 @@ describe("buildResearchProjectJsonLd", () => {
         ],
         role: [
           {
-            schemaUri: "https://vocabulary.raid.org",
-            id: "https://vocabulary.raid.org/contributor.role.schema/conceptualization",
+            schemaUri: "https://credit.niso.org",
+            id: "https://credit.niso.org/contributor-roles/data-curation/",
           },
         ],
       },
@@ -192,7 +192,7 @@ describe("buildResearchProjectJsonLd", () => {
     const positionRole = result.member[0];
     expect(positionRole["@type"]).toBe("Role");
     expect(positionRole["@id"]).toBe("https://vocabulary.raid.org/contributor.position.schema/307");
-    expect(positionRole.roleName).toBe("https://vocabulary.raid.org/contributor.position.schema/307");
+    expect(positionRole.roleName).toBe("Principal or Chief Investigator");
     expect(positionRole.startDate).toBe("2025-01-01");
     expect(positionRole.endDate).toBe("2025-12-31");
     expect(positionRole.member).toEqual({
@@ -208,8 +208,53 @@ describe("buildResearchProjectJsonLd", () => {
 
     const creditRole = result.member[1];
     expect(creditRole["@type"]).toBe("Role");
-    expect(creditRole.roleName).toBe("https://vocabulary.raid.org/contributor.role.schema/conceptualization");
+    expect(creditRole["@id"]).toBe("https://credit.niso.org/contributor-roles/data-curation/");
+    expect(creditRole.roleName).toBe("Data curation");
     expect(creditRole.member["@type"]).toBe("Person");
+  });
+
+  it("derives multi-word CRediT role labels from the URI slug", () => {
+    const raid = minimalRaid();
+    raid.contributor = [
+      {
+        id: "https://orcid.org/0000-0002-4582-7728",
+        schemaUri: "https://orcid.org",
+        role: [
+          {
+            schemaUri: "https://credit.niso.org",
+            id: "https://credit.niso.org/contributor-roles/funding-acquisition/",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].roleName).toBe("Funding acquisition");
+  });
+
+  it("falls back to the position URI in roleName when the vocab term is unmapped", () => {
+    const raid = minimalRaid();
+    raid.contributor = [
+      {
+        id: "https://orcid.org/0000-0002-4582-7728",
+        schemaUri: "https://orcid.org",
+        position: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/contributor.position.schema/999",
+            startDate: "2025-01-01",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0]["@id"]).toBe(
+      "https://vocabulary.raid.org/contributor.position.schema/999"
+    );
+    expect(result.member[0].roleName).toBe(
+      "https://vocabulary.raid.org/contributor.position.schema/999"
+    );
   });
 
   it("maps non-funder organisations to member roles", () => {
@@ -235,6 +280,7 @@ describe("buildResearchProjectJsonLd", () => {
     const orgRole = result.member[0];
     expect(orgRole["@type"]).toBe("Role");
     expect(orgRole["@id"]).toBe("https://vocabulary.raid.org/organisation.role.schema/185");
+    expect(orgRole.roleName).toBe("Contractor");
     expect(orgRole.member).toEqual({
       "@type": "Organization",
       "@id": "https://ror.org/04yx6dh41",
@@ -314,9 +360,26 @@ describe("buildResearchProjectJsonLd", () => {
       {
         "@type": "DefinedTerm",
         "@id": "https://linked.data.gov.au/def/anzsrc-for/2020/420399",
+        name: "Health services and systems not elsewhere classified",
         inDefinedTermSet: "https://vocabs.ardc.edu.au/viewById/316",
       },
     ]);
+  });
+
+  it("omits subject name when the FoR code is not in the mapping", () => {
+    const raid = minimalRaid();
+    raid.subject = [
+      {
+        id: "https://linked.data.gov.au/def/anzsrc-for/2020/000000",
+        schemaUri: "https://vocabs.ardc.edu.au/viewById/316",
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.knowsAbout[0]).not.toHaveProperty("name");
+    expect(result.knowsAbout[0]["@id"]).toBe(
+      "https://linked.data.gov.au/def/anzsrc-for/2020/000000"
+    );
   });
 
   it("handles empty/missing optional fields", () => {
@@ -644,8 +707,28 @@ describe("buildResearchProjectJsonLd", () => {
         "@id": "https://raid.org/10.26259/efgh5678",
         identifier: "https://raid.org/10.26259/efgh5678",
         relationshipType: "https://vocabulary.raid.org/relatedRaid.type.schema/204",
+        relationshipTypeName: "Continues",
       },
     ]);
+  });
+
+  it("omits relationshipTypeName when the relationship type is not in the mapping", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.26259/efgh5678",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/999",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.isRelatedTo?.[0].relationshipType).toBe(
+      "https://vocabulary.raid.org/relatedRaid.type.schema/999"
+    );
+    expect(result.isRelatedTo?.[0]).not.toHaveProperty("relationshipTypeName");
   });
 
   it("groups multiple related raids under correct properties", () => {
