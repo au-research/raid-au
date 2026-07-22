@@ -43,4 +43,4 @@ and included related outputs rather than the earlier gaps:
 - JIRA: [RAID-758](https://ardc.atlassian.net/browse/RAID-758)
 - Related: [RAID-756](https://ardc.atlassian.net/browse/RAID-756), [RAID-757](https://ardc.atlassian.net/browse/RAID-757)
 - Original request: [HELP-2753](https://ardc.atlassian.net/browse/HELP-2753)
-- PR: _to be added_
+- PR: [au-research/raid-au#575](https://github.com/au-research/raid-au/pull/575)
