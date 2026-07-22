@@ -1,5 +1,8 @@
 import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
 import type { RelatedObjectWithCitation } from "@/model/raid";
+import generalMapping from "@/mapping/data/general-mapping.json";
+import subjectMapping from "@/mapping/data/subject-mapping.json";
+import { kebabToTitle } from "@/utils";
 
 const PRIMARY_TITLE_TYPE = "https://vocabulary.raid.org/title.type.schema/5";
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
@@ -19,6 +22,33 @@ const RELATED_OBJECT_IDENTIFIER_TYPES: Record<string, { propertyID: string; name
   "https://arks.org/": { propertyID: "https://registry.identifiers.org/registry/ark", name: "ARK" },
   "https://www.isbn-international.org/": { propertyID: "https://registry.identifiers.org/registry/isbn", name: "ISBN" },
 };
+
+// Resolves a RAiD vocabulary URI (contributor.position, organisation.role,
+// relatedRaid.type) to its human-readable label using the same static mapping
+// the UI renders from. Returns undefined when the URI is not in the mapping so
+// callers can decide whether to fall back to the raw URI or omit the label.
+function lookupVocabLabel(uri: string): string | undefined {
+  return generalMapping.find((entry) => entry.key === uri)?.value;
+}
+
+// CRediT contributor roles are not in general-mapping.json; the label is
+// derived from the URI slug, mirroring contributor-roles.astro (e.g.
+// https://credit.niso.org/contributor-roles/data-curation/ -> "Data curation").
+function resolveCreditRoleLabel(uri: string): string {
+  try {
+    const slug = new URL(uri).pathname.split("/").slice(-2, -1)[0];
+    return kebabToTitle(slug) || uri;
+  } catch {
+    return uri;
+  }
+}
+
+// ANZSRC FoR subjects are keyed in subject-mapping.json by the numeric code,
+// with the full linked.data.gov.au URI held on `definition`. The RaidDto
+// subject id is that full URI, so it is matched against `definition`.
+function lookupSubjectLabel(uri: string): string | undefined {
+  return subjectMapping.find((entry) => entry.definition === uri)?.value;
+}
 
 interface PropertyValue {
   "@type": "PropertyValue";
@@ -43,6 +73,7 @@ interface Role {
 interface DefinedTerm {
   "@type": "DefinedTerm";
   "@id": string;
+  name?: string;
   inDefinedTermSet: string;
 }
 
@@ -51,6 +82,7 @@ interface RelatedResearchProject {
   "@id": string;
   identifier: string;
   relationshipType?: string;
+  relationshipTypeName?: string;
 }
 
 interface CreativeWorkReference {
@@ -101,7 +133,7 @@ function buildContributorRoles(contributor: Contributor): Role[] {
   const positionRoles: Role[] = (contributor.position ?? []).map((position) => ({
     "@type": "Role",
     "@id": position.id,
-    roleName: position.id,
+    roleName: lookupVocabLabel(position.id) ?? position.id,
     startDate: position.startDate,
     endDate: position.endDate,
     member: person,
@@ -110,7 +142,7 @@ function buildContributorRoles(contributor: Contributor): Role[] {
   const creditRoles: Role[] = (contributor.role ?? []).map((role) => ({
     "@type": "Role",
     "@id": role.id,
-    roleName: role.id,
+    roleName: resolveCreditRoleLabel(role.id),
     member: person,
   }));
 
@@ -121,7 +153,7 @@ function buildOrganisationRole(organisation: Organisation, orgRole: { id: string
   return {
     "@type": "Role",
     "@id": orgRole.id,
-    roleName: orgRole.id,
+    roleName: lookupVocabLabel(orgRole.id) ?? orgRole.id,
     startDate: orgRole.startDate,
     endDate: orgRole.endDate,
     member: {
@@ -175,6 +207,10 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
     };
     if (property === "isRelatedTo" && related.type?.id) {
       entry.relationshipType = related.type.id;
+      const label = lookupVocabLabel(related.type.id);
+      if (label) {
+        entry.relationshipTypeName = label;
+      }
     }
     (groups[property] ??= []).push(entry);
   }
@@ -262,11 +298,15 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     funderRoles.push(...buildFunderRoles(organisation));
   }
 
-  const subjects: DefinedTerm[] = (raid.subject ?? []).map((subject) => ({
-    "@type": "DefinedTerm",
-    "@id": subject.id,
-    inDefinedTermSet: subject.schemaUri,
-  }));
+  const subjects: DefinedTerm[] = (raid.subject ?? []).map((subject) => {
+    const label = lookupSubjectLabel(subject.id);
+    return {
+      "@type": "DefinedTerm",
+      "@id": subject.id,
+      ...(label && { name: label }),
+      inDefinedTermSet: subject.schemaUri,
+    };
+  });
 
   const citations = buildRelatedObjectCitations(
     (raid.relatedObject ?? []) as RelatedObjectWithCitation[]
