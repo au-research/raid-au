@@ -50,7 +50,11 @@ classes:
       name:
         slot_uri: schema:name
         range: string
-        description: The title/name of the research project
+        description: The title/name of the research project (all titles joined by " | ")
+      headline:
+        slot_uri: schema:headline
+        range: string
+        description: The primary-type title of the research project
       description:
         slot_uri: schema:description
         range: string
@@ -97,7 +101,60 @@ classes:
         slot_uri: schema:parentOrganization
         range: Organization
         inlined: true
-        description: The RAiD identifier owner
+        description: >-
+          The RAiD registration agency: the ROR-identified organisation that
+          operates the registration service. Emitted as an Organization whose
+          identifier is the agency ROR. Resolved under RAID-778: both live
+          emitters use the registration agency (the static-site json-ld.ts as
+          parentOrganization, the API RaidJsonLdConverter as publisher). The
+          earlier "owner" description was incorrect and has been superseded.
+      citation:
+        slot_uri: schema:citation
+        range: CreativeWork
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          Related objects (research inputs/outputs) emitted as a flat list of
+          CreativeWork references. The category is preserved on additionalType
+          rather than split across distinct properties. See RAID-757.
+      isPartOf:
+        slot_uri: schema:isPartOf
+        range: RelatedResearchProject
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          Related RAiDs of which this project is a part
+          (relatedRaid.type.schema/202). See RAID-706.
+      hasPart:
+        slot_uri: schema:hasPart
+        range: RelatedResearchProject
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          Related RAiDs that are part of this project
+          (relatedRaid.type.schema/201). See RAID-706.
+      isBasedOn:
+        slot_uri: schema:isBasedOn
+        range: RelatedResearchProject
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          Related RAiDs this project is derived from
+          (relatedRaid.type.schema/200). See RAID-706.
+      isRelatedTo:
+        slot_uri: schema:isRelatedTo
+        range: RelatedResearchProject
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          Related RAiDs with any other relationship type. Carries the raw
+          relationshipType URI and its resolved relationshipTypeName label.
+          See RAID-706/756.
   Organization:
     class_uri: schema:Organization
     attributes:
@@ -117,13 +174,15 @@ classes:
       name:
         slot_uri: schema:name
         range: string
-        required: true
-        description: Name of the organization
+        description: >-
+          Name of the organization. Optional: the live parentOrganization
+          emitter carries only the ROR identifier, not a name.
       identifier:
         slot_uri: schema:identifier
         range: PropertyValue
         required: true
-        description: Extended identifier information
+        inlined: true
+        description: Extended identifier information (the agency ROR as a PropertyValue)
   ResearchProjectRole:
     class_uri: schema:Role
     description: A role held by a person or organization in the project
@@ -259,6 +318,86 @@ classes:
         slot_uri: schema:propertyID
         range: string
         description: Property identifier
+  CreativeWork:
+    class_uri: schema:CreativeWork
+    description: >-
+      A related research object (input/output) referenced by the project under
+      the citation slot. See RAID-757.
+    attributes:
+      type:
+        range: string
+        description: The schema.org type
+        ifabsent: string(CreativeWork)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: The identifier of the related object (DOI, ARK, ISBN or URL)
+        alias: "@id"
+        annotations:
+          json_property: "@id"
+      name:
+        slot_uri: schema:name
+        range: string
+        description: >-
+          The formatted citation text (APA string fetched from the identifier
+          at build time) when available; omitted otherwise.
+      identifier:
+        slot_uri: schema:identifier
+        range: PropertyValue
+        required: true
+        inlined: true
+        description: >-
+          Structured identifier carrying the scheme's propertyID and name.
+          DOI/ARK/ISBN are recognised; every other scheme falls back to a
+          generic URL identifier.
+      additionalType:
+        slot_uri: schema:additionalType
+        range: uriorcurie
+        multivalued: true
+        description: >-
+          The related object's category id(s) (Input/Output/Internal). In the
+          live output a single category is emitted as a scalar and multiple
+          categories as a list; the schema models this as multivalued. See
+          RAID-757.
+  RelatedResearchProject:
+    class_uri: schema:ResearchProject
+    description: >-
+      A related RAiD referenced from isPartOf/hasPart/isBasedOn/isRelatedTo. Its
+      identifier is the plain RAiD URI string, not a PropertyValue. See RAID-706.
+    attributes:
+      type:
+        range: string
+        description: The schema.org type
+        ifabsent: string(ResearchProject)
+        alias: "@type"
+        annotations:
+          json_property: "@type"
+      id:
+        identifier: true
+        range: uriorcurie
+        description: The related RAiD identifier
+        alias: "@id"
+        annotations:
+          json_property: "@id"
+      identifier:
+        slot_uri: schema:identifier
+        range: string
+        description: The related RAiD identifier as a plain URI string
+      relationshipType:
+        range: uriorcurie
+        description: >-
+          The raw relatedRaid.type vocabulary URI. Emitted only under
+          isRelatedTo; the other three properties encode the relationship in
+          the property name itself. Serialized as a bare key resolved under the
+          schema.org @vocab in the live output.
+      relationshipTypeName:
+        range: string
+        description: >-
+          The resolved human-readable label for relationshipType, when
+          available. Emitted only under isRelatedTo. See RAID-706/756.
 
 enums:
   RoleType:
