@@ -1845,6 +1845,46 @@ components:
       - "https://datamodel.raid.org/core/alternativeIdentifier"
       title: "AlternativeIdentifierPropertyEnum"
       type: "string"
+    CreativeWork:
+      additionalProperties: false
+      description: "A related research object (input/output) referenced by the project\
+        \ under the citation slot. See RAID-757."
+      properties:
+        '@id':
+          description: "The identifier of the related object (DOI, ARK, ISBN or URL)"
+          type:
+          - "string"
+          - "null"
+        '@type':
+          description: "The schema.org type"
+          type:
+          - "string"
+          - "null"
+        additionalType:
+          description: "The related object's category id(s) (Input/Output/Internal).\
+            \ In the live output a single category is emitted as a scalar and multiple\
+            \ categories as a list; the schema models this as multivalued. See RAID-757."
+          items:
+            type: "string"
+          type:
+          - "array"
+          - "null"
+        identifier:
+          $ref: "#/components/schemas/PropertyValue"
+          description: "Structured identifier carrying the scheme's propertyID and\
+            \ name. DOI/ARK/ISBN are recognised; every other scheme falls back to\
+            \ a generic URL identifier."
+        name:
+          description: "The formatted citation text (APA string fetched from the identifier\
+            \ at build time) when available; omitted otherwise."
+          type:
+          - "string"
+          - "null"
+      required:
+      - "@id"
+      - "identifier"
+      title: "CreativeWork"
+      type: "object"
     DefinedTerm:
       additionalProperties: false
       description: "A term from a controlled vocabulary"
@@ -1911,12 +1951,14 @@ components:
           - "null"
         identifier:
           $ref: "#/components/schemas/PropertyValue"
-          description: "Extended identifier information"
+          description: "Extended identifier information (the agency ROR as a PropertyValue)"
         name:
-          description: "Name of the organization"
-          type: "string"
+          description: "Name of the organization. Optional: the live parentOrganization\
+            \ emitter carries only the ROR identifier, not a name."
+          type:
+          - "string"
+          - "null"
       required:
-      - "name"
       - "identifier"
       title: "Organization"
       type: "object"
@@ -1981,6 +2023,44 @@ components:
           - "null"
       title: "PropertyValue"
       type: "object"
+    RelatedResearchProject:
+      additionalProperties: false
+      description: "A related RAiD referenced from isPartOf/hasPart/isBasedOn/isRelatedTo.\
+        \ Its identifier is the plain RAiD URI string, not a PropertyValue. See RAID-706."
+      properties:
+        '@id':
+          description: "The related RAiD identifier"
+          type:
+          - "string"
+          - "null"
+        '@type':
+          description: "The schema.org type"
+          type:
+          - "string"
+          - "null"
+        identifier:
+          description: "The related RAiD identifier as a plain URI string"
+          type:
+          - "string"
+          - "null"
+        relationshipType:
+          description: "The raw relatedRaid.type vocabulary URI. Emitted only under\
+            \ isRelatedTo; the other three properties encode the relationship in the\
+            \ property name itself. Serialized as a bare key resolved under the schema.org\
+            \ @vocab in the live output."
+          type:
+          - "string"
+          - "null"
+        relationshipTypeName:
+          description: "The resolved human-readable label for relationshipType, when\
+            \ available. Emitted only under isRelatedTo. See RAID-706/756."
+          type:
+          - "string"
+          - "null"
+      required:
+      - "@id"
+      title: "RelatedResearchProject"
+      type: "object"
     ResearchProject:
       additionalProperties: false
       description: "A research project with contributors and organizational relationships"
@@ -1999,6 +2079,15 @@ components:
           description: "The schema.org type"
           type:
           - "string"
+          - "null"
+        citation:
+          description: "Related objects (research inputs/outputs) emitted as a flat\
+            \ list of CreativeWork references. The category is preserved on additionalType\
+            \ rather than split across distinct properties. See RAID-757."
+          items:
+            $ref: "#/components/schemas/CreativeWork"
+          type:
+          - "array"
           - "null"
         description:
           description: "Description of the research project"
@@ -2024,8 +2113,46 @@ components:
           type:
           - "array"
           - "null"
+        hasPart:
+          description: "Related RAiDs that are part of this project (relatedRaid.type.schema/201).\
+            \ See RAID-706."
+          items:
+            $ref: "#/components/schemas/RelatedResearchProject"
+          type:
+          - "array"
+          - "null"
+        headline:
+          description: "The primary-type title of the research project"
+          type:
+          - "string"
+          - "null"
         identifier:
           $ref: "#/components/schemas/PropertyValue"
+        isBasedOn:
+          description: "Related RAiDs this project is derived from (relatedRaid.type.schema/200).\
+            \ See RAID-706."
+          items:
+            $ref: "#/components/schemas/RelatedResearchProject"
+          type:
+          - "array"
+          - "null"
+        isPartOf:
+          description: "Related RAiDs of which this project is a part (relatedRaid.type.schema/202).\
+            \ See RAID-706."
+          items:
+            $ref: "#/components/schemas/RelatedResearchProject"
+          type:
+          - "array"
+          - "null"
+        isRelatedTo:
+          description: "Related RAiDs with any other relationship type. Carries the\
+            \ raw relationshipType URI and its resolved relationshipTypeName label.\
+            \ See RAID-706/756."
+          items:
+            $ref: "#/components/schemas/RelatedResearchProject"
+          type:
+          - "array"
+          - "null"
         keywords:
           description: "Keywords associated with the project"
           type:
@@ -2051,7 +2178,8 @@ components:
           - "array"
           - "null"
         name:
-          description: "The title/name of the research project"
+          description: "The title/name of the research project (all titles joined\
+            \ by \" | \")"
           type:
           - "string"
           - "null"
@@ -2059,7 +2187,12 @@ components:
           anyOf:
           - $ref: "#/components/schemas/Organization"
           - type: "null"
-          description: "The RAiD identifier owner"
+          description: "The RAiD registration agency: the ROR-identified organisation\
+            \ that operates the registration service. Emitted as an Organization whose\
+            \ identifier is the agency ROR. Resolved under RAID-778: both live emitters\
+            \ use the registration agency (the static-site json-ld.ts as parentOrganization,\
+            \ the API RaidJsonLdConverter as publisher). The earlier \"owner\" description\
+            \ was incorrect and has been superseded."
       required:
       - "@id"
       - "identifier"
