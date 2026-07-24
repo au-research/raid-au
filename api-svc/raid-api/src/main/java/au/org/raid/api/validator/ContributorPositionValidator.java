@@ -28,7 +28,7 @@ public class ContributorPositionValidator {
             final ContributorPosition position, final int contributorIndex, final int positionIndex) {
         final var failures = new ArrayList<ValidationFailure>();
 
-        if (position.getStartDate() == null) {
+        if (isBlank(position.getStartDate())) {
             failures.add(
                     new ValidationFailure()
                             .fieldId("contributor[%d].position[%d].startDate".formatted(contributorIndex, positionIndex))

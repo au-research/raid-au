@@ -394,6 +394,53 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    @Test
+    @DisplayName("RAID-775: Mint a raid succeeds when date fields are submitted as an empty string end date")
+    void mintRaidWithEmptyStringEndDates() {
+        // RAID-775: the frontend clears an end date by sending "" rather than omitting the field
+        // or sending null. Before the fix, DateValidator (and the Title/ContributorPosition/
+        // OrganisationRole validators) only treated a null endDate as "not set" and passed any
+        // non-null value - including "" - straight into DateUtil.parseDate(), which threw
+        // InvalidDateException and surfaced as an unhandled 400. The fix treats a blank string the
+        // same as absent, so minting with "" end dates across the overall date, title, contributor
+        // position and organisation role must now succeed.
+        //
+        // NOTE: this test also caught a second, related defect: the openapi-generated Title
+        // model's getEndDate() carried a stray Bean Validation @Pattern(regexp = "^\\s*\\S.*$")
+        // constraint that Date/ContributorPosition/OrganisationRole's getEndDate() did not have.
+        // That constraint ran at controller @Valid binding, before TitleValidator ever executed,
+        // and rejected "" outright with a "notSet"/"field must be set" 400 on "title[0].endDate" -
+        // independently of the RAID-775 validator fix. Fixed by removing the stray `pattern`
+        // from Title.endDate in api-svc/datamodel/src/v2/raid-core.yaml and regenerating the
+        // model chain (generateStrictJsonSchemaV2, assembleOpenAPIV2*, openApiGenerate).
+        createRequest.getDate().setEndDate("");
+        createRequest.getTitle().get(0).setEndDate("");
+        createRequest.getContributor().get(0).getPosition().get(0).setEndDate("");
+        createRequest.getOrganisation().get(0).getRole().get(0).setEndDate("");
+
+        try {
+            final var mintedRaid = raidApi.mintRaid(createRequest).getBody();
+
+            assertThat(mintedRaid).isNotNull();
+            assertThat(mintedRaid.getIdentifier()).isNotNull();
+            assertThat(mintedRaid.getIdentifier().getId()).isNotBlank();
+
+            final var handle = new Handle(mintedRaid.getIdentifier().getId());
+            final var result = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody();
+
+            assertThat(result).isNotNull();
+            assertThat(result.getDate().getStartDate()).isEqualTo(createRequest.getDate().getStartDate());
+            assertThat(result.getTitle().get(0).getStartDate())
+                    .isEqualTo(createRequest.getTitle().get(0).getStartDate());
+            assertThat(result.getContributor().get(0).getPosition().get(0).getStartDate())
+                    .isEqualTo(createRequest.getContributor().get(0).getPosition().get(0).getStartDate());
+            assertThat(result.getOrganisation().get(0).getRole().get(0).getStartDate())
+                    .isEqualTo(createRequest.getOrganisation().get(0).getRole().get(0).getStartDate());
+        } catch (final RaidApiValidationException e) {
+            failOnError(e);
+        }
+    }
+
     private RaidUpdateRequest mapReadToUpdate(RaidDto read) {
         return new RaidUpdateRequest()
                 .metadata(read.getMetadata())

@@ -596,6 +596,44 @@ class ContributorTypeValidatorTest {
     }
 
     @Test
+    @DisplayName("Validation does not throw when position start date is an empty string, and propagates NOT_SET from position validator")
+    void positionWithEmptyStringStartDate() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate("");
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        // ContributorPositionValidator is mocked here, but in production it now returns a NOT_SET
+        // failure for a blank startDate (see ContributorPositionValidatorTest) - stub the mock to
+        // match that real behaviour so this test reflects what actually happens end-to-end.
+        final var startDateNotSetFailure = new ValidationFailure()
+                .fieldId("contributor[0].position[0].startDate")
+                .errorType(NOT_SET_TYPE)
+                .message(NOT_SET_MESSAGE);
+
+        when(contributorClient.exists(VALID_ORCID)).thenReturn(true);
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(List.of(startDateNotSetFailure));
+
+        final var failures = validator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        // the key assertion for this test: the blank startDate must not throw InvalidDateException
+        // while ContributorTypeValidator's own position-sort logic resolves it internally
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(startDateNotSetFailure));
+    }
+
+    @Test
     @DisplayName("Validation fails when position without end date overlaps with earlier position")
     void positionWithoutEndDateOverlaps() {
         final var role = new ContributorRole()
