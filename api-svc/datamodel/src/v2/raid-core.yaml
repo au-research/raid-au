@@ -269,7 +269,6 @@ classes:
         description: the date the project or activity title was changed or stopped being used
         range: string
         required: false
-        pattern: "^\\s*\\S.*$"
         exact_mappings:
           - dcat:endDate
           - schema:endDate

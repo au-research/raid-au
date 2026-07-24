@@ -11,6 +11,7 @@ import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.END_DATE_BEFORE_START_DATE;
 import static au.org.raid.api.endpoint.message.ValidationMessage.INVALID_VALUE_TYPE;
+import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Component
 public class DateValidator {
@@ -19,9 +20,9 @@ public class DateValidator {
         if (date == null) {
             failures.add(ValidationMessage.DATES_NOT_SET);
         } else {
-            if (date.getStartDate() == null) {
+            if (isBlank(date.getStartDate())) {
                 failures.add(ValidationMessage.DATES_START_DATE_NOT_SET);
-            } else if (date.getEndDate() != null && DateUtil.parseDate(date.getEndDate()).isBefore(DateUtil.parseDate(date.getStartDate()))) {
+            } else if (!isBlank(date.getEndDate()) && DateUtil.parseDate(date.getEndDate()).isBefore(DateUtil.parseDate(date.getStartDate()))) {
                 failures.add(new ValidationFailure()
                         .fieldId("date.endDate")
                         .errorType(INVALID_VALUE_TYPE)

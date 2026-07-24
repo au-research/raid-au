@@ -69,6 +69,27 @@ class OrganisationRoleValidatorTest {
     }
 
     @Test
+    @DisplayName("Validation passes with empty string end date")
+    void validationPassesWithEmptyStringEndDate() {
+        final var role = new OrganisationRole()
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .startDate("2021")
+                .endDate("");
+
+        when(contributorRoleSchemaRepository.findActiveByUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359.getValue()))
+                .thenReturn(Optional.of(ORGANISATION_ROLE_SCHEMA_RECORD));
+
+        when(contributorRoleRepository
+                .findByUriAndSchemaId(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182.getValue(), ORGANISATION_ROLE_SCHEMA_ID))
+                .thenReturn(Optional.of(ORGANISATION_ROLE_RECORD));
+
+        final var failures = validationService.validate(role, 2, 3);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
     @DisplayName("Validation fails if end date is before start date")
     void endDateBeforeStartDate() {
         final var role = new OrganisationRole()

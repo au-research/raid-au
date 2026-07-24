@@ -214,8 +214,8 @@ public class ContributorValidator {
 
             sortedPositions.add(Map.of(
                     "index", i,
-                    "start", DateUtil.parseDate(position.getStartDate()),
-                    "end", position.getEndDate() == null ? LocalDate.now() : DateUtil.parseDate(position.getEndDate())
+                    "start", isBlank(position.getStartDate()) ? LocalDate.now() : DateUtil.parseDate(position.getStartDate()),
+                    "end", isBlank(position.getEndDate()) ? LocalDate.now() : DateUtil.parseDate(position.getEndDate())
                     ));
         }
 

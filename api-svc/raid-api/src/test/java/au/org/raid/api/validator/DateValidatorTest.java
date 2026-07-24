@@ -62,6 +62,18 @@ class DateValidatorTest {
     }
 
     @Test
+    @DisplayName("Validation passes with empty string end date")
+    void validEmptyStringEndDate() {
+        final var date = new Date()
+                .startDate("2021-03-01")
+                .endDate("");
+
+        final var failures = validator.validate(date);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
     @DisplayName("Validation fails if date null")
     void notSet() {
         final var failures = validator.validate(null);

@@ -1295,7 +1295,6 @@
             "properties": {
                 "endDate": {
                     "description": "the date the project or activity title was changed or stopped being used",
-                    "pattern": "^\\s*\\S.*$",
                     "type": [
                         "string",
                         "null"
