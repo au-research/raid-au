@@ -1,6 +1,25 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.15.0
+
+## API
+* Minting or updating a RAiD no longer fails when an optional end date is cleared. Previously,
+  submitting an empty end date on the overall RAiD, a title, a contributor or an organisation
+  returned a `400 Bad Request`; empty end dates are now accepted and treated the same as an omitted
+  end date. The title end date field also no longer rejects an empty value, bringing it into line
+  with the other date blocks (PR #582).
+
+## Static Landing Pages
+* The schema.org JSON-LD embedded in RAiD landing pages now includes related objects and citation
+  text, so more of the RAiD's metadata is exposed to search engines and indexers (PR #572).
+* The schema.org output now uses resolved vocabulary labels instead of raw URIs or codes, making the
+  structured data more human and machine readable (PR #574).
+
+## Dependencies
+* Various minor dependency updates in `raid-agency-app` and `raid-agency-app-static`
+  (PRs #569, #571, #578, #579, #580, #581).
+
 # 2.14.0
 
 ## API
