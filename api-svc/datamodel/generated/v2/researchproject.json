@@ -10,7 +10,7 @@
         },
         "CreativeWork": {
             "additionalProperties": false,
-            "description": "A related research object (input/output) referenced by the project under the citation slot. See RAID-757.",
+            "description": "A related research object (input/output) referenced by the project under the citation slot.",
             "properties": {
                 "@id": {
                     "description": "The identifier of the related object (DOI, ARK, ISBN or URL)",
@@ -27,7 +27,7 @@
                     ]
                 },
                 "additionalType": {
-                    "description": "The related object's category id(s) (Input/Output/Internal). In the live output a single category is emitted as a scalar and multiple categories as a list; the schema models this as multivalued. See RAID-757.",
+                    "description": "The related object's category id(s) (Input/Output/Internal). In the live output a single category is emitted as a scalar and multiple categories as a list; the schema models this as multivalued.",
                     "items": {
                         "type": "string"
                     },
@@ -250,7 +250,7 @@
         },
         "RelatedResearchProject": {
             "additionalProperties": false,
-            "description": "A related RAiD referenced from isPartOf/hasPart/isBasedOn/isRelatedTo. Its identifier is the plain RAiD URI string, not a PropertyValue. See RAID-706.",
+            "description": "A related RAiD referenced from isPartOf/hasPart/isBasedOn/isRelatedTo. Its identifier is the plain RAiD URI string, not a PropertyValue.",
             "properties": {
                 "@id": {
                     "description": "The related RAiD identifier",
@@ -281,7 +281,7 @@
                     ]
                 },
                 "relationshipTypeName": {
-                    "description": "The resolved human-readable label for relationshipType, when available. Emitted only under isRelatedTo. See RAID-706/756.",
+                    "description": "The resolved human-readable label for relationshipType, when available. Emitted only under isRelatedTo.",
                     "type": [
                         "string",
                         "null"
@@ -320,7 +320,7 @@
                     ]
                 },
                 "citation": {
-                    "description": "Related objects (research inputs/outputs) emitted as a flat list of CreativeWork references. The category is preserved on additionalType rather than split across distinct properties. See RAID-757.",
+                    "description": "Related objects (research inputs/outputs) emitted as a flat list of CreativeWork references. The category is preserved on additionalType rather than split across distinct properties.",
                     "items": {
                         "$ref": "#/$defs/CreativeWork"
                     },
@@ -363,7 +363,7 @@
                     ]
                 },
                 "hasPart": {
-                    "description": "Related RAiDs that are part of this project (relatedRaid.type.schema/201). See RAID-706.",
+                    "description": "Related RAiDs that are part of this project (relatedRaid.type.schema/201).",
                     "items": {
                         "$ref": "#/$defs/RelatedResearchProject"
                     },
@@ -383,7 +383,7 @@
                     "$ref": "#/$defs/PropertyValue"
                 },
                 "isBasedOn": {
-                    "description": "Related RAiDs this project is derived from (relatedRaid.type.schema/200). See RAID-706.",
+                    "description": "Related RAiDs this project is derived from (relatedRaid.type.schema/200).",
                     "items": {
                         "$ref": "#/$defs/RelatedResearchProject"
                     },
@@ -393,7 +393,7 @@
                     ]
                 },
                 "isPartOf": {
-                    "description": "Related RAiDs of which this project is a part (relatedRaid.type.schema/202). See RAID-706.",
+                    "description": "Related RAiDs of which this project is a part (relatedRaid.type.schema/202).",
                     "items": {
                         "$ref": "#/$defs/RelatedResearchProject"
                     },
@@ -403,7 +403,7 @@
                     ]
                 },
                 "isRelatedTo": {
-                    "description": "Related RAiDs with any other relationship type. Carries the raw relationshipType URI and its resolved relationshipTypeName label. See RAID-706/756.",
+                    "description": "Related RAiDs with any other relationship type. Carries the raw relationshipType URI and its resolved relationshipTypeName label.",
                     "items": {
                         "$ref": "#/$defs/RelatedResearchProject"
                     },
@@ -466,7 +466,7 @@
                             "type": "null"
                         }
                     ],
-                    "description": "The RAiD registration agency: the ROR-identified organisation that operates the registration service. Emitted as an Organization whose identifier is the agency ROR. Resolved under RAID-778: both live emitters use the registration agency (the static-site json-ld.ts as parentOrganization, the API RaidJsonLdConverter as publisher). The earlier \"owner\" description was incorrect and has been superseded."
+                    "description": "The RAiD registration agency: the ROR-identified organisation that operates the registration service. Emitted as an Organization whose identifier is the agency ROR. Both live emitters use the registration agency (the static-site json-ld.ts as parentOrganization, the API RaidJsonLdConverter as publisher). The earlier \"owner\" description was incorrect and has been superseded."
                 }
             },
             "required": [

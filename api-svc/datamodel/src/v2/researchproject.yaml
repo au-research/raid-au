@@ -104,8 +104,8 @@ classes:
         description: >-
           The RAiD registration agency: the ROR-identified organisation that
           operates the registration service. Emitted as an Organization whose
-          identifier is the agency ROR. Resolved under RAID-778: both live
-          emitters use the registration agency (the static-site json-ld.ts as
+          identifier is the agency ROR. Both live emitters use the registration
+          agency (the static-site json-ld.ts as
           parentOrganization, the API RaidJsonLdConverter as publisher). The
           earlier "owner" description was incorrect and has been superseded.
       citation:
@@ -117,7 +117,7 @@ classes:
         description: >-
           Related objects (research inputs/outputs) emitted as a flat list of
           CreativeWork references. The category is preserved on additionalType
-          rather than split across distinct properties. See RAID-757.
+          rather than split across distinct properties.
       isPartOf:
         slot_uri: schema:isPartOf
         range: RelatedResearchProject
@@ -126,7 +126,7 @@ classes:
         inlined_as_list: true
         description: >-
           Related RAiDs of which this project is a part
-          (relatedRaid.type.schema/202). See RAID-706.
+          (relatedRaid.type.schema/202).
       hasPart:
         slot_uri: schema:hasPart
         range: RelatedResearchProject
@@ -135,7 +135,7 @@ classes:
         inlined_as_list: true
         description: >-
           Related RAiDs that are part of this project
-          (relatedRaid.type.schema/201). See RAID-706.
+          (relatedRaid.type.schema/201).
       isBasedOn:
         slot_uri: schema:isBasedOn
         range: RelatedResearchProject
@@ -144,7 +144,7 @@ classes:
         inlined_as_list: true
         description: >-
           Related RAiDs this project is derived from
-          (relatedRaid.type.schema/200). See RAID-706.
+          (relatedRaid.type.schema/200).
       isRelatedTo:
         slot_uri: schema:isRelatedTo
         range: RelatedResearchProject
@@ -154,7 +154,6 @@ classes:
         description: >-
           Related RAiDs with any other relationship type. Carries the raw
           relationshipType URI and its resolved relationshipTypeName label.
-          See RAID-706/756.
   Organization:
     class_uri: schema:Organization
     attributes:
@@ -322,7 +321,7 @@ classes:
     class_uri: schema:CreativeWork
     description: >-
       A related research object (input/output) referenced by the project under
-      the citation slot. See RAID-757.
+      the citation slot.
     attributes:
       type:
         range: string
@@ -360,13 +359,12 @@ classes:
         description: >-
           The related object's category id(s) (Input/Output/Internal). In the
           live output a single category is emitted as a scalar and multiple
-          categories as a list; the schema models this as multivalued. See
-          RAID-757.
+          categories as a list; the schema models this as multivalued.
   RelatedResearchProject:
     class_uri: schema:ResearchProject
     description: >-
       A related RAiD referenced from isPartOf/hasPart/isBasedOn/isRelatedTo. Its
-      identifier is the plain RAiD URI string, not a PropertyValue. See RAID-706.
+      identifier is the plain RAiD URI string, not a PropertyValue.
     attributes:
       type:
         range: string
@@ -397,7 +395,7 @@ classes:
         range: string
         description: >-
           The resolved human-readable label for relationshipType, when
-          available. Emitted only under isRelatedTo. See RAID-706/756.
+          available. Emitted only under isRelatedTo.
 
 enums:
   RoleType:
