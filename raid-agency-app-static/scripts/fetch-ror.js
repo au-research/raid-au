@@ -150,6 +150,18 @@ export async function addRorDetailsToRaidData(raidData, makeRequestWithRetry, co
         }
       });
     }
+
+    // Also resolve the registration agency's ROR name so the schema.org
+    // parentOrganization node can include it (RAID-794).
+    const registrationAgencyId = raid.identifier?.registrationAgency?.id;
+    if (registrationAgencyId && registrationAgencyId.includes('ror.org')) {
+      allRorIds.push({
+        rorId: registrationAgencyId,
+        raidIndex,
+        field: 'registrationAgency'
+      });
+      stats.totalRorIds++;
+    }
   });
   
   console.log(`Found ${stats.totalRorIds} ROR IDs to process`);
@@ -175,12 +187,16 @@ export async function addRorDetailsToRaidData(raidData, makeRequestWithRetry, co
 
     const results = await processBatchRorDetails(batch, makeRequestWithRetry, config, stats);
     // Apply results to RAID data
-    results.forEach(({ rorDetails, raidIndex, orgIndex, field, subIndex }) => {
+    results.forEach(({ rorDetails, raidIndex, orgIndex, field }) => {
       if (rorDetails) {
         const simplifiedInfo = getSimplifiedRorInfo(rorDetails);
-        
+
         // Add to appropriate field
-        raidData[raidIndex].organisation[orgIndex].rorDetails = simplifiedInfo;
+        if (field === 'registrationAgency') {
+          raidData[raidIndex].identifier.registrationAgency.rorDetails = simplifiedInfo;
+        } else {
+          raidData[raidIndex].organisation[orgIndex].rorDetails = simplifiedInfo;
+        }
       }
     });
 

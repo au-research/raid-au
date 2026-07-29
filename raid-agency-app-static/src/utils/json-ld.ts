@@ -1,5 +1,5 @@
-import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
-import type { RelatedObjectWithCitation } from "@/model/raid";
+import type { Contributor, RaidDto, RelatedRaid } from "@/generated/raid";
+import type { OrganisationDetails, RegistrationAgencyDetails, RelatedObjectWithCitation } from "@/model/raid";
 import generalMapping from "@/mapping/data/general-mapping.json";
 import subjectMapping from "@/mapping/data/subject-mapping.json";
 import { kebabToTitle } from "@/utils";
@@ -66,6 +66,7 @@ interface Role {
   member: {
     "@type": "Person" | "Organization";
     "@id": string;
+    name?: string;
     identifier: PropertyValue;
   };
 }
@@ -103,6 +104,7 @@ interface ResearchProjectJsonLd {
   parentOrganization: {
     "@type": "Organization";
     "@id": string;
+    name?: string;
     identifier: PropertyValue;
   };
   description?: string;
@@ -149,7 +151,13 @@ function buildContributorRoles(contributor: Contributor): Role[] {
   return [...positionRoles, ...creditRoles];
 }
 
-function buildOrganisationRole(organisation: Organisation, orgRole: { id: string; startDate: string; endDate?: string }): Role {
+function buildOrganisationRole(organisation: OrganisationDetails, orgRole: { id: string; startDate: string; endDate?: string }): Role {
+  // The organisation's resolved ROR name is fetched and cached at build time by
+  // scripts/fetch-ror.js and stored on organisation.rorDetails. Emit it as the
+  // schema.org Organization `name` so consumers don't have to call the ROR API
+  // themselves (RAID-794). Omitted when resolution was unavailable so the node
+  // still emits with just the ROR identifier.
+  const resolvedName = organisation.rorDetails?.name;
   return {
     "@type": "Role",
     "@id": orgRole.id,
@@ -159,6 +167,7 @@ function buildOrganisationRole(organisation: Organisation, orgRole: { id: string
     member: {
       "@type": "Organization",
       "@id": organisation.id,
+      ...(resolvedName && { name: resolvedName }),
       identifier: {
         "@type": "PropertyValue",
         propertyID: "https://registry.identifiers.org/registry/ror",
@@ -169,13 +178,13 @@ function buildOrganisationRole(organisation: Organisation, orgRole: { id: string
   };
 }
 
-function buildOrganisationRoles(organisation: Organisation): Role[] {
+function buildOrganisationRoles(organisation: OrganisationDetails): Role[] {
   return organisation.role
     .filter((r) => r.id !== FUNDER_ORGANISATION_ROLE)
     .map((r) => buildOrganisationRole(organisation, r));
 }
 
-function buildFunderRoles(organisation: Organisation): Role[] {
+function buildFunderRoles(organisation: OrganisationDetails): Role[] {
   return organisation.role
     .filter((r) => r.id === FUNDER_ORGANISATION_ROLE)
     .map((r) => buildOrganisationRole(organisation, r));
@@ -279,7 +288,13 @@ function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]
 }
 
 export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProjectJsonLd {
-  const registrationAgencyId = raid.identifier?.registrationAgency?.id ?? "";
+  // registrationAgency is enriched with its resolved ROR name at build time by
+  // scripts/fetch-ror.js (RAID-794); the generated type doesn't declare it.
+  const registrationAgency = raid.identifier?.registrationAgency as
+    | RegistrationAgencyDetails
+    | undefined;
+  const registrationAgencyId = registrationAgency?.id ?? "";
+  const registrationAgencyName = registrationAgency?.rorDetails?.name;
 
   const description = raid.description
     ?.filter((d) => d.type.id === PRIMARY_DESCRIPTION_TYPE)
@@ -334,6 +349,7 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     parentOrganization: {
       "@type": "Organization",
       "@id": registrationAgencyId,
+      ...(registrationAgencyName && { name: registrationAgencyName }),
       identifier: {
         "@type": "PropertyValue",
         propertyID: "https://registry.identifiers.org/registry/ror",
