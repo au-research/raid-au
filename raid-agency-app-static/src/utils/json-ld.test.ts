@@ -119,6 +119,28 @@ describe("buildResearchProjectJsonLd", () => {
     });
   });
 
+  it("includes the resolved ROR name on parentOrganization when available (RAID-794)", () => {
+    const raid = minimalRaid();
+    // rorDetails is attached to the registration agency at build time by
+    // scripts/fetch-ror.js and is not part of the generated type.
+    (raid.identifier!.registrationAgency as never as { rorDetails: { name: string } }).rorDetails = {
+      name: "Australian Research Data Commons",
+    };
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.parentOrganization).toEqual({
+      "@type": "Organization",
+      "@id": "https://ror.org/038sjwq14",
+      name: "Australian Research Data Commons",
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: "https://registry.identifiers.org/registry/ror",
+        name: "ROR",
+        value: "https://ror.org/038sjwq14",
+      },
+    });
+  });
+
   it("extracts primary description", () => {
     const raid = minimalRaid();
     raid.description = [
@@ -293,6 +315,82 @@ describe("buildResearchProjectJsonLd", () => {
     });
   });
 
+  it("includes the resolved ROR name on the member Organization when available (RAID-794)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/03sd43014",
+        schemaUri: "https://ror.org",
+        rorDetails: { name: "QCIF Ltd." },
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/organisation.role.schema/185",
+            startDate: "2025-01-01",
+          },
+        ],
+        // rorDetails is attached at build time by scripts/fetch-ror.js and is
+        // not part of the generated Organisation type.
+      } as never,
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].member).toEqual({
+      "@type": "Organization",
+      "@id": "https://ror.org/03sd43014",
+      name: "QCIF Ltd.",
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: "https://registry.identifiers.org/registry/ror",
+        name: "ROR",
+        value: "https://ror.org/03sd43014",
+      },
+    });
+  });
+
+  it("omits the member Organization name when ROR resolution is unavailable (RAID-794 graceful degradation)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/03sd43014",
+        schemaUri: "https://ror.org",
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/organisation.role.schema/185",
+            startDate: "2025-01-01",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].member).not.toHaveProperty("name");
+    expect(result.member[0].member["@id"]).toBe("https://ror.org/03sd43014");
+    expect(result.member[0].member.identifier.value).toBe("https://ror.org/03sd43014");
+  });
+
+  it("omits the member Organization name when the resolved name is an empty string (RAID-794)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/03sd43014",
+        schemaUri: "https://ror.org",
+        rorDetails: { name: "" },
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/organisation.role.schema/185",
+            startDate: "2025-01-01",
+          },
+        ],
+      } as never,
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].member).not.toHaveProperty("name");
+  });
+
   it("maps funder organisations to funder roles", () => {
     const raid = minimalRaid();
     raid.organisation = [
@@ -316,6 +414,27 @@ describe("buildResearchProjectJsonLd", () => {
     const funderRole = result.funder[0];
     expect(funderRole["@id"]).toBe(FUNDER_ORGANISATION_ROLE);
     expect(funderRole.member["@type"]).toBe("Organization");
+  });
+
+  it("includes the resolved ROR name on funder Organizations too (RAID-794)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/04yx6dh41",
+        schemaUri: "https://ror.org",
+        rorDetails: { name: "Australian Research Council" },
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: FUNDER_ORGANISATION_ROLE,
+            startDate: "2025-01-01",
+          },
+        ],
+      } as never,
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.funder[0].member.name).toBe("Australian Research Council");
   });
 
   it("splits organisation with both funder and non-funder roles", () => {
