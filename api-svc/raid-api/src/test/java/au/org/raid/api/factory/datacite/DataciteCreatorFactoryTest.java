@@ -49,6 +49,28 @@ public class DataciteCreatorFactoryTest {
     }
 
     @Test
+    @DisplayName("RAID-737: Create with contributor - sandbox ORCID maps to ORCID scheme")
+    void createWithContributorSandboxORCID() {
+        final var id = "https://sandbox.orcid.org/0009-0002-5128-5184";
+        final var name = "_name";
+
+        final var contributor = new Contributor()
+                .id(id)
+                .status("AUTHENTICATED")
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_);
+
+        when(orcidClient.getName(id)).thenReturn(name);
+
+        final var result = dataciteCreatorFactory.create(contributor);
+
+        assertThat(result.getName(), is(name));
+        assertThat(result.getNameType(), is("Personal"));
+        assertThat(result.getNameIdentifiers().get(0).getNameIdentifier(), is(id));
+        assertThat(result.getNameIdentifiers().get(0).getSchemeUri(), is("https://sandbox.orcid.org/"));
+        assertThat(result.getNameIdentifiers().get(0).getNameIdentifierScheme(), is("ORCID"));
+    }
+
+    @Test
     @DisplayName("Create with contributor - ISNI")
     void createWithContributorISNI() {
         final var id = "_id";

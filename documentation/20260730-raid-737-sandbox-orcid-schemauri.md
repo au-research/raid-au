@@ -49,10 +49,30 @@ comments). Verified the v1.7.1 endpoint returns all three values with the correc
   `ContributorSchemaUriEnum-allowed-values.yaml`, and `sparql-cache/ContributorSchemaUriEnum.json`.
   The git-ignored generated Java enum now includes `HTTPS_SANDBOX_ORCID_ORG_`.
 - **`raid-api/.../application-dev.yaml`** — added `raid.contributor-validation.orcid.schema-uri: https://sandbox.orcid.org/`
-  so local dev accepts sandbox schemaUri. No Java production code changed: `ContributorTypeValidator`
-  already validates `schemaUri` against this config value, so the environment scoping is config-driven.
-- **`ContributorTypeValidatorTest`** — four new unit tests: prod config rejects sandbox / accepts orcid;
-  non-prod config accepts sandbox / rejects orcid.
+  so local dev accepts sandbox schemaUri. The *validation* scoping is config-driven: `ContributorTypeValidator`
+  already validates `schemaUri` against this config value, so no validator code change was needed.
+- **`factory/datacite/DataciteCreatorFactory.java`** (production Java) — the DataCite mint path maps each
+  contributor to a `DataciteCreator` and previously threw `RuntimeException` for any schemaUri other than
+  `https://orcid.org/` / `https://isni.org/`. Without this fix, minting a raid with a (now-required) sandbox
+  contributor in an environment that mints real DOIs (e.g. demo) would 500. It now treats
+  `https://sandbox.orcid.org/` as the ORCID scheme (resolves the name via `orcidClient`,
+  `nameIdentifierScheme: "ORCID"`). This gap was found by running the integration tests, not by the
+  enum-usage grep — the check is a string comparison against a hardcoded literal, not a `switch`.
+- **Flyway migration** `db/env/{dev,test,demo}/V42.1__add_sandbox_contributor_schema.sql` (production data) —
+  `ContributorService.create()` looks the schemaUri up in the `contributor_schema` table and 500s
+  (`ContributorSchemaNotFoundException`) if there is no matching row. The table is a registry of known
+  schemes (seeded orcid.org in V27, isni.org in V29). This seeds `https://sandbox.orcid.org/` (status
+  `active`) **only in the non-prod environment locations** — prod and stage deliberately omit it, consistent
+  with them accepting only production ORCID. The insert is guarded with `where not exists` because
+  `findByUri` uses `fetchOptional`, which throws on duplicate rows (defends against dump-restored test DBs).
+  No JOOQ regen needed (data-only; the `status` column already exists). Also found by the integration tests.
+- **`testFixtures/.../fixtures/TestConstants.java`** — `ORCID_SCHEMA_URI` changed to `https://sandbox.orcid.org/`.
+  Integration tests run under the dev profile (which now enforces sandbox), and the fixture id
+  (`REAL_TEST_ORCID`) was already sandbox; the schemaUri constant is referenced by ~20 intTest call sites so
+  the single change cascades. The separate unit-test `TestConstants` keeps production values.
+- **Tests** — four new `ContributorTypeValidatorTest` cases (prod rejects sandbox / accepts orcid; non-prod
+  accepts sandbox / rejects orcid) and one new `DataciteCreatorFactoryTest` case (sandbox ORCID maps to the
+  ORCID scheme).
 
 ### raido-v2-aws-private (companion PR)
 
@@ -95,5 +115,12 @@ where the agency UI is used to create contributors.
 ## Verification
 
 - Regenerated Java enum contains all three values including `https://sandbox.orcid.org/`.
-- No exhaustive `switch` on `ContributorSchemaUriEnum` exists, so adding a value needs no mapping changes.
-- `ContributorTypeValidatorTest` and `ContributorValidatorTest` pass; no other enum values drifted.
+- Enum-usage audit: no exhaustive `switch` on `ContributorSchemaUriEnum`, but `DataciteCreatorFactory`
+  compared `schemaUri.getValue()` against a hardcoded `"https://orcid.org/"` string (fixed here). The only
+  other hardcoded `orcid.org` literal, `SchemaValues.ORCID_SCHEMA_URI`, is defined but unused.
+- Integration tests run under the dev profile; the full contributor intTest surface was run and confirmed
+  green after the fixture + DataCite fixes (previously 41 failures, all traced to the mismatched fixture
+  schemaUri). intTest uses local (`http://raid.local/`) handles so it does not exercise the DataCite mint
+  path — the `DataciteCreatorFactoryTest` unit test covers the sandbox mapping directly.
+- Unit tests pass (`ContributorTypeValidatorTest`, `ContributorValidatorTest`, `DataciteCreatorFactoryTest`);
+  no other enum values drifted.

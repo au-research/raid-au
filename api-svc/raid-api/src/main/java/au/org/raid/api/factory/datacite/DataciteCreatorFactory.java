@@ -17,12 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DataciteCreatorFactory {
     private static final String ORCID_SCHEMA_URI = "https://orcid.org/";
+    private static final String SANDBOX_ORCID_SCHEMA_URI = "https://sandbox.orcid.org/";
     private static final String ISNI_SCHEMA_URI = "https://isni.org/";
     private final OrcidClient orcidClient;
     private final IsniClient isniClient;
 
+    // Sandbox ORCID (used in non-production environments) is still the ORCID scheme for DataCite.
     private static final Map<String, String> NAME_IDENTIFIER_SCHEMA_MAP = Map.of(
             ORCID_SCHEMA_URI, "ORCID",
+            SANDBOX_ORCID_SCHEMA_URI, "ORCID",
             ISNI_SCHEMA_URI, "ISNI"
     );
 
@@ -30,12 +33,13 @@ public class DataciteCreatorFactory {
         final var creator = new DataciteCreator();
         String name;
 
-        if (contributor.getSchemaUri().getValue().equals(ORCID_SCHEMA_URI)) {
+        final var schemaUri = contributor.getSchemaUri().getValue();
+        if (schemaUri.equals(ORCID_SCHEMA_URI) || schemaUri.equals(SANDBOX_ORCID_SCHEMA_URI)) {
             name = orcidClient.getName(contributor.getId());
-        } else if (contributor.getSchemaUri().getValue().equals(ISNI_SCHEMA_URI)) {
+        } else if (schemaUri.equals(ISNI_SCHEMA_URI)) {
             name = isniClient.getName(contributor.getId());
         } else {
-            throw new RuntimeException("Unsupported contributor schema %s".formatted(contributor.getSchemaUri().getValue()));
+            throw new RuntimeException("Unsupported contributor schema %s".formatted(schemaUri));
         }
 
         creator.setName(name);
