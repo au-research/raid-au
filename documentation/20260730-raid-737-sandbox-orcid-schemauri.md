@@ -71,6 +71,27 @@ override `url-prefix`).
   keep this change scoped.
 - `datamodel/generated/v2/referencedata.sql` is generated but not tracked — do not commit it.
 
+## Known limitation / deploy dependency (agency UI)
+
+This change is **backend only** (deliberate scope, per RAID-737 decision). The agency UI
+(`raid-agency-app`) hardcodes the contributor schemaUri and is **not** part of this change:
+
+- `entities/contributor/validation-schema/contributor-validation-schema.ts` — `schemaUri: z.literal("https://orcid.org/")`
+- `entities/contributor/data-generator/contributor-data-generator.ts` — `schemaUri: "https://orcid.org/"`
+
+The ORCID **id** regex already accepts `sandbox.orcid.org`, but the schemaUri is pinned to
+`https://orcid.org/` in every environment.
+
+**Deploy risk:** once the CDK PR (#33) deploys, non-prod backends accept only
+`https://sandbox.orcid.org/`. The agency UI still sends `https://orcid.org/`, so **adding or
+editing contributors via the test/demo UI will fail validation** after deploy. API-only clients
+(the pilot testers) are fixed; the UI regresses until the frontend is made environment-aware
+(pattern already exists at `containers/orcid-lookup/ORCID.tsx:42`,
+`getRuntimeConfig().environment === 'prod' ? 'https://orcid.org/' : 'https://sandbox.orcid.org/'`).
+
+Coordinate the rollout accordingly, or land the frontend change before deploying to environments
+where the agency UI is used to create contributors.
+
 ## Verification
 
 - Regenerated Java enum contains all three values including `https://sandbox.orcid.org/`.
