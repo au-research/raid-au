@@ -91,26 +91,34 @@ override `url-prefix`).
   keep this change scoped.
 - `datamodel/generated/v2/referencedata.sql` is generated but not tracked — do not commit it.
 
-## Known limitation / deploy dependency (agency UI)
+### raid-agency-app (frontend — part of PR #588)
 
-This change is **backend only** (deliberate scope, per RAID-737 decision). The agency UI
-(`raid-agency-app`) hardcodes the contributor schemaUri and is **not** part of this change:
+The agency UI previously hardcoded the contributor `schemaUri` to `https://orcid.org/` (Zod schema +
+data generator), which would fail non-prod validation once the backend enforces sandbox-only. Made it
+environment-aware, mirroring the existing `containers/orcid-lookup/ORCID.tsx` pattern:
 
-- `entities/contributor/validation-schema/contributor-validation-schema.ts` — `schemaUri: z.literal("https://orcid.org/")`
-- `entities/contributor/data-generator/contributor-data-generator.ts` — `schemaUri: "https://orcid.org/"`
+- New `src/utils/contributor-utils/contributor-schema-uri.ts` — `getContributorSchemaUri()` returns
+  `https://orcid.org/` in prod, `https://sandbox.orcid.org/` otherwise. Called **lazily** only — never at
+  module load, because `getRuntimeConfig()` throws before the runtime config is loaded.
+- `entities/contributor/validation-schema/contributor-validation-schema.ts` — `schemaUri` is now a
+  `z.string().refine(...)` that accepts only the env-appropriate value (refinement runs at parse time).
+- `entities/contributor/data-generator/contributor-data-generator.ts` — uses the helper.
+- Added a helper unit test; `npm run build` + `npm test` pass (one pre-existing unrelated ServicePoint test
+  failure, confirmed at baseline).
 
-The ORCID **id** regex already accepts `sandbox.orcid.org`, but the schemaUri is pinned to
-`https://orcid.org/` in every environment.
+## Deploy coordination (three changes must land together)
 
-**Deploy risk:** once the CDK PR (#33) deploys, non-prod backends accept only
-`https://sandbox.orcid.org/`. The agency UI still sends `https://orcid.org/`, so **adding or
-editing contributors via the test/demo UI will fail validation** after deploy. API-only clients
-(the pilot testers) are fixed; the UI regresses until the frontend is made environment-aware
-(pattern already exists at `containers/orcid-lookup/ORCID.tsx:42`,
-`getRuntimeConfig().environment === 'prod' ? 'https://orcid.org/' : 'https://sandbox.orcid.org/'`).
+Because the rule is strict (non-prod accepts **only** sandbox), the branch pipeline proved these three must
+deploy together or the pipeline can't be green — under the strict rule, intTest (fixture → sandbox) and E2E
+(agency UI → its schemaUri) require the API and UI to agree:
 
-Coordinate the rollout accordingly, or land the frontend change before deploying to environments
-where the agency UI is used to create contributors.
+1. CDK #33 — deployed env config sets non-prod `schema-uri` to sandbox (branch API then requires sandbox).
+2. This PR's frontend change — UI sends sandbox in non-prod.
+3. This PR's fixture change — intTest sends sandbox.
+
+Deploying any subset causes a mismatch (e.g. #33 without the frontend → UI 400s; the frontend without #33 →
+E2E 400s). Merge/deploy #588 and #33 together; the branch pipeline stays red until #33 reaches the branch
+environment. Prod is unaffected (it keeps `https://orcid.org/` throughout).
 
 ## Verification
 
