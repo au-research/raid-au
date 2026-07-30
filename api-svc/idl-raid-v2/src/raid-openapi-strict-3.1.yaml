@@ -939,6 +939,7 @@ components:
       enum:
       - "https://isni.org/"
       - "https://orcid.org/"
+      - "https://sandbox.orcid.org/"
     ContributorStatusEnum:
       description: ""
       enum:

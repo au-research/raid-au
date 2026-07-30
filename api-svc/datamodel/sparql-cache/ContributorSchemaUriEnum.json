@@ -20,6 +20,16 @@
       {
         "uri" : {
           "type" : "uri",
+          "value" : "https://sandbox.orcid.org/"
+        },
+        "prefLabel" : {
+          "type" : "literal",
+          "value" : "ORCID SANDBOX contributor ID schema"
+        }
+      },
+      {
+        "uri" : {
+          "type" : "uri",
           "value" : "https://isni.org/"
         },
         "prefLabel" : {
