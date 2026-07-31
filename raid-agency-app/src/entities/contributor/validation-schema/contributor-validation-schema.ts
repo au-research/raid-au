@@ -13,6 +13,7 @@
  */
 import { contributorPositionValidationSchema } from "@/entities/contributor-position/validation-schema/contributor-position-validation-schema";
 import { contributorRoleValidationSchema } from "@/entities/contributor-role/validation-schema/contributor-role-validation-schema";
+import { getContributorSchemaUri } from "@/utils/contributor-utils/contributor-schema-uri";
 import { z } from "zod";
 
 // The ORCID regex pattern used in multiple places
@@ -28,7 +29,10 @@ const baseContributorSchema = z.object({
   leader: z.boolean(),
   position: contributorPositionValidationSchema,
   role: contributorRoleValidationSchema,
-  schemaUri: z.literal("https://orcid.org/"),
+  schemaUri: z.string().refine((v) => v === getContributorSchemaUri(), {
+    message:
+      "Invalid contributor schemaUri for this environment, expected the environment-appropriate ORCID URL",
+  }),
   status: z.string().optional(),
   uuid: z.string().optional(),
 });

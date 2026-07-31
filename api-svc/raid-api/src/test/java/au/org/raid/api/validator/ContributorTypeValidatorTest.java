@@ -33,6 +33,9 @@ import static org.mockito.Mockito.*;
 class ContributorTypeValidatorTest {
     private static final String URL_PREFIX = "https://orcid.org/";
     private static final String SCHEMA_URI_PATTERN = "https://orcid.org/";
+    private static final String SANDBOX_URL_PREFIX = "https://sandbox.orcid.org/";
+    private static final String SANDBOX_SCHEMA_URI = "https://sandbox.orcid.org/";
+    private static final String SANDBOX_ORCID = "https://sandbox.orcid.org/0000-0000-0000-0001";
     private static final int CONTRIBUTOR_INDEX = 0;
 
     @Mock
@@ -259,6 +262,59 @@ class ContributorTypeValidatorTest {
                         .fieldId("contributor[0].schemaUri")
                         .errorType(NOT_SET_TYPE)
                         .message(NOT_SET_MESSAGE)
+        ));
+    }
+
+    @Test
+    @DisplayName("RAID-737: production config rejects a sandbox ORCID schemaUri")
+    void productionRejectsSandboxSchemaUri() {
+        // setUp() configures production properties (schemaUri pattern https://orcid.org/)
+        final var contributor = validContributor(VALID_ORCID, ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_);
+
+        final var failures = validator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[0].schemaUri")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE + " - should be %s".formatted(SCHEMA_URI_PATTERN))
+        ));
+    }
+
+    @Test
+    @DisplayName("RAID-737: production config accepts a production ORCID schemaUri")
+    void productionAcceptsProductionSchemaUri() {
+        final var contributor = validContributor(VALID_ORCID, ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
+
+        final var failures = validator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("RAID-737: non-production config accepts a sandbox ORCID schemaUri")
+    void nonProductionAcceptsSandboxSchemaUri() {
+        final var sandboxValidator = validatorWith(SANDBOX_URL_PREFIX, SANDBOX_SCHEMA_URI);
+        final var contributor = validContributor(SANDBOX_ORCID, ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_);
+
+        final var failures = sandboxValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("RAID-737: non-production config rejects a production ORCID schemaUri")
+    void nonProductionRejectsProductionSchemaUri() {
+        final var sandboxValidator = validatorWith(SANDBOX_URL_PREFIX, SANDBOX_SCHEMA_URI);
+        final var contributor = validContributor(SANDBOX_ORCID, ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
+
+        final var failures = sandboxValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[0].schemaUri")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE + " - should be %s".formatted(SANDBOX_SCHEMA_URI))
         ));
     }
 
@@ -670,5 +726,38 @@ class ContributorTypeValidatorTest {
                         .errorType(INVALID_VALUE_TYPE)
                         .message("Contributors can only hold one position at any given time. This position conflicts with contributor[0].position[0]")
         ));
+    }
+
+    private ContributorTypeValidator validatorWith(final String urlPrefix, final String schemaUri) {
+        return new ContributorTypeValidator(
+                ContributorTypeValidationProperties.builder()
+                        .urlPrefix(urlPrefix)
+                        .schemaUri(schemaUri)
+                        .build(),
+                contributorClient,
+                roleValidator,
+                positionValidator
+        );
+    }
+
+    private Contributor validContributor(final String id, final ContributorSchemaUriEnum schemaUri) {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        when(contributorClient.exists(id)).thenReturn(true);
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+
+        return new Contributor()
+                .id(id)
+                .schemaUri(schemaUri)
+                .role(List.of(role))
+                .position(List.of(position));
     }
 }

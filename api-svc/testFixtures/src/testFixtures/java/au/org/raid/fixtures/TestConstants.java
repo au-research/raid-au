@@ -49,7 +49,9 @@ public class TestConstants {
     public static final String DESCRIPTION_TYPE_SCHEMA_URI =
             "https://vocabulary.raid.org/description.type.schema/320";
 
-    public static final String ORCID_SCHEMA_URI = "https://orcid.org/";
+    // Integration tests run under the dev profile, which enforces the sandbox ORCID schema (RAID-737).
+    // Paired with the sandbox REAL_TEST_ORCID id above.
+    public static final String ORCID_SCHEMA_URI = "https://sandbox.orcid.org/";
     public static final String ISNI_SCHEMA_URI = "https://isni.org/";
 
     public static final String CONTRIBUTOR_POSITION_SCHEMA_URI =

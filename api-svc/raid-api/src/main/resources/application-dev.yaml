@@ -23,6 +23,7 @@ raid:
   contributor-validation:
     orcid:
       url-prefix: https://sandbox.orcid.org/
+      schema-uri: https://sandbox.orcid.org/
 spring:
   security:
     oauth2:
