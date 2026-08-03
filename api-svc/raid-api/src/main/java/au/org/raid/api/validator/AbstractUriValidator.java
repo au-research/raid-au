@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -51,15 +52,25 @@ public abstract class AbstractUriValidator implements UriValidator {
                     );
                 } else {
                     log.error("Request failed during URI validation", e);
-                    failures.add(new ValidationFailure()
-                            .fieldId(fieldId)
-                            .errorType(INVALID_VALUE_TYPE)
-                            .message(SERVER_ERROR)
-                    );
+                    failures.add(serverError(fieldId));
                 }
+            } catch (RestClientException e) {
+                // Covers ResourceAccessException (connect/read timeout, DNS failure,
+                // connection refused), HttpServerErrorException (5xx) and, defensively,
+                // any other RestClientException. The resolver could not confirm the URI,
+                // so return a clean validation failure rather than propagating an HTTP 500.
+                log.error("External resolver check failed during URI validation of {}", uri, e);
+                failures.add(serverError(fieldId));
             }
         }
 
         return failures;
+    }
+
+    private ValidationFailure serverError(final String fieldId) {
+        return new ValidationFailure()
+                .fieldId(fieldId)
+                .errorType(INVALID_VALUE_TYPE)
+                .message(SERVER_ERROR);
     }
 }
