@@ -1,6 +1,26 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.14.2
+
+## API
+* Contributor ORCID identifiers are now validated against each environment's ORCID registry.
+  Production accepts only production ORCID identifiers (`https://orcid.org/`); non-production
+  environments (test, demo and stage) accept only ORCID sandbox identifiers
+  (`https://sandbox.orcid.org/`). Previously sandbox ORCID contributors were rejected everywhere,
+  which blocked pilot testers who were asked to use ORCID sandbox iDs. The agency app now sends the
+  environment-appropriate value automatically, and non-production databases are seeded with the
+  sandbox contributor schema so these contributors can be saved (PRs #588, #590).
+
+## Static Landing Pages
+* schema.org / JSON-LD `Organization` nodes now include the organisation's resolved name (looked up
+  from ROR at build time), so downstream consumers no longer need to call the ROR API per record
+  (PR #587).
+
+## Data Model
+* Completed the canonical `researchproject` LinkML schema so it fully describes the static-site
+  schema.org (JSON-LD) output that is treated as the reference specification (PR #577).
+
 # 2.14.1
 
 ## API
