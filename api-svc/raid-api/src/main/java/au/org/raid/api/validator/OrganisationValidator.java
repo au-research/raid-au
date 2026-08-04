@@ -6,10 +6,12 @@ import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +23,7 @@ import java.util.stream.IntStream;
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 import static au.org.raid.api.util.StringUtil.isBlank;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrganisationValidator {
@@ -59,13 +62,26 @@ public class OrganisationValidator {
                             .message(INVALID_VALUE_MESSAGE + " - should match %s".formatted(regex))
                     );
 
-                } else if (!rorClient.exists(organisation.getId())) {
-                        failures.add(new ValidationFailure()
-                                .fieldId("organisation[%d].id".formatted(i))
-                                .errorType(NOT_FOUND_TYPE)
-                                .message("This ROR does not exist")
-                        );
+                } else {
+                    try {
+                        if (!rorClient.exists(organisation.getId())) {
+                            failures.add(new ValidationFailure()
+                                    .fieldId("organisation[%d].id".formatted(i))
+                                    .errorType(NOT_FOUND_TYPE)
+                                    .message("This ROR does not exist")
+                            );
+                        }
+                    } catch (RestClientException e) {
+                        // Covers ResourceAccessException (connect/read timeout, DNS failure,
+                        // connection refused), HttpServerErrorException (5xx) and, defensively,
+                        // any other RestClientException. HttpClientErrorException 404 is already
+                        // handled inside RorClient.exists() (404 -> false), so only non-404
+                        // failures reach here. The resolver could not confirm the ROR, so return
+                        // a clean validation failure rather than propagating an HTTP 500.
+                        log.error("External resolver check failed during ROR validation of {}", organisation.getId(), e);
+                        failures.add(serverError("organisation[%d].id".formatted(i)));
                     }
+                }
             }
 
             if (organisation.getSchemaUri() == null) {
@@ -114,6 +130,13 @@ public class OrganisationValidator {
         }
 
         return failures;
+    }
+
+    private ValidationFailure serverError(final String fieldId) {
+        return new ValidationFailure()
+                .fieldId(fieldId)
+                .errorType(INVALID_VALUE_TYPE)
+                .message(SERVER_ERROR);
     }
 }
 

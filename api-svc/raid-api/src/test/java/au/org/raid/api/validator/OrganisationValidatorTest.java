@@ -14,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -172,6 +175,109 @@ class OrganisationValidatorTest {
         assertThat(failures, hasItem(roleError));
 
         verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("Validation returns a server-error failure when rorClient.exists() throws a connect/read timeout")
+    void existsThrowsResourceAccessException() {
+        final var role = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenThrow(new ResourceAccessException("timeout"));
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].id")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(SERVER_ERROR)
+        ));
+
+        verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("Validation returns a server-error failure when rorClient.exists() throws a 5xx error")
+    void existsThrowsHttpServerErrorException() {
+        final var role = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role));
+
+        when(rorClient.exists(TestConstants.VALID_ROR))
+                .thenThrow(HttpServerErrorException.create(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null));
+
+        final var failures = validationService.validate(List.of(organisation));
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].id")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(SERVER_ERROR)
+        ));
+
+        verify(roleValidationService).validate(role, 0, 0);
+    }
+
+    @Test
+    @DisplayName("A rorClient.exists() failure for one organisation does not abort validation of the rest of the request")
+    void existsThrowingForOneOrganisationDoesNotAbortValidationOfOthers() {
+        final var secondRor = "https://ror.org/02jx3x008";
+
+        final var role1 = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var role2 = new OrganisationRole()
+                .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
+                .id(OrganizationRoleIdEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_182)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var organisation1 = new Organisation()
+                .id(TestConstants.VALID_ROR)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role1));
+
+        final var organisation2 = new Organisation()
+                .id(secondRor)
+                .schemaUri(OrganizationSchemaUriEnum.HTTPS_ROR_ORG_)
+                .role(List.of(role2));
+
+        when(rorClient.exists(TestConstants.VALID_ROR)).thenThrow(new ResourceAccessException("timeout"));
+        when(rorClient.exists(secondRor)).thenReturn(true);
+
+        final var failures = validationService.validate(List.of(organisation1, organisation2));
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("organisation[0].id")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(SERVER_ERROR)
+        ));
+
+        // proves the per-item try/catch didn't abort the loop: the second organisation
+        // (and duplicate detection across the full list) still ran.
+        verify(roleValidationService).validate(role1, 0, 0);
+        verify(roleValidationService).validate(role2, 1, 0);
     }
 
     @Test

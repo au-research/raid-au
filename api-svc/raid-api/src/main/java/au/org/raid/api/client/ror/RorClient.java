@@ -2,8 +2,8 @@ package au.org.raid.api.client.ror;
 
 import au.org.raid.api.client.ror.dto.RorSchemaV21;
 import au.org.raid.api.client.ror.dto.Type;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -12,10 +12,17 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class RorClient {
     private final RestTemplate restTemplate;
     private final RorRequestEntityFactory requestEntityFactory;
+
+    public RorClient(
+            @Qualifier("uriValidatorRestTemplate") final RestTemplate restTemplate,
+            final RorRequestEntityFactory requestEntityFactory
+    ) {
+        this.restTemplate = restTemplate;
+        this.requestEntityFactory = requestEntityFactory;
+    }
 
     public RorSchemaV21 getOrganisation(final String ror) {
         final var request = requestEntityFactory.create(ror);

@@ -1,6 +1,8 @@
 package au.org.raid.api.endpoint.raidv2;
 
+import au.org.raid.idl.raidv2.model.FailureResponse;
 import au.org.raid.idl.raidv2.model.ValidationFailureResponse;
+import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +13,8 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import java.util.List;
@@ -192,6 +196,82 @@ class RaidExceptionHandlerTest {
         final var body = (ValidationFailureResponse) response.getBody();
         assertThat(body, notNullValue());
         assertThat(body.getFailures().get(0).getMessage(), is("field has an invalid value"));
+    }
+
+    @Test
+    @DisplayName("RestClientException (connect/read timeout) maps to a structured 502, not an empty-body 500")
+    void resourceAccessException_mapsToBadGateway() {
+        final var ex = new ResourceAccessException("timeout");
+
+        final var response = handler.handleRestClientException(ex);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_GATEWAY));
+        assertThat(response.getHeaders().getContentType(), is(MediaType.APPLICATION_JSON));
+
+        final var body = response.getBody();
+        assertThat(body, notNullValue());
+        assertThat(body.getType(), is("https://raid.org.au/errors#UpstreamServiceException"));
+        assertThat(body.getTitle(), is("Upstream service unavailable"));
+        assertThat(body.getStatus(), is(502));
+        assertThat(body.getInstance(), is("https://raid.org.au"));
+        assertThat(body.getDetail(), is("An upstream dependency did not respond. Please try again later."));
+    }
+
+    @Test
+    @DisplayName("RestClientException (upstream 5xx) maps to a structured 502, not an empty-body 500")
+    void httpServerErrorException_mapsToBadGateway() {
+        final var ex = HttpServerErrorException.create(
+                HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null);
+
+        final var response = handler.handleRestClientException(ex);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_GATEWAY));
+        assertThat(response.getHeaders().getContentType(), is(MediaType.APPLICATION_JSON));
+
+        final var body = response.getBody();
+        assertThat(body, notNullValue());
+        assertThat(body.getType(), is("https://raid.org.au/errors#UpstreamServiceException"));
+        assertThat(body.getTitle(), is("Upstream service unavailable"));
+        assertThat(body.getStatus(), is(502));
+        assertThat(body.getInstance(), is("https://raid.org.au"));
+        assertThat(body.getDetail(), is("An upstream dependency did not respond. Please try again later."));
+    }
+
+    @Test
+    @DisplayName("defaultExceptionHandler returns a structured 500 (not empty-body) for an unknown exception, without leaking the exception message")
+    void defaultExceptionHandler_returnsStructured500() {
+        final var ex = new RuntimeException("boom");
+        final var request = new ServletWebRequest(new MockHttpServletRequest());
+
+        final var response = handler.defaultExceptionHandler(ex, request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        final var body = (FailureResponse) response.getBody();
+        assertThat(body, notNullValue());
+        assertThat(body.getStatus(), is(500));
+        assertThat(body.getTitle(), is("Internal server error"));
+        assertThat(body.getDetail(), is("An unexpected error occurred. Please try again later."));
+        assertThat(body.getDetail(), not(containsString("boom")));
+    }
+
+    @Test
+    @DisplayName("dataAccessExceptionHandler returns a structured 500 (not empty-body) with a generic detail, no SQL leakage")
+    void dataAccessExceptionHandler_returnsStructured500() {
+        final var ex = new DataAccessException("SQL [select * from raid where 1=0]; constraint violation");
+
+        final var response = handler.dataAccessExceptionHandler(ex);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(response.getHeaders().getContentType(), is(MediaType.APPLICATION_JSON));
+
+        final var body = response.getBody();
+        assertThat(body, notNullValue());
+        assertThat(body.getStatus(), is(500));
+        assertThat(body.getTitle(), is("Internal server error"));
+        assertThat(body.getDetail(), is("A database error occurred. Please try again later."));
+        assertThat(body.getDetail(), not(containsString("SQL")));
+        assertThat(body.getDetail(), not(containsString("select")));
     }
 
     @Test
