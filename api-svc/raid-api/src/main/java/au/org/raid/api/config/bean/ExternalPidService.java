@@ -11,6 +11,7 @@ import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
 import au.org.raid.api.validator.OpenStreetMapUriValidator;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -47,7 +48,7 @@ public class ExternalPidService {
     @Primary
     public RorService rorService(
             StubProperties stubProperties,
-            RestTemplate restTemplate
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
     ) {
         if (stubProperties.getRor().isEnabled()) {
             log.with("rorInMemoryStubDelay", stubProperties.getRor().getDelay()).
@@ -63,7 +64,7 @@ public class ExternalPidService {
     @Primary
     public DoiService doiService(
             StubProperties stubProperties,
-            RestTemplate restTemplate
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
     ) {
         if (stubProperties.getDoi().isEnabled()) {
             log.warn("using the in-memory DOI service");
@@ -77,7 +78,7 @@ public class ExternalPidService {
     @Primary
     public GeoNamesUriValidator geoNamesUriValidator(
             final StubProperties stubProperties,
-            final RestTemplate restTemplate,
+            @Qualifier("uriValidatorRestTemplate") final RestTemplate restTemplate,
             @Value("${raid.validation.geonames.username}") final String username
     ) {
         if (stubProperties.getGeoNames().isEnabled()) {
@@ -92,7 +93,7 @@ public class ExternalPidService {
     @Primary
     public OpenStreetMapUriValidator openStreetMapUriValidator(
             final StubProperties stubProperties,
-            final RestTemplate restTemplate
+            @Qualifier("uriValidatorRestTemplate") final RestTemplate restTemplate
     ) {
         if (stubProperties.getOpenStreetMap().isEnabled()) {
             log.warn("using the in-memory OpenStreetMap validator");

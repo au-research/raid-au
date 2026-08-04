@@ -67,9 +67,10 @@ raid:
   validation:
     geonames:
       username: geonames
-  rest-template:
-    # Bounded connect/read timeouts on the shared RestTemplate so a slow or
-    # unreachable external resolver fails gracefully rather than hanging (RAID-802).
+  uri-validation:
+    # Bounded connect/read timeouts for the URI validators' RestTemplate so a slow
+    # or unreachable external resolver fails gracefully rather than hanging. Scoped
+    # to validators only; the shared RestTemplate (minting etc.) is unaffected (RAID-802).
     connect-timeout: 5s
     read-timeout: 10s
   history:
