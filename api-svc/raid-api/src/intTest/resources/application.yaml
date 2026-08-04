@@ -11,9 +11,6 @@ raid:
     apids:
       enabled: true
       delay: 150
-    ror:
-      enabled: true
-      delay: 150
     doi:
       enabled: true
       delay: 150

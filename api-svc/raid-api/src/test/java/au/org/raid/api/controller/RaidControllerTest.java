@@ -123,7 +123,12 @@ class RaidControllerTest {
                             .characterEncoding("utf-8"))
                     .andDo(print())
                     .andExpect(status().isInternalServerError())
-                    .andExpect(content().string(""))
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    // Redacted: a structured, generic body is returned (RAID-803) - no SQL/DB
+                    // internals from the DataAccessException are exposed to the client.
+                    .andExpect(jsonPath("$.status", Matchers.is(500)))
+                    .andExpect(jsonPath("$.title", Matchers.is("Internal server error")))
+                    .andExpect(jsonPath("$.detail", Matchers.is("A database error occurred. Please try again later.")))
                     .andReturn();
 
             verifyFindServicePointId.get();

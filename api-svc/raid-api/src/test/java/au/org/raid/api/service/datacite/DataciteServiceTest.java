@@ -22,6 +22,8 @@ import au.org.raid.idl.raidv2.model.RaidDto;
 import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -151,6 +153,50 @@ public class DataciteServiceTest {
 
         assertThatThrownBy(() -> dataciteService.mint(raidRequest, handle, repositoryId, password))
                 .isInstanceOf(HttpClientErrorException.class);
+    }
+
+    @Test
+    @DisplayName("Throws RestClientException (not swallowed) when a ROR lookup during mint times out")
+    void mintThrowsWhenRorLookupTimesOutDuringRequestCreation() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var raidRequest = new RaidCreateRequest();
+
+        // Simulates DataciteRequestFactory.create() failing because one of the DataCite factories
+        // (DatacitePublisherFactory / DataciteContributorFactory / DataciteFundingReferenceFactory)
+        // calls rorClient.getOrganisationName(), which now uses the bounded uriValidatorRestTemplate
+        // and can throw a ResourceAccessException on a slow/unreachable ROR resolver.
+        when(dataciteRequestFactory.create(raidRequest, handle))
+                .thenThrow(new ResourceAccessException("ROR lookup timed out"));
+
+        assertThatThrownBy(() -> dataciteService.mint(raidRequest, handle, repositoryId, password))
+                .isInstanceOf(ResourceAccessException.class);
+
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    @DisplayName("Throws RestClientException (not swallowed) when the Datacite POST fails with a 5xx")
+    void mintThrowsWhenDataciteReturnsServerError() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var raidRequest = new RaidCreateRequest();
+
+        final var dataciteRequest = new DataciteRequest();
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(raidRequest, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+        when(restTemplate.exchange(endpoint, HttpMethod.POST, entity, JsonNode.class))
+                .thenThrow(HttpServerErrorException.create(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null));
+
+        assertThatThrownBy(() -> dataciteService.mint(raidRequest, handle, repositoryId, password))
+                .isInstanceOf(HttpServerErrorException.class);
     }
 
     @Test

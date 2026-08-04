@@ -17,8 +17,6 @@ public class InMemoryStubTestData {
             "https://orcid.org/0000-0001-0000-0009";
     public static String SERVER_ERROR_TEST_ORCID =
             "https://orcid.org/0000-0002-0448-8774";
-    public static String NONEXISTENT_TEST_ROR = "https://ror.org/000000042";
-    public static String SERVER_ERROR_TEST_ROR = "https://ror.org/000000043";
     public static String NONEXISTENT_TEST_DOI = "https://doi.org/10.42/000000";
     public static String SERVER_ERROR_TEST_DOI = "https://doi.org/10.42/000001";
 

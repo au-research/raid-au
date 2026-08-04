@@ -5,7 +5,6 @@ import au.org.raid.api.client.contributor.isni.IsniRequestEntityFactory;
 import au.org.raid.api.config.properties.StubProperties;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.orcid.OrcidService;
-import au.org.raid.api.service.ror.RorService;
 import au.org.raid.api.service.stub.*;
 import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
@@ -43,22 +42,6 @@ public class ExternalPidService {
 
         return new IsniClient(restTemplate, isniRequestEntityFactory);
     }
-
-    @Bean
-    @Primary
-    public RorService rorService(
-            StubProperties stubProperties,
-            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
-    ) {
-        if (stubProperties.getRor().isEnabled()) {
-            log.with("rorInMemoryStubDelay", stubProperties.getRor().getDelay()).
-                    warn("using the in-memory ROR service");
-            return new RorServiceStub(stubProperties.getRor().getDelay());
-        }
-
-        return new RorService(restTemplate);
-    }
-
 
     @Bean
     @Primary

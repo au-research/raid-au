@@ -14,6 +14,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -118,11 +119,49 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(body);
     }
 
+    /*
+    This is app-wide, not mint-specific: as a @ControllerAdvice handler it covers ANY controller's
+    uncaught RestClientException, from any outbound-call failure - ResourceAccessException
+    (connect/read timeout, DNS failure, connection refused), HttpServerErrorException (5xx), and
+    HttpClientErrorException (4xx, since it extends RestClientException). Mint (via ROR/DataCite,
+    RaidService.mintHandle's 422-retry aside - those are caught and retried there and never reach
+    this handler) is the primary case, but this also covers e.g. DataciteRepositoryClient during
+    service-point provisioning or RaidUpgradeService. Falling through to defaultExceptionHandler
+    previously produced an opaque, empty-body 500; this returns a structured 502 so the caller
+    gets a JSON body identifying the failure as an upstream dependency problem. See RAID-803.
+     */
+    @ExceptionHandler(RestClientException.class)
+    public ResponseEntity<FailureResponse> handleRestClientException(final RestClientException e) {
+        log.error("Upstream service call failed", e);
+
+        final var body = new FailureResponse()
+                .type("https://raid.org.au/errors#UpstreamServiceException")
+                .title("Upstream service unavailable")
+                .status(HttpStatus.BAD_GATEWAY.value())
+                .detail("An upstream dependency did not respond. Please try again later.")
+                .instance("https://raid.org.au");
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<Void> dataAccessExceptionHandler(final Exception e) {
+    public ResponseEntity<FailureResponse> dataAccessExceptionHandler(final Exception e) {
+        log.error("Database access error", e);
+
+        final var body = new FailureResponse()
+                .type("https://raid.org.au/errors#InternalServerError")
+                .title("Internal server error")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .detail("A database error occurred. Please try again later.")
+                .instance("https://raid.org.au");
+
         return ResponseEntity
                 .internalServerError()
-                .build();
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
     }
 
     @ExceptionHandler(Exception.class)
@@ -137,9 +176,19 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
         }
         log.error("Unhandled exception", e);
 
+        // Generic detail only - the exception message/stacktrace is logged above, not exposed
+        // to the caller, so this can't leak internals.
+        final var body = new FailureResponse()
+                .type("https://raid.org.au/errors#InternalServerError")
+                .title("Internal server error")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .detail("An unexpected error occurred. Please try again later.")
+                .instance("https://raid.org.au");
+
         return ResponseEntity
                 .internalServerError()
-                .build();
+                .contentType(MediaType.APPLICATION_JSON)
+                .body((Object) body);
     }
 
     /*
