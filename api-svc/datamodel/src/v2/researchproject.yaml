@@ -5,7 +5,7 @@ description: LinkML schema for mapping RAiD (Research Activity Identifier) to sc
 
 prefixes:
   linkml: https://w3id.org/linkml/
-  schema: https://schema.org/
+  schema: http://schema.org/
   raid: https://vocabulary.raid.org/
   credit: https://credit.niso.org/
   orcid: https://orcid.org/
@@ -50,7 +50,7 @@ classes:
       name:
         slot_uri: schema:name
         range: string
-        description: The title/name of the research project (all titles joined by " | ")
+        description: The title/name of the research project (all titles concatenated with a pipe separator)
       headline:
         slot_uri: schema:headline
         range: string
@@ -156,6 +156,7 @@ classes:
           relationshipType URI and its resolved relationshipTypeName label.
   Organization:
     class_uri: schema:Organization
+    description: An organisation involved in the research project, such as a funder, lead organisation or the registration agency, identified by its ROR.
     attributes:
       type:
         range: string

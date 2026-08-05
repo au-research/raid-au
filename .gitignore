@@ -11,6 +11,7 @@ api-svc/**/generated/
 !api-svc/datamodel/generated/
 !api-svc/datamodel/generated/v2/
 !api-svc/datamodel/generated/v2/*.json
+!api-svc/datamodel/generated/v2/*.jsonld
 
 # Default location for us to put files for input/output purposes.  
 # Avoids polluting the root of the repo, but not under the /build dir so

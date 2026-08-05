@@ -179,9 +179,17 @@ tasks.register('generateReferenceData', GenerateReferenceDataTask) {
 }
 ```
 
+## JSON-LD context
+
+The `generateJSONLDContextV2` task runs the LinkML `gen-jsonld-context` generator against `researchproject.yaml` (the schema.org `ResearchProject` mapping) and writes the JSON-LD `@context` to `generated/v2/researchproject-context.jsonld`. This artefact is committed and wired into `generateAllV2`.
+
+The task targets `researchproject.yaml` rather than `raid-core.yaml` because the JSON-LD context generator does not support dynamic (SPARQL-materialised) enumerations. `researchproject.yaml` uses only static enumerations, so it generates cleanly, whereas `raid-core.yaml` would fail.
+
+Note: `researchproject.yaml` declares the `schema` prefix as `http://schema.org/` (not `https://`). The generator requires this to match the `schema` prefix that `linkml:types` supplies, and refuses to run on a mismatch. `http://schema.org/` and `https://schema.org/` are treated as equivalent by schema.org and search engines. See the ADR `doc/adr/2026-08-05_schema-org-http-prefix-jsonld-context.md`.
+
 ## Others
 
-There are tasks in the datamodel project for generating JSON-LD context, OWL ontology and SHACL shapes from the specificiation. The current implementation of the JSON-LD context and SHACL generators does not yet support dynamic enumeration, which causes  `generateJSONLDContextV2` and `generateSHACLV2` tasks to fail. A workaround would be to add a custom task that would add create a version of the linkml specification that would include the materialized enumeration with values queried from the vocabulary service.
+There are tasks in the datamodel project for generating OWL ontology and SHACL shapes from the specification. The current implementation of the SHACL generator does not yet support dynamic enumeration, which causes the `generateSHACLV2` task to fail against `raid-core.yaml`. A workaround would be to add a custom task that creates a version of the LinkML specification that includes the materialised enumeration with values queried from the vocabulary service.
 
 # Creating new data model versions
 
