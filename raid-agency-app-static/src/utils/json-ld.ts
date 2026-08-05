@@ -91,7 +91,7 @@ interface CreativeWorkReference {
   "@id": string;
   name?: string;
   identifier: PropertyValue;
-  additionalType?: string | string[];
+  additionalType?: string[];
 }
 
 interface ResearchProjectJsonLd {
@@ -238,7 +238,11 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
 // already uses CreativeWork properties (isPartOf/hasPart/isBasedOn) on the
 // project loosely, consistent with how harvesters consume the output. The
 // category (Input/Output/Internal) is preserved on `additionalType` rather
-// than split across distinct schema.org properties (see RAID-757).
+// than split across distinct schema.org properties (see RAID-757). It is always
+// emitted as an array (omitted when there is no category) so the output matches
+// the multivalued `additionalType` in the LinkML CreativeWork schema; harvesters
+// treat a single-element array and a scalar identically after JSON-LD expansion
+// (RAID-782).
 //
 // The formatted citation text (APA string fetched from DOI.org by the
 // fetch-raids build step, and shown on the landing page) is carried on `name`
@@ -275,9 +279,7 @@ function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]
       citation.name = citationText;
     }
 
-    if (categoryIds.length === 1) {
-      citation.additionalType = categoryIds[0];
-    } else if (categoryIds.length > 1) {
+    if (categoryIds.length > 0) {
       citation.additionalType = categoryIds;
     }
 
