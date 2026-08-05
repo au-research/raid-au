@@ -5,7 +5,7 @@ description: LinkML schema for mapping RAiD (Research Activity Identifier) to sc
 
 prefixes:
   linkml: https://w3id.org/linkml/
-  schema: https://schema.org/
+  schema: http://schema.org/
   raid: https://vocabulary.raid.org/
   credit: https://credit.niso.org/
   orcid: https://orcid.org/

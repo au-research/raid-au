@@ -6,6 +6,16 @@ schema.org property and type it maps to, and a worked example. Use it to
 understand what a harvester or search engine sees without reading the source
 code.
 
+> **Note (RAID-779):** This hand-written page will be superseded by schema.org
+> reference documentation generated directly from the LinkML schema
+> (`api-svc/datamodel/src/v2/researchproject.yaml`) and published to the
+> `schema.org` section of the datamodel docs site. The generated docs and this
+> page describe the same schema.org `ResearchProject` mapping from two sources:
+> this page documents the landing-page JSON-LD emitted by the static site
+> (`json-ld.ts`), while the generated docs are derived from the LinkML schema
+> itself. Once the generated docs are published, treat them as the canonical
+> reference and retire this page.
+
 ## Audience and scope
 
 This reference is for anyone consuming RAiD metadata from the public web, such as

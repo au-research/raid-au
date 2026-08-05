@@ -69,10 +69,12 @@ tasks.register('generateSHACLV2', Exec) {
 
 tasks.register('generateJSONLDContextV2', Exec) {
   dependsOn "pullLinkMLImage"
-  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-jsonld-context', 'raid-core.yaml'
-  outputs.file("api-svc/datamodel/generated/v2/raid-context.jsonld")
+  commandLine '/usr/local/bin/docker', 'run', '-v', './src/v2:/work', '-v', './generated:/generated', '-w', '/work', 'linkml/linkml', 'gen-jsonld-context', 'researchproject.yaml'
+  outputs.file('generated/v2/researchproject-context.jsonld')
   doFirst {
-    file('api-svc/datamodel/generated/v2').mkdirs()
+    def outputFile = file('generated/v2/researchproject-context.jsonld')
+    outputFile.parentFile.mkdirs()
+    standardOutput = new FileOutputStream(outputFile)
   }
 }
 
@@ -121,6 +123,7 @@ tasks.register('generateStrictJsonSchemaV2', AddStaticEnums) {
 tasks.register('generateAllV2') {
   dependsOn "generateStrictJsonSchemaV2"
   dependsOn "generateJSONSchemaV2ResearchProject"
+  dependsOn "generateJSONLDContextV2"
   dependsOn "generateExtendedReferenceDataV2"
   dependsOn "generateReferenceDataV2"
   dependsOn "generateSchemaDocsV2"
@@ -145,5 +148,6 @@ clean {
     'v2/raid-jsonschema.json',
     'v2/raid-strict-jsonschema.json',
     'v2/researchproject.json',
+    'v2/researchproject-context.jsonld',
   ])
 }
