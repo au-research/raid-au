@@ -108,25 +108,20 @@ public class ContentNegotiationIntTest {
     }
 
     /**
-     * Test that the API can return JSON-LD format when requested.
+     * Test that the API rejects the retired JSON-LD content type with 406 Not Acceptable
+     * (RAID-781: application/ld+json content negotiation has been retired).
      */
     @Test
     @WithMockUser(roles = {"service-point-user"})
-    public void testJsonLdFormat() throws Exception {
+    public void testJsonLdFormatNotAcceptable() throws Exception {
         // Create mock RAID response
         RaidDto mockRaid = createMockRaid();
         when(raidService.findByHandle(anyString())).thenReturn(Optional.of(mockRaid));
 
         // Make request with Accept: application/ld+json
-        MvcResult result = mockMvc.perform(get("/raid/10378.1/1696639")
+        mockMvc.perform(get("/raid/10378.1/1696639")
                         .accept("application/ld+json"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("application/ld+json"))
-                .andReturn();
-
-        // Since we're only testing content negotiation, just verify non-empty response
-        String responseBody = result.getResponse().getContentAsString();
-        assertThat(responseBody).isNotEmpty();
+                .andExpect(status().isNotAcceptable());
     }
 
     /**

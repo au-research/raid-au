@@ -146,9 +146,6 @@ paths:
             application/rdf+xml:
               schema:
                 type: "string"
-            application/ld+json:
-              schema:
-                type: "object"
         403:
           description: "Closed or Embargoed raids return a 403 response with an access\
             \ statement"
@@ -1938,7 +1935,8 @@ components:
       type: "object"
     Organization:
       additionalProperties: false
-      description: ""
+      description: "An organisation involved in the research project, such as a funder,\
+        \ lead organisation or the registration agency, identified by its ROR."
       properties:
         '@id':
           description: "The ROR of the organization"
@@ -2175,8 +2173,8 @@ components:
           - "array"
           - "null"
         name:
-          description: "The title/name of the research project (all titles joined\
-            \ by \" | \")"
+          description: "The title/name of the research project (all titles concatenated\
+            \ with a pipe separator)"
           type:
           - "string"
           - "null"
