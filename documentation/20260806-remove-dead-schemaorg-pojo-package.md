@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-06
 **Ticket:** [RAID-783](https://ardc.atlassian.net/browse/RAID-783) — Remove dead model/schemaorg/* POJO package (Story, parent epic [RAID-574](https://ardc.atlassian.net/browse/RAID-574))
-**PR:** _see linked pull request_
+**PR:** [au-research/raid-au#601](https://github.com/au-research/raid-au/pull/601)
 
 ## What changed
 
