@@ -48,6 +48,9 @@ raid:
     doi:
       enabled: true
       delay: 150
+    handle:
+      enabled: true
+      delay: 150
     open-street-map:
       enabled: true
       delay: 150

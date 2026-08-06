@@ -4,6 +4,7 @@ import au.org.raid.api.client.contributor.isni.IsniClient;
 import au.org.raid.api.client.contributor.isni.IsniRequestEntityFactory;
 import au.org.raid.api.config.properties.StubProperties;
 import au.org.raid.api.service.doi.DoiService;
+import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.orcid.OrcidService;
 import au.org.raid.api.service.stub.*;
 import au.org.raid.api.util.Log;
@@ -55,6 +56,20 @@ public class ExternalPidService {
         }
 
         return new DoiService(restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public HandleService handleService(
+            StubProperties stubProperties,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getHandle().isEnabled()) {
+            log.warn("using the in-memory Handle service");
+            return new HandleServiceStub(stubProperties.getHandle().getDelay());
+        }
+
+        return new HandleService(restTemplate);
     }
 
     @Bean

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "raid.stub")
 public class StubProperties {
     private Doi doi;
+    private Handle handle;
     private Orcid orcid;
     private GeoNames geoNames;
     private Apids apids;
@@ -17,6 +18,12 @@ public class StubProperties {
 
     @Data
     public static class Doi {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
+    public static class Handle {
         private boolean enabled;
         private Long delay;
     }

@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.service.doi.DoiService;
+import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
@@ -25,6 +26,9 @@ import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +41,9 @@ class RelatedObjectValidatorTest {
 
     @Mock
     private DoiService doiService;
+
+    @Mock
+    private HandleService handleService;
 
     @InjectMocks
     private RelatedObjectValidator validationService;
@@ -199,6 +206,102 @@ class RelatedObjectValidatorTest {
                 validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
 
         assertThat(failures, is(List.of(failure)));
+    }
+
+    @Test
+    @DisplayName("Validation passes with valid Handle related object")
+    void validHandleRelatedObject() {
+        final var handleUri = "https://hdl.handle.net/20.500.12345/abc123";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(handleUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_HDL_HANDLE_NET_)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(handleService.validate(handleUri, "relatedObject[0].id")).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Validation fails if Handle does not resolve")
+    void addsFailureIfHandleDoesNotExist() {
+        final var handleUri = "https://hdl.handle.net/20.500.12345/not-found";
+        final var fieldId = "relatedObject[0].id";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(handleUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_HDL_HANDLE_NET_)
+                .type(type)
+                .category(categories);
+
+        final var failure = new ValidationFailure()
+                .fieldId(fieldId)
+                .errorType("invalidValue")
+                .message("uri not found");
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(handleService.validate(handleUri, fieldId)).thenReturn(List.of(failure));
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, is(List.of(failure)));
+    }
+
+    @Test
+    @DisplayName("A DOI-shaped id under the Handle schemaUri is dispatched to HandleService, not DoiService")
+    void doiShapedIdUnderHandleSchemaUriUsesHandleService() {
+        final var doiShapedHandleUri = "https://hdl.handle.net/10.1234/xyz";
+        final var fieldId = "relatedObject[0].id";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(doiShapedHandleUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_HDL_HANDLE_NET_)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(handleService.validate(doiShapedHandleUri, fieldId)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+        verify(handleService).validate(doiShapedHandleUri, fieldId);
+        verify(doiService, never()).validate(any(), any());
     }
 
     @Test

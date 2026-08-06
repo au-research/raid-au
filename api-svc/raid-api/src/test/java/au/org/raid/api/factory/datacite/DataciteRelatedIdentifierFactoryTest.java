@@ -55,6 +55,25 @@ public class DataciteRelatedIdentifierFactoryTest {
     }
 
     @Test
+    @DisplayName("Create related identifier with 'Handle' identifier type")
+    public void handleIdentifierType() {
+        final var id = "https://hdl.handle.net/20.500.12345/abc123";
+
+        final var relatedObject = new RelatedObject()
+                .id(id)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_HDL_HANDLE_NET_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
+
+        final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
+
+        assertThat(result.getRelatedIdentifier(), is(id));
+        assertThat(result.getRelatedIdentifierType(), is("Handle"));
+        assertThat(result.getResourceTypeGeneral(), is("OutputManagementPlan"));
+        assertThat(result.getRelationType(), is("References"));
+    }
+
+    @Test
     @DisplayName("Create related identifier with 'Conference Poster' resource type")
     public void conferencePosterResourceType() {
         final var id = "_id";

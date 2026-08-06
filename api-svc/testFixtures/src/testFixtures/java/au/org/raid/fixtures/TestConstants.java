@@ -105,4 +105,7 @@ public class TestConstants {
     public static final String VALID_WEB_ARCHIVE_URL =
             "https://web.archive.org/web/20220101000000/https://example.com";
     public static final String INVALID_WEB_ARCHIVE_URL = "https://web.archive.org/foo/bar";
+
+    public static final String HANDLE_SCHEMA_URI = "https://hdl.handle.net/";
+    public static final String VALID_HANDLE = "https://hdl.handle.net/20.500.12345/abc123";
 }
