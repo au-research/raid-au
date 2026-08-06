@@ -551,7 +551,7 @@ describe("buildResearchProjectJsonLd", () => {
           name: "DOI",
           value: "https://doi.org/10.1007/s00442-014-2977-8",
         },
-        additionalType: "https://vocabulary.raid.org/relatedObject.category.id/190",
+        additionalType: ["https://vocabulary.raid.org/relatedObject.category.id/190"],
       },
     ]);
   });
@@ -623,12 +623,12 @@ describe("buildResearchProjectJsonLd", () => {
       "https://doi.org/10.1007/s00442-014-2977-8",
       "https://doi.org/10.4227/05/598bd8a2e9e76",
     ]);
-    expect(result.citation?.[0].additionalType).toBe(
-      "https://vocabulary.raid.org/relatedObject.category.id/190"
-    );
-    expect(result.citation?.[1].additionalType).toBe(
-      "https://vocabulary.raid.org/relatedObject.category.id/191"
-    );
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+    ]);
+    expect(result.citation?.[1].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/191",
+    ]);
   });
 
   it("falls back to a URL identifier for a schemaUri outside the DOI/ARK/ISBN set", () => {

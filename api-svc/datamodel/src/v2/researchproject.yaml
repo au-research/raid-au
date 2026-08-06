@@ -243,6 +243,14 @@ classes:
         range: PropertyValue
         inlined: true
         description: Structured identifier with type information
+      name:
+        slot_uri: schema:name
+        range: string
+        description: >-
+          The resolved organisation name for organization members, carried so
+          harvesters do not have to resolve the ROR themselves (RAID-794).
+          Optional: person members and organizations whose ROR could not be
+          resolved emit only the identifier.
   Place:
     class_uri: schema:Place
     description: Geographic location

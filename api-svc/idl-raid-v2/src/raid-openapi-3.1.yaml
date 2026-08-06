@@ -1795,6 +1795,14 @@ components:
           - $ref: "#/components/schemas/PropertyValue"
           - type: "null"
           description: "Structured identifier with type information"
+        name:
+          description: "The resolved organisation name for organization members, carried\
+            \ so harvesters do not have to resolve the ROR themselves (RAID-794).\
+            \ Optional: person members and organizations whose ROR could not be resolved\
+            \ emit only the identifier."
+          type:
+          - "string"
+          - "null"
       required:
       - "@type"
       - "@id"
