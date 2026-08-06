@@ -17,7 +17,7 @@ RAID-574.
 - Follow-on from: [RAID-759](https://ardc.atlassian.net/browse/RAID-759) (investigation, Phase 3a)
 - Depends on: [RAID-778](https://ardc.atlassian.net/browse/RAID-778) (LinkML schema), [RAID-779](https://ardc.atlassian.net/browse/RAID-779) (generated artefacts)
 - Related: [RAID-757](https://ardc.atlassian.net/browse/RAID-757) (citation), [RAID-794](https://ardc.atlassian.net/browse/RAID-794) (resolved ROR org name)
-- PR: _to be added_
+- PR: https://github.com/au-research/raid-au/pull/600
 - ADR: `doc/adr/2026-08-06_validate-static-jsonld-against-linkml-schema.md`
 
 ## What changed and why
