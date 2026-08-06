@@ -20,6 +20,9 @@ public class InMemoryStubTestData {
     public static String NONEXISTENT_TEST_DOI = "https://doi.org/10.42/000000";
     public static String SERVER_ERROR_TEST_DOI = "https://doi.org/10.42/000001";
 
+    public static String NONEXISTENT_TEST_HANDLE = "https://hdl.handle.net/0.0/not-found";
+    public static String SERVER_ERROR_TEST_HANDLE = "https://hdl.handle.net/0.0/server-error";
+
     public static String NONEXISTENT_TEST_GEONAMES_URI = "https://www.geonames.org/0/not-found.html";
     public static String SERVER_ERROR_TEST_GEONAMES_URI = "https://www.geonames.org/0/server-error.html";
 
