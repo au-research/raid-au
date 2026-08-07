@@ -108,4 +108,7 @@ public class TestConstants {
 
     public static final String HANDLE_SCHEMA_URI = "https://hdl.handle.net/";
     public static final String VALID_HANDLE = "https://hdl.handle.net/20.500.12345/abc123";
+
+    public static final String RRID_SCHEMA_URI = "https://scicrunch.org/resolver/";
+    public static final String VALID_RRID = "https://scicrunch.org/resolver/RRID:AB_2298772";
 }

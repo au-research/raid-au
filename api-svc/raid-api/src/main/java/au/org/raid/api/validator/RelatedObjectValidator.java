@@ -3,6 +3,7 @@ package au.org.raid.api.validator;
 import au.org.raid.api.repository.RelatedObjectTypeRepository;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
+import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class RelatedObjectValidator {
     private static final String DOI_SCHEMA_URI = "https://doi.org/";
     private static final String WEB_ARCHIVE_SCHEMA_URI = "https://web.archive.org/";
     private static final String HANDLE_SCHEMA_URI = "https://hdl.handle.net/";
+    private static final String RRID_SCHEMA_URI = "https://scicrunch.org/resolver/";
     private static final Pattern WEB_ARCHIVE_URL_PATTERN =
             Pattern.compile("https://web\\.archive\\.org/web/\\d{14}/https?://.+");
 
@@ -45,7 +47,7 @@ public class RelatedObjectValidator {
     private final RelatedObjectCategoryValidator categoryValidationService;
     private final Map<String, BiFunction<String, String, List<ValidationFailure>>> relatedObjectSchemaUriValidatorMap;
 
-    public RelatedObjectValidator(final RelatedObjectTypeRepository relatedObjectTypeRepository, final DoiService doiService, final HandleService handleService, final RelatedObjectTypeValidator typeValidationService, final RelatedObjectCategoryValidator categoryValidationService) {
+    public RelatedObjectValidator(final RelatedObjectTypeRepository relatedObjectTypeRepository, final DoiService doiService, final HandleService handleService, final RridService rridService, final RelatedObjectTypeValidator typeValidationService, final RelatedObjectCategoryValidator categoryValidationService) {
         this.typeValidationService = typeValidationService;
         this.categoryValidationService = categoryValidationService;
 
@@ -55,6 +57,7 @@ public class RelatedObjectValidator {
         final var map = new LinkedHashMap<String, BiFunction<String, String, List<ValidationFailure>>>();
         map.put(DOI_SCHEMA_URI, doiService::validate);
         map.put(HANDLE_SCHEMA_URI, handleService::validate);
+        map.put(RRID_SCHEMA_URI, rridService::validate);
         map.put(WEB_ARCHIVE_SCHEMA_URI, (id, fieldId) -> {
             if (WEB_ARCHIVE_URL_PATTERN.matcher(id).matches()) {
                 return List.of();

@@ -106,7 +106,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is("URL"));
+        assertThat(result.getRelatedIdentifierType(), is("RRID"));
         assertThat(result.getResourceTypeGeneral(), is("Workflow"));
         assertThat(result.getRelationType(), is("References"));
     }

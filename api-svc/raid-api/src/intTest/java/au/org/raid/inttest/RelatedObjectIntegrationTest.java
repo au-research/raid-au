@@ -31,6 +31,11 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
     private static final String NONEXISTENT_TEST_HANDLE = "https://hdl.handle.net/0.0/not-found";
     private static final String SERVER_ERROR_TEST_HANDLE = "https://hdl.handle.net/0.0/server-error";
 
+    /* confirmed sentinel values understood by the in-memory RRID stub, see
+       au.org.raid.api.service.stub.InMemoryStubTestData */
+    private static final String NONEXISTENT_TEST_RRID = "https://scicrunch.org/resolver/RRID:AB_0000000";
+    private static final String SERVER_ERROR_TEST_RRID = "https://scicrunch.org/resolver/RRID:AB_5000000";
+
     private RelatedObject webArchiveRelatedObject(String id) {
         return new RelatedObject()
                 .id(id)
@@ -143,6 +148,18 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    private RelatedObject rridRelatedObject(String id) {
+        return new RelatedObject()
+                .id(id)
+                .schemaUri(RelatedObjectSchemaUriEnum.fromValue(RRID_SCHEMA_URI))
+                .type(new RelatedObjectType()
+                        .id(RelatedObjectTypeIdEnum.fromValue(BOOK_CHAPTER_RELATED_OBJECT_TYPE))
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.fromValue(RELATED_OBJECT_TYPE_SCHEMA_URI)))
+                .category(List.of(new RelatedObjectCategory()
+                        .id(RelatedObjectCategoryIdEnum.fromValue(INPUT_RELATED_OBJECT_CATEGORY_ID))
+                        .schemaUri(RelatedObjectCategorySchemaUriEnum.fromValue(RELATED_OBJECT_CATEGORY_SCHEMA_URI))));
+    }
+
     @Test
     @DisplayName("Minting a RAiD with a valid Handle related object succeeds")
     void validHandleRelatedObject() {
@@ -231,4 +248,67 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
     // DataciteRelatedIdentifierFactoryTest, which directly asserts
     // relatedIdentifierType = RelatedIdentifierType.HANDLE.getName() for a Handle-scoped
     // RelatedObject. Rather than fabricate a brittle intTest, Scenario 4 is left to that unit test.
+
+    @Test
+    @DisplayName("Minting a RAiD with a valid RRID related object succeeds")
+    void validRridRelatedObject() {
+        createRequest.setRelatedObject(List.of(rridRelatedObject(VALID_RRID)));
+
+        try {
+            final var result = raidApi.mintRaid(createRequest);
+            final var raid = result.getBody();
+            assertThat(raid).isNotNull();
+            assertThat(raid.getRelatedObject()).hasSize(1);
+            assertThat(raid.getRelatedObject().get(0).getId()).isEqualTo(VALID_RRID);
+            assertThat(raid.getRelatedObject().get(0).getSchemaUri()).isEqualTo(RelatedObjectSchemaUriEnum.fromValue(RRID_SCHEMA_URI));
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with an RRID related object that the resolver reports as non-existent fails validation")
+    void nonExistentRrid() {
+        createRequest.setRelatedObject(List.of(rridRelatedObject(NONEXISTENT_TEST_RRID)));
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown with non-existent RRID");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(new ValidationFailure()
+                    .fieldId("relatedObject[0].id")
+                    .errorType("invalidValue")
+                    .message("uri not found"));
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with an RRID related object fails validation when the resolver reports a server error")
+    void rridServerError() {
+        createRequest.setRelatedObject(List.of(rridRelatedObject(SERVER_ERROR_TEST_RRID)));
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown when RRID resolver returns a server error");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(new ValidationFailure()
+                    .fieldId("relatedObject[0].id")
+                    .errorType("invalidValue")
+                    .message("uri could not be validated - server error"));
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    // As with Handle (see Scenario 4 note above), the RRID DataCite mapping (relatedIdentifierType =
+    // "RRID") is not asserted at the intTest level for the same reasons - this package has no harness
+    // for inspecting the outbound DataCite request body. It is covered by the unit test
+    // DataciteRelatedIdentifierFactoryTest, which asserts relatedIdentifierType is "RRID" for a
+    // scicrunch-scoped RelatedObject.
 }

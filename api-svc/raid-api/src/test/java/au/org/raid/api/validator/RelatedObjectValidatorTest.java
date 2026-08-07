@@ -2,6 +2,7 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
+import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
@@ -44,6 +45,9 @@ class RelatedObjectValidatorTest {
 
     @Mock
     private HandleService handleService;
+
+    @Mock
+    private RridService rridService;
 
     @InjectMocks
     private RelatedObjectValidator validationService;
@@ -302,6 +306,68 @@ class RelatedObjectValidatorTest {
         assertThat(failures, empty());
         verify(handleService).validate(doiShapedHandleUri, fieldId);
         verify(doiService, never()).validate(any(), any());
+    }
+
+    @Test
+    @DisplayName("Validation passes with valid RRID related object")
+    void validRridRelatedObject() {
+        final var rridUri = "https://scicrunch.org/resolver/RRID:AB_2298772";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(rridUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_SCICRUNCH_ORG_RESOLVER_)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(rridService.validate(rridUri, "relatedObject[0].id")).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("An RRID-shaped id under the SciCrunch schemaUri is dispatched to RridService, not DoiService or HandleService")
+    void rridShapedIdUnderScicrunchSchemaUriUsesRridService() {
+        final var rridUri = "https://scicrunch.org/resolver/RRID:AB_2298772";
+        final var fieldId = "relatedObject[0].id";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(rridUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_SCICRUNCH_ORG_RESOLVER_)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(rridService.validate(rridUri, fieldId)).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(failures, empty());
+        verify(rridService).validate(rridUri, fieldId);
+        verify(doiService, never()).validate(any(), any());
+        verify(handleService, never()).validate(any(), any());
     }
 
     @Test
