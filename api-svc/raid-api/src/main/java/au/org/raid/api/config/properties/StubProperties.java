@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class StubProperties {
     private Doi doi;
     private Handle handle;
+    private Rrid rrid;
     private Orcid orcid;
     private GeoNames geoNames;
     private Apids apids;
@@ -24,6 +25,12 @@ public class StubProperties {
 
     @Data
     public static class Handle {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
+    public static class Rrid {
         private boolean enabled;
         private Long delay;
     }

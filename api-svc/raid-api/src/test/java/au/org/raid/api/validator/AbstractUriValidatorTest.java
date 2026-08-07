@@ -3,6 +3,7 @@ package au.org.raid.api.validator;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -15,6 +16,7 @@ import java.net.SocketTimeoutException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +35,18 @@ class AbstractUriValidatorTest {
 
         final var failures = uriValidator.validate("http://localhost", "field-id");
         assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("By default the resolver HEAD-checks the stored uri unchanged")
+    void resolverUriDefaultsToStoredUri() {
+        when(restTemplate.exchange(any(RequestEntity.class), eq(Void.class))).thenReturn(null);
+
+        uriValidator.validate("http://localhost", "field-id");
+
+        final var captor = ArgumentCaptor.forClass(RequestEntity.class);
+        verify(restTemplate).exchange(captor.capture(), eq(Void.class));
+        assertThat(captor.getValue().toString(), containsString("HEAD http://localhost,"));
     }
 
     @Test

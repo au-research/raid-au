@@ -21,6 +21,17 @@ public abstract class AbstractUriValidator implements UriValidator {
 
     protected abstract RestTemplate getRestTemplate();
 
+    /**
+     * The URL to HEAD-check for existence, derived from the (already regex-validated) stored uri.
+     * Defaults to the stored uri itself. Subclasses override this when the canonical stored form
+     * is not directly resolvable server-side (e.g. RRID: the bare scicrunch.org/resolver/ URL sits
+     * behind a Cloudflare challenge that returns 403 to all non-browser clients, so we check the
+     * ".json" resolver variant instead, which returns a clean 200/404).
+     */
+    protected String resolverUri(final String uri) {
+        return uri;
+    }
+
     public List<ValidationFailure> validate(final String uri, final String fieldId) {
         final var failures = new ArrayList<ValidationFailure>();
 
@@ -35,13 +46,14 @@ public abstract class AbstractUriValidator implements UriValidator {
             );
 
         } else {
-            final var requestEntity = RequestEntity.head(uri).build();
+            final var resolverUri = resolverUri(uri);
+            final var requestEntity = RequestEntity.head(resolverUri).build();
             try {
                 final var start = Instant.now();
                 getRestTemplate().exchange(requestEntity, Void.class);
                 final var end = Instant.now();
                 Duration duration = Duration.between(start, end);
-                log.info("request to {} took {}.{} seconds", uri, duration.getSeconds(), duration.getNano());
+                log.info("request to {} took {}.{} seconds", resolverUri, duration.getSeconds(), duration.getNano());
             } catch (HttpClientErrorException e) {
 
                 if (e.getStatusCode().equals(HttpStatusCode.valueOf(404))) {

@@ -6,6 +6,7 @@ import au.org.raid.api.config.properties.StubProperties;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.orcid.OrcidService;
+import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.api.service.stub.*;
 import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
@@ -70,6 +71,20 @@ public class ExternalPidService {
         }
 
         return new HandleService(restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public RridService rridService(
+            StubProperties stubProperties,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getRrid().isEnabled()) {
+            log.warn("using the in-memory RRID service");
+            return new RridServiceStub(stubProperties.getRrid().getDelay());
+        }
+
+        return new RridService(restTemplate);
     }
 
     @Bean

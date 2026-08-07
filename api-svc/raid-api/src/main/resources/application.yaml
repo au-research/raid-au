@@ -51,6 +51,9 @@ raid:
     handle:
       enabled: true
       delay: 150
+    rrid:
+      enabled: true
+      delay: 150
     open-street-map:
       enabled: true
       delay: 150
