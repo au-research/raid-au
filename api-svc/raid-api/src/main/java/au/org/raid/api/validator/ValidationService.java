@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.endpoint.message.ValidationMessage;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.service.raid.id.IdentifierHandle;
 import au.org.raid.api.service.raid.id.IdentifierParser;
@@ -190,9 +191,14 @@ public class ValidationService {
      * via allOf(), then merges their results. Every validator runs to
      * completion before any result is inspected.
      *
-     * If a validator throws a RuntimeException it is re-thrown unwrapped —
-     * the CompletionException wrapper added by CompletableFuture is removed so
-     * callers see the original exception type.
+     * If any validator throws a ResolverUnavailableException, that takes
+     * precedence (503, RAID-809): the unavailable entries from every validator
+     * that threw one are merged into a single ResolverUnavailableException and
+     * thrown, even if other validators returned ordinary validation failures or
+     * threw a different RuntimeException. Otherwise, if a validator throws some
+     * other RuntimeException, it is re-thrown unwrapped — the CompletionException
+     * wrapper added by CompletableFuture is removed so callers see the original
+     * exception type.
      */
     @SafeVarargs
     private List<ValidationFailure> runIoBoundValidators(
@@ -214,23 +220,38 @@ public class ValidationService {
             CompletableFuture.allOf(futures).join();
         } catch (CompletionException ignored) {
             // At least one future failed. Fall through to per-future join()
-            // calls below which will unwrap and re-throw the original exception.
+            // calls below which will unwrap and re-throw/aggregate.
         }
 
         var results = new ArrayList<ValidationFailure>();
+        var unavailable = new ArrayList<UnavailableResolver>();
+        RuntimeException other = null;
+
         for (CompletableFuture<List<ValidationFailure>> future : futures) {
             // join() on an individually failed future throws CompletionException.
-            // Unwrap it so callers receive the original RuntimeException type.
+            // Unwrap it so we can inspect the original exception type.
             try {
                 results.addAll(future.join());
             } catch (CompletionException e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
-                if (cause instanceof RuntimeException re) {
-                    throw re;
+                if (cause instanceof ResolverUnavailableException rue) {
+                    unavailable.addAll(rue.getUnavailableResolvers());
+                } else if (other == null) {
+                    other = (cause instanceof RuntimeException re) ? re : new RuntimeException(cause);
                 }
-                throw new RuntimeException(cause);
             }
         }
+
+        // 503 wins over both ordinary validation failures and an unexpected non-resolver
+        // RuntimeException (DECIDED, RAID-809): the caller's ValidationException(400)/other
+        // exception is never thrown if any validator found a resolver unavailable.
+        if (!unavailable.isEmpty()) {
+            throw new ResolverUnavailableException(unavailable);
+        }
+        if (other != null) {
+            throw other;
+        }
+
         return results;
     }
 }

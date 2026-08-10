@@ -1,16 +1,15 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
+import static au.org.raid.api.exception.ResolverUnavailableException.toUnavailableResolver;
 import static au.org.raid.api.util.StringUtil.isBlank;
 
 @Slf4j
@@ -44,6 +44,7 @@ public class OrganisationValidator {
         }
 
         var failures = new ArrayList<ValidationFailure>();
+        var unavailable = new ArrayList<UnavailableResolver>();
 
         IntStream.range(0, organisations.size()).forEach(i -> {
             final var organisation = organisations.get(i);
@@ -76,10 +77,13 @@ public class OrganisationValidator {
                         // connection refused), HttpServerErrorException (5xx) and, defensively,
                         // any other RestClientException. HttpClientErrorException 404 is already
                         // handled inside RorClient.exists() (404 -> false), so only non-404
-                        // failures reach here. The resolver could not confirm the ROR, so return
-                        // a clean validation failure rather than propagating an HTTP 500.
+                        // failures reach here. The resolver, not the ROR, is at fault, so this is
+                        // collected for a 503 (RAID-809) rather than treated as a validation
+                        // failure of the organisation. Collect-then-throw so one organisation's
+                        // resolver failure doesn't abort validation of the rest of the request.
                         log.error("External resolver check failed during ROR validation of {}", organisation.getId(), e);
-                        failures.add(serverError("organisation[%d].id".formatted(i)));
+                        unavailable.add(toUnavailableResolver(
+                                "organisation[%d].id".formatted(i), organisation.getId(), "ROR", e));
                     }
                 }
             }
@@ -129,14 +133,11 @@ public class OrganisationValidator {
             }
         }
 
-        return failures;
-    }
+        if (!unavailable.isEmpty()) {
+            throw new ResolverUnavailableException(unavailable);
+        }
 
-    private ValidationFailure serverError(final String fieldId) {
-        return new ValidationFailure()
-                .fieldId(fieldId)
-                .errorType(INVALID_VALUE_TYPE)
-                .message(SERVER_ERROR);
+        return failures;
     }
 }
 

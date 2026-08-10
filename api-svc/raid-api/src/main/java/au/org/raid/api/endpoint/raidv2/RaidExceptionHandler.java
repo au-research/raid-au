@@ -3,6 +3,7 @@ package au.org.raid.api.endpoint.raidv2;
 import au.org.raid.api.exception.*;
 import au.org.raid.idl.raidv2.model.ClosedRaid;
 import au.org.raid.idl.raidv2.model.FailureResponse;
+import au.org.raid.idl.raidv2.model.ResolverUnavailableResponse;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.idl.raidv2.model.ValidationFailureResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,34 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
                 .badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+
+    /*
+    RAID-809: an external identifier resolver (ROR, ORCID, ISNI, DOI, Handle, RRID, GeoNames,
+    OpenStreetMap) was unreachable or errored while validating a mint/update/patch request.
+    This is more specific than both the generic RaidApiException handler and the RAID-803
+    RestClientException -> 502 handler (ResolverUnavailableException is neither a bare
+    RestClientException nor handled generically - it's converted from one at the validator
+    layer), and is deliberately a 503 (retryable), not a 400 (the caller's input wasn't the
+    problem) or a 502 (the failure is scoped and enumerated, not an opaque upstream failure).
+     */
+    @ExceptionHandler(ResolverUnavailableException.class)
+    public ResponseEntity<ResolverUnavailableResponse> handleResolverUnavailable(final ResolverUnavailableException e) {
+        log.warn("External resolver(s) unavailable: {}", e.getMessage());
+
+        final var body = new ResolverUnavailableResponse()
+                .type(e.getType())
+                .title(e.getTitle())
+                .status(e.getStatus())
+                .detail(e.getDetail())
+                .instance(e.getInstance())
+                .unavailableResolvers(e.getUnavailableResolvers());
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "30")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body);
     }

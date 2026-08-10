@@ -2,10 +2,12 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.client.contributor.ContributorClient;
 import au.org.raid.api.config.properties.ContributorValidationProperties.ContributorTypeValidationProperties;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.util.DateUtil;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import static au.org.raid.api.endpoint.message.ValidationMessage.INVALID_VALUE_M
 import static au.org.raid.api.endpoint.message.ValidationMessage.INVALID_VALUE_TYPE;
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE;
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_TYPE;
+import static au.org.raid.api.exception.ResolverUnavailableException.toUnavailableResolver;
 import static au.org.raid.api.util.StringUtil.isBlank;
 
 public class ContributorTypeValidator {
@@ -25,17 +28,20 @@ public class ContributorTypeValidator {
     private final ContributorClient contributorClient;
     private final ContributorRoleValidator roleValidator;
     private final ContributorPositionValidator positionValidator;
+    private final String resolverName;
 
     public ContributorTypeValidator(
             ContributorTypeValidationProperties validationProperties,
             ContributorClient contributorClient,
             ContributorRoleValidator roleValidator,
-            ContributorPositionValidator positionValidator
+            ContributorPositionValidator positionValidator,
+            String resolverName
     ) {
         this.validationProperties = validationProperties;
         this.contributorClient = contributorClient;
         this.roleValidator = roleValidator;
         this.positionValidator = positionValidator;
+        this.resolverName = resolverName;
     }
 
     public List<ValidationFailure> validate(final Contributor contributor, final int index) {
@@ -50,13 +56,21 @@ public class ContributorTypeValidator {
             );
         }
         else if (contributor.getId().startsWith(validationProperties.getUrlPrefix())) {
-            if (!contributorClient.exists(contributor.getId())) {
-                failures.add(
-                        new ValidationFailure()
-                                .fieldId("contributor[%d].id".formatted(index))
-                                .errorType(NOT_FOUND_TYPE)
-                                .message("This id does not exist")
-                );
+            try {
+                if (!contributorClient.exists(contributor.getId())) {
+                    failures.add(
+                            new ValidationFailure()
+                                    .fieldId("contributor[%d].id".formatted(index))
+                                    .errorType(NOT_FOUND_TYPE)
+                                    .message("This id does not exist")
+                    );
+                }
+            } catch (RestClientException e) {
+                // The resolver, not the contributor id, is at fault (RAID-809 gap: this
+                // exists() call previously propagated straight to an opaque HTTP 500).
+                throw new ResolverUnavailableException(List.of(
+                        toUnavailableResolver(
+                                "contributor[%d].id".formatted(index), contributor.getId(), resolverName, e)));
             }
         } else {
             failures.add(

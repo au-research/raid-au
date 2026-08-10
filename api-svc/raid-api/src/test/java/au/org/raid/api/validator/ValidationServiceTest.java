@@ -1,5 +1,6 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -186,6 +187,57 @@ class ValidationServiceTest {
         assertThat(thrown, equalTo(cause));
     }
 
+    @Test
+    @DisplayName("validateForCreate: 503 (ResolverUnavailableException) takes precedence over an ordinary 400 validation failure")
+    void validateForCreate_resolverUnavailableTakesPrecedenceOverValidationFailure() {
+        stubAllValidatorsEmpty();
+
+        final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
+        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+
+        final var notFoundFailure = new ValidationFailure().fieldId("contributor[0].id").message("not found");
+        when(contributorValidator.validate(any())).thenReturn(List.of(notFoundFailure));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validationService.validateForCreate(new RaidCreateRequest()));
+
+        assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
+    }
+
+    @Test
+    @DisplayName("validateForCreate: unavailable entries from every throwing validator are merged into one ResolverUnavailableException")
+    void validateForCreate_mergesUnavailableEntriesFromMultipleValidators() {
+        stubAllValidatorsEmpty();
+
+        final var rorUnavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
+        final var relatedObjectUnavailable = new UnavailableResolver().field("relatedObject[0].id").resolver("DOI");
+
+        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(rorUnavailable)));
+        when(relatedObjectValidator.validateRelatedObjects(any()))
+                .thenThrow(new ResolverUnavailableException(List.of(relatedObjectUnavailable)));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validationService.validateForCreate(new RaidCreateRequest()));
+
+        assertThat(e.getUnavailableResolvers(), hasItems(rorUnavailable, relatedObjectUnavailable));
+        assertThat(e.getUnavailableResolvers(), hasSize(2));
+    }
+
+    @Test
+    @DisplayName("validateForCreate: 503 (ResolverUnavailableException) takes precedence over an unrelated RuntimeException from another validator")
+    void validateForCreate_resolverUnavailableTakesPrecedenceOverOtherRuntimeException() {
+        stubAllValidatorsEmpty();
+
+        final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
+        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+        when(contributorValidator.validate(any())).thenThrow(new RuntimeException("DataCite unavailable"));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validationService.validateForCreate(new RaidCreateRequest()));
+
+        assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
+    }
+
     // -----------------------------------------------------------------------
     // validateForUpdate
     // -----------------------------------------------------------------------
@@ -306,6 +358,36 @@ class ValidationServiceTest {
                 () -> validationService.validateForUpdate(handle, request));
 
         assertThat(thrown, equalTo(cause));
+    }
+
+    @Test
+    @DisplayName("validateForUpdate: 503 (ResolverUnavailableException) takes precedence over an ordinary 400 validation failure")
+    void validateForUpdate_resolverUnavailableTakesPrecedenceOverValidationFailure() throws Exception {
+        stubAllValidatorsEmpty();
+
+        var handle = "10.25.1/abc123";
+        var id = new Id().id("https://raid.org.au/" + handle);
+        var request = new RaidUpdateRequest().identifier(id);
+
+        var parsedUrl = mock(au.org.raid.api.service.raid.id.IdentifierUrl.class);
+        var parsedHandle = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        when(idParser.parseUrlWithException(any())).thenReturn(parsedUrl);
+        when(idParser.parseHandleWithException(any())).thenReturn(parsedHandle);
+        when(parsedHandle.format()).thenReturn(handle);
+        var parsedHandleInUrl = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        when(parsedUrl.handle()).thenReturn(parsedHandleInUrl);
+        when(parsedHandleInUrl.format()).thenReturn(handle);
+
+        final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
+        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+
+        final var notFoundFailure = new ValidationFailure().fieldId("contributor[0].id").message("not found");
+        when(contributorValidator.validate(any())).thenReturn(List.of(notFoundFailure));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validationService.validateForUpdate(handle, request));
+
+        assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
     }
 
     // -----------------------------------------------------------------------

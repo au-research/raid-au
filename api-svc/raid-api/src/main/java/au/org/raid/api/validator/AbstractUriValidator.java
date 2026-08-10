@@ -1,5 +1,6 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -14,12 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
+import static au.org.raid.api.exception.ResolverUnavailableException.toUnavailableResolver;
 
 @Slf4j
 public abstract class AbstractUriValidator implements UriValidator {
     protected abstract String getRegex();
 
     protected abstract RestTemplate getRestTemplate();
+
+    /**
+     * The name reported in UnavailableResolver.resolver when this validator can't confirm a
+     * URI because the resolver itself is unreachable/erroring (RAID-809), e.g. "DOI", "ORCID".
+     */
+    protected abstract String resolverName();
 
     /**
      * The URL to HEAD-check for existence, derived from the (already regex-validated) stored uri.
@@ -63,26 +71,24 @@ public abstract class AbstractUriValidator implements UriValidator {
                             .message(URI_DOES_NOT_EXIST)
                     );
                 } else {
+                    // Non-404 client error (e.g. 401/403 - the ORCID member-API case). The
+                    // resolver, not the URI, is at fault, so this is a 503 (RAID-809), not a
+                    // validation failure.
                     log.error("Request failed during URI validation", e);
-                    failures.add(serverError(fieldId));
+                    throw new ResolverUnavailableException(
+                            List.of(toUnavailableResolver(fieldId, uri, resolverName(), e)));
                 }
             } catch (RestClientException e) {
                 // Covers ResourceAccessException (connect/read timeout, DNS failure,
                 // connection refused), HttpServerErrorException (5xx) and, defensively,
-                // any other RestClientException. The resolver could not confirm the URI,
-                // so return a clean validation failure rather than propagating an HTTP 500.
+                // any other RestClientException. The resolver could not confirm the URI, so
+                // raise a 503 (RAID-809) rather than a validation failure or an opaque HTTP 500.
                 log.error("External resolver check failed during URI validation of {}", uri, e);
-                failures.add(serverError(fieldId));
+                throw new ResolverUnavailableException(
+                        List.of(toUnavailableResolver(fieldId, uri, resolverName(), e)));
             }
         }
 
         return failures;
-    }
-
-    private ValidationFailure serverError(final String fieldId) {
-        return new ValidationFailure()
-                .fieldId(fieldId)
-                .errorType(INVALID_VALUE_TYPE)
-                .message(SERVER_ERROR);
     }
 }

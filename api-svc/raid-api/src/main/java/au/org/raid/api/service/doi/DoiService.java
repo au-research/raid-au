@@ -10,4 +10,9 @@ import org.springframework.web.client.RestTemplate;
 public class DoiService extends AbstractUriValidator {
     public final String regex = "^https?://(doi\\.org/10\\..+|web\\.archive\\.org/.*)";
     private final RestTemplate restTemplate;
+
+    @Override
+    protected String resolverName() {
+        return "DOI";
+    }
 }

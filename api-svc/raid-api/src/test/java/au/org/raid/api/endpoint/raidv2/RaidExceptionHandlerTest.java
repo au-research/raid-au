@@ -1,6 +1,8 @@
 package au.org.raid.api.endpoint.raidv2;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.FailureResponse;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailureResponse;
 import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.DisplayName;
@@ -235,6 +237,41 @@ class RaidExceptionHandlerTest {
         assertThat(body.getStatus(), is(502));
         assertThat(body.getInstance(), is("https://raid.org.au"));
         assertThat(body.getDetail(), is("An upstream dependency did not respond. Please try again later."));
+    }
+
+    @Test
+    @DisplayName("ResolverUnavailableException maps to a structured 503 with a Retry-After header")
+    void resolverUnavailableException_mapsToServiceUnavailable() {
+        final var unavailable = new UnavailableResolver()
+                .field("organisation[0].id")
+                .value("https://ror.org/012345678")
+                .resolver("ROR")
+                .downstreamStatus(503)
+                .downstreamMessage("ROR resolve https://ror.org/012345678 -> 503");
+
+        final var ex = new ResolverUnavailableException(List.of(unavailable));
+
+        final var response = handler.handleResolverUnavailable(ex);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.SERVICE_UNAVAILABLE));
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER), is("30"));
+        assertThat(response.getHeaders().getContentType(), is(MediaType.APPLICATION_JSON));
+
+        final var body = response.getBody();
+        assertThat(body, notNullValue());
+        assertThat(body.getType(), is("https://raid.org.au/errors#ResolverUnavailable"));
+        assertThat(body.getTitle(), is("Resolver unavailable"));
+        assertThat(body.getStatus(), is(503));
+        assertThat(body.getInstance(), is("https://raid.org.au"));
+        assertThat(body.getDetail(), is("1 external identifier resolver(s) were unavailable. Please retry."));
+
+        assertThat(body.getUnavailableResolvers(), hasSize(1));
+        final var returned = body.getUnavailableResolvers().get(0);
+        assertThat(returned.getField(), is("organisation[0].id"));
+        assertThat(returned.getResolver(), is("ROR"));
+        assertThat(returned.getDownstreamStatus(), is(503));
+        // downstreamMessage carries only method/target/status, never a leaked downstream body
+        assertThat(returned.getDownstreamMessage(), is("ROR resolve https://ror.org/012345678 -> 503"));
     }
 
     @Test

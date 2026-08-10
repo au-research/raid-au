@@ -26,4 +26,9 @@ public class RridService extends AbstractUriValidator {
     protected String resolverUri(final String uri) {
         return uri + ".json";
     }
+
+    @Override
+    protected String resolverName() {
+        return "RRID";
+    }
 }

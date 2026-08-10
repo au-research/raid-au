@@ -1,5 +1,7 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -59,12 +61,19 @@ public class GeoNamesUriValidator implements UriValidator {
                             .message(URI_DOES_NOT_EXIST)
                     );
                 } catch (Exception e) {
+                    // The org.geonames.WebService client doesn't use RestTemplate/RestClientException,
+                    // so it can't go through AbstractUriValidator's catch/convert logic - it throws a
+                    // checked Exception for anything other than a clean not-found. The resolver, not
+                    // the URI, is at fault here, so this is a 503 (RAID-809), not a validation failure.
+                    // downstreamStatus is left null: the geonames client doesn't expose an HTTP status.
                     log.error("Unable to validate %s".formatted(uri), e);
-                    failures.add(new ValidationFailure()
-                            .fieldId(fieldId)
-                            .errorType(INVALID_VALUE_TYPE)
-                            .message(SERVER_ERROR)
-                    );
+                    throw new ResolverUnavailableException(List.of(
+                            new UnavailableResolver()
+                                    .field(fieldId)
+                                    .value(uri)
+                                    .resolver("GeoNames")
+                                    .downstreamMessage("GeoNames resolve %s -> connection failed".formatted(uri))
+                    ));
                 }
             }
         }
