@@ -16,7 +16,7 @@ public class OrcidClientStub extends OrcidClient {
 
     public OrcidClientStub(final Long delayMilliseconds) {
         super(null, null);
-        this.delayMilliseconds = delayMilliseconds;
+        this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
     @Override

@@ -43,4 +43,13 @@ class RorClientStubTest {
     void getOrganisationNameThrowsForNonexistentSentinel() {
         assertThrows(RuntimeException.class, () -> rorClientStub.getOrganisationName(NONEXISTENT_TEST_ROR));
     }
+
+    @Test
+    @DisplayName("a null delay should not throw and should behave as no delay")
+    void nullDelayDoesNotThrow() {
+        final var stubWithNullDelay = new RorClientStub(null);
+
+        assertThat(stubWithNullDelay.exists("https://ror.org/038sjwq14"), is(true));
+        assertThat(stubWithNullDelay.getOrganisationName("https://ror.org/038sjwq14"), is("Test Organisation"));
+    }
 }

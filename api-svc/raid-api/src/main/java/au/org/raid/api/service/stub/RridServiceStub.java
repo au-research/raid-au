@@ -20,7 +20,7 @@ public class RridServiceStub extends RridService {
     private final Long delayMilliseconds;
     public RridServiceStub(final Long delayMilliseconds) {
         super(null);
-        this.delayMilliseconds = delayMilliseconds;
+        this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
     @Override

@@ -43,4 +43,13 @@ class OrcidClientStubTest {
     void getNameThrowsForNonexistentSentinel() {
         assertThrows(RuntimeException.class, () -> orcidClientStub.getName(NONEXISTENT_TEST_ORCID));
     }
+
+    @Test
+    @DisplayName("a null delay should not throw and should behave as no delay")
+    void nullDelayDoesNotThrow() {
+        final var stubWithNullDelay = new OrcidClientStub(null);
+
+        assertThat(stubWithNullDelay.exists("https://orcid.org/0009-0002-5128-5184"), is(true));
+        assertThat(stubWithNullDelay.getName("https://orcid.org/0009-0002-5128-5184"), is("Test User"));
+    }
 }
