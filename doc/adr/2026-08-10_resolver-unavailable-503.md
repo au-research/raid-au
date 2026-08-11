@@ -49,17 +49,20 @@ top-level validators (which catch-collect-continue rather than throw-and-lose), 
 a decision in `ValidationService`: any failures → 400; else any unavailable → 503;
 else success. The downstream response body is never echoed to the client.
 
-### Stub ORCID/ISNI/ROR in non-prod — with the trap inverted
+### Non-prod stubbing, with the trap inverted
 `OrcidClient`/`RorClient` become stub-aware `@Bean @Primary` factories (mirroring the
-existing `IsniClient` pattern), selected by `raid.stub.{orcid,isni,ror}.enabled`.
-Crucially, the safety is inverted relative to the old design: **real is the default;
-stubs are opt-in.** In `application.yaml` these default to real (ORCID explicitly
-`false`, ISNI/ROR absent), with zero env-var dependency, so prod/stage/demo are real
-no matter what. Non-prod enables the stubs explicitly (intTest via
-`src/intTest/resources/application.yaml`; deployed test/branch envs via
-`RAID_STUB_ORCID_ENABLED=true` etc. — relaxed-binding names that actually bind,
-unlike the stale `*.in-memory-stub` names that caused this bug). A mis-set or absent
-flag therefore fails loud (a test env hitting live) and can never silently stub prod.
+existing `IsniClient` pattern); together with the `ExternalPidService` URI stubs, every
+resolver — DOI, Handle, RRID, GeoNames, OpenStreetMap, ORCID, ISNI, ROR — is selectable
+via `raid.stub.<name>.enabled`. Crucially, the safety is inverted relative to the old
+design: **real is the default; stubs are opt-in.** In `application.yaml` *every*
+`raid.stub.*.enabled` now defaults to `false` (real), so a missing or mis-set
+deployment override can never silently stub a real environment — the exact failure
+mode that caused RAID-809. Environments opt in explicitly: `intTest` enables the full
+set in `src/intTest/resources/application.yaml`, and the deployed **test** and
+per-branch envs set `raid.stub.<name>.enabled: true` in CDK; demo/stage/prod set them
+`false` (redundant with the real default, belt-and-suspenders). The stub delay is
+null-guarded (null → 0) so enabling a stub without a configured delay cannot NPE. A
+mis-set flag fails loud (a test env hitting live) rather than silently stubbing prod.
 The dead `OrcidService`/`OrcidServiceStub` classes are removed.
 
 ## Consequences
@@ -68,16 +71,18 @@ The dead `OrcidService`/`OrcidServiceStub` classes are removed.
   identifier(s), and never hide a caller's fixable input errors.
 - Non-prod (including CI) gets predictable, offline ORCID/ISNI/ROR responses; CI no
   longer depends on ORCID sandbox uptime.
-- Prod/stage/demo continue to use the real ORCID/ISNI/ROR clients. Making those
-  reliable (the ORCID member-vs-public API endpoint) is RAID-810.
+- Prod/stage/demo use the real clients for all resolvers. Making the ORCID one
+  reliable (the member-vs-public API endpoint) is RAID-810.
 - The API contract gains a 503 on mint/update/patch (additive; in the OpenAPI spec).
   Clients, including the agency app, should treat it as temporary (RAID-811).
-- **Scope limit:** this closes the stub-binding trap only for ORCID/ISNI/ROR. The
-  `ExternalPidService` resolvers (DOI, Handle, RRID, GeoNames, OpenStreetMap) still
-  default to `enabled: true` and remain subject to the original non-binding-disable
-  trap, so prod still validates those against in-memory stubs. Flipping those
-  defaults to real is a deliberate, prod-behaviour-changing follow-up to be rolled
-  out stage-first with monitoring, backed by the 503 hardening introduced here.
+- **Rollout note:** the code makes real the default and the CDK sets the correct
+  per-env values (test/branch stubbed, demo/stage/prod real). Actually turning on
+  real DOI/Handle/RRID/GeoNames/OpenStreetMap validation in prod is a
+  prod-behaviour change (well-formed-but-nonexistent identifiers start being
+  rejected; a first mint after a task restart pays a connection-pool warmup cost —
+  a 504 was observed once), so deploy it stage-first with monitoring, backed by the
+  503 hardening introduced here. The `registration-agency` CDK module is a separate
+  config tree and needs its own pass.
 - The stub error sentinels throw a plain `RuntimeException`, not a
   `RestClientException`, so the 503 path is exercised by unit tests but not
   reproducible through the stubs in intTest.

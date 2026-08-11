@@ -41,13 +41,20 @@ not DOI. Investigation found two problems, both addressed here:
 
 ## Scope and follow-ups
 
-- This closes the stub-binding trap only for **ORCID/ISNI/ROR**. DOI/Handle/RRID/
-  GeoNames/OpenStreetMap still default to `enabled: true` and remain subject to the
-  original non-binding-disable trap; flipping those to real in prod is a deliberate,
-  stage-first follow-up (backed by the 503 hardening added here).
-- Deployed test/branch envs need the `RAID_STUB_*_ENABLED=true` env vars set in CDK
-  for the stubs to take effect there (also required for the branch pipeline to be
-  deterministic).
+- **Trap fully closed in code:** every `raid.stub.*.enabled` now defaults to `false`
+  (real) in `application.yaml`, so no environment can be silently stubbed by a missing
+  or mis-set override. `intTest` and `dev` already enable the full stub set explicitly,
+  so CI/local stay deterministic.
+- **CDK env config** (separate PR in `raido-v2-aws-private`, authority module): sets
+  `raid.stub.<name>.enabled` per env — **test + per-branch = `true` (stubbed)**,
+  **demo/stage/prod = `false` (real)** — and aligns `DEMO_TAG`/`PROD_TAG` to the
+  actually-running (out-of-band) images to avoid a deploy-time downgrade. `TEST_TAG`
+  left with a TODO (Test env was mid-rollout). `registration-agency` module still
+  needs its own pass.
+- **Rollout:** turning on real DOI/Handle/RRID/GeoNames/OpenStreetMap validation in
+  prod is a behaviour change (nonexistent identifiers get rejected; first mint after a
+  restart pays a connection-pool warmup — a 504 was seen once), so deploy stage-first
+  with monitoring.
 - [RAID-810](https://ardc.atlassian.net/browse/RAID-810): make the deployed-env ORCID
   existence check reliable (member → public API).
 - [RAID-811](https://ardc.atlassian.net/browse/RAID-811): agency app to handle 503 as

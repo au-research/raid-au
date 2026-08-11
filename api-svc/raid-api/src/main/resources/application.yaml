@@ -37,25 +37,31 @@ raid:
     api-key: not-set
   stub:
     geo-names:
-      enabled: true
+      enabled: false
       delay: 150
     orcid:
       enabled: false
       delay: 150
     apids:
-      enabled: true
+      enabled: false
       delay: 150
     doi:
-      enabled: true
+      enabled: false
       delay: 150
     handle:
-      enabled: true
+      enabled: false
       delay: 150
     rrid:
-      enabled: true
+      enabled: false
       delay: 150
     open-street-map:
-      enabled: true
+      enabled: false
+      delay: 150
+    isni:
+      enabled: false
+      delay: 150
+    ror:
+      enabled: false
       delay: 150
   identifier:
     schema-uri: https://raid.org/
