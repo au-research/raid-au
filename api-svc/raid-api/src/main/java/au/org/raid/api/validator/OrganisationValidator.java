@@ -1,7 +1,6 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.client.ror.RorClient;
-import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
@@ -33,14 +32,14 @@ public class OrganisationValidator {
     private final OrganisationRoleValidator roleValidationService;
     private final RorClient rorClient;
 
-    public List<ValidationFailure> validate(
+    public ValidationResult validate(
             List<Organisation> organisations
     ) {
 
     /* organisations has been confirmed as optional in the metadata schema,
     rationale: an ORCID is quick to create (minutes), RORs can take months. */
         if (organisations == null) {
-            return Collections.emptyList();
+            return ValidationResult.of(Collections.emptyList());
         }
 
         var failures = new ArrayList<ValidationFailure>();
@@ -133,11 +132,7 @@ public class OrganisationValidator {
             }
         }
 
-        if (!unavailable.isEmpty()) {
-            throw new ResolverUnavailableException(unavailable);
-        }
-
-        return failures;
+        return new ValidationResult(failures, unavailable);
     }
 }
 

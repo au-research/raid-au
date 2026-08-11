@@ -34,4 +34,7 @@ public class InMemoryStubTestData {
 
     public static String NONEXISTENT_TEST_ISNI = "https://isni.org/isni/0000000000000000";
     public static String SERVER_ERROR_TEST_ISNI = "https://isni.org/isni/0000000000000001";
+
+    public static String NONEXISTENT_TEST_ROR = "https://ror.org/000000000";
+    public static String SERVER_ERROR_TEST_ROR = "https://ror.org/000000001";
 }

@@ -40,7 +40,7 @@ raid:
       enabled: true
       delay: 150
     orcid:
-      enabled: true
+      enabled: false
       delay: 150
     apids:
       enabled: true

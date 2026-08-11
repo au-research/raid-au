@@ -1,10 +1,12 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.repository.RelatedObjectTypeRepository;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.idl.raidv2.model.RelatedObject;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.springframework.stereotype.Service;
 
@@ -71,11 +73,12 @@ public class RelatedObjectValidator {
         this.relatedObjectSchemaUriValidatorMap = Collections.unmodifiableMap(map);
     }
 
-    public List<ValidationFailure> validateRelatedObjects(final List<RelatedObject> relatedObjects) {
+    public ValidationResult validateRelatedObjects(final List<RelatedObject> relatedObjects) {
         final var failures = new ArrayList<ValidationFailure>();
+        final var unavailable = new ArrayList<UnavailableResolver>();
 
         if (relatedObjects == null) {
-            return failures;
+            return new ValidationResult(failures, unavailable);
         }
 
         IntStream.range(0, relatedObjects.size())
@@ -92,10 +95,17 @@ public class RelatedObjectValidator {
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
                     } else if (schemaUriValue != null && relatedObjectSchemaUriValidatorMap.containsKey(schemaUriValue)) {
-                        failures.addAll(
-                                relatedObjectSchemaUriValidatorMap.get(schemaUriValue)
-                                        .apply(relatedObject.getId(), String.format("relatedObject[%d].id", index))
-                        );
+                        try {
+                            failures.addAll(
+                                    relatedObjectSchemaUriValidatorMap.get(schemaUriValue)
+                                            .apply(relatedObject.getId(), String.format("relatedObject[%d].id", index))
+                            );
+                        } catch (ResolverUnavailableException e) {
+                            // The resolver, not the relatedObject, is at fault (RAID-809). Collect
+                            // and continue so one relatedObject's resolver failure doesn't abort
+                            // validation of the rest of the request.
+                            unavailable.addAll(e.getUnavailableResolvers());
+                        }
                     }
 
                     log.debug("relatedObject.schemaUri = {}", relatedObject.getSchemaUri());
@@ -116,6 +126,6 @@ public class RelatedObjectValidator {
                     failures.addAll(categoryValidationService.validate(relatedObject.getCategory(), index));
                 });
 
-        return failures;
+        return new ValidationResult(failures, unavailable);
     }
 }

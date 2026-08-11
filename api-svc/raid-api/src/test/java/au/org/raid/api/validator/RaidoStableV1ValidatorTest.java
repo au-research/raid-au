@@ -9,8 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,6 +65,16 @@ class RaidoStableV1ValidatorTest {
                 dateValidator,
                 DIRECT_EXECUTOR
         );
+
+        // These tests only verify that each synchronous in-memory validator is invoked with
+        // the right argument - the four I/O-bound validators (RAID-809: now returning
+        // ValidationResult, not a bare List) are irrelevant here, so stub them with an empty
+        // result rather than letting Mockito's default (null, since ValidationResult isn't a
+        // Collection type Mockito knows how to auto-stub) NPE inside ValidationService.
+        lenient().when(contribSvc.validate(any())).thenReturn(ValidationResult.of(List.of()));
+        lenient().when(orgSvc.validate(any())).thenReturn(ValidationResult.of(List.of()));
+        lenient().when(relatedObjectValidationService.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of()));
+        lenient().when(spatialCoverageValidationService.validate(any())).thenReturn(ValidationResult.of(List.of()));
     }
 
     @Test

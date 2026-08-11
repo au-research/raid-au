@@ -121,10 +121,10 @@ class ValidationServiceTest {
         var relatedObjectFailure = new ValidationFailure().message("bad related object");
         var spatialFailure = new ValidationFailure().message("bad spatial");
 
-        when(contributorValidator.validate(any())).thenReturn(List.of(contributorFailure));
-        when(organisationValidator.validate(any())).thenReturn(List.of(orgFailure));
-        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(List.of(relatedObjectFailure));
-        when(spatialCoverageValidator.validate(any())).thenReturn(List.of(spatialFailure));
+        when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of(contributorFailure)));
+        when(organisationValidator.validate(any())).thenReturn(ValidationResult.of(List.of(orgFailure)));
+        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of(relatedObjectFailure)));
+        when(spatialCoverageValidator.validate(any())).thenReturn(ValidationResult.of(List.of(spatialFailure)));
 
         var failures = validationService.validateForCreate(new RaidCreateRequest());
 
@@ -148,10 +148,10 @@ class ValidationServiceTest {
         when(subjectValidator.validate(any())).thenReturn(List.of());
         when(relatedRaidValidator.validate(any())).thenReturn(List.of());
         when(alternateIdentifierValidator.validateAlternateIdentifier(any())).thenReturn(List.of());
-        when(contributorValidator.validate(any())).thenReturn(List.of(contributorFailure));
-        when(organisationValidator.validate(any())).thenReturn(List.of(orgFailure));
-        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(List.of(relatedObjectFailure));
-        when(spatialCoverageValidator.validate(any())).thenReturn(List.of(spatialFailure));
+        when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of(contributorFailure)));
+        when(organisationValidator.validate(any())).thenReturn(ValidationResult.of(List.of(orgFailure)));
+        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of(relatedObjectFailure)));
+        when(spatialCoverageValidator.validate(any())).thenReturn(ValidationResult.of(List.of(spatialFailure)));
 
         var failures = validationService.validateForCreate(new RaidCreateRequest());
 
@@ -188,33 +188,35 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateForCreate: 503 (ResolverUnavailableException) takes precedence over an ordinary 400 validation failure")
-    void validateForCreate_resolverUnavailableTakesPrecedenceOverValidationFailure() {
+    @DisplayName("validateForCreate: a client-resolvable 400 failure wins over an unavailable resolver found elsewhere (cause-based precedence, RAID-809)")
+    void validateForCreate_validationFailureTakesPrecedenceOverResolverUnavailable() {
         stubAllValidatorsEmpty();
 
         final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
-        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+        when(organisationValidator.validate(any()))
+                .thenReturn(new ValidationResult(List.of(), List.of(unavailable)));
 
         final var notFoundFailure = new ValidationFailure().fieldId("contributor[0].id").message("not found");
-        when(contributorValidator.validate(any())).thenReturn(List.of(notFoundFailure));
+        when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of(notFoundFailure)));
 
-        final var e = assertThrows(ResolverUnavailableException.class,
-                () -> validationService.validateForCreate(new RaidCreateRequest()));
+        final var failures = validationService.validateForCreate(new RaidCreateRequest());
 
-        assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
+        assertThat(failures, hasItems(notFoundFailure));
+        assertThat(failures, hasSize(1));
     }
 
     @Test
-    @DisplayName("validateForCreate: unavailable entries from every throwing validator are merged into one ResolverUnavailableException")
+    @DisplayName("validateForCreate: unavailable entries from every validator are merged into one ResolverUnavailableException when unavailability is the sole blocker")
     void validateForCreate_mergesUnavailableEntriesFromMultipleValidators() {
         stubAllValidatorsEmpty();
 
         final var rorUnavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
         final var relatedObjectUnavailable = new UnavailableResolver().field("relatedObject[0].id").resolver("DOI");
 
-        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(rorUnavailable)));
+        when(organisationValidator.validate(any()))
+                .thenReturn(new ValidationResult(List.of(), List.of(rorUnavailable)));
         when(relatedObjectValidator.validateRelatedObjects(any()))
-                .thenThrow(new ResolverUnavailableException(List.of(relatedObjectUnavailable)));
+                .thenReturn(new ValidationResult(List.of(), List.of(relatedObjectUnavailable)));
 
         final var e = assertThrows(ResolverUnavailableException.class,
                 () -> validationService.validateForCreate(new RaidCreateRequest()));
@@ -224,18 +226,21 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateForCreate: 503 (ResolverUnavailableException) takes precedence over an unrelated RuntimeException from another validator")
-    void validateForCreate_resolverUnavailableTakesPrecedenceOverOtherRuntimeException() {
+    @DisplayName("validateForCreate: a genuine non-resolver RuntimeException takes precedence over both an ordinary failure and an unavailable resolver")
+    void validateForCreate_nonResolverRuntimeExceptionTakesPrecedenceOverEverything() {
         stubAllValidatorsEmpty();
 
         final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
-        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
-        when(contributorValidator.validate(any())).thenThrow(new RuntimeException("DataCite unavailable"));
+        when(organisationValidator.validate(any()))
+                .thenReturn(new ValidationResult(List.of(), List.of(unavailable)));
 
-        final var e = assertThrows(ResolverUnavailableException.class,
+        final var cause = new RuntimeException("DataCite unavailable");
+        when(contributorValidator.validate(any())).thenThrow(cause);
+
+        final var thrown = assertThrows(RuntimeException.class,
                 () -> validationService.validateForCreate(new RaidCreateRequest()));
 
-        assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
+        assertThat(thrown, equalTo(cause));
     }
 
     // -----------------------------------------------------------------------
@@ -297,10 +302,10 @@ class ValidationServiceTest {
         var relatedObjectFailure = new ValidationFailure().message("bad related object");
         var spatialFailure = new ValidationFailure().message("bad spatial");
 
-        when(contributorValidator.validate(any())).thenReturn(List.of(contributorFailure));
-        when(organisationValidator.validate(any())).thenReturn(List.of(orgFailure));
-        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(List.of(relatedObjectFailure));
-        when(spatialCoverageValidator.validate(any())).thenReturn(List.of(spatialFailure));
+        when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of(contributorFailure)));
+        when(organisationValidator.validate(any())).thenReturn(ValidationResult.of(List.of(orgFailure)));
+        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of(relatedObjectFailure)));
+        when(spatialCoverageValidator.validate(any())).thenReturn(ValidationResult.of(List.of(spatialFailure)));
 
         var failures = validationService.validateForUpdate(handle, request);
 
@@ -361,8 +366,8 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateForUpdate: 503 (ResolverUnavailableException) takes precedence over an ordinary 400 validation failure")
-    void validateForUpdate_resolverUnavailableTakesPrecedenceOverValidationFailure() throws Exception {
+    @DisplayName("validateForUpdate: a client-resolvable 400 failure wins over an unavailable resolver found elsewhere (cause-based precedence, RAID-809)")
+    void validateForUpdate_validationFailureTakesPrecedenceOverResolverUnavailable() throws Exception {
         stubAllValidatorsEmpty();
 
         var handle = "10.25.1/abc123";
@@ -379,13 +384,80 @@ class ValidationServiceTest {
         when(parsedHandleInUrl.format()).thenReturn(handle);
 
         final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
-        when(organisationValidator.validate(any())).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+        when(organisationValidator.validate(any()))
+                .thenReturn(new ValidationResult(List.of(), List.of(unavailable)));
 
         final var notFoundFailure = new ValidationFailure().fieldId("contributor[0].id").message("not found");
-        when(contributorValidator.validate(any())).thenReturn(List.of(notFoundFailure));
+        when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of(notFoundFailure)));
+
+        final var failures = validationService.validateForUpdate(handle, request);
+
+        assertThat(failures, hasItems(notFoundFailure));
+        assertThat(failures, hasSize(1));
+    }
+
+    @Test
+    @DisplayName("validateForUpdate: throws ResolverUnavailableException when unavailability is the sole blocker")
+    void validateForUpdate_throwsResolverUnavailable_whenThatIsTheOnlyProblem() throws Exception {
+        stubAllValidatorsEmpty();
+
+        var handle = "10.25.1/abc123";
+        var id = new Id().id("https://raid.org.au/" + handle);
+        var request = new RaidUpdateRequest().identifier(id);
+
+        var parsedUrl = mock(au.org.raid.api.service.raid.id.IdentifierUrl.class);
+        var parsedHandle = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        when(idParser.parseUrlWithException(any())).thenReturn(parsedUrl);
+        when(idParser.parseHandleWithException(any())).thenReturn(parsedHandle);
+        when(parsedHandle.format()).thenReturn(handle);
+        var parsedHandleInUrl = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        when(parsedUrl.handle()).thenReturn(parsedHandleInUrl);
+        when(parsedHandleInUrl.format()).thenReturn(handle);
+
+        final var unavailable = new UnavailableResolver().field("organisation[0].id").resolver("ROR");
+        when(organisationValidator.validate(any()))
+                .thenReturn(new ValidationResult(List.of(), List.of(unavailable)));
 
         final var e = assertThrows(ResolverUnavailableException.class,
                 () -> validationService.validateForUpdate(handle, request));
+
+        assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
+    }
+
+    // -----------------------------------------------------------------------
+    // validateForPatch
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("validateForPatch returns no failures when the contributor validator passes")
+    void validateForPatch_returnsNoFailures_whenContributorValidatorPasses() {
+        when(contributorValidator.validateForPatch(any())).thenReturn(ValidationResult.of(List.of()));
+
+        final var failures = validationService.validateForPatch(new RaidPatchRequest());
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("validateForPatch returns the contributor validator's failures")
+    void validateForPatch_returnsContributorFailures() {
+        final var failure = new ValidationFailure().fieldId("contributor[0].status").message("bad status");
+        when(contributorValidator.validateForPatch(any())).thenReturn(ValidationResult.of(List.of(failure)));
+
+        final var failures = validationService.validateForPatch(new RaidPatchRequest());
+
+        assertThat(failures, hasItems(failure));
+    }
+
+    @Test
+    @DisplayName("validateForPatch throws ResolverUnavailableException when unavailability is the sole blocker")
+    void validateForPatch_throwsResolverUnavailable_whenThatIsTheOnlyProblem() {
+        final var unavailable = new UnavailableResolver().field("contributor[0].id").resolver("ORCID");
+        when(contributorValidator.validateForPatch(any()))
+                .thenReturn(new ValidationResult(List.of(), List.of(unavailable)));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validationService.validateForPatch(new RaidPatchRequest()));
 
         assertThat(e.getUnavailableResolvers(), hasItems(unavailable));
     }
@@ -429,9 +501,9 @@ class ValidationServiceTest {
         when(subjectValidator.validate(any())).thenReturn(List.of());
         when(relatedRaidValidator.validate(any())).thenReturn(List.of());
         when(alternateIdentifierValidator.validateAlternateIdentifier(any())).thenReturn(List.of());
-        when(contributorValidator.validate(any())).thenReturn(List.of());
-        when(organisationValidator.validate(any())).thenReturn(List.of());
-        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(List.of());
-        when(spatialCoverageValidator.validate(any())).thenReturn(List.of());
+        when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of()));
+        when(organisationValidator.validate(any())).thenReturn(ValidationResult.of(List.of()));
+        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of()));
+        when(spatialCoverageValidator.validate(any())).thenReturn(ValidationResult.of(List.of()));
     }
 }

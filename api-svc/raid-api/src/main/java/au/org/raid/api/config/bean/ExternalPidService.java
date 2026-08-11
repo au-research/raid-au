@@ -2,10 +2,13 @@ package au.org.raid.api.config.bean;
 
 import au.org.raid.api.client.contributor.isni.IsniClient;
 import au.org.raid.api.client.contributor.isni.IsniRequestEntityFactory;
+import au.org.raid.api.client.contributor.orcid.OrcidClient;
+import au.org.raid.api.client.contributor.orcid.OrcidRequestEntityFactory;
+import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.client.ror.RorRequestEntityFactory;
 import au.org.raid.api.config.properties.StubProperties;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
-import au.org.raid.api.service.orcid.OrcidService;
 import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.api.service.stub.*;
 import au.org.raid.api.util.Log;
@@ -43,6 +46,38 @@ public class ExternalPidService {
         }
 
         return new IsniClient(restTemplate, isniRequestEntityFactory);
+    }
+
+    @Bean
+    @Primary
+    public OrcidClient orcidClient(
+            StubProperties stubProperties,
+            OrcidRequestEntityFactory orcidRequestEntityFactory,
+            RestTemplate restTemplate
+    ) {
+        if (stubProperties.getOrcid() != null && stubProperties.getOrcid().isEnabled()) {
+            log.with("orcidInMemoryStubDelay", stubProperties.getOrcid().getDelay()).
+                    warn("using the in-memory ORCID client");
+            return new OrcidClientStub(stubProperties.getOrcid().getDelay());
+        }
+
+        return new OrcidClient(orcidRequestEntityFactory, restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public RorClient rorClient(
+            StubProperties stubProperties,
+            RorRequestEntityFactory rorRequestEntityFactory,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getRor() != null && stubProperties.getRor().isEnabled()) {
+            log.with("rorInMemoryStubDelay", stubProperties.getRor().getDelay()).
+                    warn("using the in-memory ROR client");
+            return new RorClientStub(stubProperties.getRor().getDelay());
+        }
+
+        return new RorClient(restTemplate, rorRequestEntityFactory);
     }
 
     @Bean

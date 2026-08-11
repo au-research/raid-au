@@ -6,7 +6,6 @@ import au.org.raid.api.dto.orcid.PersonalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,7 +14,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 @RequiredArgsConstructor
 public class OrcidClient implements ContributorClient {
     private final OrcidRequestEntityFactory requestEntityFactory;

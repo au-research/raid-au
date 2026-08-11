@@ -1,7 +1,6 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.client.ror.RorClient;
-import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
@@ -26,7 +25,6 @@ import java.util.List;
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +55,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
 
-        final var failures = validationService.validate(List.of(organisation));
+        final var failures = validationService.validate(List.of(organisation)).failures();
 
         assertThat(failures, empty());
         verify(roleValidationService).validate(role, 0, 0);
@@ -79,7 +77,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
 
-        final var failures = validationService.validate(List.of(organisation, organisation));
+        final var failures = validationService.validate(List.of(organisation, organisation)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -106,7 +104,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
 
-        final var failures = validationService.validate(List.of(organisation));
+        final var failures = validationService.validate(List.of(organisation)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -141,7 +139,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
 
-        final var failures = validationService.validate(List.of(organisation));
+        final var failures = validationService.validate(List.of(organisation)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(roleError));
@@ -165,7 +163,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(false);
 
-        final var failures = validationService.validate(List.of(organisation));
+        final var failures = validationService.validate(List.of(organisation)).failures();
 
         final var roleError = new ValidationFailure()
                 .fieldId("organisation[0].id")
@@ -180,7 +178,7 @@ class OrganisationValidatorTest {
     }
 
     @Test
-    @DisplayName("Validation throws ResolverUnavailableException when rorClient.exists() throws a connect/read timeout")
+    @DisplayName("Validation returns an unavailable resolver (not a thrown exception) when rorClient.exists() throws a connect/read timeout")
     void existsThrowsResourceAccessException() {
         final var role = new OrganisationRole()
                 .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
@@ -195,11 +193,11 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenThrow(new ResourceAccessException("timeout"));
 
-        final var e = assertThrows(ResolverUnavailableException.class,
-                () -> validationService.validate(List.of(organisation)));
+        final var result = validationService.validate(List.of(organisation));
 
-        assertThat(e.getUnavailableResolvers(), hasSize(1));
-        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(result.failures(), empty());
+        assertThat(result.unavailableResolvers(), hasSize(1));
+        final var unavailable = result.unavailableResolvers().get(0);
         assertThat(unavailable.getField(), is("organisation[0].id"));
         assertThat(unavailable.getResolver(), is("ROR"));
         assertThat(unavailable.getDownstreamStatus(), nullValue());
@@ -208,7 +206,7 @@ class OrganisationValidatorTest {
     }
 
     @Test
-    @DisplayName("Validation throws ResolverUnavailableException when rorClient.exists() throws a 5xx error")
+    @DisplayName("Validation returns an unavailable resolver (not a thrown exception) when rorClient.exists() throws a 5xx error")
     void existsThrowsHttpServerErrorException() {
         final var role = new OrganisationRole()
                 .schemaUri(OrganizationRoleSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_ORGANISATION_ROLE_SCHEMA_359)
@@ -225,11 +223,11 @@ class OrganisationValidatorTest {
                 .thenThrow(HttpServerErrorException.create(
                         HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null));
 
-        final var e = assertThrows(ResolverUnavailableException.class,
-                () -> validationService.validate(List.of(organisation)));
+        final var result = validationService.validate(List.of(organisation));
 
-        assertThat(e.getUnavailableResolvers(), hasSize(1));
-        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(result.failures(), empty());
+        assertThat(result.unavailableResolvers(), hasSize(1));
+        final var unavailable = result.unavailableResolvers().get(0);
         assertThat(unavailable.getField(), is("organisation[0].id"));
         assertThat(unavailable.getResolver(), is("ROR"));
         assertThat(unavailable.getDownstreamStatus(), is(500));
@@ -267,11 +265,10 @@ class OrganisationValidatorTest {
         when(rorClient.exists(TestConstants.VALID_ROR)).thenThrow(new ResourceAccessException("timeout"));
         when(rorClient.exists(secondRor)).thenReturn(true);
 
-        final var e = assertThrows(ResolverUnavailableException.class,
-                () -> validationService.validate(List.of(organisation1, organisation2)));
+        final var result = validationService.validate(List.of(organisation1, organisation2));
 
-        assertThat(e.getUnavailableResolvers(), hasSize(1));
-        assertThat(e.getUnavailableResolvers().get(0).getField(), is("organisation[0].id"));
+        assertThat(result.unavailableResolvers(), hasSize(1));
+        assertThat(result.unavailableResolvers().get(0).getField(), is("organisation[0].id"));
 
         // proves the per-item try/catch didn't abort the loop: the second organisation was
         // still checked (and would have been included in `unavailable` too, had it failed),
@@ -304,7 +301,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
 
-        final var failures = validationService.validate(List.of(organisation));
+        final var failures = validationService.validate(List.of(organisation)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -337,7 +334,7 @@ class OrganisationValidatorTest {
 
         when(rorClient.exists(TestConstants.VALID_ROR)).thenReturn(true);
 
-        final var failures = validationService.validate(List.of(organisation));
+        final var failures = validationService.validate(List.of(organisation)).failures();
 
         assertThat(failures, empty());
         verify(roleValidationService).validate(role1, 0, 0);

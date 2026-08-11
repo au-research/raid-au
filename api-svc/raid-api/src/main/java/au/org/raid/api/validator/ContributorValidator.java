@@ -2,11 +2,13 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.config.properties.ContributorValidationProperties;
 import au.org.raid.api.dto.ContributorStatus;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.repository.ContributorRepository;
 import au.org.raid.api.util.DateUtil;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
 import au.org.raid.idl.raidv2.model.Organisation;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,14 +31,15 @@ public class ContributorValidator {
     private final ContributorRoleValidator roleValidator;
     private final ContributorPositionValidator positionValidator;
 
-    public List<ValidationFailure> validate(
+    public ValidationResult validate(
             List<Contributor> contributors
     ) {
         if (contributors == null || contributors.isEmpty()) {
-            return List.of(CONTRIB_NOT_SET);
+            return ValidationResult.of(List.of(CONTRIB_NOT_SET));
         }
 
         var failures = new ArrayList<ValidationFailure>();
+        var unavailable = new ArrayList<UnavailableResolver>();
 
         final var contributorCountMap = contributors.stream()
                 .filter(org -> org.getId() != null)
@@ -58,35 +61,42 @@ public class ContributorValidator {
                 .forEach(index -> {
                     final var contributor = contributors.get(index);
 
-                    if (isOrcid(contributor)) {
-                        failures.addAll(orcidValidator.validate(contributor, index));
-                    } else if (isIsni(contributor)) {
-                        failures.addAll(isniValidator.validate(contributor, index));
-                    } else {
+                    try {
+                        if (isOrcid(contributor)) {
+                            failures.addAll(orcidValidator.validate(contributor, index));
+                        } else if (isIsni(contributor)) {
+                            failures.addAll(isniValidator.validate(contributor, index));
+                        } else {
 
-                        failures.add(new ValidationFailure()
-                                .fieldId("contributor[%d].id".formatted(index))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_VALUE_MESSAGE + " - should begin with %s or %s".formatted(
-                                        validationProperties.getOrcid().getUrlPrefix(),
-                                        validationProperties.getIsni().getUrlPrefix()
-                                ))
-                        );
-                        failures.add(new ValidationFailure()
-                                .fieldId("contributor[%d].schemaUri".formatted(index))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_VALUE_MESSAGE + " - should be %s or %s".formatted(
-                                        validationProperties.getOrcid().getSchemaUri(),
-                                        validationProperties.getIsni().getSchemaUri()
-                                ))
-                        );
+                            failures.add(new ValidationFailure()
+                                    .fieldId("contributor[%d].id".formatted(index))
+                                    .errorType(INVALID_VALUE_TYPE)
+                                    .message(INVALID_VALUE_MESSAGE + " - should begin with %s or %s".formatted(
+                                            validationProperties.getOrcid().getUrlPrefix(),
+                                            validationProperties.getIsni().getUrlPrefix()
+                                    ))
+                            );
+                            failures.add(new ValidationFailure()
+                                    .fieldId("contributor[%d].schemaUri".formatted(index))
+                                    .errorType(INVALID_VALUE_TYPE)
+                                    .message(INVALID_VALUE_MESSAGE + " - should be %s or %s".formatted(
+                                            validationProperties.getOrcid().getSchemaUri(),
+                                            validationProperties.getIsni().getSchemaUri()
+                                    ))
+                            );
+                        }
+                    } catch (ResolverUnavailableException e) {
+                        // The resolver, not the contributor, is at fault (RAID-809). Collect
+                        // and continue so one contributor's resolver failure doesn't abort
+                        // validation of the rest of the request.
+                        unavailable.addAll(e.getUnavailableResolvers());
                     }
                 });
 
         failures.addAll(validateLeader(contributors));
         failures.addAll(validateContact(contributors));
 
-        return failures;
+        return new ValidationResult(failures, unavailable);
     }
 
     private boolean isOrcid(final Contributor contributor) {
@@ -109,14 +119,15 @@ public class ContributorValidator {
         return false;
     }
 
-    public List<ValidationFailure> validateForPatch(
+    public ValidationResult validateForPatch(
             List<Contributor> contributors
     ) {
         if (contributors == null || contributors.isEmpty()) {
-            return List.of(CONTRIB_NOT_SET);
+            return ValidationResult.of(List.of(CONTRIB_NOT_SET));
         }
 
         var failures = new ArrayList<ValidationFailure>();
+        var unavailable = new ArrayList<UnavailableResolver>();
 
         IntStream.range(0, contributors.size())
                 .forEach(index -> {
@@ -137,34 +148,41 @@ public class ContributorValidator {
                                         )
                         );
                     }
-                    if (isOrcid(contributor)) {
-                        failures.addAll(orcidValidator.validate(contributor, index));
-                    } else if (isIsni(contributor)) {
-                        failures.addAll(isniValidator.validate(contributor, index));
-                    } else {
-                        failures.add(new ValidationFailure()
-                                .fieldId("contributor[%d].id".formatted(index))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_VALUE_MESSAGE + " - should begin with %s or %s".formatted(
-                                        validationProperties.getOrcid().getUrlPrefix(),
-                                        validationProperties.getIsni().getUrlPrefix()
-                                ))
-                        );
-                        failures.add(new ValidationFailure()
-                                .fieldId("contributor[%d].schemaUri".formatted(index))
-                                .errorType(INVALID_VALUE_TYPE)
-                                .message(INVALID_VALUE_MESSAGE + " - should be %s or %s".formatted(
-                                        validationProperties.getOrcid().getSchemaUri(),
-                                        validationProperties.getIsni().getSchemaUri()
-                                ))
-                        );
+                    try {
+                        if (isOrcid(contributor)) {
+                            failures.addAll(orcidValidator.validate(contributor, index));
+                        } else if (isIsni(contributor)) {
+                            failures.addAll(isniValidator.validate(contributor, index));
+                        } else {
+                            failures.add(new ValidationFailure()
+                                    .fieldId("contributor[%d].id".formatted(index))
+                                    .errorType(INVALID_VALUE_TYPE)
+                                    .message(INVALID_VALUE_MESSAGE + " - should begin with %s or %s".formatted(
+                                            validationProperties.getOrcid().getUrlPrefix(),
+                                            validationProperties.getIsni().getUrlPrefix()
+                                    ))
+                            );
+                            failures.add(new ValidationFailure()
+                                    .fieldId("contributor[%d].schemaUri".formatted(index))
+                                    .errorType(INVALID_VALUE_TYPE)
+                                    .message(INVALID_VALUE_MESSAGE + " - should be %s or %s".formatted(
+                                            validationProperties.getOrcid().getSchemaUri(),
+                                            validationProperties.getIsni().getSchemaUri()
+                                    ))
+                            );
+                        }
+                    } catch (ResolverUnavailableException e) {
+                        // The resolver, not the contributor, is at fault (RAID-809). Collect
+                        // and continue so one contributor's resolver failure doesn't abort
+                        // validation of the rest of the request.
+                        unavailable.addAll(e.getUnavailableResolvers());
                     }
                 });
 
         failures.addAll(validateLeader(contributors));
         failures.addAll(validateContact(contributors));
 
-        return failures;
+        return new ValidationResult(failures, unavailable);
     }
 
     private List<ValidationFailure> validateLeader(
