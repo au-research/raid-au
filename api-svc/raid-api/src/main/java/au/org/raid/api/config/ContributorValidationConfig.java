@@ -25,7 +25,8 @@ public class ContributorValidationConfig {
                 validationProperties.getOrcid(),
                 orcidClient,
                 roleValidator,
-                positionValidator
+                positionValidator,
+                "ORCID"
         );
     }
 
@@ -35,7 +36,8 @@ public class ContributorValidationConfig {
                 validationProperties.getIsni(),
                 isniClient,
                 roleValidator,
-                positionValidator
+                positionValidator,
+                "ISNI"
         );
     }
 }

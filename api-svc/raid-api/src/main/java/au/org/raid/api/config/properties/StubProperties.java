@@ -16,6 +16,7 @@ public class StubProperties {
     private Apids apids;
     private OpenStreetMap openStreetMap;
     private Isni isni;
+    private Ror ror;
 
     @Data
     public static class Doi {
@@ -59,6 +60,12 @@ public class StubProperties {
 
     @Data
     public static class Isni {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
+    public static class Ror {
         private boolean enabled;
         private Long delay;
     }

@@ -24,6 +24,34 @@ raid:
     orcid:
       url-prefix: https://sandbox.orcid.org/
       schema-uri: https://sandbox.orcid.org/
+  # RAID-809: local dev/CI resolver-mocking split. Since application.yaml now defaults
+  # raid.stub.*.enabled=false (real by default), the dev profile must explicitly enable the
+  # in-memory stubs for the ExternalPidService URI validators (doi/handle/rrid/geo-names/
+  # open-street-map) — these have NO mockserver expectations, so without the stubs
+  # bootRun -Dspring.profiles.active=dev (used by local dev and the PR-Integration-Tests job)
+  # validates against the real resolvers (hdl.handle.net, scicrunch.org, geonames.org, ...),
+  # breaking the deterministic NONEXISTENT_TEST_*/SERVER_ERROR_TEST_* assertions.
+  #
+  # ORCID / ISNI / ROR are intentionally left OFF here (inherit false): their clients point at
+  # the mockserver (localhost:1080, see the *-client base-urls above + docker-compose/mockserver/
+  # expectations.json), which is the normal local mechanism for those. Do NOT blanket-enable all
+  # stubs — that bypasses the mockserver for ORCID/ISNI/ROR.
+  stub:
+    doi:
+      enabled: true
+      delay: 150
+    handle:
+      enabled: true
+      delay: 150
+    rrid:
+      enabled: true
+      delay: 150
+    geo-names:
+      enabled: true
+      delay: 150
+    open-street-map:
+      enabled: true
+      delay: 150
 spring:
   security:
     oauth2:

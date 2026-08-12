@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.config.properties.ContributorValidationProperties;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.repository.ContributorRepository;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.Contributor;
@@ -11,6 +12,7 @@ import au.org.raid.idl.raidv2.model.ContributorRole;
 import au.org.raid.idl.raidv2.model.ContributorRoleIdEnum;
 import au.org.raid.idl.raidv2.model.ContributorRoleSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ContributorSchemaUriEnum;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -102,7 +104,7 @@ class ContributorValidatorTest {
                         .message("A contributor must have a position")
         ));
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -136,7 +138,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -152,7 +154,7 @@ class ContributorValidatorTest {
     @Test
     @DisplayName("Validation fails with no contributor")
     void noContributors() {
-        final var failures = validationService.validate(Collections.emptyList());
+        final var failures = validationService.validate(Collections.emptyList()).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -169,7 +171,7 @@ class ContributorValidatorTest {
     @Test
     @DisplayName("Validation fails with null contributor")
     void nullContributors() {
-        final var failures = validationService.validate(null);
+        final var failures = validationService.validate(null).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -205,7 +207,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, empty());
 
@@ -244,7 +246,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(List.of(roleError, positionError));
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(2));
 
@@ -294,7 +296,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(any(Contributor.class), anyInt())).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor2, contributor1));
+        final var failures = validationService.validate(List.of(contributor2, contributor1)).failures();
 
         assertThat(failures, empty());
     }
@@ -340,7 +342,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(any(Contributor.class), anyInt())).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor2, contributor1));
+        final var failures = validationService.validate(List.of(contributor2, contributor1)).failures();
 
         assertThat(failures, is(List.of(
                 new ValidationFailure()
@@ -384,7 +386,7 @@ class ContributorValidatorTest {
                         .message("Contributors can only hold one position at any given time. This position conflicts with contributor[0].position[0]")
         ));
 
-        final var failures = validationService.validate(List.of(contributor1));
+        final var failures = validationService.validate(List.of(contributor1)).failures();
 
         assertThat(failures, is(List.of(
                 new ValidationFailure()
@@ -420,7 +422,7 @@ class ContributorValidatorTest {
                         .message("field must be set")
         ));
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -455,7 +457,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(0));
 
@@ -485,7 +487,7 @@ class ContributorValidatorTest {
 
         when(isniValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(0));
 
@@ -515,7 +517,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, empty());
 
@@ -550,7 +552,7 @@ class ContributorValidatorTest {
                         .message("This id does not exist")
         ));
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, contains(new ValidationFailure(
@@ -584,7 +586,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, empty());
         verify(orcidValidator).validate(contributor, 0);
@@ -613,7 +615,7 @@ class ContributorValidatorTest {
 
         when(isniValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, empty());
         verify(isniValidator).validate(contributor, 0);
@@ -641,7 +643,7 @@ class ContributorValidatorTest {
 
         when(orcidValidator.validate(contributor, 0)).thenReturn(Collections.emptyList());
 
-        final var failures = validationService.validate(List.of(contributor));
+        final var failures = validationService.validate(List.of(contributor)).failures();
 
         assertThat(failures, hasSize(1));
         assertThat(failures, hasItem(
@@ -652,5 +654,63 @@ class ContributorValidatorTest {
         ));
 
         verify(orcidValidator).validate(contributor, 0);
+    }
+
+    @Test
+    @DisplayName("An orcidValidator failure for one contributor does not abort validation of the rest of the request")
+    void resolverUnavailableForOneContributorDoesNotAbortValidationOfOthers() {
+        final var secondOrcid = "https://orcid.org/0000-0000-0000-0002";
+
+        final var role1 = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position1 = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor1 = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .id(VALID_ORCID)
+                .role(List.of(role1))
+                .position(List.of(position1))
+                .leader(true);
+
+        final var role2 = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position2 = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor2 = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .id(secondOrcid)
+                .role(List.of(role2))
+                .position(List.of(position2))
+                .contact(true);
+
+        final var unavailable = new UnavailableResolver()
+                .field("contributor[0].id")
+                .value(VALID_ORCID)
+                .resolver("ORCID")
+                .downstreamStatus(null);
+
+        when(orcidValidator.validate(contributor1, 0)).thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+        when(orcidValidator.validate(contributor2, 1)).thenReturn(Collections.emptyList());
+
+        final var result = validationService.validate(List.of(contributor1, contributor2));
+
+        assertThat(result.failures(), empty());
+        assertThat(result.unavailableResolvers(), hasSize(1));
+        assertThat(result.unavailableResolvers().get(0), is(unavailable));
+
+        // proves the per-item try/catch didn't abort the loop: the second contributor was
+        // still checked, and leader/contact validation across the full list still ran.
+        verify(orcidValidator).validate(contributor1, 0);
+        verify(orcidValidator).validate(contributor2, 1);
     }
 }

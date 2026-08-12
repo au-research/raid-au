@@ -2,6 +2,7 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.client.contributor.ContributorClient;
 import au.org.raid.api.config.properties.ContributorValidationProperties.ContributorTypeValidationProperties;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
 import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
@@ -17,6 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +32,7 @@ import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 import static au.org.raid.api.util.TestConstants.VALID_ORCID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,7 +67,8 @@ class ContributorTypeValidatorTest {
                 validationProperties,
                 contributorClient,
                 roleValidator,
-                positionValidator
+                positionValidator,
+                "ORCID"
         );
     }
 
@@ -231,6 +238,135 @@ class ContributorTypeValidatorTest {
         ));
 
         verify(contributorClient).exists(VALID_ORCID);
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException when contributorClient.exists() throws a connect/read timeout")
+    void existsThrowsResourceAccessException() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID)).thenThrow(new ResourceAccessException("timeout"));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is("contributor[0].id"));
+        assertThat(unavailable.getResolver(), is("ORCID"));
+        assertThat(unavailable.getDownstreamStatus(), nullValue());
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException when contributorClient.exists() throws a 5xx error")
+    void existsThrowsHttpServerErrorException() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID))
+                .thenThrow(HttpServerErrorException.create(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is("contributor[0].id"));
+        assertThat(unavailable.getResolver(), is("ORCID"));
+        assertThat(unavailable.getDownstreamStatus(), is(500));
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException when contributorClient.exists() throws a non-404 HttpClientErrorException (e.g. ORCID member-API 403)")
+    void existsThrowsHttpClientErrorExceptionNon404() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID))
+                .thenThrow(HttpClientErrorException.create(
+                        HttpStatus.FORBIDDEN, "Forbidden", null, null, null));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is("contributor[0].id"));
+        assertThat(unavailable.getResolver(), is("ORCID"));
+        assertThat(unavailable.getDownstreamStatus(), is(403));
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException with resolver=ISNI when the ISNI validator's client is unavailable")
+    void isniVariant_existsThrowsResourceAccessException() {
+        final var isniValidator = new ContributorTypeValidator(
+                validationProperties,
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ISNI"
+        );
+
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID)).thenThrow(new ResourceAccessException("timeout"));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> isniValidator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        assertThat(e.getUnavailableResolvers().get(0).getResolver(), is("ISNI"));
     }
 
     @Test
@@ -736,7 +872,8 @@ class ContributorTypeValidatorTest {
                         .build(),
                 contributorClient,
                 roleValidator,
-                positionValidator
+                positionValidator,
+                "ORCID"
         );
     }
 

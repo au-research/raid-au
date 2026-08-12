@@ -21,7 +21,7 @@ public class GeonamesUriValidatorStub extends GeoNamesUriValidator {
     private final Long delayMilliseconds;
     public GeonamesUriValidatorStub(final Long delayMilliseconds) {
         super(null, null);
-        this.delayMilliseconds = delayMilliseconds;
+        this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
     @Override

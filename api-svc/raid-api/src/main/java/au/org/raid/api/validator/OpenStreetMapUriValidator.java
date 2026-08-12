@@ -8,4 +8,9 @@ import org.springframework.web.client.RestTemplate;
 public class OpenStreetMapUriValidator extends AbstractUriValidator {
     private final RestTemplate restTemplate;
     private final String regex = "^https://(www\\.)?openstreetmap.org/.*$";
+
+    @Override
+    protected String resolverName() {
+        return "OpenStreetMap";
+    }
 }

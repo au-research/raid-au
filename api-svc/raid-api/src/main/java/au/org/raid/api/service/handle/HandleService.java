@@ -10,4 +10,9 @@ import org.springframework.web.client.RestTemplate;
 public class HandleService extends AbstractUriValidator {
     public final String regex = "^https://hdl\\.handle\\.net/\\d+(\\.\\d+)*/\\S+$";
     private final RestTemplate restTemplate;
+
+    @Override
+    protected String resolverName() {
+        return "Handle";
+    }
 }

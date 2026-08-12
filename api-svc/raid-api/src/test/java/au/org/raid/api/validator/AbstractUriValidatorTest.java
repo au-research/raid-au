@@ -1,5 +1,6 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,10 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -81,67 +85,94 @@ class AbstractUriValidatorTest {
     }
 
     @Test
-    @DisplayName("Returns failure when request throws exception")
+    @DisplayName("Throws ResolverUnavailableException when request throws a non-404 HttpClientErrorException")
     void requestFails() {
         final var fieldId = "field-id";
         when(restTemplate.exchange(any(RequestEntity.class), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(500)));
 
-        final var failures = uriValidator.validate("http://localhost", fieldId);
-        assertThat(failures, is(List.of(serverError(fieldId))));
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> uriValidator.validate("http://localhost", fieldId));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is(fieldId));
+        assertThat(unavailable.getValue(), is("http://localhost"));
+        assertThat(unavailable.getResolver(), is("TestResolver"));
+        assertThat(unavailable.getDownstreamStatus(), is(500));
     }
 
     @Test
-    @DisplayName("Returns server-error failure when resolver read times out")
+    @DisplayName("Throws ResolverUnavailableException when resolver read times out")
     void requestTimesOut() {
         final var fieldId = "field-id";
         when(restTemplate.exchange(any(RequestEntity.class), eq(Void.class)))
                 .thenThrow(new ResourceAccessException("Read timed out", new SocketTimeoutException("Read timed out")));
 
-        final var failures = uriValidator.validate("http://localhost", fieldId);
-        assertThat(failures, is(List.of(serverError(fieldId))));
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> uriValidator.validate("http://localhost", fieldId));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is(fieldId));
+        assertThat(unavailable.getValue(), is("http://localhost"));
+        assertThat(unavailable.getResolver(), is("TestResolver"));
+        assertThat(unavailable.getDownstreamStatus(), nullValue());
     }
 
     @Test
-    @DisplayName("Returns server-error failure when resolver connection cannot be established")
+    @DisplayName("Throws ResolverUnavailableException when resolver connection cannot be established")
     void connectionRefused() {
         final var fieldId = "field-id";
         when(restTemplate.exchange(any(RequestEntity.class), eq(Void.class)))
                 .thenThrow(new ResourceAccessException("Connection refused", new java.net.ConnectException("Connection refused")));
 
-        final var failures = uriValidator.validate("http://localhost", fieldId);
-        assertThat(failures, is(List.of(serverError(fieldId))));
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> uriValidator.validate("http://localhost", fieldId));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is(fieldId));
+        assertThat(unavailable.getValue(), is("http://localhost"));
+        assertThat(unavailable.getResolver(), is("TestResolver"));
+        assertThat(unavailable.getDownstreamStatus(), nullValue());
     }
 
     @Test
-    @DisplayName("Returns server-error failure when resolver returns a 5xx")
+    @DisplayName("Throws ResolverUnavailableException when resolver returns a 5xx")
     void resolverServerError() {
         final var fieldId = "field-id";
         when(restTemplate.exchange(any(RequestEntity.class), eq(Void.class)))
                 .thenThrow(new HttpServerErrorException(HttpStatusCode.valueOf(503)));
 
-        final var failures = uriValidator.validate("http://localhost", fieldId);
-        assertThat(failures, is(List.of(serverError(fieldId))));
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> uriValidator.validate("http://localhost", fieldId));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is(fieldId));
+        assertThat(unavailable.getValue(), is("http://localhost"));
+        assertThat(unavailable.getResolver(), is("TestResolver"));
+        assertThat(unavailable.getDownstreamStatus(), is(503));
     }
 
     @Test
-    @DisplayName("Returns server-error failure for any other RestClientException")
+    @DisplayName("Throws ResolverUnavailableException for any other RestClientException")
     void otherRestClientException() {
         final var fieldId = "field-id";
         when(restTemplate.exchange(any(RequestEntity.class), eq(Void.class)))
                 .thenThrow(new RestClientException("Unexpected client failure"));
 
-        final var failures = uriValidator.validate("http://localhost", fieldId);
-        assertThat(failures, is(List.of(serverError(fieldId))));
-    }
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> uriValidator.validate("http://localhost", fieldId));
 
-    private ValidationFailure serverError(final String fieldId) {
-        return new ValidationFailure()
-                .fieldId(fieldId)
-                .errorType("invalidValue")
-                .message("uri could not be validated - server error");
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is(fieldId));
+        assertThat(unavailable.getValue(), is("http://localhost"));
+        assertThat(unavailable.getResolver(), is("TestResolver"));
+        assertThat(unavailable.getDownstreamStatus(), nullValue());
     }
-
 
     private class TestUriValidator extends AbstractUriValidator {
         @Override
@@ -152,6 +183,11 @@ class AbstractUriValidatorTest {
         @Override
         protected RestTemplate getRestTemplate() {
             return AbstractUriValidatorTest.this.restTemplate;
+        }
+
+        @Override
+        protected String resolverName() {
+            return "TestResolver";
         }
     }
 }

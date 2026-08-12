@@ -80,6 +80,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationFailureResponse'
+        503:
+          description: One or more external identifier resolvers were unavailable. Please retry.
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolverUnavailableResponse'
     get:
       security:
         - bearerAuth: [ ]
@@ -189,6 +200,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationFailureResponse'
+        503:
+          description: One or more external identifier resolvers were unavailable. Please retry.
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolverUnavailableResponse'
     patch:
       security:
         - bearerAuth: [ ]
@@ -215,6 +237,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationFailureResponse'
+        503:
+          description: One or more external identifier resolvers were unavailable. Please retry.
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolverUnavailableResponse'
   /raid/{prefix}/{suffix}/{version}:
     parameters:
       - name: prefix
@@ -589,6 +622,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationFailure'
+    UnavailableResolver:
+      type: object
+      required: [ field, resolver ]
+      properties:
+        field: { type: string }
+        value: { type: string }
+        resolver: { type: string }
+        downstreamStatus: { type: integer }
+        downstreamMessage: { type: string }
+    ResolverUnavailableResponse:
+      allOf:
+        - $ref: '#/components/schemas/FailureResponse'
+      required:
+        - unavailableResolvers
+      properties:
+        unavailableResolvers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnavailableResolver'
     RaidCountResponse:
       type: object
       required: [ count ]

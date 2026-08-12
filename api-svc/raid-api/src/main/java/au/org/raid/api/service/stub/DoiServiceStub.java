@@ -20,7 +20,7 @@ public class DoiServiceStub extends DoiService {
     private final Long delayMilliseconds;
     public DoiServiceStub(final Long delayMilliseconds) {
         super(null);
-        this.delayMilliseconds = delayMilliseconds;
+        this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
     @Override

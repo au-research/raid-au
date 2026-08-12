@@ -21,7 +21,7 @@ public class OpenStreetMapValidatorStub extends OpenStreetMapUriValidator {
     private final Long delayMilliseconds;
     public OpenStreetMapValidatorStub(final Long delayMilliseconds) {
         super(null);
-        this.delayMilliseconds = delayMilliseconds;
+        this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
 

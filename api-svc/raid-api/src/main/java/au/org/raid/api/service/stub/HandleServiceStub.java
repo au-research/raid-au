@@ -20,7 +20,7 @@ public class HandleServiceStub extends HandleService {
     private final Long delayMilliseconds;
     public HandleServiceStub(final Long delayMilliseconds) {
         super(null);
-        this.delayMilliseconds = delayMilliseconds;
+        this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
     @Override
