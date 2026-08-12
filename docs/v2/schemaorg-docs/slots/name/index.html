@@ -1047,29 +1047,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../datamodel-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2043,29 +2020,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../datamodel-docs/slots/traditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    traditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../datamodel-docs/slots/type/" class="md-nav__link">
         
   
@@ -2864,29 +2818,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../datamodel-docs/enums/TraditionalKnowledgeLabelSchemaUriEnum/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabelSchemaUriEnum
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3323,29 +3254,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../schema-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    14. TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3508,7 +3416,8 @@
 
 
 <h1 id="name">name</h1>
-<p>URI: <a href="https://vocabulary.raid.org/slot/name">raid:slot/name</a></p>
+<p>URI: <a href="https://vocabulary.raid.org/slot/name">raid:slot/name</a>
+Alias: name</p>
 <!-- no inheritance hierarchy -->
 
 <h2 id="applicable-classes">Applicable Classes</h2>
@@ -3522,18 +3431,8 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="../../classes/ResearchProject/">ResearchProject</a></td>
-<td>A research project with contributors and organizational relationships</td>
-<td>no</td>
-</tr>
-<tr>
-<td><a href="../../classes/Organization/">Organization</a></td>
-<td></td>
-<td>no</td>
-</tr>
-<tr>
-<td><a href="../../classes/Place/">Place</a></td>
-<td>Geographic location</td>
+<td><a href="../../classes/Member/">Member</a></td>
+<td>A person or organization involved in the research project</td>
 <td>no</td>
 </tr>
 <tr>
@@ -3542,8 +3441,28 @@
 <td>no</td>
 </tr>
 <tr>
+<td><a href="../../classes/CreativeWork/">CreativeWork</a></td>
+<td>A related research object (input/output) referenced by the project under the ...</td>
+<td>no</td>
+</tr>
+<tr>
 <td><a href="../../classes/PropertyValue/">PropertyValue</a></td>
 <td>A property-value pair for additional metadata</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../../classes/ResearchProject/">ResearchProject</a></td>
+<td>A research project with contributors and organizational relationships</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../../classes/Organization/">Organization</a></td>
+<td>An organisation involved in the research project, such as a funder, lead orga...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../../classes/Place/">Place</a></td>
+<td>Geographic location</td>
 <td>no</td>
 </tr>
 </tbody>
@@ -3574,12 +3493,15 @@
 <h2 id="linkml-source">LinkML Source</h2>
 <details>
 <div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span>
+<span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span>
 <span class="nt">domain_of</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResearchProject</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Organization</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Member</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Place</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DefinedTerm</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PropertyValue</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CreativeWork</span>
 </code></pre></div>
 </details>
 

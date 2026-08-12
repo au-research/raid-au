@@ -1047,29 +1047,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../datamodel-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2043,29 +2020,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../datamodel-docs/slots/traditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    traditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../datamodel-docs/slots/type/" class="md-nav__link">
         
   
@@ -2864,29 +2818,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../datamodel-docs/enums/TraditionalKnowledgeLabelSchemaUriEnum/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabelSchemaUriEnum
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3323,29 +3254,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../schema-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    14. TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3508,8 +3416,9 @@
 
 
 <h1 id="parentorganization">parentOrganization</h1>
-<p><em>The RAiD identifier owner</em></p>
-<p>URI: <a href="http://schema.org/parentOrganization">schema:parentOrganization</a></p>
+<p><em>The RAiD registration agency: the ROR-identified organisation that operates the registration service. Emitted as an Organization whose identifier is the agency ROR. Both live emitters use the registration agency (the static-site json-ld.ts as parentOrganization, the API RaidJsonLdConverter as publisher). The earlier "owner" description was incorrect and has been superseded.</em></p>
+<p>URI: <a href="http://schema.org/parentOrganization">schema:parentOrganization</a>
+Alias: parentOrganization</p>
 <!-- no inheritance hierarchy -->
 
 <h2 id="applicable-classes">Applicable Classes</h2>
@@ -3555,10 +3464,15 @@
 <h2 id="linkml-source">LinkML Source</h2>
 <details>
 <div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parentOrganization</span>
-<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">The RAiD identifier owner</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;The</span><span class="nv"> </span><span class="s">RAiD</span><span class="nv"> </span><span class="s">registration</span><span class="nv"> </span><span class="s">agency:</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">ROR-identified</span><span class="nv"> </span><span class="s">organisation</span><span class="nv"> </span><span class="s">that</span><span class="nv"> </span><span class="s">operates</span>
+<span class="w">  </span><span class="s">the</span><span class="nv"> </span><span class="s">registration</span><span class="nv"> </span><span class="s">service.</span><span class="nv"> </span><span class="s">Emitted</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">an</span><span class="nv"> </span><span class="s">Organization</span><span class="nv"> </span><span class="s">whose</span><span class="nv"> </span><span class="s">identifier</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">agency</span>
+<span class="w">  </span><span class="s">ROR.</span><span class="nv"> </span><span class="s">Both</span><span class="nv"> </span><span class="s">live</span><span class="nv"> </span><span class="s">emitters</span><span class="nv"> </span><span class="s">use</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">registration</span><span class="nv"> </span><span class="s">agency</span><span class="nv"> </span><span class="s">(the</span><span class="nv"> </span><span class="s">static-site</span><span class="nv"> </span><span class="s">json-ld.ts</span>
+<span class="w">  </span><span class="s">as</span><span class="nv"> </span><span class="s">parentOrganization,</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">RaidJsonLdConverter</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">publisher).</span><span class="nv"> </span><span class="s">The</span><span class="nv"> </span><span class="s">earlier</span><span class="nv"> </span><span class="s">&quot;owner&quot;</span>
+<span class="w">  </span><span class="s">description</span><span class="nv"> </span><span class="s">was</span><span class="nv"> </span><span class="s">incorrect</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">been</span><span class="nv"> </span><span class="s">superseded.&#39;</span>
 <span class="nt">from_schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/raid-schema-org</span>
 <span class="nt">rank</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
 <span class="nt">slot_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">schema:parentOrganization</span>
+<span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parentOrganization</span>
 <span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResearchProject</span>
 <span class="nt">domain_of</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResearchProject</span>

@@ -1047,29 +1047,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../datamodel-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2043,29 +2020,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../datamodel-docs/slots/traditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    traditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../datamodel-docs/slots/type/" class="md-nav__link">
         
   
@@ -2864,29 +2818,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../datamodel-docs/enums/TraditionalKnowledgeLabelSchemaUriEnum/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabelSchemaUriEnum
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3313,29 +3244,6 @@
   
   <span class="md-ellipsis">
     13. SpatialCoverage
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    14. TraditionalKnowledgeLabel
     
   </span>
   
@@ -4518,39 +4426,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#raiddtotraditionalknowledgelabel" class="md-nav__link">
-    <span class="md-ellipsis">
-      RaidDto.TraditionalKnowledgeLabel
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="RaidDto.TraditionalKnowledgeLabel">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#raiddtotraditionalknowledgelabelid" class="md-nav__link">
-    <span class="md-ellipsis">
-      RaidDto.TraditionalKnowledgeLabel.id
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#raiddtotraditionalknowledgelabelschemauri" class="md-nav__link">
-    <span class="md-ellipsis">
-      RaidDto.TraditionalKnowledgeLabel.schemaUri
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#raiddtoid" class="md-nav__link">
     <span class="md-ellipsis">
       RaidDto.Id
@@ -4765,7 +4640,6 @@ optional</p>
 ISO 8601 standard date. Only the year is required, month and day are optional (but recommended when available).</p>
 <p><strong>default</strong>:
 Date record created</p>
-<p><strong>Regex pattern</strong>: <code>^\s*\S.*$</code></p>
 <p>Language</p>
 <h3 id="raiddtotitlelanguage">RaidDto.Title.Language</h3>
 <p><strong>Description</strong>:</p>
@@ -4832,7 +4706,6 @@ optional</p>
 ISO 8601 standard date. Only the year is required, month and day are optional (but recommended when available).</p>
 <p><strong>default</strong>:
 Date record created</p>
-<p><strong>Regex pattern</strong>: <code>^\s*\S.*$</code></p>
 <h3 id="raiddtotitletext">RaidDto.Title.text</h3>
 <p><strong>Description</strong>:</p>
 <p>a name or title by which the project or activity is known</p>
@@ -5312,6 +5185,10 @@ The controlled list of allowed identifier schemas is defined at https://vocabula
 <tr>
 <td>https://orcid.org/</td>
 <td>ORCID contributor ID schema</td>
+</tr>
+<tr>
+<td>https://sandbox.orcid.org/</td>
+<td>ORCID SANDBOX contributor ID schema</td>
 </tr>
 </tbody>
 </table>
@@ -6342,49 +6219,6 @@ optional</p>
 0..1</p>
 <p><strong>constraints</strong>:
 do not duplicate information from spatialCoverage.id above; do not use for organisational locations (which are derived from the organisation’s ROR)</p>
-<h2 id="raiddtotraditionalknowledgelabel">RaidDto.TraditionalKnowledgeLabel</h2>
-<p><strong>Description</strong>:</p>
-<p>metadata schema block containing information about Traditional Knowledge / Biocultural Labels and Notices</p>
-<p><strong>Requirement</strong>:
-optional</p>
-<p><strong>Cardinality</strong>:
-*</p>
-<h3 id="raiddtotraditionalknowledgelabelid">RaidDto.TraditionalKnowledgeLabel.id</h3>
-<p><strong>Description</strong>:</p>
-<p>identifier (URI) linking to a verified source for Traditional Knowledge (TK) or Biocultural (BC) Labels or Notices pertaining to a project or activity</p>
-<p><strong>Requirement</strong>:
-optional</p>
-<p><strong>Cardinality</strong>:
-0..1</p>
-<p><strong>notes</strong>:
-Currently only Local Contexts Hub Projects are allowed as a source for validated TK/BC Labels and Notices.</p>
-<h3 id="raiddtotraditionalknowledgelabelschemauri">RaidDto.TraditionalKnowledgeLabel.schemaUri</h3>
-<p><strong>Description</strong>:</p>
-<p>the URI of the Traditional Knowledge or Biocultural label identifier schema</p>
-<p><strong>Requirement</strong>:
-optional</p>
-<p><strong>Cardinality</strong>:
-0..1</p>
-<p><strong>notes</strong>:
-Currently only Local Contexts Hub Projects are allowed as a source for validated TK/BC Labels and Notices.</p>
-<p><strong>Allowed values</strong> (fetched at the time of the documentation generation):</p>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>https://localcontexts.org/labels/traditional-knowledge-labels/</td>
-<td>Local contexts hub</td>
-</tr>
-</tbody>
-</table>
-<p>This is a dynamic enumeration whose values are defined in externally managed vocabulary. </p>
-<p>Link to the vocabulary:</p>
-<p><a href="https://vocabulary.raid.org/traditionalKnowledgeLabel.schemaUri/scheme">https://vocabulary.raid.org/traditionalKnowledgeLabel.schemaUri/scheme</a></p>
 <h2 id="raiddtoid">RaidDto.Id</h2>
 <p><strong>Description</strong>:</p>
 <p>a metadata schema block containing the RAiD name and associated properties.</p>

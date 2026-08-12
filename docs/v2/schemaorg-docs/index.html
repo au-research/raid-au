@@ -1047,29 +1047,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../datamodel-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2043,29 +2020,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../datamodel-docs/slots/traditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    traditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../datamodel-docs/slots/type/" class="md-nav__link">
         
   
@@ -2864,29 +2818,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../datamodel-docs/enums/TraditionalKnowledgeLabelSchemaUriEnum/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TraditionalKnowledgeLabelSchemaUriEnum
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3323,29 +3254,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../schema-docs/classes/TraditionalKnowledgeLabel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    14. TraditionalKnowledgeLabel
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3511,7 +3419,7 @@
 <p>LinkML schema for mapping RAiD (Research Activity Identifier) to schema.org ResearchProject</p>
 <p>URI: https://example.org/raid-schema-org</p>
 <p>Name: raid-schema-org</p>
-<p>Add here some general information about the documentation site.</p>
+<p>This documentation is generated from the LinkML schema and describes how RAiD metadata maps to the schema.org <code>ResearchProject</code> model used in RAiD landing-page JSON-LD. Use the Classes, Properties and Enumerations tables below to navigate. Each class page lists its schema.org type, its properties with cardinality and range, and the JSON key each property is emitted under.</p>
 <h2 id="classes">Classes</h2>
 <table>
 <thead>
@@ -3522,6 +3430,10 @@
 </thead>
 <tbody>
 <tr>
+<td><a href="classes/CreativeWork/">CreativeWork</a></td>
+<td>A related research object (input/output) referenced by the project under the citation slot.</td>
+</tr>
+<tr>
 <td><a href="classes/DefinedTerm/">DefinedTerm</a></td>
 <td>A term from a controlled vocabulary</td>
 </tr>
@@ -3531,7 +3443,7 @@
 </tr>
 <tr>
 <td><a href="classes/Organization/">Organization</a></td>
-<td>None</td>
+<td>An organisation involved in the research project, such as a funder, lead organisation or the registration agency, identified by its ROR.</td>
 </tr>
 <tr>
 <td><a href="classes/Place/">Place</a></td>
@@ -3540,6 +3452,10 @@
 <tr>
 <td><a href="classes/PropertyValue/">PropertyValue</a></td>
 <td>A property-value pair for additional metadata</td>
+</tr>
+<tr>
+<td><a href="classes/RelatedResearchProject/">RelatedResearchProject</a></td>
+<td>A related RAiD referenced from isPartOf/hasPart/isBasedOn/isRelatedTo. Its identifier is the plain RAiD URI string, not a PropertyValue.</td>
 </tr>
 <tr>
 <td><a href="classes/ResearchProject/">ResearchProject</a></td>
@@ -3563,6 +3479,10 @@
 <tr>
 <td><a href="slots/additionalType/">additionalType</a></td>
 <td>Additional type information</td>
+</tr>
+<tr>
+<td><a href="slots/citation/">citation</a></td>
+<td>Related objects (research inputs/outputs) emitted as a flat list of CreativeW...</td>
 </tr>
 <tr>
 <td><a href="slots/context/">context</a></td>
@@ -3589,6 +3509,14 @@
 <td>Organizations that fund the project</td>
 </tr>
 <tr>
+<td><a href="slots/hasPart/">hasPart</a></td>
+<td>Related RAiDs that are part of this project (relatedRaid</td>
+</tr>
+<tr>
+<td><a href="slots/headline/">headline</a></td>
+<td>The primary-type title of the research project</td>
+</tr>
+<tr>
 <td><a href="slots/id/">id</a></td>
 <td>The RAiD identifier</td>
 </tr>
@@ -3599,6 +3527,18 @@
 <tr>
 <td><a href="slots/inDefinedTermSet/">inDefinedTermSet</a></td>
 <td>The vocabulary/taxonomy this term belongs to</td>
+</tr>
+<tr>
+<td><a href="slots/isBasedOn/">isBasedOn</a></td>
+<td>Related RAiDs this project is derived from (relatedRaid</td>
+</tr>
+<tr>
+<td><a href="slots/isPartOf/">isPartOf</a></td>
+<td>Related RAiDs of which this project is a part (relatedRaid</td>
+</tr>
+<tr>
+<td><a href="slots/isRelatedTo/">isRelatedTo</a></td>
+<td>Related RAiDs with any other relationship type</td>
 </tr>
 <tr>
 <td><a href="slots/keywords/">keywords</a></td>
@@ -3618,15 +3558,23 @@
 </tr>
 <tr>
 <td><a href="slots/name/">name</a></td>
-<td>The title/name of the research project</td>
+<td>The title/name of the research project (all titles concatenated with a pipe s...</td>
 </tr>
 <tr>
 <td><a href="slots/parentOrganization/">parentOrganization</a></td>
-<td>The RAiD identifier owner</td>
+<td>The RAiD registration agency: the ROR-identified organisation that operates t...</td>
 </tr>
 <tr>
 <td><a href="slots/propertyID/">propertyID</a></td>
 <td>Property identifier</td>
+</tr>
+<tr>
+<td><a href="slots/relationshipType/">relationshipType</a></td>
+<td>The raw relatedRaid</td>
+</tr>
+<tr>
+<td><a href="slots/relationshipTypeName/">relationshipTypeName</a></td>
+<td>The resolved human-readable label for relationshipType, when available</td>
 </tr>
 <tr>
 <td><a href="slots/roleName/">roleName</a></td>
