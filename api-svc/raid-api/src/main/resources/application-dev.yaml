@@ -24,24 +24,19 @@ raid:
     orcid:
       url-prefix: https://sandbox.orcid.org/
       schema-uri: https://sandbox.orcid.org/
-  # RAID-809: without these overrides, bootRun -Dspring.profiles.active=dev falls back to the
-  # raid.stub.*.enabled=false defaults in application.yaml, so mintRaid validation hits the real
-  # external resolvers (hdl.handle.net, scicrunch.org, geonames.org, etc.) instead of the
-  # in-memory stubs. That's what both local dev and the PR-Integration-Tests GitHub Actions job
-  # use to start the API before running intTest, so the sentinel-based
-  # NONEXISTENT_TEST_*/SERVER_ERROR_TEST_* assertions in RelatedObjectIntegrationTest and
-  # SpatialCoverageIntegrationTest were being validated against unpredictable real-service
-  # responses rather than the deterministic stub behaviour they're written for.
+  # RAID-809: local dev/CI resolver-mocking split. Since application.yaml now defaults
+  # raid.stub.*.enabled=false (real by default), the dev profile must explicitly enable the
+  # in-memory stubs for the ExternalPidService URI validators (doi/handle/rrid/geo-names/
+  # open-street-map) — these have NO mockserver expectations, so without the stubs
+  # bootRun -Dspring.profiles.active=dev (used by local dev and the PR-Integration-Tests job)
+  # validates against the real resolvers (hdl.handle.net, scicrunch.org, geonames.org, ...),
+  # breaking the deterministic NONEXISTENT_TEST_*/SERVER_ERROR_TEST_* assertions.
+  #
+  # ORCID / ISNI / ROR are intentionally left OFF here (inherit false): their clients point at
+  # the mockserver (localhost:1080, see the *-client base-urls above + docker-compose/mockserver/
+  # expectations.json), which is the normal local mechanism for those. Do NOT blanket-enable all
+  # stubs — that bypasses the mockserver for ORCID/ISNI/ROR.
   stub:
-    geo-names:
-      enabled: true
-      delay: 150
-    orcid:
-      enabled: true
-      delay: 150
-    apids:
-      enabled: true
-      delay: 150
     doi:
       enabled: true
       delay: 150
@@ -51,13 +46,10 @@ raid:
     rrid:
       enabled: true
       delay: 150
+    geo-names:
+      enabled: true
+      delay: 150
     open-street-map:
-      enabled: true
-      delay: 150
-    isni:
-      enabled: true
-      delay: 150
-    ror:
       enabled: true
       delay: 150
 spring:
