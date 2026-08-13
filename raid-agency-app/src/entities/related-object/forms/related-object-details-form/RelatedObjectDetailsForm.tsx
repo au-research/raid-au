@@ -1,6 +1,7 @@
 import { TextInputField } from "@/components/fields/TextInputField";
 import { TextSelectField } from "@/components/fields/TextSelectField";
 import generalMapping from "@/mapping/data/general-mapping.json";
+import { inferRelatedObjectSchemaUri } from "@/utils/related-object-utils/related-object-schema-uri";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
@@ -36,11 +37,9 @@ function FieldGrid({
   useEffect(() => {
     if (!idValue) return;
 
-    if (idValue.includes("doi.org")) {
-      setValue(`${key}.${index}.schemaUri`, "https://doi.org/");
-      trigger(`${key}.${index}.schemaUri`);
-    } else if (idValue.includes("web.archive.org")) {
-      setValue(`${key}.${index}.schemaUri`, "https://web.archive.org/");
+    const schemaUri = inferRelatedObjectSchemaUri(idValue);
+    if (schemaUri) {
+      setValue(`${key}.${index}.schemaUri`, schemaUri);
       trigger(`${key}.${index}.schemaUri`);
     }
   }, [idValue, index, setValue, trigger]);
@@ -50,7 +49,7 @@ function FieldGrid({
       <TextInputField
         name={`relatedObject.${index}.id`}
         label="URL"
-        helperText="Enter full DOI (https://doi.org/10.25955/abc-123) or web archive URL (https://web.archive.org/web/20220101000000/https://example.com)"
+        helperText="Enter full DOI, Handle, RRID, ARK, or web archive URL"
         errorText={idErrorMessage}
       />
       <TextSelectField

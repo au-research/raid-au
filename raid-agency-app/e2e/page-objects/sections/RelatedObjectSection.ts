@@ -21,6 +21,19 @@ export class RelatedObjectSection {
     await this.page.locator(`#relatedObject\\.${index}\\.id`).fill(value);
   }
 
+  /**
+   * Pastes `value` into the id field via a genuine clipboard paste (not
+   * `.fill()`), so the test exercises the same event path a user pasting a
+   * URL would trigger. Caller must grant clipboard-read/write permissions
+   * on the browser context first.
+   */
+  async pasteId(index: number, value: string): Promise<void> {
+    const field = this.page.locator(`#relatedObject\\.${index}\\.id`);
+    await field.click();
+    await this.page.evaluate((text) => navigator.clipboard.writeText(text), value);
+    await field.press("ControlOrMeta+V");
+  }
+
   async selectType(index: number, value: string): Promise<void> {
     await this.page
       .locator(`#relatedObject\\.${index}\\.type\\.id`)
