@@ -101,6 +101,18 @@ class GroupControllerTest {
         when(user.getRoleMappingsStream()).thenAnswer(inv -> Stream.of(groupAdminRole));
     }
 
+    // Represents a flat group-admin who has actually been granted service-point-user for the
+    // group in question, i.e. an approved member - as opposed to setupGroupAdminRole() alone,
+    // which represents a flat group-admin whose only tie to the group is raw/pending membership
+    // (see RAiD-608 / HELP-2844).
+    private void setupGroupAdminAndServicePointUserRoles() {
+        var groupAdminRole = mock(RoleModel.class);
+        when(groupAdminRole.getName()).thenReturn("group-admin");
+        var servicePointUserRole = mock(RoleModel.class);
+        when(servicePointUserRole.getName()).thenReturn("service-point-user");
+        when(user.getRoleMappingsStream()).thenAnswer(inv -> Stream.of(groupAdminRole, servicePointUserRole));
+    }
+
     private void setupNoRoles() {
         when(user.getRoleMappingsStream()).thenAnswer(inv -> Stream.empty());
     }
@@ -300,9 +312,9 @@ class GroupControllerTest {
     }
 
     @Test
-    void grant_allowsFlatGroupAdminMemberWhenFallbackEnabled() {
+    void grant_allowsFlatGroupAdminApprovedMemberWhenFallbackEnabled() {
         var controller = createAuthenticatedController(true);
-        setupGroupAdminRole();
+        setupGroupAdminAndServicePointUserRoles();
         setupGroupMembership("g1");
 
         var targetUser = mock(UserModel.class);
@@ -322,6 +334,22 @@ class GroupControllerTest {
         var controller = createAuthenticatedController(true);
         setupGroupAdminRole();
         setupNoGroupMembership();
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        assertThrows(NotAuthorizedException.class, () -> controller.grant(grant));
+    }
+
+    // Regression test for RAiD-608 / HELP-2844: a flat group-admin whose only tie to the group is
+    // a raw, self-joined (never approved) membership must not be treated as an admin of that
+    // group, even though isGroupMember alone would say they are "in" it.
+    @Test
+    void grant_deniesFlatGroupAdminPendingUnapprovedMemberWhenFallbackEnabled() {
+        var controller = createAuthenticatedController(true);
+        setupGroupAdminRole();
+        setupGroupMembership("g1");
 
         var grant = new Grant();
         grant.setUserId("u1");
@@ -390,6 +418,18 @@ class GroupControllerTest {
         assertThrows(NotAuthorizedException.class, () -> controller.get("g1"));
     }
 
+    // Regression test for RAiD-608 / HELP-2844: this is what populates the service-point-request
+    // notification - a flat group-admin who only self-joined (never approved) must not be able to
+    // list members of, or see pending requests for, that group.
+    @Test
+    void get_deniesFlatGroupAdminPendingUnapprovedMemberWhenFallbackEnabled() {
+        var controller = createAuthenticatedController(true);
+        setupGroupAdminRole();
+        setupGroupMembership("g1");
+
+        assertThrows(NotAuthorizedException.class, () -> controller.get("g1"));
+    }
+
     // --- revoke tests ---
 
     @Test
@@ -424,6 +464,22 @@ class GroupControllerTest {
         var response = controller.revoke(grant);
         assertThat(response.getStatus(), is(200));
         verify(targetUser).deleteRoleMapping(servicePointUserRole);
+    }
+
+    // Regression test for RAiD-608 / HELP-2844: a flat group-admin whose only tie to the group is
+    // a raw, self-joined (never approved) membership must not be able to revoke other users'
+    // access either.
+    @Test
+    void revoke_deniesFlatGroupAdminPendingUnapprovedMemberWhenFallbackEnabled() {
+        var controller = createAuthenticatedController(true);
+        setupGroupAdminRole();
+        setupGroupMembership("g1");
+
+        var grant = new Grant();
+        grant.setUserId("u1");
+        grant.setGroupId("g1");
+
+        assertThrows(NotAuthorizedException.class, () -> controller.revoke(grant));
     }
 
     // --- join tests ---
@@ -1021,7 +1077,7 @@ class GroupControllerTest {
     }
 
     @Test
-    void migrate_grantsScopedRoleForEachGroupOfFlatAdmin() {
+    void migrate_grantsScopedRoleForEachApprovedGroupOfFlatAdmin() {
         var controller = createAuthenticatedController();
         setupOperatorRole();
 
@@ -1039,6 +1095,12 @@ class GroupControllerTest {
         var g2 = mock(GroupModel.class);
         when(g2.getId()).thenReturn("g2");
         when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(g1, g2));
+
+        // Member has actually been approved (holds service-point-user) - required for either
+        // group to be backfilled under the new isApprovedGroupMember check.
+        var servicePointUserRole = mock(RoleModel.class);
+        when(servicePointUserRole.getName()).thenReturn("service-point-user");
+        when(member.getRoleMappingsStream()).thenAnswer(inv -> Stream.of(servicePointUserRole));
 
         when(realm.getRole("service-point-admin:g1")).thenReturn(null);
         var scopedRole1 = mock(RoleModel.class);
@@ -1069,6 +1131,43 @@ class GroupControllerTest {
         assertThat(body, containsString("\"grantsSkipped\":0"));
     }
 
+    // Regression test for RAiD-608 / HELP-2844: the migration must not hand a flat group-admin
+    // the scoped admin role for a group they've only raw/pending self-joined and were never
+    // actually approved (granted service-point-user) for.
+    @Test
+    void migrate_skipsGroupMemberNeverApprovedFor() {
+        var controller = createAuthenticatedController();
+        setupOperatorRole();
+
+        var flatGroupAdminRole = mock(RoleModel.class);
+        when(realm.getRole("group-admin")).thenReturn(flatGroupAdminRole);
+
+        when(session.users()).thenReturn(userProvider);
+
+        var member = mock(UserModel.class);
+        when(userProvider.getRoleMembersStream(eq(realm), eq(flatGroupAdminRole), anyInt(), anyInt()))
+                .thenReturn(Stream.of(member), Stream.empty());
+
+        var pendingGroup = mock(GroupModel.class);
+        when(pendingGroup.getId()).thenReturn("pending-group");
+        when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(pendingGroup));
+        // Never granted service-point-user for any group - i.e. only self-joined, never approved.
+        when(member.getRoleMappingsStream()).thenAnswer(inv -> Stream.empty());
+
+        var response = controller.migrateServicePointAdmins();
+        assertThat(response.getStatus(), is(200));
+
+        verify(member, never()).grantRole(any(RoleModel.class));
+        verify(realm, never()).addRole(anyString());
+        verify(realm, never()).addRole(anyString(), anyString());
+
+        var body = response.getEntity().toString();
+        assertThat(body, containsString("\"flatGroupAdminUsers\":1"));
+        assertThat(body, containsString("\"rolesCreated\":0"));
+        assertThat(body, containsString("\"grantsAdded\":0"));
+        assertThat(body, containsString("\"grantsSkipped\":0"));
+    }
+
     @Test
     void migrate_isIdempotentOnSecondRun() {
         var controller = createAuthenticatedController();
@@ -1086,6 +1185,10 @@ class GroupControllerTest {
         var g1 = mock(GroupModel.class);
         when(g1.getId()).thenReturn("g1");
         when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(g1));
+
+        var servicePointUserRole = mock(RoleModel.class);
+        when(servicePointUserRole.getName()).thenReturn("service-point-user");
+        when(member.getRoleMappingsStream()).thenAnswer(inv -> Stream.of(servicePointUserRole));
 
         var scopedRole1 = mock(RoleModel.class);
         when(realm.getRole("service-point-admin:g1")).thenReturn(scopedRole1);
@@ -1122,6 +1225,10 @@ class GroupControllerTest {
         var g1 = mock(GroupModel.class);
         when(g1.getId()).thenReturn("g1");
         when(member.getGroupsStream()).thenAnswer(inv -> Stream.of(g1));
+
+        var servicePointUserRole = mock(RoleModel.class);
+        when(servicePointUserRole.getName()).thenReturn("service-point-user");
+        when(member.getRoleMappingsStream()).thenAnswer(inv -> Stream.of(servicePointUserRole));
 
         var scopedRole1 = mock(RoleModel.class);
         when(realm.getRole("service-point-admin:g1")).thenReturn(scopedRole1);

@@ -189,7 +189,8 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
     class FlatGroupAdminFallbackTests {
 
         private UserContext operator;
-        private UserContext flatAdminMemberOfA;
+        private UserContext flatAdminApprovedMemberOfA;
+        private UserContext flatAdminPendingMemberOfA;
         private UserContext flatAdminNotMemberOfB;
         private UserContext targetUser;
         private Group groupA;
@@ -201,11 +202,23 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
             groupA = createGroup(operator, "flat-a");
             groupB = createGroup(operator, "flat-b");
 
-            flatAdminMemberOfA = userService.createUser("raid-au", "group-admin");
-            joinGroup(flatAdminMemberOfA, groupA.getId());
+            final var operatorApi = keycloakClient.keycloakApi(operator.getToken());
+
+            // Flat group-admin who has actually been granted service-point-user for groupA - an
+            // approved member, not merely a raw one.
+            flatAdminApprovedMemberOfA = userService.createUser("raid-au", "group-admin");
+            joinGroup(flatAdminApprovedMemberOfA, groupA.getId());
+            operatorApi.grant(grant(flatAdminApprovedMemberOfA.getId(), groupA.getId()));
+
+            // Flat group-admin who has only self-joined groupA (e.g. via the self-service access
+            // request flow) and was never actually approved (granted service-point-user) for it -
+            // the exact RAiD-608 / HELP-2844 scenario: a raw, pending membership must not be
+            // enough to administer the group.
+            flatAdminPendingMemberOfA = userService.createUser("raid-au", "group-admin");
+            joinGroup(flatAdminPendingMemberOfA, groupA.getId());
 
             // Flat group-admin, but never joins groupA or groupB - fallback requires both the
-            // flat role AND membership.
+            // flat role AND approved membership.
             flatAdminNotMemberOfB = userService.createUser("raid-au", "group-admin");
 
             targetUser = userService.createUser("raid-au", "service-point-user");
@@ -214,7 +227,8 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
 
         @AfterEach
         void tearDown() {
-            deleteUserQuietly(flatAdminMemberOfA);
+            deleteUserQuietly(flatAdminApprovedMemberOfA);
+            deleteUserQuietly(flatAdminPendingMemberOfA);
             deleteUserQuietly(flatAdminNotMemberOfB);
             deleteUserQuietly(targetUser);
             deleteGroupQuietly(operator, idOf(groupA));
@@ -223,9 +237,9 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Flat group-admin who is a member of groupA can administer groupA")
-        void flatAdminMemberCanAdministerOwnGroup() {
-            final var api = keycloakClient.keycloakApi(flatAdminMemberOfA.getToken());
+        @DisplayName("Flat group-admin who is an approved member of groupA can administer groupA")
+        void flatAdminApprovedMemberCanAdministerOwnGroup() {
+            final var api = keycloakClient.keycloakApi(flatAdminApprovedMemberOfA.getToken());
 
             final var group = api.findById(groupA.getId()).getBody();
             assertThat(group).isNotNull();
@@ -241,6 +255,16 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
                     .findFirst()
                     .orElseThrow();
             assertThat(member.getRoles()).contains("service-point-user");
+        }
+
+        @Test
+        @DisplayName("RAiD-608 / HELP-2844: flat group-admin who only self-joined (pending, never approved) groupA is denied on groupA")
+        void flatAdminPendingMemberDeniedForOwnGroup() {
+            final var api = keycloakClient.keycloakApi(flatAdminPendingMemberOfA.getToken());
+
+            assertDenied(() -> api.findById(groupA.getId()));
+            assertDenied(() -> api.grant(grant(targetUser.getId(), groupA.getId())));
+            assertDenied(() -> api.revoke(grant(targetUser.getId(), groupA.getId())));
         }
 
         @Test
@@ -435,16 +459,18 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
             final var freshGroupId = userService.createGroup(freshGroupName, "/" + freshGroupName);
             final var flatAdminUser = userService.createUser("raid-au", "group-admin");
             joinGroup(flatAdminUser, freshGroupId);
+            // Must be an approved member (not merely a raw self-joiner) for migration to back
+            // them onto the scoped role - see RAiD-608 / HELP-2844.
+            final var operatorApi = keycloakClient.keycloakApi(operator.getToken());
+            operatorApi.grant(grant(flatAdminUser.getId(), freshGroupId));
 
             try {
-                final var api = keycloakClient.keycloakApi(operator.getToken());
-
-                final var firstRun = api.migrateServicePointAdmins().getBody();
+                final var firstRun = operatorApi.migrateServicePointAdmins().getBody();
                 assertThat(firstRun).isNotNull();
                 assertThat(firstRun.getRolesCreated()).isGreaterThanOrEqualTo(1);
                 assertThat(firstRun.getGrantsAdded()).isGreaterThanOrEqualTo(1);
 
-                final var secondRun = api.migrateServicePointAdmins().getBody();
+                final var secondRun = operatorApi.migrateServicePointAdmins().getBody();
                 assertThat(secondRun).isNotNull();
                 assertThat(secondRun.getRolesCreated()).isEqualTo(0);
                 assertThat(secondRun.getGrantsAdded()).isEqualTo(0);
@@ -463,9 +489,11 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
             final var freshGroupId = userService.createGroup(freshGroupName, "/" + freshGroupName);
             final var flatAdminUser = userService.createUser("raid-au", "group-admin");
             joinGroup(flatAdminUser, freshGroupId);
+            final var operatorApi = keycloakClient.keycloakApi(operator.getToken());
+            operatorApi.grant(grant(flatAdminUser.getId(), freshGroupId));
 
             try {
-                keycloakClient.keycloakApi(operator.getToken()).migrateServicePointAdmins();
+                operatorApi.migrateServicePointAdmins();
 
                 // Strip the flat role directly via the admin API (not via the SPI's dual-revoke,
                 // which would also remove the scoped role) so only the scoped role remains.
@@ -475,6 +503,31 @@ class GroupServicePointAdminIntegrationTest extends AbstractIntegrationTest {
                 final var group = userApi.findById(freshGroupId).getBody();
                 assertThat(group).isNotNull();
                 assertThat(group.getId()).isEqualTo(freshGroupId);
+            } finally {
+                userService.deleteUser(flatAdminUser.getId());
+                deleteGroupQuietly(operator, freshGroupId);
+                userService.deleteUser(operator.getId());
+            }
+        }
+
+        @Test
+        @DisplayName("RAiD-608 / HELP-2844: migration does not backfill a pending, never-approved membership")
+        void doesNotBackfillPendingUnapprovedMembership() {
+            final var operator = createOperator();
+            final var freshGroupName = "migrate-pending-" + UUID.randomUUID();
+            final var freshGroupId = userService.createGroup(freshGroupName, "/" + freshGroupName);
+            // Self-joined only - never granted service-point-user for this group.
+            final var flatAdminUser = userService.createUser("raid-au", "group-admin");
+            joinGroup(flatAdminUser, freshGroupId);
+
+            try {
+                keycloakClient.keycloakApi(operator.getToken()).migrateServicePointAdmins();
+
+                // If migration had (incorrectly) granted the scoped role, this call would succeed
+                // even with the flat fallback out of the picture entirely.
+                userService.removeRole(flatAdminUser.getId(), "group-admin");
+                final var userApi = keycloakClient.keycloakApi(flatAdminUser.getToken());
+                assertDenied(() -> userApi.findById(freshGroupId));
             } finally {
                 userService.deleteUser(flatAdminUser.getId());
                 deleteGroupQuietly(operator, freshGroupId);
