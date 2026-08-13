@@ -52,6 +52,9 @@ raid:
     open-street-map:
       enabled: true
       delay: 150
+    web-archive:
+      enabled: true
+      delay: 150
 spring:
   security:
     oauth2:

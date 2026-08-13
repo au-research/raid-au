@@ -11,6 +11,7 @@ import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.api.service.stub.*;
+import au.org.raid.api.service.webarchive.WebArchiveService;
 import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
 import au.org.raid.api.validator.OpenStreetMapUriValidator;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -120,6 +122,22 @@ public class ExternalPidService {
         }
 
         return new RridService(restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public WebArchiveService webArchiveService(
+            StubProperties stubProperties,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate,
+            Clock clock,
+            @Value("${raid.uri-validation.web-archive.availability-url:https://archive.org/wayback/available}") String availabilityUrl
+    ) {
+        if (stubProperties.getWebArchive() != null && stubProperties.getWebArchive().isEnabled()) {
+            log.warn("using the in-memory Web Archive service");
+            return new WebArchiveServiceStub(stubProperties.getWebArchive().getDelay());
+        }
+
+        return new WebArchiveService(restTemplate, clock, availabilityUrl);
     }
 
     @Bean

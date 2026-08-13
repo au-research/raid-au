@@ -82,6 +82,12 @@ public class TestConstants {
 
     public static final String INVALID_WEB_ARCHIVE_URL = "https://web.archive.org/foo/bar";
 
+    public static final String NONEXISTENT_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
+
+    public static final String SERVER_ERROR_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://server-error.example.com";
+
     public static final String PRIMARY_DESCRIPTION_TYPE =
             "https://github.com/au-research/raid-metadata/blob/main/scheme/description/type/v1/primary.json";
 
