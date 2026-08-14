@@ -5,6 +5,7 @@ import au.org.raid.api.repository.RelatedObjectTypeRepository;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
+import au.org.raid.api.service.webarchive.WebArchiveService;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
@@ -16,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE;
@@ -42,34 +42,23 @@ public class RelatedObjectValidator {
     private static final String WEB_ARCHIVE_SCHEMA_URI = "https://web.archive.org/";
     private static final String HANDLE_SCHEMA_URI = "https://hdl.handle.net/";
     private static final String RRID_SCHEMA_URI = "https://scicrunch.org/resolver/";
-    private static final Pattern WEB_ARCHIVE_URL_PATTERN =
-            Pattern.compile("https://web\\.archive\\.org/web/\\d{14}/https?://.+");
 
     private final RelatedObjectTypeValidator typeValidationService;
     private final RelatedObjectCategoryValidator categoryValidationService;
     private final Map<String, BiFunction<String, String, List<ValidationFailure>>> relatedObjectSchemaUriValidatorMap;
 
-    public RelatedObjectValidator(final RelatedObjectTypeRepository relatedObjectTypeRepository, final DoiService doiService, final HandleService handleService, final RridService rridService, final RelatedObjectTypeValidator typeValidationService, final RelatedObjectCategoryValidator categoryValidationService) {
+    public RelatedObjectValidator(final RelatedObjectTypeRepository relatedObjectTypeRepository, final DoiService doiService, final HandleService handleService, final RridService rridService, final WebArchiveService webArchiveService, final RelatedObjectTypeValidator typeValidationService, final RelatedObjectCategoryValidator categoryValidationService) {
         this.typeValidationService = typeValidationService;
         this.categoryValidationService = categoryValidationService;
 
         // Built here (rather than as a Spring @Bean, cf. ExternalPidService#spatialCoverageUriValidatorMap)
-        // because the web-archive entry is a local regex check with no injectable collaborator - keeping the
-        // whole dispatch map private to this validator avoids splitting a single-owner concern across two classes.
+        // because keeping the whole dispatch map private to this validator avoids splitting a
+        // single-owner concern across two classes.
         final var map = new LinkedHashMap<String, BiFunction<String, String, List<ValidationFailure>>>();
         map.put(DOI_SCHEMA_URI, doiService::validate);
         map.put(HANDLE_SCHEMA_URI, handleService::validate);
         map.put(RRID_SCHEMA_URI, rridService::validate);
-        map.put(WEB_ARCHIVE_SCHEMA_URI, (id, fieldId) -> {
-            if (WEB_ARCHIVE_URL_PATTERN.matcher(id).matches()) {
-                return List.of();
-            }
-
-            return List.of(new ValidationFailure()
-                    .fieldId(fieldId)
-                    .errorType("invalid")
-                    .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)"));
-        });
+        map.put(WEB_ARCHIVE_SCHEMA_URI, webArchiveService::validate);
         this.relatedObjectSchemaUriValidatorMap = Collections.unmodifiableMap(map);
     }
 

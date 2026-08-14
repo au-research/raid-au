@@ -10,6 +10,7 @@ import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
 import au.org.raid.idl.raidv2.model.RelatedObjectTypeSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import au.org.raid.inttest.service.RaidApiValidationException;
+import feign.RetryableException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -158,6 +159,62 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
                 .category(List.of(new RelatedObjectCategory()
                         .id(RelatedObjectCategoryIdEnum.fromValue(INPUT_RELATED_OBJECT_CATEGORY_ID))
                         .schemaUri(RelatedObjectCategorySchemaUriEnum.fromValue(RELATED_OBJECT_CATEGORY_SCHEMA_URI))));
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with a web archive related object that the resolver reports as non-existent fails validation")
+    void nonExistentWebArchiveSnapshot() {
+        createRequest.setRelatedObject(List.of(webArchiveRelatedObject(NONEXISTENT_TEST_WEB_ARCHIVE)));
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown with non-existent Web Archive snapshot");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(new ValidationFailure()
+                    .fieldId("relatedObject[0].id")
+                    .errorType("invalidValue")
+                    .message("uri not found"));
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with a web archive related object fails with 503 when the resolver is unavailable, not a validation error")
+    void webArchiveServerError() {
+        createRequest.setRelatedObject(List.of(webArchiveRelatedObject(SERVER_ERROR_TEST_WEB_ARCHIVE)));
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown when Web Archive resolver is unavailable");
+        } catch (RetryableException e) {
+            assertThat(e.status()).isEqualTo(503);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with an implausible web archive timestamp year fails validation without calling the resolver")
+    void webArchiveImplausibleYear() {
+        createRequest.setRelatedObject(List.of(
+                webArchiveRelatedObject("https://web.archive.org/web/14062026010101/https://example.com")));
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown with implausible Web Archive timestamp year");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures).contains(new ValidationFailure()
+                    .fieldId("relatedObject[0].id")
+                    .errorType("invalidValue")
+                    .message("web archive timestamp year 1406 is implausible"));
+        } catch (Exception e) {
+            failOnError(e);
+        }
     }
 
     private RelatedObject rridRelatedObject(String id) {
