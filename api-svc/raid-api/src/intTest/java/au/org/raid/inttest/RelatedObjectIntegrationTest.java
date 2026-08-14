@@ -148,6 +148,18 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    private RelatedObject doiRelatedObject(String id) {
+        return new RelatedObject()
+                .id(id)
+                .schemaUri(RelatedObjectSchemaUriEnum.fromValue(DOI_SCHEMA_URI))
+                .type(new RelatedObjectType()
+                        .id(RelatedObjectTypeIdEnum.fromValue(BOOK_CHAPTER_RELATED_OBJECT_TYPE))
+                        .schemaUri(RelatedObjectTypeSchemaUriEnum.fromValue(RELATED_OBJECT_TYPE_SCHEMA_URI)))
+                .category(List.of(new RelatedObjectCategory()
+                        .id(RelatedObjectCategoryIdEnum.fromValue(INPUT_RELATED_OBJECT_CATEGORY_ID))
+                        .schemaUri(RelatedObjectCategorySchemaUriEnum.fromValue(RELATED_OBJECT_CATEGORY_SCHEMA_URI))));
+    }
+
     private RelatedObject rridRelatedObject(String id) {
         return new RelatedObject()
                 .id(id)
@@ -233,6 +245,43 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
             assertThat(raid).isNotNull();
             assertThat(raid.getRelatedObject()).hasSize(1);
             assertThat(raid.getRelatedObject().get(0).getId()).isEqualTo("https://hdl.handle.net/10.1234/xyz");
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with a dx.doi.org DOI related object succeeds and stores the id unchanged (RAID-798)")
+    void validDxDoiRelatedObject() {
+        createRequest.setRelatedObject(List.of(doiRelatedObject(VALID_DX_DOI)));
+
+        try {
+            final var result = raidApi.mintRaid(createRequest);
+            final var raid = result.getBody();
+            assertThat(raid).isNotNull();
+            assertThat(raid.getRelatedObject()).hasSize(1);
+            // The submitted dx.doi.org form is stored verbatim, not normalised to doi.org.
+            assertThat(raid.getRelatedObject().get(0).getId()).isEqualTo(VALID_DX_DOI);
+            assertThat(raid.getRelatedObject().get(0).getSchemaUri())
+                    .isEqualTo(RelatedObjectSchemaUriEnum.fromValue(DOI_SCHEMA_URI));
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Minting a RAiD with a dx.doi.org id that fails DOI format is rejected (RAID-798 regression guard)")
+    void malformedDxDoiIsRejected() {
+        createRequest.setRelatedObject(List.of(doiRelatedObject("https://dx.doi.org/not-a-doi")));
+
+        try {
+            raidApi.mintRaid(createRequest);
+            fail("No exception thrown with malformed dx.doi.org DOI");
+        } catch (RaidApiValidationException e) {
+            final var failures = e.getFailures();
+            assertThat(failures).hasSize(1);
+            assertThat(failures.get(0).getFieldId()).isEqualTo("relatedObject[0].id");
+            assertThat(failures.get(0).getErrorType()).isEqualTo("invalidValue");
         } catch (Exception e) {
             failOnError(e);
         }
