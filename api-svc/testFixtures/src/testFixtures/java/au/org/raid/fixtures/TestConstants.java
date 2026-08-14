@@ -115,4 +115,8 @@ public class TestConstants {
 
     public static final String RRID_SCHEMA_URI = "https://scicrunch.org/resolver/";
     public static final String VALID_RRID = "https://scicrunch.org/resolver/RRID:AB_2298772";
+
+    public static final String DOI_SCHEMA_URI = "https://doi.org/";
+    // The dx.doi.org proxy host is accepted verbatim under the same DOI scheme (RAID-798).
+    public static final String VALID_DX_DOI = "https://dx.doi.org/10.1234/xyz";
 }
