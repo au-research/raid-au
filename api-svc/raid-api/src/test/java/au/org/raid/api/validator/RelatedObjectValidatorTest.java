@@ -4,6 +4,7 @@ import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
+import au.org.raid.api.service.webarchive.WebArchiveService;
 import au.org.raid.api.util.TestConstants;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
@@ -50,6 +51,9 @@ class RelatedObjectValidatorTest {
 
     @Mock
     private RridService rridService;
+
+    @Mock
+    private WebArchiveService webArchiveService;
 
     @InjectMocks
     private RelatedObjectValidator validationService;
@@ -461,5 +465,107 @@ class RelatedObjectValidatorTest {
         verify(handleService).validate(handleUri, handleFieldId);
         verify(typeValidationService).validate(type, 1);
         verify(categoryValidationService).validate(categories, 1);
+    }
+
+    @Test
+    @DisplayName("Validation passes with valid Web Archive related object")
+    void validWebArchiveRelatedObject() {
+        final var webArchiveUri = "https://web.archive.org/web/20220101000000/https://example.com";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(webArchiveUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_)
+                .type(type)
+                .category(categories);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(webArchiveService.validate(webArchiveUri, "relatedObject[0].id")).thenReturn(Collections.emptyList());
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject)).failures();
+
+        assertThat(failures, empty());
+        verify(webArchiveService).validate(webArchiveUri, "relatedObject[0].id");
+    }
+
+    @Test
+    @DisplayName("Validation fails if Web Archive service reports a failure")
+    void addsFailureIfWebArchiveValidationFails() {
+        final var webArchiveUri = "https://web.archive.org/web/20220101000000/https://example.com";
+        final var fieldId = "relatedObject[0].id";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(webArchiveUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_)
+                .type(type)
+                .category(categories);
+
+        final var failure = new ValidationFailure()
+                .fieldId(fieldId)
+                .errorType("invalidValue")
+                .message("uri not found");
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(webArchiveService.validate(webArchiveUri, fieldId)).thenReturn(List.of(failure));
+
+        final var failures =
+                validationService.validateRelatedObjects(Collections.singletonList(relatedObject)).failures();
+
+        assertThat(failures, is(List.of(failure)));
+    }
+
+    @Test
+    @DisplayName("A resolver failure from the Web Archive service is collected into the unavailable list")
+    void webArchiveResolverUnavailableIsCollected() {
+        final var webArchiveUri = "https://web.archive.org/web/20220101000000/https://example.com";
+        final var fieldId = "relatedObject[0].id";
+
+        final var type = new RelatedObjectType()
+                .id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247)
+                .schemaUri(RelatedObjectTypeSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_329);
+
+        final var categories = List.of(new RelatedObjectCategory()
+                .id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_190)
+                .schemaUri(RelatedObjectCategorySchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_SCHEMA_URI_386));
+
+        final var relatedObject = new RelatedObject()
+                .id(webArchiveUri)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_)
+                .type(type)
+                .category(categories);
+
+        final var unavailable = new UnavailableResolver()
+                .field(fieldId)
+                .value(webArchiveUri)
+                .resolver("Web Archive")
+                .downstreamStatus(null);
+
+        when(typeValidationService.validate(type, 0)).thenReturn(Collections.emptyList());
+        when(categoryValidationService.validate(categories, 0)).thenReturn(Collections.emptyList());
+        when(webArchiveService.validate(webArchiveUri, fieldId))
+                .thenThrow(new ResolverUnavailableException(List.of(unavailable)));
+
+        final var result = validationService.validateRelatedObjects(Collections.singletonList(relatedObject));
+
+        assertThat(result.failures(), empty());
+        assertThat(result.unavailableResolvers(), is(List.of(unavailable)));
     }
 }

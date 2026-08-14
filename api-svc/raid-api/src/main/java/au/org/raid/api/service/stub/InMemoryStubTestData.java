@@ -37,4 +37,9 @@ public class InMemoryStubTestData {
 
     public static String NONEXISTENT_TEST_ROR = "https://ror.org/000000000";
     public static String SERVER_ERROR_TEST_ROR = "https://ror.org/000000001";
+
+    public static String NONEXISTENT_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
+    public static String SERVER_ERROR_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://server-error.example.com";
 }

@@ -63,6 +63,9 @@ raid:
     ror:
       enabled: false
       delay: 150
+    web-archive:
+      enabled: false
+      delay: 150
   identifier:
     schema-uri: https://raid.org/
     license: Creative Commons CC-0
@@ -82,6 +85,8 @@ raid:
     # to validators only; the shared RestTemplate (minting etc.) is unaffected (RAID-802).
     connect-timeout: 5s
     read-timeout: 10s
+    web-archive:
+      availability-url: https://archive.org/wayback/available
   history:
     baseline-interval: 50
 server:

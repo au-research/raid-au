@@ -29,6 +29,9 @@ raid:
     ror:
       enabled: true
       delay: 150
+    web-archive:
+      enabled: true
+      delay: 150
   identifier:
     name-prefix: http://raid.local/
     license: Creative Commons CC-0
