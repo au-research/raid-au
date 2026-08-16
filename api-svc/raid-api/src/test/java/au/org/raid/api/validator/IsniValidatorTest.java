@@ -32,4 +32,22 @@ class IsniValidatorTest {
 
         invalidIsni.forEach(isni -> assertThat("%s is not a valid isni".formatted(isni), validator.validate(isni), is(true)));
     }
+
+    @Test
+    void passesWithLowercaseTrailingXCheckCharacter() {
+        // Derived from the valid "...1X" fixture above, but with a lowercase check character -
+        // RAID-791 requires this to be accepted, without mutating the original value.
+        final var isniWithLowercaseX = "https://isni.org/000000000000001x";
+
+        assertThat(validator.validate(isniWithLowercaseX), is(true));
+    }
+
+    @Test
+    void failsWithChecksumInvalidIsni() {
+        // Same 16-character shape as a valid ISNI, but the check character does not satisfy
+        // MOD 11-2 (calculated check character for these digits is "1", not "0").
+        final var checksumInvalidIsni = "https://isni.org/isni/0000000000000000";
+
+        assertThat(validator.validate(checksumInvalidIsni), is(false));
+    }
 }

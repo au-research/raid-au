@@ -864,6 +864,104 @@ class ContributorTypeValidatorTest {
         ));
     }
 
+    @Test
+    @DisplayName("RAID-791: a checksum-invalid ISNI is rejected locally without calling contributorClient.exists()")
+    void isniVariant_checksumInvalidIdIsRejectedWithoutCallingExists() {
+        final var isniUrlPrefix = "https://isni.org/isni/";
+        final var isniValidationProperties = ContributorTypeValidationProperties.builder()
+                .urlPrefix(isniUrlPrefix)
+                .schemaUri("https://isni.org/")
+                .build();
+
+        final var isniValidator = new ContributorTypeValidator(
+                isniValidationProperties,
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ISNI",
+                new IsniValidator()
+        );
+
+        // Same 16-character shape as a valid ISNI, but the check character does not satisfy
+        // MOD 11-2 (calculated check character for these digits is "1", not "0").
+        final var checksumInvalidIsni = isniUrlPrefix + "0000000000000000";
+
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(checksumInvalidIsni)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = isniValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[0].id")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE)
+        ));
+
+        verify(contributorClient, never()).exists(anyString());
+    }
+
+    @Test
+    @DisplayName("RAID-791: a checksum-valid ISNI still proceeds to contributorClient.exists()")
+    void isniVariant_checksumValidIdStillCallsExists() {
+        final var isniUrlPrefix = "https://isni.org/isni/";
+        final var isniValidationProperties = ContributorTypeValidationProperties.builder()
+                .urlPrefix(isniUrlPrefix)
+                .schemaUri("https://isni.org/")
+                .build();
+
+        final var isniValidator = new ContributorTypeValidator(
+                isniValidationProperties,
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ISNI",
+                new IsniValidator()
+        );
+
+        final var checksumValidIsni = isniUrlPrefix + "0000000121032683";
+
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(checksumValidIsni)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(checksumValidIsni)).thenReturn(true);
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = isniValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, empty());
+
+        verify(contributorClient).exists(checksumValidIsni);
+    }
+
     private ContributorTypeValidator validatorWith(final String urlPrefix, final String schemaUri) {
         return new ContributorTypeValidator(
                 ContributorTypeValidationProperties.builder()

@@ -1,15 +1,16 @@
 package au.org.raid.api.validator;
 
-
-import org.springframework.stereotype.Component;
+import java.util.Locale;
 
 public class IsniValidator {
 
     public boolean validate(String isni) {
 
-        final var id = isni.substring(isni.lastIndexOf("/") + 1);
+        // Normalise case so a lowercase trailing 'x' check character is accepted.
+        // This is internal to validation only - it must not mutate any stored/round-tripped value.
+        final var id = isni.substring(isni.lastIndexOf("/") + 1).toUpperCase(Locale.ROOT);
 
-        if (id == null || id.length() != 16) {
+        if (id.length() != 16) {
             return false;
         }
 

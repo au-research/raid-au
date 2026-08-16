@@ -32,8 +32,16 @@ public class InMemoryStubTestData {
     public static String NONEXISTENT_TEST_OPENSTREETMAP_URI = "https://www.openstreetmap.org/not-found";
     public static String SERVER_ERROR_TEST_OPENSTREETMAP_URI = "https://www.openstreetmap.org/server-error";
 
-    public static String NONEXISTENT_TEST_ISNI = "https://isni.org/isni/0000000000000000";
+    // Must be checksum-valid (ISO 27729 MOD 11-2) so the RAID-791 local checksum gate lets it
+    // through to the stub's existence check - calculated check character for digits
+    // "000000000000002" is "8".
+    public static String NONEXISTENT_TEST_ISNI = "https://isni.org/isni/0000000000000028";
+    // Checksum-valid - calculated check character for digits "000000000000000" is "1".
     public static String SERVER_ERROR_TEST_ISNI = "https://isni.org/isni/0000000000000001";
+    // Deliberately checksum-INVALID (calculated check character for digits
+    // "000000000000000" is "1", not "0") - used to test the RAID-791 local checksum rejection
+    // path, which must reject before ever calling the stub/live resolver.
+    public static String MALFORMED_TEST_ISNI = "https://isni.org/isni/0000000000000000";
 
     public static String NONEXISTENT_TEST_ROR = "https://ror.org/000000000";
     public static String SERVER_ERROR_TEST_ROR = "https://ror.org/000000001";

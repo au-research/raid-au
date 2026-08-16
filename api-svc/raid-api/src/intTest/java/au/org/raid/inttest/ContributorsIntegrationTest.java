@@ -32,6 +32,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 // TODO: Test that pre-existing contributors have UNVERIFIED status
 
 public class ContributorsIntegrationTest extends AbstractIntegrationTest {
+    // Deliberately checksum-INVALID under ISO 27729 MOD 11-2 (the calculated check character for
+    // these digits is "1", not "0"), used to exercise the RAID-791 local checksum rejection, which
+    // must reject before ever calling the ISNI resolver. The intTest source set is a black-box HTTP
+    // client and cannot see the api-svc main classes, so this mirrors
+    // InMemoryStubTestData.MALFORMED_TEST_ISNI locally (same pattern as the ROR sentinels).
+    private static final String MALFORMED_TEST_ISNI = "https://isni.org/isni/0000000000000000";
+
     @Autowired
     private RaidUpdateRequestFactory raidUpdateRequestFactory;
 
@@ -71,7 +78,25 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             }
         }
 
+        @Test
+        @DisplayName("RAID-791: Minting a RAiD with a checksum-invalid ISNI contributor fails")
+        void raidWithMalformedIsniContributorFails() {
+            createRequest.contributor(List.of(
+                    isniContributor(MALFORMED_TEST_ISNI, PRINCIPAL_INVESTIGATOR_POSITION, SOFTWARE_CONTRIBUTOR_ROLE, today, null)));
 
+            try {
+                raidApi.mintRaid(createRequest);
+                fail("No exception thrown with checksum-invalid ISNI contributor");
+            } catch (RaidApiValidationException e) {
+                final var failures = e.getFailures();
+                assertThat(failures, hasItem(
+                        new ValidationFailure()
+                                .fieldId("contributor[0].id")
+                                .errorType("invalidValue")
+                                .message("has invalid/unsupported value")
+                ));
+            }
+        }
 
         @Test
         @DisplayName("Minting a RAiD with no contributor fails")
