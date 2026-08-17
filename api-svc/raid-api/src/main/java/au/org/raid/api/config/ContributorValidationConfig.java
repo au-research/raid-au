@@ -6,6 +6,7 @@ import au.org.raid.api.config.properties.ContributorValidationProperties;
 import au.org.raid.api.validator.ContributorPositionValidator;
 import au.org.raid.api.validator.ContributorRoleValidator;
 import au.org.raid.api.validator.ContributorTypeValidator;
+import au.org.raid.api.validator.IsniValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +27,8 @@ public class ContributorValidationConfig {
                 orcidClient,
                 roleValidator,
                 positionValidator,
-                "ORCID"
+                "ORCID",
+                null
         );
     }
 
@@ -37,7 +39,8 @@ public class ContributorValidationConfig {
                 isniClient,
                 roleValidator,
                 positionValidator,
-                "ISNI"
+                "ISNI",
+                new IsniValidator()
         );
     }
 }

@@ -29,6 +29,7 @@ public class ContributorTypeValidator {
     private final ContributorRoleValidator roleValidator;
     private final ContributorPositionValidator positionValidator;
     private final String resolverName;
+    private final IsniValidator localIdValidator;
 
     public ContributorTypeValidator(
             ContributorTypeValidationProperties validationProperties,
@@ -37,11 +38,23 @@ public class ContributorTypeValidator {
             ContributorPositionValidator positionValidator,
             String resolverName
     ) {
+        this(validationProperties, contributorClient, roleValidator, positionValidator, resolverName, null);
+    }
+
+    public ContributorTypeValidator(
+            ContributorTypeValidationProperties validationProperties,
+            ContributorClient contributorClient,
+            ContributorRoleValidator roleValidator,
+            ContributorPositionValidator positionValidator,
+            String resolverName,
+            IsniValidator localIdValidator
+    ) {
         this.validationProperties = validationProperties;
         this.contributorClient = contributorClient;
         this.roleValidator = roleValidator;
         this.positionValidator = positionValidator;
         this.resolverName = resolverName;
+        this.localIdValidator = localIdValidator;
     }
 
     public List<ValidationFailure> validate(final Contributor contributor, final int index) {
@@ -56,21 +69,27 @@ public class ContributorTypeValidator {
             );
         }
         else if (contributor.getId().startsWith(validationProperties.getUrlPrefix())) {
-            try {
-                if (!contributorClient.exists(contributor.getId())) {
-                    failures.add(
-                            new ValidationFailure()
-                                    .fieldId("contributor[%d].id".formatted(index))
-                                    .errorType(NOT_FOUND_TYPE)
-                                    .message("This id does not exist")
-                    );
+            if (localIdValidator != null && !localIdValidator.validate(contributor.getId())) {
+                // Fail fast on a locally-detectable checksum error, without calling out to the
+                // live resolver (RAID-791).
+                failures.add(contribIdInvalid(index));
+            } else {
+                try {
+                    if (!contributorClient.exists(contributor.getId())) {
+                        failures.add(
+                                new ValidationFailure()
+                                        .fieldId("contributor[%d].id".formatted(index))
+                                        .errorType(NOT_FOUND_TYPE)
+                                        .message("This id does not exist")
+                        );
+                    }
+                } catch (RestClientException e) {
+                    // The resolver, not the contributor id, is at fault (RAID-809 gap: this
+                    // exists() call previously propagated straight to an opaque HTTP 500).
+                    throw new ResolverUnavailableException(List.of(
+                            toUnavailableResolver(
+                                    "contributor[%d].id".formatted(index), contributor.getId(), resolverName, e)));
                 }
-            } catch (RestClientException e) {
-                // The resolver, not the contributor id, is at fault (RAID-809 gap: this
-                // exists() call previously propagated straight to an opaque HTTP 500).
-                throw new ResolverUnavailableException(List.of(
-                        toUnavailableResolver(
-                                "contributor[%d].id".formatted(index), contributor.getId(), resolverName, e)));
             }
         } else {
             failures.add(
