@@ -21,17 +21,27 @@ const rridRegex = /^https:\/\/scicrunch\.org\/resolver\/RRID:[^\s_]+_[^\s]+$/;
 // after the host (RAID-793) — non-numeric NAANs are a known, unsupported edge case.
 const arkRegex = /^https:\/\/[^/\s]+\/ark:\/?(?:\d{5}|\d{9})\/[^\s]+$/i;
 
+const schemaUriRegexes: Record<string, RegExp> = {
+  "https://doi.org/": doiRegex,
+  "https://web.archive.org/": webArchiveRegex,
+  "https://hdl.handle.net/": handleRegex,
+  "https://scicrunch.org/resolver/": rridRegex,
+  "https://arks.org/": arkRegex,
+};
+
 export const relatedObjectIdSchema = z
   .string()
   .trim()
   .url()
   .refine(
-    (url) =>
-      doiRegex.test(url) ||
-      webArchiveRegex.test(url) ||
-      handleRegex.test(url) ||
-      rridRegex.test(url) ||
-      arkRegex.test(url),
+    (url) => {
+      // Only enforce the strict per-scheme shape once the host/path already
+      // looks like an attempt at a known scheme. A URL that doesn't match any
+      // recognised scheme at all is a generic related-object identifier and
+      // is left as-is, with no schemaUri inferred.
+      const schemaUri = inferRelatedObjectSchemaUri(url);
+      return !schemaUri || schemaUriRegexes[schemaUri].test(url);
+    },
     {
       message:
         "URL must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...), Handle, RRID, ARK, or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
@@ -42,7 +52,10 @@ export const relatedObjectValidationSchema = z
   .array(
     z.object({
       id: relatedObjectIdSchema,
-      schemaUri: z.string().min(1),
+      // Left blank when the id doesn't match a recognised scheme (see
+      // relatedObjectIdSchema above) — a generic related-object URL is still
+      // a valid, submittable entry without an inferred schemaUri.
+      schemaUri: z.string(),
       type: z.object({
         id: z.string(),
         schemaUri: z.string(),
