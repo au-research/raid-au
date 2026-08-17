@@ -50,4 +50,9 @@ public class InMemoryStubTestData {
             "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
     public static String SERVER_ERROR_TEST_WEB_ARCHIVE =
             "https://web.archive.org/web/20200101000000/https://server-error.example.com";
+
+    // NAAN 99999 is reserved (per the ARK Alliance spec) for test/example use and is not
+    // registered to any Name Mapping Authority, so it reliably self-loops back to arks.org.
+    public static String NONEXISTENT_TEST_ARK = "https://arks.org/ark:/99999/not-found";
+    public static String SERVER_ERROR_TEST_ARK = "https://arks.org/ark:/99999/server-error";
 }
