@@ -95,7 +95,7 @@ public class DataciteRelatedIdentifierFactory {
     public DataciteRelatedIdentifier create(final RelatedRaid relatedRaid) {
         return new DataciteRelatedIdentifier()
                 .setRelatedIdentifier(relatedRaid.getId())
-                .setRelatedIdentifierType(RelatedIdentifierType.DOI.getName())
+                .setRelatedIdentifierType(RelatedIdentifierType.RAID.getName())
                 .setRelationType(RAID_RELATION_TYPE_MAP.get(relatedRaid.getType().getId()))
                 .setResourceTypeGeneral(ResourceTypeGeneral.PROJECT.getName());
     }
