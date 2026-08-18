@@ -2,12 +2,14 @@
 // Related Object identifier field (Handle, RRID, ARK), plus regression
 // guards for the existing DOI/unrecognised-URL behaviour.
 //
-// These tests assert on the outgoing POST /raid/ request payload rather than
-// on save success. Handle validation is live on the API (RAID-786), but RRID
-// and ARK validators (RAID-787, RAID-793) had not landed at the time this
-// test was written, so asserting on save success would make this test
-// depend on backend work outside this ticket's scope. Inspecting the
-// submitted schemaUri only requires the frontend classifier to be correct.
+// DOI, Handle (RAID-786) and RRID (RAID-787) all now have real backend
+// validators (stubbed to avoid live external lookups in dev/local/CI — see
+// ExternalPidService), so those tests assert actual save success. ARK
+// (RAID-793) has no backend validator yet — POST /raid rejects any
+// relatedObject with schemaUri "https://arks.org/" — so that test, and the
+// unrecognised-URL regression guard (which never gets a schemaUri at all),
+// still only assert on the outgoing request payload rather than save
+// success.
 
 import { test, expect } from "@playwright/test";
 import { RaidFormPage } from "../page-objects/RaidFormPage";
@@ -54,10 +56,14 @@ async function setUpFormWithRelatedObjectRow(page: import("@playwright/test").Pa
 
 // Pastes the id, saves, and returns the relatedObject entry from the
 // outgoing create-RAiD request body — regardless of whether the API
-// ultimately accepts or rejects it.
+// ultimately accepts or rejects it. When `expectSaveSuccess` is set, also
+// waits for the app to navigate to the saved RAiD's view page, i.e. asserts
+// the API actually accepted the related object rather than just inspecting
+// what was sent.
 async function capturedSchemaUriFor(
   page: import("@playwright/test").Page,
-  value: string
+  value: string,
+  { expectSaveSuccess = false }: { expectSaveSuccess?: boolean } = {}
 ) {
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   const { formPage, relatedObjectSection } = await setUpFormWithRelatedObjectRow(page);
@@ -71,29 +77,42 @@ async function capturedSchemaUriFor(
     formPage.save(),
   ]);
 
+  if (expectSaveSuccess) {
+    await formPage.waitForSuccessfulSave();
+  }
+
   const body = request.postDataJSON() as RelatedObjectPayload;
   return body.relatedObject?.[0];
 }
 
 test.describe("Related Object identifier paste-and-infer", { tag: "@local" }, () => {
-  test("pasting a Handle URL infers the Handle schemaUri", async ({ page }) => {
+  test("pasting a Handle URL infers the Handle schemaUri and saves successfully", async ({
+    page,
+  }) => {
     const relatedObject = await capturedSchemaUriFor(
       page,
-      "https://hdl.handle.net/20.500.12345/abc123"
+      "https://hdl.handle.net/20.500.12345/abc123",
+      { expectSaveSuccess: true }
     );
     expect(relatedObject?.schemaUri).toBe("https://hdl.handle.net/");
     expect(relatedObject?.id).toBe("https://hdl.handle.net/20.500.12345/abc123");
   });
 
-  test("pasting an RRID URL infers the RRID schemaUri", async ({ page }) => {
+  test("pasting an RRID URL infers the RRID schemaUri and saves successfully", async ({
+    page,
+  }) => {
     const relatedObject = await capturedSchemaUriFor(
       page,
-      "https://scicrunch.org/resolver/RRID:AB_2298772"
+      "https://scicrunch.org/resolver/RRID:AB_2298772",
+      { expectSaveSuccess: true }
     );
     expect(relatedObject?.schemaUri).toBe("https://scicrunch.org/resolver/");
     expect(relatedObject?.id).toBe("https://scicrunch.org/resolver/RRID:AB_2298772");
   });
 
+  // RAID-793 (ARK backend validator) hasn't landed — POST /raid rejects any
+  // relatedObject with schemaUri "https://arks.org/", so this only asserts
+  // what the frontend classifier sent, not that the API accepted it.
   test("pasting an ARK URL infers the ARK schemaUri, regardless of host", async ({
     page,
   }) => {
@@ -107,12 +126,13 @@ test.describe("Related Object identifier paste-and-infer", { tag: "@local" }, ()
     );
   });
 
-  test("pasting a DOI URL still infers the DOI schemaUri (regression guard)", async ({
+  test("pasting a DOI URL still infers the DOI schemaUri and saves successfully (regression guard)", async ({
     page,
   }) => {
     const relatedObject = await capturedSchemaUriFor(
       page,
-      "https://doi.org/10.5281/zenodo.1234567"
+      "https://doi.org/10.5281/zenodo.1234567",
+      { expectSaveSuccess: true }
     );
     expect(relatedObject?.schemaUri).toBe("https://doi.org/");
   });
