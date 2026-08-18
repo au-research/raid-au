@@ -93,11 +93,28 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initKeycloak = async () => {
       try {
-        const authenticated = await getKeycloakInstance().init({
-          onLoad: "check-sso",
-          checkLoginIframe: false,
-          silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-        });
+        // Playwright's auth setup seeds this key with tokens obtained via direct
+        // grant, so e2e runs don't depend on rendering the Keycloak login theme.
+        // Never written outside a Playwright-controlled browser context.
+        const e2eTokens = localStorage.getItem("__e2e_auth_tokens__");
+        const parsedE2eTokens = e2eTokens ? JSON.parse(e2eTokens) : null;
+
+        const authenticated = parsedE2eTokens
+          ? await getKeycloakInstance().init({
+              token: parsedE2eTokens.token,
+              refreshToken: parsedE2eTokens.refreshToken,
+              idToken: parsedE2eTokens.idToken,
+              // No real Keycloak SSO cookie exists for a direct-grant session,
+              // so the default check-login-iframe would always report the
+              // session as changed. Disabling it makes init() refresh via the
+              // refresh token instead (a plain back-channel call).
+              checkLoginIframe: false,
+            })
+          : await getKeycloakInstance().init({
+              onLoad: "check-sso",
+              checkLoginIframe: false,
+              silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+            });
 
         if (authenticated) {
           const userProfile = await getKeycloakInstance().loadUserProfile();
