@@ -1,11 +1,13 @@
 import { relatedObjectCategoryValidationSchema } from "@/entities/related-object-category/validation-schema/related-object-category-validation-schema";
 import { z } from "zod";
 
-const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/[^\s]+$/;
-const webArchiveRegex =
+// doi.org and dx.doi.org are both valid DOI proxy hosts (RAID-804), mirroring the API-side
+// fix in DoiService (RAID-798). Stored/submitted as entered, no rewriting to a different host.
+export const doiRegex = /^https?:\/\/(dx\.)?doi\.org\/10\.\d{4,9}\/[^\s]+$/;
+export const webArchiveRegex =
   /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
 
-const relatedObjectIdSchema = z
+export const relatedObjectIdSchema = z
   .string()
   .trim()
   .url()
@@ -13,7 +15,7 @@ const relatedObjectIdSchema = z
     (url) => doiRegex.test(url) || webArchiveRegex.test(url),
     {
       message:
-        "URL must be a valid DOI (https://doi.org/10.xxxx/...) or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
+        "URL must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...) or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
     }
   );
 

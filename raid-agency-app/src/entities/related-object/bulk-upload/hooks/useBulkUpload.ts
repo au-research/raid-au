@@ -122,7 +122,9 @@ function readCellAsString(cell: { value: unknown }): string {
   return "";
 }
 
-const doiRegex = /^https:\/\/doi\.org\/10\.\d{4,9}\/[^\s]+$/;
+// doi.org and dx.doi.org are both valid DOI proxy hosts (RAID-804), mirroring
+// related-object-validation-schema.ts and the API-side fix in DoiService (RAID-798).
+const doiRegex = /^https?:\/\/(dx\.)?doi\.org\/10\.\d{4,9}\/[^\s]+$/;
 const webArchiveRegex =
   /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
 
@@ -133,7 +135,7 @@ const bulkRelatedObjectRowSchema = z.object({
     .min(1, "Identifier is required")
     .refine((url) => doiRegex.test(url) || webArchiveRegex.test(url), {
       message:
-        "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
+        "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...) or Web Archive URL",
     }),
   type: z.object({
     id: z.string().min(1, "Type is required"),
@@ -331,7 +333,7 @@ function mapRowToRelatedObjects(
     errors.push({
       row: rowIndex,
       field: "Identifier",
-      message: "Must be a valid DOI (https://doi.org/10.xxxx/...) or Web Archive URL",
+      message: "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...) or Web Archive URL",
     });
   }
 
