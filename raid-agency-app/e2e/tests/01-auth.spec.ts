@@ -26,13 +26,11 @@ test.describe("Authentication", () => {
 
         await page.goto("/");
 
-        // Should redirect to Keycloak
+        // Should redirect to Keycloak. Login page content is theme-dependent
+        // (some themes render a native form, others only IDP buttons), so the
+        // redirect itself is the behaviour under test here, not the markup.
         await page.waitForURL(keycloakUrlPattern, { timeout: 15000 });
         await expect(page).toHaveURL(keycloakUrlPattern);
-
-        // Keycloak login page should be visible
-        await expect(page.locator("#username")).toBeVisible();
-        await expect(page.locator("#password")).toBeVisible();
 
         await context.close();
       }
@@ -48,7 +46,6 @@ test.describe("Authentication", () => {
 
         await page.waitForURL(keycloakUrlPattern, { timeout: 15000 });
         await expect(page).toHaveURL(keycloakUrlPattern);
-        await expect(page.locator("#username")).toBeVisible();
 
         await context.close();
       }
@@ -75,7 +72,7 @@ test.describe("Authentication", () => {
         await page.goto("/raids");
 
         // Should NOT be on the Keycloak login page
-        await expect(page.locator("#username")).not.toBeVisible();
+        await expect(page).not.toHaveURL(keycloakUrlPattern);
 
         // The RAiD list page should render — either a data grid or an empty state
         await expect(
