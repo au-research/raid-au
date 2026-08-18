@@ -25,12 +25,21 @@ Metadata Schema 4.6/4.7, so we now emit the native type instead.
 - Updated the eight `relatedRaid*` cases in `DataciteRelatedIdentifierFactoryTest` to assert the
   `"RAiD"` type, and added a casing-guard test locking `RelatedIdentifierType.RAID.getName()` to
   the exact string `"RAiD"`.
-- Added `DataciteLiveRelatedRaidIntegrationTest` (in the `src/test` source set) — a permanent
-  regression test that runs the **real** `DataciteRelatedIdentifierFactory` output against the live
-  DataCite **test** API, asserts a draft DOI is accepted with `relatedIdentifierType: "RAiD"` /
-  `resourceTypeGeneral: "Project"`, then deletes the draft. It lives in `src/test` (not `intTest`)
-  to keep the deliberately black-box `intTest` source set free of a `src/main` classpath
-  dependency.
+- Added `DataciteRelatedRaidMockIntegrationTest` (black-box `intTest` source set) — the **local,
+  CI-runnable** regression test. It mints a RAiD with a `relatedRaid` through the app, then
+  retrieves the request the DataCite MockServer (localhost:1080) recorded and asserts the outbound
+  DataCite JSON carries a `relatedIdentifier` with `relatedIdentifierType: "RAiD"`,
+  `resourceTypeGeneral: "Project"`, and the unchanged target handle. This exercises the full app
+  path (`DataciteAttributesDtoFactory` + `DataciteService` + `DataciteRelatedIdentifierFactory`),
+  needs no real DataCite credentials, and adds no `build.gradle`/classpath change (it queries
+  MockServer over HTTP). It runs in the normal `intTest` suite.
+- Added `DataciteLiveRelatedRaidIntegrationTest` (in the `src/test` source set) — the **live**
+  regression test, run on demand in the test environment. It runs the **real**
+  `DataciteRelatedIdentifierFactory` output against the live DataCite **test** API, asserts a draft
+  DOI is accepted with `relatedIdentifierType: "RAiD"` / `resourceTypeGeneral: "Project"`, then
+  deletes the draft. It lives in `src/test` (not `intTest`) to keep the deliberately black-box
+  `intTest` source set free of a `src/main` classpath dependency, and is gated by
+  `@EnabledIfEnvironmentVariable("DATACITE_LIVE_TEST")` so it is skipped in CI.
 
 ## How to run the live DataCite test
 
@@ -71,5 +80,8 @@ The client must hold the `RAID_UPGRADER_ROLE` (the same role the `/raid/non-lega
 ## Verification performed
 
 - `./gradlew :api-svc:raid-api:test` — green (updated factory tests + casing guard).
-- `./gradlew :api-svc:raid-api:intTest` — full suite green locally against a branch API on :8080.
-- Live DataCite test confirmed to compile and skip when `DATACITE_LIVE_TEST` is unset.
+- `./gradlew :api-svc:raid-api:intTest` — full suite green locally against a branch API on :8080,
+  including `DataciteRelatedRaidMockIntegrationTest` (the mocked local test asserting the outbound
+  DataCite payload carries `relatedIdentifierType: "RAiD"` via MockServer).
+- Live DataCite test confirmed to compile and skip when `DATACITE_LIVE_TEST` is unset; to be run
+  for real in the test environment with a service point's credentials.
