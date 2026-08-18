@@ -69,9 +69,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * without DataCite credentials present. To run it against the real DataCite test API, set:
  * <ul>
  *   <li>{@code DATACITE_LIVE_TEST=true} - required to enable the test at all</li>
- *   <li>{@code DATACITE_TEST_REPOSITORY_ID} - the DataCite test repository/client id (HTTP Basic username)</li>
- *   <li>{@code DATACITE_TEST_PASSWORD} - the repository's password (HTTP Basic password)</li>
- *   <li>{@code DATACITE_TEST_PREFIX} - the DOI prefix the repository may mint under, e.g. {@code 10.82841}</li>
+ *   <li>{@code DATACITE_TEST_REPOSITORY_ID} - a service point's DataCite repository/client id (HTTP
+ *       Basic username). DataCite credentials are stored per service point (the same repository id
+ *       and password {@code DataciteService} uses to authenticate to the DOIs API); any test-env
+ *       service point's credentials work here because the test calls the DataCite repository
+ *       directly.</li>
+ *   <li>{@code DATACITE_TEST_PASSWORD} - that service point's DataCite password (HTTP Basic password)</li>
+ *   <li>{@code DATACITE_TEST_PREFIX} - a DOI prefix that repository may mint under, e.g. {@code 10.82841}</li>
  *   <li>{@code DATACITE_TEST_ENDPOINT} - optional, defaults to {@code https://api.test.datacite.org/dois}</li>
  * </ul>
  *

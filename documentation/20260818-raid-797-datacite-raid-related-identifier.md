@@ -38,13 +38,19 @@ Skipped by default. Enable it by setting the env vars (no secrets are committed)
 
 ```bash
 DATACITE_LIVE_TEST=true \
-DATACITE_TEST_REPOSITORY_ID=<repository/client id> \
-DATACITE_TEST_PASSWORD=<password> \
-DATACITE_TEST_PREFIX=<test DOI prefix, e.g. 10.82841> \
+DATACITE_TEST_REPOSITORY_ID=<service point's DataCite repository id> \
+DATACITE_TEST_PASSWORD=<that service point's DataCite password> \
+DATACITE_TEST_PREFIX=<a DOI prefix that repository may mint under, e.g. 10.82841> \
 ./gradlew :api-svc:raid-api:test --tests '*DataciteLive*'
 ```
 
 `DATACITE_TEST_ENDPOINT` is optional and defaults to `https://api.test.datacite.org/dois`.
+
+The DataCite repository id and password are **properties of a service point** — the same
+credentials `DataciteService` reads off the service point record to authenticate to the DataCite
+DOIs API. Any service point in the **test** environment has working DataCite test-API credentials,
+so its repository id + password can be used here directly (the test calls the DataCite repository
+directly over HTTP Basic, exactly as the app does).
 
 ## Backfill of already-minted RAiDs
 
