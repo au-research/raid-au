@@ -32,8 +32,11 @@ public class ArkRelatedObjectIntegrationTest extends AbstractIntegrationTest {
     // A normal (non-99999 NAAN) well-formed arks.org ARK, accepted by the in-memory ArkServiceStub.
     private static final String VALID_ARK = "https://arks.org/ark:/12148/cc9wq2rq";
 
-    /* confirmed sentinel values understood by the in-memory ARK stub, see
-       au.org.raid.api.service.stub.InMemoryStubTestData lines 56-57 */
+    /* Sentinel values understood by the in-memory ARK stub, mirrored here because the intTest
+       source set cannot import au.org.raid.api.service.stub.InMemoryStubTestData (NONEXISTENT_TEST_ARK
+       / SERVER_ERROR_TEST_ARK). NAAN 99999 is a reserved test NAAN (ARK Alliance spec) used only as a
+       deterministic stub trigger; the real unregistered-NAAN reject signal is host-based and not
+       specific to 99999 (see RAID-793 / ArkService.isUnregistered). */
     private static final String NONEXISTENT_TEST_ARK = "https://arks.org/ark:/99999/not-found";
     private static final String SERVER_ERROR_TEST_ARK = "https://arks.org/ark:/99999/server-error";
 
