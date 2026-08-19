@@ -74,6 +74,35 @@ public class Api {
         return new RestTemplate(requestFactory);
     }
 
+    /**
+     * RestTemplate for the ARK (arks.org) resolver check (RAID-793). Shares the same bounded
+     * connect/read timeouts as {@link #uriValidatorRestTemplate}, but with redirect-following
+     * DISABLED - the ARK existence check's signal is which host a 302 redirects to (arks.org
+     * itself = unregistered NAAN, a different host = registered NAAN), which is only visible if
+     * the redirect isn't transparently followed first.
+     */
+    @Bean
+    public RestTemplate arkResolverRestTemplate(
+            @Value("${raid.uri-validation.connect-timeout:5s}") final Duration connectTimeout,
+            @Value("${raid.uri-validation.read-timeout:10s}") final Duration readTimeout) {
+
+        // SimpleClientHttpRequestFactory doesn't expose HttpURLConnection#setInstanceFollowRedirects
+        // itself (unlike the JVM-wide static HttpURLConnection#setFollowRedirects), so it's
+        // overridden here via the connection-preparation hook it does expose.
+        final var requestFactory = new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(final java.net.HttpURLConnection connection, final String httpMethod)
+                    throws java.io.IOException {
+                super.prepareConnection(connection, httpMethod);
+                connection.setInstanceFollowRedirects(false);
+            }
+        };
+        requestFactory.setConnectTimeout(connectTimeout);
+        requestFactory.setReadTimeout(readTimeout);
+
+        return new RestTemplate(requestFactory);
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(Api.class, args);
     }

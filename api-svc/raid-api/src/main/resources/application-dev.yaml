@@ -55,6 +55,9 @@ raid:
     web-archive:
       enabled: true
       delay: 150
+    ark:
+      enabled: true
+      delay: 150
 spring:
   security:
     oauth2:
