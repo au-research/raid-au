@@ -2,6 +2,7 @@ package au.org.raid.api.service.datacite;
 
 import au.org.raid.api.config.properties.DataciteResyncProperties;
 import au.org.raid.api.repository.DataciteResyncRepository;
+import au.org.raid.api.repository.PostgresAdvisoryLock;
 import au.org.raid.api.service.raid.RaidService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,9 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -24,10 +28,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DataciteResyncWorkerTest {
 
+    // Mirrors DataciteResyncWorker.LOCK_KEY (private) so tests can assert tick() calls
+    // through with the documented, stable key.
+    private static final long LOCK_KEY = 0x2126_0832L;
+
     @Mock
     private DataciteResyncRepository repository;
     @Mock
     private RaidService raidService;
+    @Mock
+    private PostgresAdvisoryLock advisoryLock;
 
     private DataciteResyncProperties properties;
 
@@ -39,7 +49,7 @@ class DataciteResyncWorkerTest {
         properties.setBatchSize(50);
         properties.setThrottleMillis(0);
         properties.setPollDelayMillis(60000);
-        worker = new DataciteResyncWorker(null, repository, raidService, properties);
+        worker = new DataciteResyncWorker(advisoryLock, repository, raidService, properties);
     }
 
     @Test
@@ -112,5 +122,47 @@ class DataciteResyncWorkerTest {
 
         verify(raidService, times(2)).resyncWithDatacite(org.mockito.ArgumentMatchers.any());
         verify(repository, times(2)).clearResyncRequired(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @DisplayName("tick() skips the batch when the advisory lock isn't acquired")
+    void tickSkipsBatchWhenLockNotAcquired() {
+        // Mirror PostgresAdvisoryLock's real contract: not acquired => the work Runnable is
+        // never invoked, and runExclusively returns false without running it.
+        when(advisoryLock.runExclusively(eq(LOCK_KEY), any())).thenReturn(false);
+
+        worker.tick();
+
+        verifyNoInteractions(repository, raidService);
+    }
+
+    @Test
+    @DisplayName("tick() runs the batch when the advisory lock is acquired")
+    void tickRunsBatchWhenLockAcquired() {
+        final var handles = List.of("10.1234/locked");
+        when(repository.findResyncRequired(properties.getBatchSize())).thenReturn(handles);
+
+        // Mirror PostgresAdvisoryLock's real contract: acquired => it invokes the work
+        // Runnable itself (proving tick() wires runBatch() through correctly), then returns
+        // true.
+        when(advisoryLock.runExclusively(eq(LOCK_KEY), any())).thenAnswer(invocation -> {
+            final Runnable work = invocation.getArgument(1);
+            work.run();
+            return true;
+        });
+
+        worker.tick();
+
+        verify(raidService).resyncWithDatacite("10.1234/locked");
+        verify(repository).clearResyncRequired("10.1234/locked");
+    }
+
+    @Test
+    @DisplayName("tick() never propagates an exception out, so a bad tick can't kill the scheduler thread")
+    void tickSwallowsExceptions() {
+        when(advisoryLock.runExclusively(eq(LOCK_KEY), any()))
+                .thenThrow(new RuntimeException("advisory lock blew up"));
+
+        assertThatCode(worker::tick).doesNotThrowAnyException();
     }
 }

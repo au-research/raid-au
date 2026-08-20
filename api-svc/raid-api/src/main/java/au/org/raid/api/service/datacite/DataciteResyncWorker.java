@@ -2,19 +2,15 @@ package au.org.raid.api.service.datacite;
 
 import au.org.raid.api.config.properties.DataciteResyncProperties;
 import au.org.raid.api.repository.DataciteResyncRepository;
+import au.org.raid.api.repository.PostgresAdvisoryLock;
 import au.org.raid.api.service.raid.RaidService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.using;
-import static org.jooq.impl.DSL.val;
 
 /**
  * Reusable DataCite re-sync mechanism (RAID-832). Periodically drains raids flagged via
@@ -25,12 +21,12 @@ import static org.jooq.impl.DSL.val;
  * hand-run backfill. See {@code doc/spike/RAID-797-datacite-backfill-automation.md}.
  *
  * <p>Runs on the scheduler thread, never blocking startup or request-serving traffic. Only
- * one application instance re-syncs at a time, coordinated by a Postgres session-level
- * advisory lock held on a single dedicated connection for the whole tick; an instance that
- * doesn't acquire the lock skips the tick as a no-op. Failures are handled per record: a
- * record that fails to re-push (including a DataCite 429) simply keeps its flag set for a
- * later tick, and processing continues with the remaining records. Self-terminating: once
- * nothing is flagged, a tick is a cheap no-op.
+ * one application instance re-syncs at a time, coordinated via {@link PostgresAdvisoryLock}
+ * by a Postgres session-level advisory lock held on a single dedicated connection for the
+ * whole tick; an instance that doesn't acquire the lock skips the tick as a no-op. Failures
+ * are handled per record: a record that fails to re-push (including a DataCite 429) simply
+ * keeps its flag set for a later tick, and processing continues with the remaining records.
+ * Self-terminating: once nothing is flagged, a tick is a cheap no-op.
  */
 @Slf4j
 @Component
@@ -44,7 +40,7 @@ public class DataciteResyncWorker {
      */
     private static final long LOCK_KEY = 0x2126_0832L;
 
-    private final DSLContext db;
+    private final PostgresAdvisoryLock advisoryLock;
     private final DataciteResyncRepository repository;
     private final RaidService raidService;
     private final DataciteResyncProperties properties;
@@ -52,18 +48,8 @@ public class DataciteResyncWorker {
     @Scheduled(fixedDelayString = "${raid.datacite.resync.poll-delay-millis:60000}")
     public void tick() {
         try {
-            db.connection(conn -> {
-                final var dsl = using(conn);
-                if (!tryAdvisoryLock(dsl)) {
-                    // Another instance is already re-syncing this tick; skip, don't wait.
-                    return;
-                }
-                try {
-                    runBatch();
-                } finally {
-                    releaseAdvisoryLock(dsl);
-                }
-            });
+            // Another instance may already be re-syncing this tick; if so, skip, don't wait.
+            advisoryLock.runExclusively(LOCK_KEY, this::runBatch);
         } catch (final Exception e) {
             // Never let a tick fail the scheduler thread; a later tick will retry.
             log.warn("DataCite re-sync: tick failed, will retry next poll", e);
@@ -112,16 +98,6 @@ public class DataciteResyncWorker {
             log.warn("DataCite re-sync: {} deferred, will retry: {}", handle, e.getMessage());
             return false;
         }
-    }
-
-    private boolean tryAdvisoryLock(final DSLContext dsl) {
-        return Boolean.TRUE.equals(
-                dsl.select(field("pg_try_advisory_lock({0})", Boolean.class, val(LOCK_KEY)))
-                        .fetchOne(0, Boolean.class));
-    }
-
-    private void releaseAdvisoryLock(final DSLContext dsl) {
-        dsl.execute("select pg_advisory_unlock({0})", val(LOCK_KEY));
     }
 
     private static void sleepQuietly(final long millis) {

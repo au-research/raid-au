@@ -95,7 +95,6 @@ public class RaidService {
             final var handle = handleFactory.createWithPrefix(servicePointRecord.getPrefix());
             request.setIdentifier(idFactory.create(handle.toString(), servicePointRecord));
             dataciteSvc.mint(request, handle.toString(), servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
-            dataciteResyncRepository.clearResyncRequired(handle.toString());
         } catch (final HttpClientErrorException e) {
             if (mintRetries < MAX_MINT_RETRIES && e.getStatusCode().equals(HttpStatusCode.valueOf(422))) {
                 mintRetries++;

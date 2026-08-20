@@ -7,6 +7,7 @@ import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.IdFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
+import au.org.raid.api.repository.DataciteResyncRepository;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.api.service.*;
@@ -96,7 +97,7 @@ class RaidServiceTest {
     @Mock
     private RaidDtoReadService raidDtoReadService;
     @Mock
-    private au.org.raid.api.repository.DataciteResyncRepository dataciteResyncRepository;
+    private DataciteResyncRepository dataciteResyncRepository;
     @InjectMocks
     private RaidService raidService;
 
