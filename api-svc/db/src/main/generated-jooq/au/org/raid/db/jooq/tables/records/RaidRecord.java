@@ -358,6 +358,21 @@ public class RaidRecord extends UpdatableRecordImpl<RaidRecord> {
         return (Integer) get(20);
     }
 
+    /**
+     * Setter for <code>api_svc.raid.datacite_resync_required</code>.
+     */
+    public RaidRecord setDataciteResyncRequired(Boolean value) {
+        set(21, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>api_svc.raid.datacite_resync_required</code>.
+     */
+    public Boolean getDataciteResyncRequired() {
+        return (Boolean) get(21);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -381,7 +396,7 @@ public class RaidRecord extends UpdatableRecordImpl<RaidRecord> {
     /**
      * Create a detached, initialised RaidRecord
      */
-    public RaidRecord(String handle, Long servicePointId, String url, Integer urlIndex, String primaryTitle, Boolean confidential, Metaschema metadataSchema, JSONB metadata, LocalDate startDate, LocalDateTime dateCreated, Integer version, String startDateString, String endDate, String license, Integer accessTypeId, LocalDate embargoExpiry, String accessStatement, Integer accessStatementLanguageId, String schemaUri, Integer registrationAgencyOrganisationId, Integer ownerOrganisationId) {
+    public RaidRecord(String handle, Long servicePointId, String url, Integer urlIndex, String primaryTitle, Boolean confidential, Metaschema metadataSchema, JSONB metadata, LocalDate startDate, LocalDateTime dateCreated, Integer version, String startDateString, String endDate, String license, Integer accessTypeId, LocalDate embargoExpiry, String accessStatement, Integer accessStatementLanguageId, String schemaUri, Integer registrationAgencyOrganisationId, Integer ownerOrganisationId, Boolean dataciteResyncRequired) {
         super(Raid.RAID);
 
         setHandle(handle);
@@ -405,5 +420,6 @@ public class RaidRecord extends UpdatableRecordImpl<RaidRecord> {
         setSchemaUri(schemaUri);
         setRegistrationAgencyOrganisationId(registrationAgencyOrganisationId);
         setOwnerOrganisationId(ownerOrganisationId);
+        setDataciteResyncRequired(dataciteResyncRequired);
     }
 }

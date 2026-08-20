@@ -95,6 +95,8 @@ class RaidServiceTest {
     private RaidDtoFactory raidDtoFactory;
     @Mock
     private RaidDtoReadService raidDtoReadService;
+    @Mock
+    private au.org.raid.api.repository.DataciteResyncRepository dataciteResyncRepository;
     @InjectMocks
     private RaidService raidService;
 

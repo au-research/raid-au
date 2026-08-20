@@ -167,6 +167,11 @@ public class Raid extends TableImpl<RaidRecord> {
      */
     public final TableField<RaidRecord, Integer> OWNER_ORGANISATION_ID = createField(DSL.name("owner_organisation_id"), SQLDataType.INTEGER, this, "");
 
+    /**
+     * The column <code>api_svc.raid.datacite_resync_required</code>.
+     */
+    public final TableField<RaidRecord, Boolean> DATACITE_RESYNC_REQUIRED = createField(DSL.name("datacite_resync_required"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("false"), SQLDataType.BOOLEAN)), this, "");
+
     private Raid(Name alias, Table<RaidRecord> aliased) {
         this(alias, aliased, null);
     }
