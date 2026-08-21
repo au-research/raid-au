@@ -89,6 +89,15 @@ raid:
       availability-url: https://archive.org/wayback/available
   history:
     baseline-interval: 50
+  datacite:
+    resync:
+      # Reusable DataCite re-sync mechanism (RAID-832): a background worker drains rows
+      # flagged via the raid.datacite_resync_required column and re-pushes them through
+      # the idempotent DataCite full-document PUT. Off by default; enable per environment.
+      enabled: false
+      batch-size: 50
+      throttle-millis: 1000
+      poll-delay-millis: 60000
 server:
   forward-headers-strategy: native
 spring:

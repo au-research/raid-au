@@ -9,6 +9,7 @@ import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.UnknownServicePointException;
 import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.IdFactory;
+import au.org.raid.api.repository.DataciteResyncRepository;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.api.service.*;
@@ -62,6 +63,7 @@ public class RaidService {
     private final RorClient rorClient;
     private final RaidDtoFactory raidDtoFactory;
     private final RaidDtoReadService raidDtoReadService;
+    private final DataciteResyncRepository dataciteResyncRepository;
 
     @Transactional
     public RaidDto mint(
@@ -145,6 +147,7 @@ public class RaidService {
         final var raidDto = raidHistoryService.save(raid);
 
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
+        dataciteResyncRepository.clearResyncRequired(handle);
 
         final var saved = raidIngestService.update(raidDto);
         updateMaterialisedMetadata(handle, saved);
@@ -160,14 +163,14 @@ public class RaidService {
 
         final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValueExact();
 
-        final var servicePointRecord = servicePointRepository.findById(servicePointId)
-                .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
+        final var servicePointRecord = resolveServicePoint(servicePointId);
 
         orcidIntegrationService.setContributorStatus(contributors);
         raid.setContributor(contributors);
 
         raidHistoryService.save(raid);
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
+        dataciteResyncRepository.clearResyncRequired(handle);
 
         final var saved = raidIngestService.update(raid);
         updateMaterialisedMetadata(handle, saved);
@@ -346,10 +349,41 @@ public class RaidService {
 
         final var servicePointId = raid.getIdentifier().getOwner().getServicePoint().longValueExact();
 
-        final var servicePointRecord = servicePointRepository.findById(servicePointId)
-                .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
+        final var servicePointRecord = resolveServicePoint(servicePointId);
 
         dataciteSvc.update(raid, handle.toString(), servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
+        dataciteResyncRepository.clearResyncRequired(handle.toString());
+    }
+
+    /**
+     * Re-pushes a previously-minted raid's current metadata to DataCite via the same
+     * idempotent full-document PUT used by {@link #postToDatacite}, resolving the raid and
+     * its service point credentials by handle. Intended for in-process re-sync (RAID-832),
+     * e.g. by {@code DataciteResyncWorker}, where there is no HTTP request to hang a
+     * {@code RaidUpdateRequest} off. Does not clear the resync flag itself; the caller does
+     * that only once this call returns without throwing.
+     */
+    public void resyncWithDatacite(final String handle) {
+        final var raidDto = findByHandle(handle)
+                .orElseThrow(() -> new ResourceNotFoundException(handle));
+
+        final var servicePointId = raidDto.getIdentifier().getOwner().getServicePoint().longValueExact();
+
+        final var servicePointRecord = resolveServicePoint(servicePointId);
+
+        dataciteSvc.update(raidDto, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
+    }
+
+    /**
+     * Resolves the service point that owns a raid, for looking up its DataCite repository
+     * credentials (repositoryId/password). Shared by every call site that needs to reach
+     * DataCite for an already-known service point id, other than {@code mintHandle}/{@code
+     * update}, which resolve the service point earlier for other purposes (e.g. the handle
+     * prefix) and so already hold the record before DataCite is called.
+     */
+    private ServicePointRecord resolveServicePoint(final long servicePointId) {
+        return servicePointRepository.findById(servicePointId)
+                .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
     }
 
     public List<RaidDto> findAllEmbargoed() {
