@@ -1,0 +1,949 @@
+id: https://datacite.org/schema/kernel-4
+name: datacite
+title: DataCite Metadata Schema 4.7 (LinkML)
+description: >-
+  A hand-authored LinkML rendering of the DataCite Metadata Schema 4.7
+  (namespace http://datacite.org/schema/kernel-4). It models the `resource`
+  root and its properties, the shared complex types (nameIdentifier,
+  affiliation, geoLocation point/box/polygon, relatedItem) and the ten
+  controlled-vocabulary simple types, derived directly from the DataCite 4.7
+  XSD (metadata.xsd + include/*.xsd).
+
+  4.7 (published 2026-03-03) adds, relative to 4.6: relatedIdentifierType
+  values `RAiD` and `SWHID`; resourceTypeGeneral values `Poster` and
+  `Presentation`; relationType value `Other`; and an optional
+  `relationTypeInformation` sub-property on relatedIdentifier and relatedItem.
+  Note that `RAiD` becoming a native relatedIdentifierType in 4.7 is what lets
+  RAID-797 emit related RAiDs as `RAiD` rather than the generic `DOI`.
+
+  This schema is exploratory design work. The automated LinkML importer
+  (`schemauto import-xsd`) does not handle this XSD (it fails on `xs:all` and
+  then on a KeyError in the simpleContent/extension handling), so the schema
+  was authored by hand using the XSD as the authoritative reference.
+
+  NOTE ON FIDELITY. Several XSD constructs do not translate cleanly into
+  LinkML; each is flagged with a `# NOTE:` comment at the point it occurs:
+    - simpleContent extensions (element text value + attributes) are modelled
+      as a class with an explicit `value` slot plus attribute slots;
+    - xs:choice (geoLocation) is modelled as optional slots with a comment
+      recording the one-of/at-least-one constraint (LinkML `rules` are avoided
+      to keep `gen-json-schema` happy, matching the repo house rule "do not use
+      oneOf/allOf yet");
+    - xs:all only means element order is not significant; LinkML slots are
+      unordered anyway, so no information is lost;
+    - EDTF / W3CDTF date strings and the yearType `\d{4}` pattern are kept as
+      strings with the pattern noted;
+    - xml:lang attributes are modelled as a `lang` slot (range string).
+
+  The `datacite:` prefix below maps to the kernel-4 XML namespace. DataCite
+  does not publish resolvable RDF term URIs for these properties, so the
+  class_uri / slot_uri values are namespace-qualified names for traceability,
+  not dereferenceable identifiers.
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  datacite: http://datacite.org/schema/kernel-4/
+  xsd: http://www.w3.org/2001/XMLSchema#
+
+default_range: string
+default_prefix: datacite
+
+imports:
+  - linkml:types
+
+classes:
+
+  Resource:
+    class_uri: datacite:resource
+    description: >-
+      Root element of a single DataCite record. In the XSD this is
+      `xs:element name="resource"` with an `xs:all` content model, so element
+      order is not significant.
+    attributes:
+      identifier:
+        description: A persistent identifier that identifies a resource (e.g. a DOI).
+        range: Identifier
+        required: true
+        inlined: true
+      creators:
+        description: >-
+          The main researchers or authors of the resource, in priority order.
+          Required; at least one creator.
+        range: Creator
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+      titles:
+        description: A name or title by which the resource is known. Required; at least one.
+        range: Title
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+      publisher:
+        description: >-
+          The entity that holds, archives, publishes, distributes, releases,
+          issues, or produces the resource. Required.
+        range: Publisher
+        required: true
+        inlined: true
+      publicationYear:
+        description: >-
+          Year the resource is made publicly available.
+          # NOTE: XSD yearType restricts this to the pattern \d{4} (exactly
+          # four digits); kept as a string with that pattern.
+        range: string
+        required: true
+        pattern: "^\\d{4}$"
+      resourceType:
+        description: The type of the resource, with a required general category. Required.
+        range: ResourceType
+        required: true
+        inlined: true
+      subjects:
+        description: Subjects, keywords, classification codes, or key phrases.
+        range: Subject
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      contributors:
+        description: Institutions or persons contributing to the resource.
+        range: Contributor
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      dates:
+        description: Dates relevant to the resource.
+        range: Date
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      language:
+        description: >-
+          Primary language of the resource (IETF BCP 47 / ISO 639-1).
+          # NOTE: XSD type is xs:language; modelled as a plain string.
+        range: string
+      alternateIdentifiers:
+        description: Identifiers other than the primary Identifier.
+        range: AlternateIdentifier
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      relatedIdentifiers:
+        description: Identifiers of related resources.
+        range: RelatedIdentifier
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      sizes:
+        description: Unstructured size information about the resource.
+        range: string
+        multivalued: true
+        inlined_as_list: true
+      formats:
+        description: Technical format of the resource (file extension or MIME type).
+        range: string
+        multivalued: true
+        inlined_as_list: true
+      version:
+        description: Version number of the resource.
+        range: string
+      rightsList:
+        description: Rights / licence information for the resource.
+        range: Rights
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      descriptions:
+        description: Additional descriptive information about the resource.
+        range: Description
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      geoLocations:
+        description: Spatial regions or named places relevant to the resource.
+        range: GeoLocation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      fundingReferences:
+        description: Information about financial support (funding) for the resource.
+        range: FundingReference
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      relatedItems:
+        description: >-
+          Information about a related resource that does not have its own
+          identifier registered, e.g. a journal or book a chapter is part of.
+        range: RelatedItem
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+  # NOTE: simpleContent extension. XSD `identifier` is a non-empty string with
+  # a required `identifierType` attribute; modelled as value + attribute.
+  Identifier:
+    class_uri: datacite:identifier
+    description: A persistent identifier that identifies a resource.
+    attributes:
+      value:
+        description: The identifier string (non-empty).
+        range: string
+        required: true
+        pattern: "^\\s*\\S.*$"
+      identifierType:
+        description: The type of the identifier (free text; in practice "DOI").
+        range: string
+        required: true
+
+  Creator:
+    class_uri: datacite:creator
+    description: >-
+      A main researcher or author. May be a personal or organisational name.
+    attributes:
+      creatorName:
+        description: >-
+          The name of the creator. Format "Family, Given" for personal names.
+        range: Name
+        required: true
+        inlined: true
+      givenName:
+        range: string
+      familyName:
+        range: string
+      nameIdentifier:
+        range: NameIdentifier
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      affiliation:
+        range: Affiliation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+  Contributor:
+    class_uri: datacite:contributor
+    description: >-
+      An institution or person contributing to the resource, other than a
+      creator. Carries a required contributorType.
+    attributes:
+      contributorName:
+        description: The name of the contributor. Non-empty.
+        range: Name
+        required: true
+        inlined: true
+      givenName:
+        range: string
+      familyName:
+        range: string
+      nameIdentifier:
+        range: NameIdentifier
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      affiliation:
+        range: Affiliation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      contributorType:
+        description: The role of the contributor (required attribute in the XSD).
+        range: ContributorTypeEnum
+        required: true
+
+  # NOTE: covers both `creatorName` and `contributorName` simpleContent
+  # elements (string value + optional nameType + xml:lang).
+  Name:
+    class_uri: datacite:name
+    description: A creator or contributor name with an optional name type.
+    attributes:
+      value:
+        description: The name string.
+        range: string
+        required: true
+      nameType:
+        description: Whether the name is Personal or Organizational.
+        range: NameTypeEnum
+      lang:
+        description: "xml:lang of the name."
+        range: string
+
+  # NOTE: complexType `nameIdentifier` — value + required scheme + optional URI.
+  NameIdentifier:
+    class_uri: datacite:nameIdentifier
+    description: >-
+      Uniquely identifies a creator or contributor according to an identifier
+      scheme (e.g. ORCID, ISNI).
+    attributes:
+      value:
+        description: The identifier string (non-empty).
+        range: string
+        required: true
+        pattern: "^\\s*\\S.*$"
+      nameIdentifierScheme:
+        description: The name of the identifier scheme (required).
+        range: string
+        required: true
+      schemeURI:
+        range: uri
+
+  # NOTE: complexType `affiliation` — value + optional identifier/scheme/URI.
+  Affiliation:
+    class_uri: datacite:affiliation
+    description: An affiliation of a creator or contributor.
+    attributes:
+      value:
+        description: The affiliation name (non-empty).
+        range: string
+        required: true
+        pattern: "^\\s*\\S.*$"
+      affiliationIdentifier:
+        range: string
+      affiliationIdentifierScheme:
+        range: string
+      schemeURI:
+        range: uri
+
+  Title:
+    class_uri: datacite:title
+    description: A name or title by which the resource is known.
+    attributes:
+      value:
+        description: The title text.
+        range: string
+        required: true
+      titleType:
+        description: >-
+          The type of the title. Absent for the primary/main title; present for
+          alternative, subtitle, translated, or other titles.
+        range: TitleTypeEnum
+      lang:
+        description: "xml:lang of the title."
+        range: string
+
+  Publisher:
+    class_uri: datacite:publisher
+    description: >-
+      The entity that holds, archives, publishes, distributes, releases,
+      issues, or produces the resource.
+    attributes:
+      value:
+        description: The publisher name (non-empty).
+        range: string
+        required: true
+        pattern: "^\\s*\\S.*$"
+      publisherIdentifier:
+        range: string
+      publisherIdentifierScheme:
+        range: string
+      schemeURI:
+        range: uri
+      lang:
+        description: "xml:lang of the publisher name."
+        range: string
+
+  ResourceType:
+    class_uri: datacite:resourceType
+    description: >-
+      The type of the resource. Free-text value plus a required general
+      category drawn from the resourceType controlled list.
+    attributes:
+      value:
+        description: >-
+          Free-text resource type. Open format; a single detailed term is
+          preferred (e.g. "RAiD").
+        range: string
+      resourceTypeGeneral:
+        description: The general type of the resource (required attribute).
+        range: ResourceTypeGeneralEnum
+        required: true
+
+  Subject:
+    class_uri: datacite:subject
+    description: Subject, keyword, classification code, or key phrase.
+    attributes:
+      value:
+        range: string
+        required: true
+      subjectScheme:
+        range: string
+      schemeURI:
+        range: uri
+      valueURI:
+        range: uri
+      classificationCode:
+        range: uri
+      lang:
+        description: "xml:lang of the subject."
+        range: string
+
+  Date:
+    class_uri: datacite:date
+    description: >-
+      A date relevant to the resource.
+      # NOTE: XSD date value is a plain xs:string (W3CDTF / RKMS-ISO8601 or a
+      # range with a "/" separator); kept as a string. See also the `edtf`
+      # simpleType in the XSD, which is defined but not referenced by `date`.
+    attributes:
+      value:
+        description: The date or date range string.
+        range: string
+        required: true
+      dateType:
+        description: The type of date (required attribute).
+        range: DateTypeEnum
+        required: true
+      dateInformation:
+        description: Free-text additional information about the date.
+        range: string
+
+  AlternateIdentifier:
+    class_uri: datacite:alternateIdentifier
+    description: >-
+      An identifier other than the primary Identifier applied to the same
+      instance of the resource.
+    attributes:
+      value:
+        range: string
+        required: true
+      alternateIdentifierType:
+        description: Free-text type of the alternate identifier (required attribute).
+        range: string
+        required: true
+
+  RelatedIdentifier:
+    class_uri: datacite:relatedIdentifier
+    description: An identifier of a related resource.
+    attributes:
+      value:
+        range: string
+        required: true
+      resourceTypeGeneral:
+        description: General type of the related resource (optional).
+        range: ResourceTypeGeneralEnum
+      relatedIdentifierType:
+        description: The type of the related identifier (required attribute).
+        range: RelatedIdentifierTypeEnum
+        required: true
+      relationType:
+        description: The relationship of this resource (A) to the related resource (B). Required.
+        range: RelationTypeEnum
+        required: true
+      relatedMetadataScheme:
+        range: string
+      schemeURI:
+        range: uri
+      schemeType:
+        range: string
+      relationTypeInformation:
+        description: >-
+          Free-text qualifier of the relationship, added in 4.7. Intended
+          particularly to describe a relationType of "Other".
+        range: string
+
+  Rights:
+    class_uri: datacite:rights
+    description: >-
+      Rights management statement for the resource, or a reference to a service
+      providing such information. Includes embargo information if applicable.
+    attributes:
+      value:
+        description: The rights statement / licence name.
+        range: string
+      rightsURI:
+        range: uri
+      rightsIdentifier:
+        range: string
+      rightsIdentifierScheme:
+        range: string
+      schemeURI:
+        range: uri
+      lang:
+        description: "xml:lang of the rights statement."
+        range: string
+
+  Description:
+    class_uri: datacite:description
+    description: >-
+      Additional descriptive information.
+      # NOTE: XSD `description` is mixed content that may contain <br/>
+      # elements. LinkML has no mixed-content model; the text is captured in
+      # `value` and inline <br/> is not represented.
+    attributes:
+      value:
+        description: The description text.
+        range: string
+        required: true
+      descriptionType:
+        description: The type of the description (required attribute).
+        range: DescriptionTypeEnum
+        required: true
+      lang:
+        description: "xml:lang of the description."
+        range: string
+
+  GeoLocation:
+    class_uri: datacite:geoLocation
+    description: >-
+      A spatial region or named place.
+      # NOTE: XSD models the children as `xs:choice maxOccurs="unbounded"`, so a
+      # geoLocation carries any combination of place / point / box / polygon and
+      # may repeat them. LinkML `rules`/any_of are avoided here (repo house rule
+      # "do not use oneOf/allOf yet"), so all four are optional slots. The
+      # informal constraint is: at least one of the four should be present.
+      # `geoLocationPolygon` is itself repeatable in the XSD.
+    attributes:
+      geoLocationPlace:
+        description: Named place where the data was gathered or which it is about.
+        range: string
+      geoLocationPoint:
+        description: A single latitude-longitude pair.
+        range: Point
+        inlined: true
+      geoLocationBox:
+        description: Two latitude-longitude pairs, lower and upper corners.
+        range: Box
+        inlined: true
+      geoLocationPolygon:
+        description: A drawn polygon area defined by a closed chain of points.
+        range: GeoLocationPolygon
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+  # NOTE: complexType `point` uses xs:all (order not significant). Both members
+  # are required. Longitude is xs:float in [-180, 180], latitude in [-90, 90].
+  Point:
+    class_uri: datacite:point
+    description: A single latitude-longitude pair.
+    attributes:
+      pointLongitude:
+        range: float
+        required: true
+        minimum_value: -180
+        maximum_value: 180
+      pointLatitude:
+        range: float
+        required: true
+        minimum_value: -90
+        maximum_value: 90
+
+  # NOTE: complexType `box` uses xs:all; all four members required.
+  Box:
+    class_uri: datacite:box
+    description: A bounding box of two latitude-longitude corner pairs.
+    attributes:
+      westBoundLongitude:
+        range: float
+        required: true
+        minimum_value: -180
+        maximum_value: 180
+      eastBoundLongitude:
+        range: float
+        required: true
+        minimum_value: -180
+        maximum_value: 180
+      southBoundLatitude:
+        range: float
+        required: true
+        minimum_value: -90
+        maximum_value: 90
+      northBoundLatitude:
+        range: float
+        required: true
+        minimum_value: -90
+        maximum_value: 90
+
+  GeoLocationPolygon:
+    class_uri: datacite:geoLocationPolygon
+    description: >-
+      A polygon area. Requires at least four polygonPoints (a closed chain) and
+      an optional inPolygonPoint.
+    attributes:
+      polygonPoint:
+        description: A vertex of the polygon. At least four are required.
+        range: Point
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+        minimum_cardinality: 4
+      inPolygonPoint:
+        description: A point that lies inside the polygon.
+        range: Point
+        inlined: true
+
+  FundingReference:
+    class_uri: datacite:fundingReference
+    description: >-
+      Information about financial support (funding) for the resource.
+      # NOTE: XSD uses xs:all here (order not significant).
+    attributes:
+      funderName:
+        description: Name of the funding provider (non-empty, required).
+        range: string
+        required: true
+        pattern: "^\\s*\\S.*$"
+      funderIdentifier:
+        description: Identifier of the funding entity.
+        range: FunderIdentifier
+        inlined: true
+      awardNumber:
+        description: The code assigned by the funder to the award (grant).
+        range: AwardNumber
+        inlined: true
+      awardTitle:
+        description: The human-readable title of the award (grant).
+        range: string
+
+  FunderIdentifier:
+    class_uri: datacite:funderIdentifier
+    description: Uniquely identifies a funding entity.
+    attributes:
+      value:
+        range: string
+      funderIdentifierType:
+        description: The type of the funder identifier (required attribute).
+        range: FunderIdentifierTypeEnum
+        required: true
+      schemeURI:
+        range: uri
+
+  AwardNumber:
+    class_uri: datacite:awardNumber
+    description: The code assigned by the funder to a sponsored award.
+    attributes:
+      value:
+        range: string
+      awardURI:
+        range: uri
+
+  RelatedItem:
+    class_uri: datacite:relatedItem
+    description: >-
+      Information about a related resource that is not registered with its own
+      identifier (e.g. the journal a JournalArticle appears in). Carries a
+      required relatedItemType and relationType.
+    attributes:
+      relatedItemIdentifier:
+        range: RelatedItemIdentifier
+        inlined: true
+      creators:
+        range: RelatedItemCreator
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      titles:
+        range: Title
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      publicationYear:
+        range: string
+        pattern: "^\\d{4}$"
+      volume:
+        range: string
+      issue:
+        range: string
+      number:
+        range: RelatedItemNumber
+        inlined: true
+      firstPage:
+        range: string
+      lastPage:
+        range: string
+      publisher:
+        description: >-
+          # NOTE: inside relatedItem the XSD declares `publisher` as a bare
+          # element with no attributes (unlike the top-level Publisher).
+        range: string
+      edition:
+        range: string
+      contributors:
+        range: RelatedItemContributor
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      relatedItemType:
+        description: The type of the related item (required attribute, resourceType list).
+        range: ResourceTypeGeneralEnum
+        required: true
+      relationType:
+        description: The relationship to the related item (required attribute).
+        range: RelationTypeEnum
+        required: true
+      relationTypeInformation:
+        description: Free-text qualifier of the relationship, added in 4.7.
+        range: string
+
+  RelatedItemIdentifier:
+    class_uri: datacite:relatedItemIdentifier
+    description: The identifier for a related item.
+    attributes:
+      value:
+        range: string
+      relatedItemIdentifierType:
+        description: The type of the related item identifier (relatedIdentifierType list).
+        range: RelatedIdentifierTypeEnum
+      relatedMetadataScheme:
+        range: string
+      schemeURI:
+        range: uri
+      schemeType:
+        range: string
+
+  # NOTE: within relatedItem, creator/contributor names have no nameIdentifier
+  # or affiliation children (a reduced form of the top-level Creator/Contributor).
+  RelatedItemCreator:
+    class_uri: datacite:creator
+    description: A creator of a related item (reduced form; no nameIdentifier/affiliation).
+    attributes:
+      creatorName:
+        range: Name
+        required: true
+        inlined: true
+      givenName:
+        range: string
+      familyName:
+        range: string
+
+  RelatedItemContributor:
+    class_uri: datacite:contributor
+    description: A contributor of a related item (reduced form; no nameIdentifier/affiliation).
+    attributes:
+      contributorName:
+        range: Name
+        required: true
+        inlined: true
+      givenName:
+        range: string
+      familyName:
+        range: string
+      contributorType:
+        range: ContributorTypeEnum
+        required: true
+
+  RelatedItemNumber:
+    class_uri: datacite:number
+    description: Number of the related item (e.g. report or article number).
+    attributes:
+      value:
+        range: string
+      numberType:
+        range: NumberTypeEnum
+
+# ---------------------------------------------------------------------------
+# Controlled vocabularies. permissible_values are taken verbatim from the ten
+# include/datacite-*-v4.xsd enumeration lists (DataCite 4.7).
+# ---------------------------------------------------------------------------
+enums:
+
+  TitleTypeEnum:
+    enum_uri: datacite:titleType
+    description: The type of a title (datacite-titleType-v4.xsd).
+    permissible_values:
+      AlternativeTitle:
+      Subtitle:
+      TranslatedTitle:
+      Other:
+
+  ContributorTypeEnum:
+    enum_uri: datacite:contributorType
+    description: The type of contributor of the resource (datacite-contributorType-v4.xsd).
+    permissible_values:
+      ContactPerson:
+      DataCollector:
+      DataCurator:
+      DataManager:
+      Distributor:
+      Editor:
+      HostingInstitution:
+      Other:
+      Producer:
+      ProjectLeader:
+      ProjectManager:
+      ProjectMember:
+      RegistrationAgency:
+      RegistrationAuthority:
+      RelatedPerson:
+      ResearchGroup:
+      RightsHolder:
+      Researcher:
+      Sponsor:
+      Supervisor:
+      Translator:
+      WorkPackageLeader:
+
+  DateTypeEnum:
+    enum_uri: datacite:dateType
+    description: The type of a date (datacite-dateType-v4.xsd).
+    permissible_values:
+      Accepted:
+      Available:
+      Collected:
+      Copyrighted:
+      Coverage:
+      Created:
+      Issued:
+      Other:
+      Submitted:
+      Updated:
+      Valid:
+      Withdrawn:
+
+  ResourceTypeGeneralEnum:
+    enum_uri: datacite:resourceType
+    description: >-
+      The general type of a resource (datacite-resourceType-v4.xsd). Used by
+      resourceTypeGeneral, relatedIdentifier/@resourceTypeGeneral and
+      relatedItem/@relatedItemType.
+    permissible_values:
+      Audiovisual:
+      Award:
+      Book:
+      BookChapter:
+      Collection:
+      ComputationalNotebook:
+      ConferencePaper:
+      ConferenceProceeding:
+      DataPaper:
+      Dataset:
+      Dissertation:
+      Event:
+      Image:
+      Instrument:
+      InteractiveResource:
+      Journal:
+      JournalArticle:
+      Model:
+      OutputManagementPlan:
+      PeerReview:
+      PhysicalObject:
+      Poster:              # added in 4.7
+      Preprint:
+      Presentation:        # added in 4.7
+      Project:
+      Report:
+      Service:
+      Software:
+      Sound:
+      Standard:
+      StudyRegistration:
+      Text:
+      Workflow:
+      Other:
+
+  RelationTypeEnum:
+    enum_uri: datacite:relationType
+    description: >-
+      Description of the relationship between the resource being registered (A)
+      and the related resource (B) (datacite-relationType-v4.xsd).
+    permissible_values:
+      IsCitedBy:
+      Cites:
+      IsSupplementTo:
+      IsSupplementedBy:
+      IsContinuedBy:
+      Continues:
+      IsNewVersionOf:
+      IsPreviousVersionOf:
+      IsPartOf:
+      HasPart:
+      IsPublishedIn:
+      IsReferencedBy:
+      References:
+      IsDocumentedBy:
+      Documents:
+      IsCompiledBy:
+      Compiles:
+      IsVariantFormOf:
+      IsOriginalFormOf:
+      IsIdenticalTo:
+      HasMetadata:
+      IsMetadataFor:
+      Reviews:
+      IsReviewedBy:
+      IsDerivedFrom:
+      IsSourceOf:
+      Describes:
+      IsDescribedBy:
+      HasVersion:
+      IsVersionOf:
+      Requires:
+      IsRequiredBy:
+      Obsoletes:
+      IsObsoletedBy:
+      Collects:
+      IsCollectedBy:
+      HasTranslation:
+      IsTranslationOf:
+      Other:               # added in 4.7 (pairs with the relationTypeInformation free-text qualifier)
+
+  RelatedIdentifierTypeEnum:
+    enum_uri: datacite:relatedIdentifierType
+    description: The type of a RelatedIdentifier (datacite-relatedIdentifierType-v4.xsd).
+    permissible_values:
+      ARK:
+      arXiv:
+      bibcode:
+      CSTR:
+      DOI:
+      EAN13:
+      EISSN:
+      Handle:
+      IGSN:
+      ISBN:
+      ISSN:
+      ISTC:
+      LISSN:
+      LSID:
+      PMID:
+      PURL:
+      RAiD:                # added in 4.7 (native RAiD identifier type; see RAID-797)
+      RRID:
+      SWHID:               # added in 4.7
+      UPC:
+      URL:
+      URN:
+      w3id:
+
+  FunderIdentifierTypeEnum:
+    enum_uri: datacite:funderIdentifierType
+    description: The type of a funderIdentifier (datacite-funderIdentifierType-v4.xsd).
+    permissible_values:
+      ISNI:
+      GRID:
+      ROR:
+      "Crossref Funder ID":
+      Other:
+
+  DescriptionTypeEnum:
+    enum_uri: datacite:descriptionType
+    description: The type of a description (datacite-descriptionType-v4.xsd).
+    permissible_values:
+      Abstract:
+      Methods:
+      SeriesInformation:
+      TableOfContents:
+      TechnicalInfo:
+      Other:
+
+  NameTypeEnum:
+    enum_uri: datacite:nameType
+    description: Whether a creator/contributor name is organisational or personal (datacite-nameType-v4.xsd).
+    permissible_values:
+      Organizational:
+      Personal:
+
+  NumberTypeEnum:
+    enum_uri: datacite:numberType
+    description: The type of a relatedItem number (datacite-numberType-v4.xsd).
+    permissible_values:
+      Article:
+      Chapter:
+      Report:
+      Other:

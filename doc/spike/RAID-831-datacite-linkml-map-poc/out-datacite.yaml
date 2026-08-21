@@ -1,0 +1,19 @@
+resourceType:
+  value: RAiD
+  resourceTypeGeneral: Project
+titles:
+- value: Reef Genomics Activity
+  lang: eng
+- value: Reef Genomics
+  lang: eng
+  titleType: AlternativeTitle
+dates:
+- value: 2023-01-01/2025-12-31
+  dateType: Other
+descriptions:
+- value: Sequencing coral symbiont genomes across the Great Barrier Reef.
+  lang: eng
+  descriptionType: Abstract
+- value: Nanopore long-read sequencing with a custom assembly pipeline.
+  lang: eng
+  descriptionType: Methods

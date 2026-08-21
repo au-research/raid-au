@@ -1,0 +1,38 @@
+# A sample RAiD record (an instance of RaidDto from raid-core.yaml).
+# Two titles (a primary + an alternative), a date with start + end, and
+# two descriptions (an abstract + a methods).
+title:
+  - text: "Reef Genomics Activity"
+    type:
+      id: "https://vocabulary.raid.org/title.type.schema/5"      # Primary
+      schemaUri: "https://vocabulary.raid.org/title.type.schemaUri/376"
+    language:
+      id: "eng"
+      schemaUri: "https://vocabulary.raid.org/language.schemaUri/1"
+    startDate: "2023"
+  - text: "Reef Genomics"
+    type:
+      id: "https://vocabulary.raid.org/title.type.schema/4"      # Alternative
+      schemaUri: "https://vocabulary.raid.org/title.type.schemaUri/376"
+    language:
+      id: "eng"
+      schemaUri: "https://vocabulary.raid.org/language.schemaUri/1"
+    startDate: "2023"
+date:
+  startDate: "2023-01-01"
+  endDate: "2025-12-31"
+description:
+  - text: "Sequencing coral symbiont genomes across the Great Barrier Reef."
+    type:
+      id: "https://vocabulary.raid.org/description.type.schema/318"   # Abstract
+      schemaUri: "https://vocabulary.raid.org/description.type.schemaUri/320"
+    language:
+      id: "eng"
+      schemaUri: "https://vocabulary.raid.org/language.schemaUri/1"
+  - text: "Nanopore long-read sequencing with a custom assembly pipeline."
+    type:
+      id: "https://vocabulary.raid.org/description.type.schema/8"     # Methods
+      schemaUri: "https://vocabulary.raid.org/description.type.schemaUri/320"
+    language:
+      id: "eng"
+      schemaUri: "https://vocabulary.raid.org/language.schemaUri/1"
