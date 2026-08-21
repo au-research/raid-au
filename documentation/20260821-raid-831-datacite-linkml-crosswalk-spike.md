@@ -21,6 +21,10 @@ Two design artifacts were added. No runtime behaviour changed.
 - `doc/reference/raid-datacite-crosswalk.md`: a field-by-field RAiD→DataCite crosswalk
   authored from the Java factories under `api-svc/raid-api/.../factory/datacite/`, with the
   controlled-vocabulary lookup tables and a declarable-vs-imperative verdict.
+- `doc/spike/RAID-831-datacite-linkml-map-poc/`: a runnable `linkml-map` (LinkML
+  Transformer) proof of concept that configures the declarable subset of the crosswalk as a
+  transformation spec and actually transforms a sample `RaidDto` into a DataCite 4.7-shaped
+  instance (spec, sample input, real output, run instructions).
 
 ## Findings
 
@@ -34,6 +38,11 @@ Two design artifacts were added. No runtime behaviour changed.
   (ORCID/ISNI/ROR at emission time) and the organisation-list partition into contributors
   vs fundingReferences with a "latest role" reduce. Recommendation: declarative vocab tables
   feeding a thin imperative adapter.
+- The declarable half is proven, not just asserted: a `linkml-map` 0.5.3 spec
+  (`doc/spike/RAID-831-datacite-linkml-map-poc/`) transforms a real `RaidDto` into a
+  DataCite 4.7-shaped instance (exit 0) against the real `raid-core.yaml`, including the
+  controlled-vocabulary lookups as `enum_derivations`. The imperative floor confirmably
+  cannot be expressed: `linkml-map`'s only hook, `@safe_function`, forbids I/O.
 - DataCite 4.7 adds `RAiD` as a native `relatedIdentifierType`, which is what makes
   RAID-797's native-`RAiD` emission schema-valid (RAID-797 emitted it ahead of the published
   XSD, relying on the REST API accepting it early).

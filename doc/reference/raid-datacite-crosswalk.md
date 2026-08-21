@@ -242,3 +242,18 @@ thin imperative adapter that the declarative layer feeds into. Before doing any
 of that, fix the two correctness bugs (hardcoded `publicationYear`, unwired
 `rightsList`), since a declarative rewrite would otherwise faithfully preserve
 them.
+
+## Proof of concept: the declarable subset as a `linkml-map` spec
+
+The "declarable" half of this verdict is not just asserted; it was proven by a
+runnable `linkml-map` (LinkML Transformer) specification that transforms a real
+`RaidDto` into a DataCite 4.7-shaped instance. See
+`doc/spike/RAID-831-datacite-linkml-map-poc/` for the spec
+(`raid-to-datacite.transform.yaml`), a sample input, the real output, and run
+instructions. It configures the constant `types`, the `titles`/`descriptions`
+structure with their controlled-vocabulary lookups (as `enum_derivations`), and
+the `dates` start/end concatenation, and runs (exit 0) against the real
+`api-svc/datamodel/src/v2/raid-core.yaml`. The imperative floor above (live PID
+name resolution, the organisation split, the latest-role reduce) confirmably
+cannot be expressed: `linkml-map`'s only extension hook, `@safe_function`,
+requires functions be pure and free of I/O.

@@ -1,0 +1,117 @@
+id: https://datamodel.raid.org/transform/raid-to-datacite
+title: RAiD to DataCite 4.7 crosswalk (declarable subset)
+description: >-
+  A linkml-map TransformationSpecification expressing the DECLARABLE part of the
+  RAiD -> DataCite crosswalk: the constant `types` block, the `titles[]` mapping
+  with the title-type vocabulary lookup, the `dates[]` start/end concatenation
+  with a constant dateType, and the `descriptions[]` mapping with the
+  description-type vocabulary lookup. Faithful to raid-datacite-crosswalk.md.
+  Source schema: raid-core.yaml (RaidDto). Target schema: datacite.yaml (Resource).
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rtd: https://datamodel.raid.org/transform/
+
+class_derivations:
+
+  # ==== root: RAiD RaidDto -> DataCite Resource =========================
+  Resource:
+    populated_from: RaidDto
+    slot_derivations:
+
+      # types (constant). DataCite `resourceType` is a single nested object;
+      # both members are constants per DataciteTypesFactory. A constant nested
+      # object is assigned as a literal dict.
+      resourceType:
+        value:
+          value: "RAiD"
+          resourceTypeGeneral: "Project"
+
+      # Structural renames. Each points at a RAiD source slot; the per-item
+      # transform is delegated to the target-class derivation of the same name
+      # below (linkml-map recurses by target range class).
+      titles:
+        populated_from: title
+      dates:
+        populated_from: date          # RAiD single-valued -> DataCite list (coerced)
+      descriptions:
+        populated_from: description
+
+  # ==== RAiD Title -> DataCite Title ===================================
+  Title:
+    populated_from: Title
+    slot_derivations:
+      value:
+        populated_from: text
+      lang:
+        expr: "language.id"
+      # title-type vocabulary lookup (permissible value -> permissible value).
+      # populated_from walks the inlined `type` object to the `id` leaf; the
+      # leaf's source range is the enum TitleTypeIdEnum, so linkml-map runs the
+      # TitleTypeEnum enum_derivation below. The primary title (schema/5) is
+      # intentionally unmapped -> the derivation returns null -> titleType is
+      # omitted for the primary title, matching DataciteTitleFactory.
+      titleType:
+        populated_from: type.id
+
+  # ==== RAiD Date -> DataCite Date =====================================
+  Date:
+    populated_from: Date
+    slot_derivations:
+      # date = startDate, or "startDate/endDate" when endDate is present.
+      value:
+        expr: "startDate + '/' + endDate if endDate else startDate"
+      dateType:
+        value: "Other"
+
+  # ==== RAiD Description -> DataCite Description ========================
+  Description:
+    populated_from: Description
+    slot_derivations:
+      value:
+        populated_from: text
+      lang:
+        expr: "language.id"
+      # description-type vocabulary lookup (see DescriptionTypeEnum derivation).
+      descriptionType:
+        populated_from: type.id
+
+# ==== enum derivations: RAiD vocab URI -> DataCite enum value ============
+# This is how linkml-map expresses a permissible-value -> permissible-value
+# mapping. `populated_from` on the EnumDerivation names the SOURCE enum;
+# `name` is the TARGET enum. Each PermissibleValueDerivation's `name` is the
+# TARGET permissible value and its `populated_from` lists the SOURCE
+# permissible values that map to it. A source value not listed anywhere
+# yields null (the value is omitted), which is exactly the behaviour of the
+# Java factories' Map.get(...) on an unmapped key.
+enum_derivations:
+
+  # DataciteTitleFactory.TITLE_TYPE_MAP. schema/5 (primary) is intentionally
+  # absent -> titleType omitted on the primary title.
+  TitleTypeEnum:
+    populated_from: TitleTypeIdEnum
+    permissible_value_derivations:
+      AlternativeTitle:
+        populated_from:
+          - 'https://vocabulary.raid.org/title.type.schema/4'
+      Other:
+        populated_from:
+          - 'https://vocabulary.raid.org/title.type.schema/156'
+          - 'https://vocabulary.raid.org/title.type.schema/157'
+
+  # DataciteDescriptionFactory.DESCRIPTION_TYP_MAP.
+  DescriptionTypeEnum:
+    populated_from: DescriptionTypeIdEnum
+    permissible_value_derivations:
+      Abstract:
+        populated_from:
+          - 'https://vocabulary.raid.org/description.type.schema/318'
+      Methods:
+        populated_from:
+          - 'https://vocabulary.raid.org/description.type.schema/8'
+      Other:
+        populated_from:
+          - 'https://vocabulary.raid.org/description.type.schema/3'
+          - 'https://vocabulary.raid.org/description.type.schema/6'
+          - 'https://vocabulary.raid.org/description.type.schema/7'
+          - 'https://vocabulary.raid.org/description.type.schema/9'
+          - 'https://vocabulary.raid.org/description.type.schema/319'
