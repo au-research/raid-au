@@ -257,3 +257,71 @@ the `dates` start/end concatenation, and runs (exit 0) against the real
 name resolution, the organisation split, the latest-role reduce) confirmably
 cannot be expressed: `linkml-map`'s only extension hook, `@safe_function`,
 requires functions be pure and free of I/O.
+
+## Can the mapping be *done by configuring LinkML*? (the execution model)
+
+The endgame of a LinkML-driven crosswalk is to define the mapping as
+configuration that an engine executes, with no bespoke transformation code. In
+this Java-in-application architecture that endgame is **not reachable**, for
+reasons of two different kinds.
+
+### The execution boundary
+
+`linkml-map` is a Python tool; its `compile` target is Python; there is no
+in-JVM engine that can execute a `linkml-map` transformation spec at request
+time. So even the parts that *are* declaratively expressible (structure, vocab
+lookups, constants, concatenation) cannot be *executed from config* inside the
+Spring API. Java code must perform the transformation. Configuration can *inform*
+that Java code (a vocabulary crosswalk loaded as a data table), but it cannot
+*drive* it. This mirrors how the repo already uses LinkML: `raid-core.yaml` is
+never executed by the running app; it is run offline (Docker `linkml/linkml`) at
+build time to generate committed artifacts (`raid-jsonschema.json` → OpenAPI →
+Java models) that Java consumes. The DataCite crosswalk would follow the same
+build-time-artifact pattern, not a runtime engine.
+
+### Keeping the factories vs config-driven mapping
+
+Because the transform cannot execute in the JVM, and because of the imperative
+floor, the DataCite emission factories under
+`api-svc/raid-api/.../factory/datacite/` must stay. That is precisely what "the
+mapping is *not* config-driven" looks like: the transformation lives in code. The
+most configuration can do while the factories remain is supply the vocabulary
+*decisions* as a governed, single-sourced table the factories read (replacing
+the hardcoded `Map.of(...)` in the title/description/related-identifier/
+contributor factories). That is **config-informed** mapping, not
+**config-driven** mapping.
+
+### Would porting `linkml-map` to Java change the answer?
+
+No, and it is not worth attempting. Measured against the installed 0.5.3:
+
+- The transform engine you would need for `map-data` is only ~3–4k LOC
+  (`object_transformer.py`, `transformer.py`, `engine.py`, plus eval/session/
+  loaders) — the tractable part.
+- It stands on ~20k LOC of `linkml_runtime` (SchemaView, the metamodel, schema
+  and import loading, class/slot/enum/range/inlining introspection), for which
+  there is no mature Java equivalent. Re-creating that slice is the dominant cost.
+- `expr` strings are evaluated with Python semantics (`simpleeval`/`asteval`);
+  reproducing that faithfully in a JVM evaluator is a subtle, bug-prone
+  compatibility surface.
+- `linkml-map` is pre-1.0 (0.5.x) and evolving, so a port is a permanent
+  maintenance commitment tracking a moving upstream in a second language.
+
+Decisively, even a flawless port would only let the *declarable* part execute
+from config in-JVM; it still could not cross the imperative floor (live name
+resolution). So the large investment would move the codebase from "Java factories
+that read a config table" to "a Java engine that executes a config spec" — a
+near-identical end state, with the imperative adapter present in both.
+
+### Conclusion
+
+The config-driven-mapping endgame is not achievable for RAiD → DataCite in-app,
+whether the factories are kept (the mapping stays in code) or `linkml-map` is
+ported (a large, ongoing build that still cannot do name resolution). The
+realistic and worthwhile win from LinkML here is a **governed, single-sourced
+vocabulary crosswalk** — authored/validated in LinkML offline and exported to a
+data table the existing factories consume — not the elimination of the
+transformation code. If the strategic goal is strictly config-driven mapping, it
+would additionally require denormalising resolved PID names into the RAiD record
+(so emission needs no live lookup) plus a JVM transform engine, a scope far
+beyond this work.
