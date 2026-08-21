@@ -1,8 +1,13 @@
 package au.org.raid.inttest;
 
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,6 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * worker's unit tests (which mock the DB), so exercise the real advisory lock semantics
  * against the test Postgres instance with two independent JDBC connections, mirroring how
  * two application instances would each hold their own connection for the whole tick.
+ *
+ * <p>This is a DB-level test that requires a real Postgres reachable at {@code localhost:7432}
+ * (i.e. {@code ./gradlew dockerComposeUp} run locally). The black-box branch pipeline runs
+ * intTest against a deployed API with no co-located Postgres, so this test is skipped there
+ * via the assumption below rather than failing on a connection refused; the AC2 coverage it
+ * gives is still exercised in the local intTest run.
  */
 public class DataciteResyncLockIntegrationTest {
 
@@ -22,9 +33,26 @@ public class DataciteResyncLockIntegrationTest {
     // access to api-svc main classes (see reference_inttest_blackbox_classpath).
     private static final long LOCK_KEY = 0x2126_0832L;
 
-    private static final String JDBC_URL = "jdbc:postgresql://localhost:7432/raido?currentSchema=api_svc";
+    private static final String JDBC_HOST = "localhost";
+    private static final int JDBC_PORT = 7432;
+    private static final String JDBC_URL = "jdbc:postgresql://" + JDBC_HOST + ":" + JDBC_PORT + "/raido?currentSchema=api_svc";
     private static final String JDBC_USER = "postgres";
     private static final String JDBC_PASSWORD = "supersecret";
+
+    @BeforeAll
+    static void assumeLocalPostgresReachable() {
+        Assumptions.assumeTrue(isLocalPostgresReachable(),
+                "local Postgres (localhost:7432) not reachable; skipping DB-level RAID-832 integration test in black-box environment");
+    }
+
+    private static boolean isLocalPostgresReachable() {
+        try (var socket = new Socket()) {
+            socket.connect(new InetSocketAddress(JDBC_HOST, JDBC_PORT), 500);
+            return true;
+        } catch (final IOException e) {
+            return false;
+        }
+    }
 
     private static Connection newConnection() throws SQLException {
         return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
