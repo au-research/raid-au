@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Clock;
@@ -23,6 +24,7 @@ import java.util.List;
 @SpringBootApplication
 @EnableCaching
 @EnableFeignClients
+@EnableScheduling
 public class Api {
     @Bean
     public Clock clock() {
