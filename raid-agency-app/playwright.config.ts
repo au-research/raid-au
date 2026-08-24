@@ -44,6 +44,14 @@ export default defineConfig({
       name: "setup",
       testMatch: /auth\/setup\.ts/,
     },
+    {
+      name: "setup-operator",
+      testMatch: /auth\/setup-operator\.ts/,
+    },
+    {
+      name: "setup-unapproved-admin",
+      testMatch: /auth\/setup-unapproved-admin\.ts/,
+    },
 
     {
       name: "chromium",
@@ -52,6 +60,34 @@ export default defineConfig({
         storageState: "e2e/.auth/user.json",
       },
       dependencies: ["setup"],
+      // Role-specific suites run under their own project below, against
+      // their own storageState - excluded here so they don't also run
+      // against the default service-point-user session.
+      testIgnore: [/tests[\\/]operator[\\/]/, /tests[\\/]unapproved-admin[\\/]/],
+    },
+
+    // RAID-659 / RAID-480: tests that require the `operator` role to see the
+    // "Manage service points" page.
+    {
+      name: "chromium-operator",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "e2e/.auth/operator.json",
+      },
+      dependencies: ["setup-operator"],
+      testMatch: /tests[\\/]operator[\\/]/,
+    },
+
+    // RAID-608: tests that require a flat group-admin with only a raw,
+    // unapproved membership of the raid-au service point's group.
+    {
+      name: "chromium-unapproved-admin",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "e2e/.auth/unapproved-admin.json",
+      },
+      dependencies: ["setup-unapproved-admin"],
+      testMatch: /tests[\\/]unapproved-admin[\\/]/,
     },
 
     // {

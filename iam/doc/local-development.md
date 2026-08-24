@@ -4,12 +4,15 @@ When running locally with Docker Compose, the `raid` realm should be added autom
 
 ## Test Users
 
-The realm includes two test users, each belonging to different service points. Both have the `service-point-user` role necessary to mint RAiDs and the password `password`.
+The realm includes several test users. All have the password `password`.
 
-| User             | role                | Password   |
-|------------------|---------------------|------------|
-| `raid-test-user` | `service-point-user`  | `password` |
-| `raid-operator`  | `operator` | `password` |
+| User                        | role                              | Notes                                                                    |
+|-----------------------------|------------------------------------|---------------------------------------------------------------------------|
+| `raid-test-user`            | `service-point-user`              | Approved member of `raid-au`                                             |
+| `raid-operator`             | `operator`                        | No group membership                                                      |
+| `raid-au-group-admin`       | `group-admin`, `service-point-user` | Approved admin of `raid-au`                                            |
+| `raid-au-pending-user`      | (none)                             | Raw, self-joined member of `raid-au` with an outstanding access request  |
+| `raid-au-unapproved-admin`  | `group-admin`                     | Raw, self-joined member of `raid-au`, never approved for it (RAID-608)    |
 
 ## Exporting Realm Changes
 
