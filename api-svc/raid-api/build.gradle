@@ -140,6 +140,10 @@ testing{
 
         implementation libs.jackson.datatype.jsr310
 
+        // direct JDBC access for tests that need to assert/seed DB state that isn't
+        // reachable through the public API (RAID-832: advisory lock, resync flag)
+        runtimeOnly libs.postgresql
+
         compileOnly libs.lombok
         annotationProcessor libs.lombok
 

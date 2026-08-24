@@ -12,6 +12,8 @@
 //   - ORCID ID must match https://orcid.org/XXXX-XXXX-XXXX-XXXX pattern
 //   - End date must be >= start date (refine on both date and title schemas)
 //   - Embargo expiry date must match YYYY-MM-DD format
+//   - Related Object identifier must be a valid DOI (doi.org or dx.doi.org,
+//     RAID-804) or Web Archive snapshot URL
 //
 // Scenarios NOT enforced client-side (skipped with TODO):
 //   - Empty contributor array: the Zod schema uses .min(1) on the array
@@ -39,6 +41,7 @@ import { TitleSection } from "../page-objects/sections/TitleSection";
 import { DateSection } from "../page-objects/sections/DateSection";
 import { AccessSection } from "../page-objects/sections/AccessSection";
 import { ContributorSection } from "../page-objects/sections/ContributorSection";
+import { RelatedObjectSection } from "../page-objects/sections/RelatedObjectSection";
 import { validEmbargoExpiry } from "../utils/date-helpers";
 
 // Shared constants
@@ -201,6 +204,59 @@ test.describe("Validation: embargo expiry date format", () => {
       await expect(
         page.locator("text=YYYY-MM-DD").first()
       ).toBeVisible({ timeout: 5000 });
+    }
+  );
+});
+
+test.describe("Validation: Related Object DOI format (RAID-804)", () => {
+  test(
+    "shows error when a malformed dx.doi.org DOI is entered",
+    { tag: "@local" },
+    async ({ page }) => {
+      const formPage = new RaidFormPage(page);
+      const titleSection = new TitleSection(page);
+      const relatedObjectSection = new RelatedObjectSection(page);
+
+      await formPage.goto("/raids/new");
+
+      await titleSection.fillText(0, VALID_TITLE);
+
+      await relatedObjectSection.addItem();
+      // Right host, but not a well-formed DOI suffix — should still be rejected
+      await relatedObjectSection.fillId(0, "https://dx.doi.org/not-a-doi");
+
+      await formPage.save();
+
+      // The refine message from relatedObjectIdSchema
+      await expect(
+        page.locator("text=URL must be a valid DOI").first()
+      ).toBeVisible({ timeout: 5000 });
+    }
+  );
+
+  test(
+    "accepts a well-formed dx.doi.org DOI without a format error",
+    { tag: "@local" },
+    async ({ page }) => {
+      const formPage = new RaidFormPage(page);
+      const titleSection = new TitleSection(page);
+      const relatedObjectSection = new RelatedObjectSection(page);
+
+      await formPage.goto("/raids/new");
+
+      await titleSection.fillText(0, VALID_TITLE);
+
+      await relatedObjectSection.addItem();
+      await relatedObjectSection.fillId(0, "https://dx.doi.org/10.1234/xyz");
+
+      await formPage.save();
+
+      // Scope to the Related Object card: other required fields (e.g. its own
+      // Type selector, or unrelated sections) are left empty and will show
+      // their own errors — only the DOI format error is under test here.
+      await expect(
+        page.locator("#relatedObject").locator("text=URL must be a valid DOI")
+      ).toHaveCount(0);
     }
   );
 });
