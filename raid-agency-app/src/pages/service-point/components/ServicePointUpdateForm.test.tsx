@@ -28,7 +28,7 @@ vi.mock("@/services/service-points", () => ({
 const makeServicePoint = (overrides: Partial<ServicePoint> = {}): ServicePoint => ({
   id: 1,
   name: "Test Service Point",
-  identifierOwner: "https://ror.org/123",
+  identifierOwner: "https://ror.org/038sjwq14",
   adminEmail: "admin@test.com",
   techEmail: "tech@test.com",
   enabled: true,
