@@ -1,6 +1,60 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.15.0
+
+## API
+* Related objects identified by a Handle (`https://hdl.handle.net/`) are now accepted and validated.
+  The Handle is checked against the resolver before the RAiD is saved, and a corrected vocabulary
+  entry lets Handle related objects persist (PR #602).
+* Related objects identified by an RRID (a SciCrunch Research Resource Identifier) are now accepted
+  and validated against the SciCrunch resolver (PRs #603, #605).
+* Web archive (`web.archive.org`) related objects are now checked for existence against the Wayback
+  availability service, so a link to a page that was never archived is rejected when the RAiD is
+  minted rather than saved as a dead reference (PR #612).
+* DOI related objects submitted through the `dx.doi.org` proxy host are now accepted, alongside the
+  existing `doi.org` host. Both are valid DOI proxy services, and only `doi.org` was accepted before
+  (PR #613).
+* Malformed ISNI identifiers are now rejected by a local checksum check before the registry lookup,
+  so an invalid ISNI fails fast with a clear validation error rather than depending on the external
+  service (PR #614).
+* Related RAiDs are now sent to DataCite using DataCite's native `RAiD` related-identifier type
+  instead of a generic `DOI`, so downstream harvesters and other registration agencies can tell a
+  related RAiD apart from a real DOI reference. Existing DataCite records that reference another RAiD
+  are updated automatically in the background, with no manual step in any environment
+  (PRs #617, #619).
+* When an external identifier resolver (for example DOI, ROR, Handle or RRID) is temporarily
+  unavailable, minting or updating a RAiD now returns `503 Service Unavailable` instead of a
+  validation error. This lets callers tell a transient outage apart from an invalid identifier and
+  retry safely (PR #606).
+* The URI validators now apply bounded connection and read timeouts, so a slow or unreachable
+  external resolver fails quickly rather than holding the request open (PRs #591, #592).
+* ROR identifiers are now validated through a single hardened path, giving consistent behaviour
+  wherever a ROR identifier appears (PR #593).
+* Retired `application/ld+json` content negotiation on `GET /raid/{prefix}/{suffix}`. The API
+  endpoint no longer returns JSON-LD; the schema.org / JSON-LD representation remains available on
+  the static landing pages (PR #599).
+
+## IAM
+* Fixed a service point admin issue where a pending, never-approved group membership could grant
+  admin authority through the flat group-admin fallback. The fallback now requires an approved
+  membership (PR #610).
+
+## App-client UI
+* DOI related objects entered or bulk-uploaded through the `dx.doi.org` proxy host are now accepted
+  by the app's client-side validation, matching the API change so these DOIs are no longer flagged
+  before submission (PR #618).
+
+## Static Landing Pages
+* Citation text for related objects now renders as plain text, so citations containing an ampersand
+  or other special characters display correctly instead of being misinterpreted as markdown
+  (PR #611).
+
+## Data Model
+* The JSON-LD `@context` and the published schema.org documentation are now generated from the
+  canonical `researchproject` LinkML schema, keeping the structured-data context in step with the
+  reference specification (PR #598).
+
 # 2.14.2
 
 ## API
