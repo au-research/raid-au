@@ -620,6 +620,52 @@
     "notBefore" : 0,
     "groups" : [ "/raid-au" ]
   }, {
+    "id" : "7a4e6c92-1f3d-4b8a-9e2c-5d6f7081a2b3",
+    "username" : "raid-au-pending-user",
+    "emailVerified" : true,
+    "attributes" : {
+      "activeGroupId" : [ "169bd3f3-dd42-4ac0-b89a-fb49648e5eff" ]
+    },
+    "createdTimestamp" : 1755000000000,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "8b5f7d03-2049-4c9b-af3d-6e70819234c1",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1755000000000,
+      "secretData" : "{\"value\":\"P1fRNnd1gm3lMMg6WjSnKApdaZufj/DNQsnUbpCQuoNLJ+1rrL8lu3x3ovbmQNcZH0ssY2EX9RR/Mqm/naRnWQ==\",\"salt\":\"hXG/afBDexf/HE4z1Hl9dQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-raid" ],
+    "notBefore" : 0,
+    "groups" : [ "/raid-au" ]
+  }, {
+    "id" : "9c6071a4-3150-4dac-b054-7f8192a345d2",
+    "username" : "raid-au-unapproved-admin",
+    "emailVerified" : true,
+    "attributes" : {
+      "activeGroupId" : [ "169bd3f3-dd42-4ac0-b89a-fb49648e5eff" ]
+    },
+    "createdTimestamp" : 1755000000000,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "ad7182b5-4261-4ebd-c165-809243b556e3",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1755000000000,
+      "secretData" : "{\"value\":\"P1fRNnd1gm3lMMg6WjSnKApdaZufj/DNQsnUbpCQuoNLJ+1rrL8lu3x3ovbmQNcZH0ssY2EX9RR/Mqm/naRnWQ==\",\"salt\":\"hXG/afBDexf/HE4z1Hl9dQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "group-admin", "default-roles-raid" ],
+    "notBefore" : 0,
+    "groups" : [ "/raid-au" ]
+  }, {
     "id" : "c10bdf5f-80b2-49b2-806c-bc10c4dd343a",
     "username" : "raid-operator",
     "emailVerified" : true,
