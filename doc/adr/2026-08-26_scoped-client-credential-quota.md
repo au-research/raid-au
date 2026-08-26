@@ -7,6 +7,13 @@
   RAID-767 (source investigation), RAID-714 (RAID-827 was split from it),
   RAID-851 (realm brute-force protection)
 
+> Note added 2026-08-27: this ADR's Consequences refer to the broker's
+> realm-wide `manage-clients` role as a residual risk RAID-827 accepts. That
+> design was subsequently dropped. See
+> [2026-08-27_in-process-spi-credential-lifecycle.md](./2026-08-27_in-process-spi-credential-lifecycle.md).
+> The decision recorded below, to cap credentials per service point and defer
+> rate limiting, is unaffected.
+
 
 # Context
 
