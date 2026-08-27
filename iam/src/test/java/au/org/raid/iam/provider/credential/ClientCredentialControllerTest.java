@@ -16,6 +16,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.ClientManager;
+import org.keycloak.services.managers.RealmManager;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -278,6 +279,22 @@ class ClientCredentialControllerTest {
         }
 
         @Test
+        void newCredentialHasFullScopeAllowedSoItsScopedRoleReachesTheToken() {
+            // addClient() leaves fullScopeAllowed false, and while false Keycloak filters the token
+            // down to the client's explicit scope mappings, stripping the scoped usage role. The
+            // credential then authenticates with no roles at all. Caught in RAID-846 only by using
+            // a real credential end to end.
+            givenScopedAdminOf(GROUP_A);
+            final var created = stubNewClient();
+
+            try (MockedConstruction<ClientManager> ignored = mockConstruction(ClientManager.class)) {
+                controller().create(createRequest(GROUP_A, "ci"));
+            }
+
+            verify(created).setFullScopeAllowed(true);
+        }
+
+        @Test
         void newCredentialGetsServicePointGroupIdScopeAndActiveGroupIdAttribute() {
             givenScopedAdminOf(GROUP_A);
             final var created = stubNewClient();
@@ -289,6 +306,49 @@ class ClientCredentialControllerTest {
             // Without both of these the token carries no service_point_group_id claim at all.
             verify(created).addClientScope(servicePointGroupIdScope, true);
             verify(serviceAccount).setAttribute("activeGroupId", List.of(GROUP_A));
+        }
+
+        @Test
+        void clientManagerIsConstructedWithARealmManager() {
+            // ClientManager's no-arg constructor leaves its realmManager field null, and
+            // enableServiceAccount dereferences it, so `new ClientManager()` compiles but throws
+            // NullPointerException at runtime. Mocking the construction hides that, so assert the
+            // constructor argument instead. This caught a real 500 in RAID-846.
+            givenScopedAdminOf(GROUP_A);
+            stubNewClient();
+            final var constructorArgs = new ArrayList<List<?>>();
+
+            try (MockedConstruction<ClientManager> ignored = mockConstruction(ClientManager.class,
+                    (mock, ctx) -> constructorArgs.add(ctx.arguments()))) {
+                controller().create(createRequest(GROUP_A, "ci"));
+            }
+
+            assertThat(constructorArgs, hasSize(1));
+            assertThat(constructorArgs.get(0), hasSize(1));
+            assertThat(constructorArgs.get(0).get(0), instanceOf(RealmManager.class));
+        }
+
+        @Test
+        void newCredentialInheritsTheRealmsDefaultClientScopes() {
+            // addClient() is a raw model create and does not apply realm default scopes, unlike the
+            // Admin API path. Without them the client has no `roles` scope, so realm roles granted
+            // to its service account never reach realm_access.roles and the credential is silently
+            // useless. This caught a real defect in RAID-846.
+            givenScopedAdminOf(GROUP_A);
+            final var created = stubNewClient();
+            final var rolesScope = mock(ClientScopeModel.class);
+            final var basicScope = mock(ClientScopeModel.class);
+            when(realm.getDefaultClientScopesStream(true))
+                    .thenAnswer(inv -> Stream.of(rolesScope, basicScope));
+
+            try (MockedConstruction<ClientManager> ignored = mockConstruction(ClientManager.class)) {
+                controller().create(createRequest(GROUP_A, "ci"));
+            }
+
+            verify(created).addClientScope(rolesScope, true);
+            verify(created).addClientScope(basicScope, true);
+            // And still the non-default service point scope on top.
+            verify(created).addClientScope(servicePointGroupIdScope, true);
         }
 
         @Test
