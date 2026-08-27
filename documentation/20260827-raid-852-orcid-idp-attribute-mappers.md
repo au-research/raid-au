@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-27
 **JIRA:** [RAID-852](https://ardc.atlassian.net/browse/RAID-852) — ORCID login writes the ORCID iD into First Name and username
-**PR:** _pending_
+**PR:** [au-research/raid-au#628](https://github.com/au-research/raid-au/pull/628)
 
 ## Background
 
