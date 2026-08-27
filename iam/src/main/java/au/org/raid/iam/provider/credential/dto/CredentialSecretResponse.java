@@ -12,4 +12,18 @@ public record CredentialSecretResponse(
         String secret,
         String createdAt,
         String lastRotatedAt) {
+
+    /**
+     * Redacts the secret. A record's generated {@code toString} includes every component, so
+     * without this any accidental log statement or exception message mentioning this object would
+     * write the secret into the log (RAID-847).
+     */
+    @Override
+    public String toString() {
+        return "CredentialSecretResponse[clientId=" + clientId
+                + ", label=" + label
+                + ", secret=***REDACTED***"
+                + ", createdAt=" + createdAt
+                + ", lastRotatedAt=" + lastRotatedAt + "]";
+    }
 }
