@@ -7,6 +7,7 @@ import au.org.raid.iam.provider.credential.dto.CredentialSecretResponse;
 import au.org.raid.iam.provider.credential.dto.RotateCredentialRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
@@ -65,6 +66,9 @@ public class ClientCredentialController {
 
     private static final String CLIENT_ID_PREFIX = "raid-cred-";
 
+    /** Applied to every response carrying a secret value, so it is never cached anywhere. */
+    private static final String NO_STORE = "no-store";
+
     /**
      * Maximum active (non-revoked) credentials per service point. Deliberately a constant rather
      * than configuration so it is cheap to revisit, per RAID-849: rate limiting was deferred until
@@ -78,6 +82,7 @@ public class ClientCredentialController {
     private final KeycloakSession session;
     private final Cors cors;
     private final Clock clock;
+    private final CredentialAuditLogger auditLogger;
 
     public ClientCredentialController(final KeycloakSession session) {
         this(session, Clock.systemUTC());
@@ -86,10 +91,17 @@ public class ClientCredentialController {
     // Package-private seam for tests, so timestamps are deterministic without touching the system
     // clock.
     ClientCredentialController(final KeycloakSession session, final Clock clock) {
+        this(session, clock, new CredentialAuditLogger(clock));
+    }
+
+    // Package-private seam for tests, so audit output can be captured directly.
+    ClientCredentialController(final KeycloakSession session, final Clock clock,
+                              final CredentialAuditLogger auditLogger) {
         this.session = session;
         this.auth = new AppAuthManager.BearerTokenAuthenticator(session).authenticate();
         this.cors = new Cors(session, objectMapper);
         this.clock = clock;
+        this.auditLogger = auditLogger;
     }
 
     @OPTIONS
@@ -162,12 +174,14 @@ public class ClientCredentialController {
         serviceAccount.setAttribute(ACTIVE_GROUP_ID_ATTRIBUTE, List.of(groupId));
         serviceAccount.grantRole(getOrCreateScopedServicePointUserRole(realm, groupId));
 
-        // TODO:RAID-847 add Cache-Control: no-store to this response.
         final var body = new CredentialSecretResponse(
                 client.getClientId(), request.getLabel().trim(), secret, now, null);
 
+        auditLogger.record(CredentialAuditLogger.ACTION_CREATE, user, client.getClientId(), groupId);
+
         return cors.buildCorsResponse("POST",
                 Response.status(Response.Status.CREATED)
+                        .header(HttpHeaders.CACHE_CONTROL, NO_STORE)
                         .entity(objectMapper.writeValueAsString(body)));
     }
 
@@ -192,6 +206,8 @@ public class ClientCredentialController {
         final var credentials = managedCredentials(realm, groupId.trim())
                 .map(this::toResponse)
                 .toList();
+
+        auditLogger.record(CredentialAuditLogger.ACTION_LIST, user, null, groupId.trim());
 
         return cors.buildCorsResponse("GET",
                 Response.ok().entity(objectMapper.writeValueAsString(credentials)));
@@ -235,7 +251,6 @@ public class ClientCredentialController {
         final var secret = KeycloakModelUtils.generateSecret(client);
         client.setAttribute(ROTATED_AT_ATTRIBUTE, rotatedAt);
 
-        // TODO:RAID-847 add Cache-Control: no-store to this response.
         final var body = new CredentialSecretResponse(
                 client.getClientId(),
                 client.getAttribute(LABEL_ATTRIBUTE),
@@ -243,8 +258,12 @@ public class ClientCredentialController {
                 client.getAttribute(CREATED_AT_ATTRIBUTE),
                 rotatedAt);
 
+        auditLogger.record(CredentialAuditLogger.ACTION_ROTATE, user, client.getClientId(), ownerGroupId(client));
+
         return cors.buildCorsResponse("POST",
-                Response.ok().entity(objectMapper.writeValueAsString(body)));
+                Response.ok()
+                        .header(HttpHeaders.CACHE_CONTROL, NO_STORE)
+                        .entity(objectMapper.writeValueAsString(body)));
     }
 
     @OPTIONS
@@ -276,8 +295,6 @@ public class ClientCredentialController {
 
         requireAuthorisedFor(user, ownerGroupId(client));
 
-        // TODO:RAID-847 add Cache-Control: no-store, and an audit entry recording caller, clientId
-        // and timestamp - never the secret value.
         final var body = new CredentialSecretResponse(
                 client.getClientId(),
                 client.getAttribute(LABEL_ATTRIBUTE),
@@ -285,8 +302,13 @@ public class ClientCredentialController {
                 client.getAttribute(CREATED_AT_ATTRIBUTE),
                 client.getAttribute(ROTATED_AT_ATTRIBUTE));
 
+        auditLogger.record(
+                CredentialAuditLogger.ACTION_REVEAL_SECRET, user, client.getClientId(), ownerGroupId(client));
+
         return cors.buildCorsResponse("GET",
-                Response.ok().entity(objectMapper.writeValueAsString(body)));
+                Response.ok()
+                        .header(HttpHeaders.CACHE_CONTROL, NO_STORE)
+                        .entity(objectMapper.writeValueAsString(body)));
     }
 
     /**
@@ -321,6 +343,8 @@ public class ClientCredentialController {
         if (client.isEnabled()) {
             client.setEnabled(false);
         }
+
+        auditLogger.record(CredentialAuditLogger.ACTION_REVOKE, user, client.getClientId(), ownerGroupId(client));
 
         return cors.buildCorsResponse("DELETE",
                 Response.ok().entity(objectMapper.writeValueAsString(toResponse(client))));
