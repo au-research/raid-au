@@ -18,9 +18,15 @@ environment as needed.
 You need:
 
 - A user account with the **Service Point Admin** role for your service point.
-  In technical terms your account must hold the realm role
+  In technical terms your account must hold the scoped realm role
   `service-point-admin:<groupId>`, where `<groupId>` is your service point's
   Keycloak group id. Operators can manage any service point.
+
+  > The older flat `group-admin` role is **not** accepted by these endpoints,
+  > even if you are a member of the service point. You need the scoped
+  > `service-point-admin:<groupId>` role specifically. If your calls return
+  > `403` and you believe you administer the service point, this is the most
+  > likely cause; contact ARDC to have the scoped role granted.
 - Your service point's **group id**. This is the same value as the
   `service_point_group_id` claim in your own access token; the first step below
   shows how to read it.
