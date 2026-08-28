@@ -46,6 +46,10 @@ This guide explains how to configure the RAiD login page via the Keycloak admin 
    - Set **First Login Flow** to `first broker login`
    - Click **Save**
 
+> ORCID needs attribute mappers as well, otherwise the ORCID iD is written into the
+> user's **First Name** and used as their username. See
+> [orcid-identity-provider.md](orcid-identity-provider.md).
+
 ### 5. Configure Authentication Flow
 
 1. Navigate to the **Authentication** tab
