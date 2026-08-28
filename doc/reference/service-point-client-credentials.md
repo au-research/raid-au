@@ -168,11 +168,13 @@ curl -s -X POST \
 Disables the credential so it can no longer obtain a token. Revoking is safe to
 repeat, and frees a slot against the 10-credential limit.
 
+`clientId` goes in the URL query string here (a `DELETE` does not carry it in
+the body):
+
 ```bash
 curl -s -X DELETE \
-  "$IAM/realms/raid/client-credential" \
+  "$IAM/realms/raid/client-credential?clientId=$CLIENT_ID" \
   -H "Authorization: Bearer $TOKEN" \
-  --data-urlencode "clientId=$CLIENT_ID" \
   | jq .
 ```
 
