@@ -44,9 +44,24 @@ public class Cors {
         responseBuilder.header("Access-Control-Max-Age", "3600");
 
         final var response = responseBuilder.build();
-        log.debug("Returning response {}", objectMapper.writeValueAsString(response));
+        log.debug("Returning {}", debugPayload(response));
         return response;
 
+    }
+
+    /**
+     * The payload logged at debug level. Deliberately status and headers only.
+     *
+     * <p>This previously logged {@code objectMapper.writeValueAsString(response)}, and Jackson
+     * serialises {@code Response.getEntity()}, so every response body from every SPI controller was
+     * written into the application log - including the client secrets returned by the credential
+     * endpoints. It must never include the entity (RAID-847).
+     *
+     * <p>Package-private so the guarantee can be asserted directly in tests.
+     */
+    @SneakyThrows
+    String debugPayload(final Response response) {
+        return response.getStatus() + " headers=" + objectMapper.writeValueAsString(response.getStringHeaders());
     }
 
     private List<String> getAllowedOrigins() {
