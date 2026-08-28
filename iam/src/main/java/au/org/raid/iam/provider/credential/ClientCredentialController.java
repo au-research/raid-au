@@ -22,6 +22,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.ClientManager;
+import org.keycloak.services.managers.RealmManager;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -154,6 +155,13 @@ public class ClientCredentialController {
         client.setServiceAccountsEnabled(true);
         client.setStandardFlowEnabled(false);
         client.setDirectAccessGrantsEnabled(false);
+        // addClient() leaves this false, unlike the Admin API path. While it is false Keycloak
+        // filters the token down to roles present in the client's explicit scope mappings, so the
+        // scoped service-point-user role granted below is stripped and the credential authenticates
+        // with no roles at all. Safe here because this controller is the only thing that grants
+        // roles to these service accounts, and it grants exactly one scoped usage role. Matches the
+        // existing raid-dumper client.
+        client.setFullScopeAllowed(true);
         client.setAttribute(MANAGED_ATTRIBUTE, "true");
         client.setAttribute(GROUP_ID_ATTRIBUTE, groupId);
         client.setAttribute(LABEL_ATTRIBUTE, request.getLabel().trim());
@@ -161,9 +169,12 @@ public class ClientCredentialController {
 
         final var secret = KeycloakModelUtils.generateSecret(client);
 
-        attachServicePointGroupIdScope(realm, client);
+        attachClientScopes(realm, client);
 
-        new ClientManager().enableServiceAccount(client);
+        // Must use the RealmManager constructor. ClientManager's no-arg constructor leaves its
+        // realmManager field null, and enableServiceAccount dereferences it, so the no-arg form
+        // fails at runtime with an NPE even though it compiles.
+        new ClientManager(new RealmManager(session)).enableServiceAccount(client);
         final var serviceAccount = session.users().getServiceAccount(client);
         if (serviceAccount == null) {
             // Fail closed rather than hand back a credential that cannot identify a service point.
@@ -430,15 +441,37 @@ public class ClientCredentialController {
                 client.isEnabled());
     }
 
-    private void attachServicePointGroupIdScope(final RealmModel realm, final ClientModel client) {
-        final var scope = KeycloakModelUtils.getClientScopeByName(realm, SERVICE_POINT_GROUP_ID_CLIENT_SCOPE);
-        if (scope == null) {
-            // Fail closed. Without this scope the credential authenticates but its token carries no
-            // service_point_group_id claim, so it would silently have no service point.
+    /**
+     * Attaches the client scopes a credential needs for its tokens to be usable.
+     *
+     * <p>Two distinct problems, both of which produce a credential that authenticates successfully
+     * while being silently useless:
+     *
+     * <ol>
+     *   <li>{@code session.clients().addClient(...)} is a raw model-layer create and does
+     *       <em>not</em> apply the realm's default client scopes, unlike the Admin API path. Without
+     *       them the client has no {@code roles} scope, so realm roles granted to its service
+     *       account never appear in {@code realm_access.roles} and the API sees an unauthorised
+     *       caller.
+     *   <li>{@code service_point_group_id} is not a realm default scope at all (only the
+     *       {@code raid-api} client carries it), so it must be attached explicitly or the token
+     *       identifies no service point.
+     * </ol>
+     */
+    private void attachClientScopes(final RealmModel realm, final ClientModel client) {
+        // Materialise before mutating: addClientScope writes to the same underlying data the stream
+        // is reading.
+        realm.getDefaultClientScopesStream(true).toList()
+                .forEach(scope -> client.addClientScope(scope, true));
+
+        final var servicePointScope =
+                KeycloakModelUtils.getClientScopeByName(realm, SERVICE_POINT_GROUP_ID_CLIENT_SCOPE);
+        if (servicePointScope == null) {
+            // Fail closed rather than issue a credential with no service point.
             throw new InternalServerErrorException(
                     "Required client scope '" + SERVICE_POINT_GROUP_ID_CLIENT_SCOPE + "' is missing from the realm");
         }
-        client.addClientScope(scope, true);
+        client.addClientScope(servicePointScope, true);
     }
 
     /**

@@ -90,4 +90,31 @@ public interface KeycloakApi {
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/realms/raid/group/delete")
     ResponseEntity<java.util.Map<String, String>> deleteGroup(@RequestParam final String groupId);
+
+    // RAID-846/848: scoped client credential lifecycle. Authorisation requires the scoped
+    // "service-point-admin:<groupId>" role, or the operator role via a uniform short-circuit; the
+    // flat group-admin role is deliberately NOT honoured here.
+    @RequestMapping(method = RequestMethod.POST, value = "/realms/raid/client-credential")
+    ResponseEntity<CredentialSecretResponse> createClientCredential(@RequestBody final CreateCredentialRequest request);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/realms/raid/client-credential")
+    ResponseEntity<List<CredentialSummary>> listClientCredentials(@RequestParam final String groupId);
+
+    @RequestMapping(method = RequestMethod.POST, value = "/realms/raid/client-credential/rotate")
+    ResponseEntity<CredentialSecretResponse> rotateClientCredential(@RequestBody final RotateCredentialRequest request);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/realms/raid/client-credential/secret")
+    ResponseEntity<CredentialSecretResponse> getClientCredentialSecret(@RequestParam final String clientId);
+
+    @RequestMapping(method = RequestMethod.DELETE, value = "/realms/raid/client-credential")
+    ResponseEntity<CredentialSummary> revokeClientCredential(@RequestParam final String clientId);
+
+    // RAID-848: role-grant assertions must be verified via a direct Keycloak Admin API query rather
+    // than inferred from the SPI's own responses. Note the /admin/realms/raid/clients endpoints are
+    // NOT usable from these tests: integration-test-client's service account holds only
+    // realm-management [manage-users, view-realm], so anything needing view-clients returns 403.
+    // Reach a credential's service account by username instead ("service-account-<clientId>") via
+    // findUserByUsername above, which manage-users does cover.
+    @GetMapping(path = "/admin/realms/raid/users/{userId}/role-mappings/realm")
+    ResponseEntity<List<KeycloakRole>> getRealmRoleMappings(@PathVariable final String userId);
 }
