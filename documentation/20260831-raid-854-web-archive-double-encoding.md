@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-31
 **JIRA:** [RAID-854](https://ardc.atlassian.net/browse/RAID-854) (Bug, epic [RAID-789](https://ardc.atlassian.net/browse/RAID-789))
-**PR:** https://github.com/au-research/raid-au/pull/634
+**PR:** https://github.com/au-research/raid-au/pull/635
 **Source:** HELP-3170, reported by Aline Andrade (UWA, NESP Resilient Landscapes Hub); reproduced on demo by Matthias 2026-08-27
 
 ## What was wrong
