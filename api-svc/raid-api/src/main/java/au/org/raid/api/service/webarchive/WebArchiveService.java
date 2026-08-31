@@ -11,6 +11,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -111,9 +112,20 @@ public class WebArchiveService implements UriValidator {
         }
     }
 
-    private String buildAvailabilityUrl(final String originalUrl, final String timestamp) {
+    /**
+     * Builds the availability request as a {@link URI} rather than a String (RAID-854).
+     * <p>
+     * The archived url has to be percent-encoded to survive as a single query parameter value,
+     * but {@code RestTemplate}'s String overloads treat their argument as a URI <em>template</em>
+     * and encode it again, turning {@code %3A} into {@code %253A}. The Wayback availability API
+     * then sees a url it has no snapshot of and answers 200 with an empty
+     * {@code archived_snapshots}, which this validator reported as "uri not found" for every
+     * genuinely archived page. Handing {@code RestTemplate} a {@code URI} skips template
+     * expansion and sends the encoding built here verbatim.
+     */
+    private URI buildAvailabilityUrl(final String originalUrl, final String timestamp) {
         final var encodedUrl = URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-        return "%s?url=%s&timestamp=%s".formatted(availabilityUrl, encodedUrl, timestamp);
+        return URI.create("%s?url=%s&timestamp=%s".formatted(availabilityUrl, encodedUrl, timestamp));
     }
 
     private boolean snapshotExists(final JsonNode body) {
