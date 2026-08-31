@@ -4,6 +4,27 @@
 /* Import Figtree font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+/* ============================================
+   Design tokens
+   Seeded from this theme's own existing default
+   colours - not a recolour. ardc-branding overrides
+   these same custom properties to its own palette.
+   ============================================ */
+:root {
+    --brand-primary: rgb(65, 131, 206);
+    --brand-primary-hover: #357ae8;
+    --brand-primary-active: rgb(45, 91, 144);
+    --focus-ring: rgba(65, 131, 206, 0.35);
+    --surface-tint: #c6d9f0;
+    --surface-white: #ffffff;
+    --text-heading: #1e293b;
+    --text-body: #475569;
+    --text-muted: #64748b;
+    --border-default: #e2e8f0;
+    --radius-btn: 4px;
+    --radius-card: 8px;
+}
+
 /* Reset and Base */
 * {
     margin: 0;
@@ -13,7 +34,8 @@
 
 body {
     font-family: 'Figtree', sans-serif;
-    background: #c6d9f0!important;
+    font-size: 1rem;
+    background: var(--surface-tint) !important;
     font-weight: 400;
     min-height: 100vh;
     padding: 0;
@@ -58,234 +80,226 @@ body {
     color: #3b82f6;
 }
 
-/* Page Container */
+/* ============================================
+   Page layout
+   ============================================ */
 .page-container {
-    padding-top: 80px;
+    padding-top: 120px;
     padding-bottom: 2rem;
     min-height: 100vh;
 }
 
 .content-wrapper {
-    max-width: 900px;
     margin: 0 auto;
     padding-left: 24px;
     padding-right: 24px;
 }
 
-/* RAiD Info Card */
-.raid-info-card {
-    background: white;
-    border-radius: 4px;
-    padding: 16px;
-    margin-bottom: 1.2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* ============================================
+   Sign-in card
+   ============================================ */
+.signin-card {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--surface-white);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-card);
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.06);
+    padding: 3rem 3.5rem 2.5rem;
 }
 
-.raid-title {
-    margin: 0px;
+.signin-card__logo {
+    height: 100px;
+    width: auto;
+    margin-bottom: 1.5rem;
+}
+
+.signin-card__title {
     font-family: Figtree, sans-serif;
-    font-weight: 400;
-    font-size: 1.5rem;
-    line-height: 1.334;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.pb-0 {
-    padding-bottom: 0;
-}
-
-.pb-1 {
-    padding-bottom: 1.2rem;
-}
-
-.pt-1 {
-    padding-top: 1.2rem;
-}
-
-.demo-badge {
-    display: inline-block;
-    background: #dc2626;
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    border-radius: 16px;
-}
-
-.raid-description {
-    font-size: 0.875rem;
-    color: #475569;
-    line-height: 1.43;
+    font-weight: 700;
+    font-size: 1.75rem;
+    line-height: 1.286;
+    color: var(--text-heading);
     margin-bottom: 0.75rem;
+}
+
+.signin-card__text {
     font-family: Figtree, sans-serif;
-}
-
-.raid-link {
-    color: #3b82f6;
-    text-decoration: none;
-}
-
-.raid-link:hover {
-    text-decoration: underline;
-}
-
-.raid-links {
-    display: flex;
-    gap: 2rem;
-    margin-top: 0;
-    padding-top: 0;
-    font-size: 0.8125rem;
-}
-
-.raid-footer-link {
-    color: #3b82f6;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.raid-footer-link:hover {
-    text-decoration: underline;
-}
-
-/* Login Card */
-.login-card {
-    background: white;
-    border-radius: 4px;
-    padding: 1.2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
-
-.help-icon-wrapper {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-}
-
-.help-icon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.help-icon:hover {
-    border-color: #3b82f6;
-    color: #3b82f6;
-}
-
-.login-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
-}
-
-.login-subtitle {
-    font-size: 0.95rem;
-    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-body);
     margin-bottom: 2rem;
 }
 
 /* Identity Provider Buttons */
 .idp-buttons {
     display: flex;
-    gap: 1rem;
-    justify-content: center;
-    a:hover {
-        color: #fff;
-        text-decoration: none
-    }
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .idp-button {
-    display: inline-flex;
-    -webkit-box-align: center;
+    display: flex;
     align-items: center;
-    -webkit-box-pack: center;
-    justify-content: center;
-    position: relative;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    gap: 0.875rem;
+    width: 100%;
+    min-height: 52px;
+    background: var(--surface-white);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-btn);
+    padding: 0.5rem 1rem;
     cursor: pointer;
     user-select: none;
-    vertical-align: middle;
-    appearance: none;
-    font-family: Figtree, sans-serif;
-    font-weight: 500;
-    font-size: 0.875rem;
-    line-height: 1.75;
-    text-transform: uppercase;
-    min-width: 64px;
-    color: rgb(255, 255, 255);
-    background-color: rgb(65, 131, 206);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
-    outline: 0px;
-    border-width: 0px;
-    border-style: initial;
-    border-color: initial;
-    border-image: initial;
-    margin: 0px;
     text-decoration: none;
-    padding: 6px 16px;
-    border-radius: 4px;
-    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1), color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color 150ms ease, background-color 150ms ease;
 }
 
 .idp-button:hover {
-    background: #357ae8;
+    border-color: var(--brand-primary);
+    background: var(--focus-ring);
+    text-decoration: none;
+}
+
+.idp-button:hover .idp-button__chevron {
+    transform: translateX(3px);
+}
+
+.idp-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    text-decoration: none;
 }
 
 .idp-icon {
-    width: 32px;
-    height: 32px;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 6px;
+    overflow: hidden;
 }
 
 .idp-icon svg {
-    width: 20px;
-    height: 20px;
-    fill: #fff;
+    width: 18px;
+    height: 18px;
 }
 
-.idp-text {
-    font-size: 0.875rem;
+/* Provider-specific icon tiles - these are each identity provider's
+   own brand colour, not ARDC branding */
+.idp-aaf .idp-icon,
+.idp-aaf-saml .idp-icon {
+    background: #29347b;
+    color: #fff;
+}
+
+.idp-orcid .idp-icon {
+    background: transparent;
+}
+
+.idp-orcid .idp-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.idp-google .idp-icon {
+    background: var(--surface-white);
+    border: 1px solid var(--border-default);
+}
+
+.idp-google .idp-icon svg {
+    fill: #4285f4;
+}
+
+.idp-button__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1;
+    text-align: left;
+}
+
+.idp-button__label {
+    font-family: Figtree, sans-serif;
+    font-size: 1rem;
+    line-height: 1.25;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--text-heading);
 }
 
-/* Specific Provider Colors */
-
-.idp-google:hover, .idp-aaf:hover, .idp-oidc:hover, .idp-orcid:hover, .idp-aaf-saml:hover {
-    text-decoration: none;
-    background-color: rgb(45, 91, 144);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
+.idp-button__helper {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    color: var(--text-muted);
 }
 
-.idp-aaf, .idp-orcid, .idp-oidc, .idp-google, .idp-aaf-saml {
-    background: rgb(65, 131, 206);
+.idp-button__chevron {
+    flex-shrink: 0;
+    color: var(--brand-primary);
+    transition: transform 150ms ease;
+}
+
+/* Sign-in help disclosure */
+.signin-help-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 1.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--brand-primary);
+    text-decoration: underline;
+    font-family: Figtree, sans-serif;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.signin-help-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    border-radius: 2px;
+}
+
+.signin-help-toggle__chevron {
+    transition: transform 150ms ease;
+}
+
+.signin-help-toggle[aria-expanded="true"] .signin-help-toggle__chevron {
+    transform: rotate(180deg);
+}
+
+.signin-help-panel {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-body);
+    line-height: 1.5;
+}
+
+/* Footnote */
+.signin-footnote {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-default);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+}
+
+.signin-footnote a {
+    color: var(--brand-primary);
 }
 
 /* Alert Messages */
 .alert {
+    width: 100%;
     padding: 1rem;
     border-radius: 6px;
     margin-bottom: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 .alert-error {
@@ -312,30 +326,40 @@ body {
     color: #1e40af;
 }
 
-/* Responsive Design */
+/* ============================================
+   Responsive
+   ============================================ */
 @media (max-width: 768px) {
-    .raid-info-card,
-    .login-card {
-        padding: 1.5rem;
+    .signin-card {
+        padding: 2rem 1.75rem;
     }
 
-    .raid-title {
-        font-size: 1.25rem;
+    .signin-card__title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .content-wrapper {
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
     }
 
-    .idp-buttons {
-        flex-direction: column;
+    .signin-card {
+        max-width: 100%;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 2rem 1.25rem 3rem;
     }
 
     .idp-button {
-        max-width: 100%;
-        flex-direction: row;
-        justify-content: flex-start;
-        padding: 1rem 1.5rem;
+        min-height: 56px;
     }
 
-    .raid-links {
-        flex-direction: column;
-        gap: 0.75rem;
+    .idp-button__helper,
+    .idp-button__chevron {
+        display: none;
     }
 }

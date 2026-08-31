@@ -1,46 +1,33 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=false displayMessage=!messagesPerField.existsError('username','password'); section>
     <#if section = "header">
-        <!-- Header card moved outside to template.ftl for navigation -->
+        <!-- Header rendered in template.ftl -->
 
     <#elseif section = "form">
-        <!-- RAiD Info Card -->
-        <div class="raid-info-card">
-            <p class="raid-title pb-1">
-                ${msg("welcomeTitle")?no_esc}
-                <span class="demo-badge">${msg("badge")?no_esc}</span>
-            </p>
-            <p class="raid-description pb-1 pt-1">
-                ${msg("welcomeText")?no_esc}
-            </p>
-            <div class="raid-links">
-                ${msg("privacyPolicy")?no_esc}
-                ${msg("servicePolicy")?no_esc}
-            </div>
-        </div>
 
-        <!-- Login Card -->
-        <div class="login-card">
-            <p class="raid-title pb-0">${msg("signinTitle")}</h2>
-            <p class="raid-description pb-1">${msg("signinText")}</p>
+        <!-- ==================== SIGN-IN CARD ==================== -->
+        <div class="signin-card">
+            <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="signin-card__logo" alt="RAiD - Research Activity Identifier">
+            <h1 class="signin-card__title">${msg("signinTitle")}</h1>
+            <p class="signin-card__text">${msg("signinText")}</p>
+
             <#if social.providers??>
-                <div class="idp-buttons pt-0">
+                <div class="idp-buttons">
                     <#list social.providers as p>
                         <a href="${p.loginUrl}"
                            class="idp-button idp-${p.alias}"
-                           id="social-${p.alias}">
+                           id="social-${p.alias}"
+                           data-idp-alias="${p.alias}"
+                           data-loading-title="<#if p.alias == 'orcid'>${msg('idp.orcid.loadingTitle')}<#elseif p.alias == 'google'>${msg('idp.google.loadingTitle')}<#else>${msg('idp.aaf.loadingTitle')}</#if>"
+                           data-loading-text="<#if p.alias == 'orcid'>${msg('idp.orcid.loadingText')}<#elseif p.alias == 'google'>${msg('idp.google.loadingText')}<#else>${msg('idp.aaf.loadingText')}</#if>">
                             <span class="idp-icon">
                                 <#if p.alias == "google">
-                                    <svg class=""
-                                        focusable="false"
-                                        aria-hidden="true"
-                                        viewBox="0 0 24 24"
-                                        data-testid="GoogleIcon">
-                                        <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,
-                                            0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,
-                                            1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,
-                                            12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z">
-                                        </path></svg>
+                                    <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                                        <path fill="#4285F4" d="M17.64 9.2045c0-.6381-.0573-1.2518-.1636-1.8409H9v3.4814h4.8436c-.2086 1.125-.8427 2.0782-1.7959 2.7164v2.2581h2.9087c1.7018-1.5668 2.6836-3.874 2.6836-6.615z"/>
+                                        <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8059 5.9564-2.1805l-2.9087-2.2581c-.8059.54-1.8368.8591-3.0477.8591-2.3441 0-4.3282-1.5832-5.0359-3.7104H.9573v2.3318C2.4382 15.9832 5.4818 18 9 18z"/>
+                                        <path fill="#FBBC05" d="M3.9641 10.71c-.18-.54-.2827-1.1168-.2827-1.71s.1027-1.17.2827-1.71V4.9582H.9573C.3477 6.1732 0 7.5477 0 9s.3477 2.8268.9573 4.0418L3.9641 10.71z"/>
+                                        <path fill="#EA4335" d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4632.8918 11.4259 0 9 0 5.4818 0 2.4382 2.0168.9573 4.9582L3.9641 7.29C4.6718 5.1627 6.6559 3.5795 9 3.5795z"/>
+                                    </svg>
                                 <#elseif p.alias == "aaf">
                                     <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv"
                                          focusable="false"
@@ -49,32 +36,31 @@
                                          <path fill="currentColor"
                                              d="M380.37 28.839l-27.24 100.215-64-48 17.405-34.46-83.863 8.079-13.541
                                              42.38-35.512-25.482-67.16 85.62-83.008 48.593 34.81 156.752 38.87 6.518
-                                              112-64 74.38 52.082 21.62-28.094 32 72.012L424 415.452l64.549-126.398-6.014-64.
-                                              703-65.404-79.297-36.762-116.215zm-14.75 411.238l15.099 43.084 20.412-2.107
-                                              11.435-35.864-46.947-5.113z"
-                                         >
-                                          </path>
+                                              112-64 74.38 52.082 21.62-28.094 32 72.012L424 415.452l64.549-126.398-6.014-64.703-65.404-79.297-36.762-116.215z"
+                                         />
+                                         <path fill="currentColor"
+                                             d="M358 442 l-6 10 -12 14 -4 16 4 14 14 10 22 2 18-6 10-14 4-18 -8-16 -16-10 -26-2z"
+                                         />
                                     </svg>
                                 <#elseif p.alias == "aaf-saml">
-                                    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv "
+                                    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv"
                                          focusable="false"
                                          aria-hidden="true"
                                          viewBox="0 0 512 512">
                                          <path fill="currentColor"
                                              d="M380.37 28.839l-27.24 100.215-64-48 17.405-34.46-83.863 8.079-13.541
                                              42.38-35.512-25.482-67.16 85.62-83.008 48.593 34.81 156.752 38.87 6.518
-                                              112-64 74.38 52.082 21.62-28.094 32 72.012L424 415.452l64.549-126.398-6.014-64.
-                                              703-65.404-79.297-36.762-116.215zm-14.75 411.238l15.099 43.084 20.412-2.107
-                                              11.435-35.864-46.947-5.113z"
-                                         >
-                                          </path>
+                                              112-64 74.38 52.082 21.62-28.094 32 72.012L424 415.452l64.549-126.398-6.014-64.703-65.404-79.297-36.762-116.215z"
+                                         />
+                                         <path fill="currentColor"
+                                             d="M358 442 l-6 10 -12 14 -4 16 4 14 14 10 22 2 18-6 10-14 4-18 -8-16 -16-10 -26-2z"
+                                         />
                                     </svg>
                                 <#elseif p.alias == "orcid">
-                                    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv"
-                                        focusable="false" aria-hidden="true" viewBox="0 0 256 256">
-                                        <path d="M256,128c0,70.7-57.3,128-128,128C57.3,256,0,198.7,0,128C0,57.3,57.3,0,128,0C198.7,0,256,57.3,256,128z">
+                                    <svg focusable="false" aria-hidden="true" viewBox="0 0 256 256">
+                                        <path fill="#A6CE39" d="M256,128c0,70.7-57.3,128-128,128C57.3,256,0,198.7,0,128C0,57.3,57.3,0,128,0C198.7,0,256,57.3,256,128z">
                                         </path>
-                                        <g fill="#666">
+                                        <g fill="#fff">
                                         <path class="icon" d="M86.3,186.2H70.9V79.1h15.4v107.1z">
                                         </path>
                                         <path class="icon"
@@ -86,11 +72,35 @@
                                     </svg>
                                 </#if>
                             </span>
-                            <span class="idp-text">${p.displayName!}</span>
+                            <span class="idp-button__body">
+                                <span class="idp-button__label">${p.displayName!}</span>
+                                <span class="idp-button__helper">
+                                    <#if p.alias == "orcid">${msg('idp.orcid.helperText')}<#elseif p.alias == "google">${msg('idp.google.helperText')}<#else>${msg('idp.aaf.helperText')}</#if>
+                                </span>
+                            </span>
+                            <svg class="idp-button__chevron" aria-hidden="true" viewBox="0 0 12 12" width="12" height="12" fill="none">
+                                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </a>
                     </#list>
                 </div>
             </#if>
+
+            <button type="button" class="signin-help-toggle" aria-expanded="false" aria-controls="signin-help-panel">
+                ${msg('signinHelpToggle')}
+                <svg class="signin-help-toggle__chevron" aria-hidden="true" viewBox="0 0 12 12" width="12" height="12" fill="none">
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div id="signin-help-panel" class="signin-help-panel" hidden>
+                ${msg('signinHelpText')?no_esc}
+            </div>
+
+            <div class="signin-footnote">
+                <p>By signing in you agree to the ${msg("servicePolicy")?no_esc} and ${msg("privacyPolicy")?no_esc}.</p>
+            </div>
         </div>
+
     </#if>
+
 </@layout.registrationLayout>
