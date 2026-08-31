@@ -275,12 +275,12 @@ class WebArchiveServiceTest {
         final var requestUrl = captor.getValue().toString();
 
         assertThat(requestUrl, is(
-                "https://archive.org/wayback/available?url=https%3A%2F%2Fexample.com%2Fpath%3Fa%3Db%26c%3Dd&timestamp=20220101000000"
+                "https://archive.org/wayback/available?url=https%3A%2F%2Fexample.com%2Fpath%3Fa%3Db%26c%3Dd"
         ));
 
         // the reserved characters from the original url must not survive unescaped into the
-        // url param's value - only the "?timestamp=" separator we control is allowed through.
-        final var urlParamValue = requestUrl.substring(requestUrl.indexOf("url=") + 4, requestUrl.indexOf("&timestamp="));
+        // url param's value, or they would be read as further query parameters.
+        final var urlParamValue = requestUrl.substring(requestUrl.indexOf("url=") + 4);
         assertThat(urlParamValue, not(containsString("?")));
         assertThat(urlParamValue, not(containsString("&")));
         assertThat(urlParamValue, not(containsString("=")));
@@ -294,9 +294,34 @@ class WebArchiveServiceTest {
         final var service = new WebArchiveService(realRestTemplate, clock, AVAILABILITY_URL);
 
         server.expect(requestTo(
-                        "https://archive.org/wayback/available?url=https%3A%2F%2Fhealthycountryai.org%2Ffiles%2FDigitalWomenRangersProgram.pdf&timestamp=20260827054756"))
+                        "https://archive.org/wayback/available?url=https%3A%2F%2Fhealthycountryai.org%2Ffiles%2FDigitalWomenRangersProgram.pdf"))
                 .andRespond(withSuccess(
                         "{\"archived_snapshots\":{\"closest\":{\"available\":true,\"status\":\"200\"}}}",
+                        MediaType.APPLICATION_JSON));
+
+        final var failures = service.validate(
+                "https://web.archive.org/web/20260827054756/https://healthycountryai.org/files/DigitalWomenRangersProgram.pdf",
+                FIELD_ID);
+
+        server.verify();
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("RAID-854: the availability request carries no timestamp parameter")
+    void availabilityRequestSendsNoTimestamp() {
+        final var realRestTemplate = new RestTemplate();
+        final var server = MockRestServiceServer.bindTo(realRestTemplate).build();
+        final var service = new WebArchiveService(realRestTemplate, clock, AVAILABILITY_URL);
+
+        // The reported capture (HELP-3170) is a warc/revisit record with no status code of its
+        // own. Asking the availability API for that exact timestamp returns an empty
+        // archived_snapshots even though the page is in the archive, so the timestamp must not
+        // be sent - the untimestamped query returns the closest real capture instead.
+        server.expect(requestTo(
+                        "https://archive.org/wayback/available?url=https%3A%2F%2Fhealthycountryai.org%2Ffiles%2FDigitalWomenRangersProgram.pdf"))
+                .andRespond(withSuccess(
+                        "{\"archived_snapshots\":{\"closest\":{\"available\":true,\"status\":\"200\",\"timestamp\":\"20250330052536\"}}}",
                         MediaType.APPLICATION_JSON));
 
         final var failures = service.validate(

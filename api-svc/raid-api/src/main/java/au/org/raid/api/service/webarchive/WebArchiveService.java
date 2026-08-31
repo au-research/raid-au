@@ -81,7 +81,7 @@ public class WebArchiveService implements UriValidator {
         }
 
         final var originalUrl = extractOriginalUrl(uri);
-        final var requestUrl = buildAvailabilityUrl(originalUrl, timestamp);
+        final var requestUrl = buildAvailabilityUrl(originalUrl);
 
         try {
             final var response = restTemplate.exchange(requestUrl, HttpMethod.GET, HttpEntity.EMPTY, JsonNode.class);
@@ -122,10 +122,22 @@ public class WebArchiveService implements UriValidator {
      * {@code archived_snapshots}, which this validator reported as "uri not found" for every
      * genuinely archived page. Handing {@code RestTemplate} a {@code URI} skips template
      * expansion and sends the encoding built here verbatim.
+     * <p>
+     * No {@code timestamp} parameter is sent (RAID-854). The question this validator asks is
+     * "is this page in the archive at all", not "is there a capture at exactly this instant" -
+     * it already accepts whatever snapshot the API calls {@code closest}, however far away, and
+     * the capture timestamp's plausibility is checked locally in
+     * {@link #checkPlausibleYear}. Passing the timestamp only narrowed the lookup, and it
+     * narrowed it wrongly: when the requested timestamp lands on a {@code warc/revisit} record
+     * (a de-duplication pointer to an identical earlier capture, carrying no status code of its
+     * own) the API answers 200 with an empty {@code archived_snapshots} - reporting "not found"
+     * for a page it demonstrably holds. That is exactly the case in HELP-3170: the CDX index
+     * lists the reported capture as {@code warc/revisit} with statuscode {@code -}, the
+     * timestamped query returns nothing, and the untimestamped query returns a valid snapshot.
      */
-    private URI buildAvailabilityUrl(final String originalUrl, final String timestamp) {
+    private URI buildAvailabilityUrl(final String originalUrl) {
         final var encodedUrl = URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-        return URI.create("%s?url=%s&timestamp=%s".formatted(availabilityUrl, encodedUrl, timestamp));
+        return URI.create("%s?url=%s".formatted(availabilityUrl, encodedUrl));
     }
 
     private boolean snapshotExists(final JsonNode body) {
