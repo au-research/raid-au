@@ -9,59 +9,97 @@
 // point and flags just that row via `groupIdError`, which
 // ServicePointsTable/GroupIdCell renders as an "Group ID is invalid" icon.
 //
-// This test targets the seeded "raido" service point (group_id
-// 169bd3f3-dd42-4ac0-b89a-fb49648e5eff - see
-// api-svc/db/src/main/resources/db/env/dev/V32.1__update_service_point_repository.sql)
-// and mocks only that group's Keycloak lookup to fail, leaving every other
-// service point's lookup untouched, to prove the failure is now isolated.
+// The test breaks exactly one service point's group lookup and leaves every
+// other one untouched, to prove the failure is now isolated to its own row.
+//
+// Which service point that is, and which group id to break, are discovered
+// from the running environment rather than hardcoded (RAID-856). The pairing
+// this test used to assume - the "raido" service point carrying group
+// 169bd3f3... - is created by db/env/dev/V32.1__update_service_point_repository.sql,
+// which only local dev applies. Branch and test environments run
+// db/migration,db/env/test, where "raido" has no group at all and the group
+// belongs to a "RAiD AU (branch-...)" service point created at deploy time,
+// so the hardcoded version could only ever pass locally.
 //
 // Runs against the "operator" role (chromium-operator project) since the
 // operator table is only rendered for users with the `operator` realm role.
 
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const RAID_AU_GROUP_ID = "169bd3f3-dd42-4ac0-b89a-fb49648e5eff";
+/** Rows whose group resolved cleanly - the only ones whose lookup is worth breaking. */
+function rowsWithResolvedGroup(page: Page): Locator {
+  return page.locator('[role="row"][data-id]').filter({
+    has: page.locator(
+      '[data-field="groupId"] [data-testid="CheckCircleOutlineIcon"]'
+    ),
+  });
+}
 
 test.describe("Service points: invalid group ID handling", () => {
   test(
     "shows a graceful per-row error instead of breaking the whole table",
     { tag: "@local" },
     async ({ page }) => {
+      await page.goto("/service-points");
+      await expect(page.getByRole("grid")).toBeVisible({ timeout: 15000 });
+
+      const resolved = rowsWithResolvedGroup(page);
+      const resolvedCount = await resolved.count();
+
+      // Isolation is only observable with a second, unaffected row to compare
+      // against, so this needs two service points with working groups.
+      test.skip(
+        resolvedCount < 2,
+        `needs two service points with resolvable groups, found ${resolvedCount}`
+      );
+
+      const affectedId = await resolved.nth(0).getAttribute("data-id");
+      const controlId = await resolved.nth(1).getAttribute("data-id");
+
+      // A valid group cell's tooltip is the group id itself, so the environment
+      // tells us which group to break.
+      await resolved
+        .nth(0)
+        .locator('[data-field="groupId"] [data-testid="CheckCircleOutlineIcon"]')
+        .hover();
+      const tooltip = page.getByRole("tooltip");
+      await expect(tooltip).toBeVisible();
+      const targetGroupId = (await tooltip.textContent())?.trim();
+      expect(targetGroupId, "expected the valid group cell to expose its group id")
+        .toBeTruthy();
+
       await page.route(
         (url) =>
           url.pathname.endsWith("/group") &&
-          url.searchParams.get("groupId") === RAID_AU_GROUP_ID,
+          url.searchParams.get("groupId") === targetGroupId,
         (route) => route.fulfill({ status: 404, body: "Group not found" })
       );
 
-      await page.goto("/service-points");
-
-      const grid = page.getByRole("grid");
-      await expect(grid).toBeVisible({ timeout: 15000 });
+      await page.reload();
+      await expect(page.getByRole("grid")).toBeVisible({ timeout: 15000 });
 
       // The whole view must not have fallen back to the generic error state.
       await expect(
         page.getByText("Service point could not be fetched")
       ).toHaveCount(0);
 
-      const affectedRow = page.getByRole("row").filter({ hasText: "raido" });
-      await expect(affectedRow).toBeVisible();
-      await expect(
-        affectedRow.locator('[data-field="groupId"] [data-testid="ErrorOutlineIcon"]')
-      ).toBeVisible();
+      const affectedRow = page.locator(`[role="row"][data-id="${affectedId}"]`);
+      const affectedIcon = affectedRow.locator(
+        '[data-field="groupId"] [data-testid="ErrorOutlineIcon"]'
+      );
+      await expect(affectedIcon).toBeVisible();
 
-      await affectedRow
-        .locator('[data-field="groupId"] [data-testid="ErrorOutlineIcon"]')
-        .hover();
+      await affectedIcon.hover();
       await expect(page.getByRole("tooltip")).toHaveText("Group ID is invalid");
 
-      // Other, unaffected service points still render normally.
-      const uqRow = page
-        .getByRole("row")
-        .filter({ hasText: "RAiD AU Test Registry 2" });
-      await expect(uqRow).toBeVisible();
+      // The other service point, whose group lookup was left alone, still
+      // renders normally - the failure did not spread.
+      const controlRow = page.locator(`[role="row"][data-id="${controlId}"]`);
+      await expect(controlRow).toBeVisible();
       await expect(
-        uqRow.locator('[data-field="groupId"] [data-testid="CheckCircleOutlineIcon"]')
+        controlRow.locator(
+          '[data-field="groupId"] [data-testid="CheckCircleOutlineIcon"]'
+        )
       ).toBeVisible();
     }
   );
