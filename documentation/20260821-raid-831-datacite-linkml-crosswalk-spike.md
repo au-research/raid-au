@@ -46,6 +46,30 @@ Two design artifacts were added. No runtime behaviour changed.
 - DataCite 4.7 adds `RAiD` as a native `relatedIdentifierType`, which is what makes
   RAID-797's native-`RAiD` emission schema-valid (RAID-797 emitted it ahead of the published
   XSD, relying on the REST API accepting it early).
+- **A hand-rolled build-time generator is feasible**, and the objections to porting
+  `linkml-map` do not apply to it: it reads a crosswalk dialect we define (no
+  `linkml_runtime`), uses a small closed set of constructs instead of an expression
+  language (no Python-semantics compatibility surface), and tracks no upstream. The
+  precedent is already in the repo — `buildSrc` (`AddStaticEnums`,
+  `GenerateReferenceDataTask`, `Utils`) parses LinkML YAML in the JVM with no Python and
+  no Docker, and `openApiGenerate` already compiles generated Java into the API. Unlike
+  the Docker-based LinkML tasks, a `buildSrc` generator can run in CodeBuild.
+  It also buys a capability nothing else here offers: the build can **fail** on an
+  unmapped vocabulary value, fixing the silent-`null` issue (Known issue 6).
+  Recommended sequencing: externalise the vocabulary crosswalk as a governed table with
+  the exhaustiveness check first; add generation only if field-level mapping proves a real
+  maintenance burden.
+- Resolution of PIDs to names should be an **enrichment step before** the crosswalk, not a
+  capability the crosswalk invokes — it is what keeps the transformation pure and testable
+  without a network, and it is the right boundary for DataCite Appendix 3 unknown values
+  (`:unav`).
+- The crosswalk should be **versioned per (RAiD schema version, DataCite schema version)
+  pair**; re-sync of already-minted records plugs into RAID-832's flag + worker (Ready to
+  Deploy), retiring per-correction backfill scripts. The gap is a "flag by predicate"
+  operator entry point for selecting affected records.
+- Measured against RAID-797 as the worked example, the mapping edit itself was two
+  production lines. The expensive parts were **noticing** DataCite had changed and
+  **re-pushing** minted records — neither of which any mapping representation fixes.
 
 ## Bugs surfaced (to be raised as their own tickets)
 

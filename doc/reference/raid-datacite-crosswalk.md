@@ -315,6 +315,12 @@ near-identical end state, with the imperative adapter present in both.
 
 ### Conclusion
 
+*This section is about executing a mapping spec **at runtime, in the running
+Spring application**. A third option — generating the Java mapping code from the
+schema at **build time**, with a generator we write ourselves — is materially
+different and is assessed in the next section. Read the two together: the
+conclusion below is not the last word.*
+
 The config-driven-mapping endgame is not achievable for RAiD → DataCite in-app,
 whether the factories are kept (the mapping stays in code) or `linkml-map` is
 ported (a large, ongoing build that still cannot do name resolution). The
@@ -325,3 +331,371 @@ transformation code. If the strategic goal is strictly config-driven mapping, it
 would additionally require denormalising resolved PID names into the RAiD record
 (so emission needs no live lookup) plus a JVM transform engine, a scope far
 beyond this work.
+
+## Hand-rolling a generator: LinkML in, Java mapping code out
+
+The previous section rules out *interpreting* a mapping spec at request time. It
+does not rule out **generating the mapping code from the schema at build time
+with a generator we write ourselves**. That is a genuinely different proposition,
+and the assessment is different: **yes, this is feasible, and it is the cheapest
+credible route to a metadata-expert-maintainable crosswalk.** It is a natural
+extension of a pattern this repository already runs in production, not a new
+capability.
+
+### Why the objections to porting `linkml-map` do not apply here
+
+The port was rejected on three grounds. A hand-rolled build-time generator
+avoids all three:
+
+- **"It stands on ~20k LOC of `linkml_runtime`."** Only if the generator has to
+  consume arbitrary LinkML with full metamodel introspection. It does not. The
+  generator reads *our* crosswalk document, whose dialect we define, plus the two
+  schemas we control. `buildSrc` already parses LinkML YAML directly with
+  snakeyaml and Jackson (`Utils.loadDynamicEnums`) without any LinkML runtime at
+  all.
+- **"`expr` strings need Python evaluation semantics."** Only if we adopt
+  `linkml-map`'s expression language. We should not. Support a small, fixed,
+  closed set of declarative constructs — constant, field rename, dotted source
+  path, controlled-vocabulary lookup, concatenation with a separator, and
+  single→list coercion — which is demonstrably enough for the declarable subset
+  (that is exactly what the PoC spec uses). No general expression evaluator means
+  no compatibility surface, and it is the difference between a bounded generator
+  and an open-ended one.
+- **"Tracking a moving pre-1.0 upstream in a second language."** Does not arise:
+  nothing upstream is being tracked. The dialect is ours and changes only when we
+  change it. If we want interoperability with `linkml-map`'s spec format we can
+  read the subset we support and **fail the build loudly** on any construct we do
+  not, which is the safe direction to fail in.
+
+### The precedent already exists in this repo
+
+This is the part that makes the estimate credible. `buildSrc/` contains
+hand-written Gradle tasks that already do LinkML-in / artifact-out, in the JVM,
+with no Python and no Docker:
+
+- `AddStaticEnums` (93 LOC) reads LinkML enum definitions, resolves dynamic
+  enumerations via SPARQL with an on-disk cache, and rewrites the generated JSON
+  Schema with materialised enum values.
+- `GenerateReferenceDataTask` (116 LOC) reads `core-enums.yaml` and emits
+  `referencedata.sql`.
+- `Utils` (265 LOC) is the shared LinkML-YAML parsing, SPARQL querying and
+  caching layer they sit on.
+
+And generated Java is already a normal part of this build: `openApiGenerate`
+emits the entire `au.org.raid.idl.raidv2.model` package, and `compileJava`
+depends on it. So "generated Java mapping classes compiled into the API" is not
+a new architectural idea here; it is the existing pipeline with one more stage.
+
+A pure-JVM generator is also strictly *better placed* than the existing
+`linkml/linkml` Docker tasks: CodeBuild has no Docker, which is why the LinkML
+outputs are committed to `generated/` and excluded from `clean`. A `buildSrc`
+generator needs no Docker, so it can run on every CI build like
+`openApiGenerate` does, rather than relying on a developer to regenerate and
+commit.
+
+### What it would and would not generate
+
+Generate the declarable subset:
+
+- **The vocabulary lookup tables.** The six `Map.of(...)` blocks in the title,
+  description, contributor and related-identifier factories become generated
+  constants derived from one governed crosswalk table.
+- **The simple field mappings.** Constants (`types`, `dateType`), renames,
+  dotted-path reads, the date concatenation, the identifier/scheme assignments.
+
+Hand-write, and keep hand-written, the imperative floor: live PID name
+resolution, the organisation partition into contributors versus funding
+references, the latest-role reduce, the primary-title extraction, and the
+`relatedObject` exclusion predicate.
+
+The composition pattern matters, because this is where partial generation
+usually goes wrong. Make the floor **explicit in the crosswalk document**: a
+target field the dialect cannot express is declared as delegating to a named
+collaborator, and the generator emits a call to it. Then a missing or
+wrongly-shaped hand-written collaborator is a **compile error**, not a silently
+unmapped field. The document stays the complete statement of the mapping —
+including an honest inventory of which parts are not declarative — which is what
+makes it reviewable by a metadata expert even though it does not express
+everything.
+
+### The new capability this buys (not available today or from `linkml-map`)
+
+A generator can **fail the build**. That directly fixes Known issue 6: today an
+unmapped RAiD vocabulary value yields `Map.get(...)` → `null` and a silently
+degraded DataCite record. A generator can assert that every value of a RAiD
+vocabulary has a DataCite mapping, and that every mapped target is a member of
+the DataCite enum for the targeted kernel version, and refuse to generate
+otherwise. Note `linkml-map` gives the *opposite* behaviour: an unmapped source
+permissible value yields null and the target slot is simply omitted. So the
+generator is not merely a reimplementation — the build-time exhaustiveness check
+is the strongest single argument for this route.
+
+It also makes the (RAiD version, DataCite version) pairing above concrete and
+enforceable: the generator takes the pair as input and can refuse to build a
+crosswalk against a DataCite kernel it has no schema for.
+
+### Cost, honestly
+
+Estimate, not a measurement: the generator itself is comparable in scale to the
+existing `buildSrc` tasks, since it does the same kind of work — parse YAML we
+control, validate it against two schemas, emit text from a template. On the
+order of a few hundred lines plus tests, with the emission templates and the
+exhaustiveness validation as the substantive parts. The larger and less
+predictable cost is not the generator, it is **authoring the crosswalk document
+and refactoring fifteen factories to consume generated code without changing
+behaviour** — a refactor whose regression guard is the existing
+`Datacite*FactoryTest` suite staying green.
+
+Risks worth stating plainly:
+
+- **Dialect creep.** The whole case rests on the dialect staying small and
+  closed. The first time someone wants a conditional, the pressure is to add an
+  expression language, and at that point the port objections come back. The
+  delegation escape hatch above exists precisely so the answer to "we need
+  logic here" is "hand-write a collaborator", not "extend the dialect".
+- **Two places to look.** A reader chasing a mapping has a document, generated
+  code, and a hand-written adapter. Mitigated by the document being complete
+  (delegations included) and the generated code being clearly marked and never
+  edited.
+- **It does not remove the imperative floor**, and it does not detect that
+  DataCite shipped a new kernel. Neither does anything else here.
+
+### Verdict
+
+Feasible, in-pattern, and worth doing if the governance goal is being taken
+seriously — but note the honest sequencing. The vocabulary tables are where
+essentially all the maintainability benefit sits, and they can be externalised as
+a governed data table the current factories *read* with no generator at all.
+**Recommendation: externalise the vocabulary crosswalk first, with the
+build-time exhaustiveness check; add code generation only if the field-level
+mapping subsequently proves to be a real maintenance burden.** The generator is
+the right destination and there is no architectural obstacle to it. It is simply
+not the first step, because the step before it delivers most of the value and is
+a fraction of the work.
+
+## Where identifier and vocabulary resolution should happen
+
+DataCite wants human-readable text (`creators[].name`, `contributors[].name`,
+`fundingReferences[].funderName`, `publisher.name`) wherever RAiD holds only a
+PID. Today that text is fetched *during* emission, inside the factories:
+`DataciteCreatorFactory` calls `OrcidClient`/`IsniClient`, and
+`DatacitePublisherFactory`/`DataciteContributorFactory`/
+`DataciteFundingReferenceFactory` call `RorClient`. Resolution is hardcoded to
+those three schemes with no fallback — `DataciteCreatorFactory` throws
+`Unsupported contributor schema` for anything else. ANZSRC FoR/SEO label
+resolution and GeoNames/OSM place-name resolution have no resolver at all, which
+is one reason `subject` and `spatialCoverage` are not emitted.
+
+**Recommendation: resolution is an enrichment step that runs *before* the
+crosswalk, not a capability the crosswalk spec invokes.** Reasons:
+
+- It is the only arrangement in which the transformation is a pure, deterministic
+  function of its input. That is what makes the crosswalk testable from fixtures
+  with no network, diffable between versions, and — for the declarable subset —
+  expressible in `linkml-map` at all, whose only extension hook
+  (`@safe_function`) forbids I/O by design.
+- It puts caching, timeouts, retries and resolver-unavailable handling in one
+  place instead of scattered through fifteen factories. RAiD already has the
+  precedent: RAID-809 standardised resolver-unavailable to a 503 across
+  validators.
+- It makes an unresolvable name a *policy* decision at one boundary rather than a
+  `RuntimeException` from deep inside emission. That boundary is where DataCite
+  Appendix 3's unknown-value codes belong (below).
+
+Concretely: an enrichment pass walks the `RaidDto`, resolves every PID it can to
+a display name, and produces a resolved-names side table keyed by identifier; the
+crosswalk then reads names from that table. Adding a fourth scheme becomes a
+resolver registration, not a change to the emission code.
+
+### Unknown values (DataCite Appendix 3)
+
+Where a required DataCite field genuinely cannot be populated, DataCite's own
+standard is to emit an unknown-value code rather than omit the field or send a
+non-conformant record: `:unav` (value unavailable, possibly unknown), `:unas`
+(value unassigned), `:unac` (temporarily inaccessible), `:tba`, `:none`. The
+enrichment boundary is the natural place to apply them — a name that fails to
+resolve becomes `:unav` and the record stays valid and mintable, instead of the
+current behaviour where an unsupported scheme aborts the whole emission. This
+should be an explicit decision for the team: **fail the mint, or mint a
+conformant record carrying `:unav` and flag it for re-sync?** The re-sync
+mechanism from RAID-832 makes the second option safe, because a record minted
+with `:unav` can be re-pushed once resolution succeeds.
+
+### Richness gaps
+
+Independently of the declarative question, the mapping currently drops metadata
+DataCite has homes for: `subject` → `subjects` (needs FoR/SEO label resolution),
+`spatialCoverage` → `geoLocations` (needs GeoNames/OSM place-name resolution),
+`identifier.license` → `rightsList` (the factory exists but is unwired — see
+Known issues), and `access.statement`/`access.embargoExpiry`, which have no clean
+DataCite equivalent and are reasonable to keep dropping. These are ordinary
+mapping work under either execution model; they do not depend on the LinkML
+decision.
+
+## Versioning the crosswalk, and re-syncing when either side changes
+
+RAiD's schema and DataCite's schema move independently, so a single crosswalk
+document edited in place to track "current on both sides" loses the ability to
+say what a given already-minted DOI was produced from.
+
+**Recommendation: version the crosswalk per (RAiD schema version, DataCite
+schema version) pair.** In practice that means the crosswalk artifact is named
+and stored for the pair it targets — `raid-core v2` → `datacite 4.7` — alongside
+the LinkML models it references, exactly as `api-svc/datamodel/src/v2/` already
+versions the RAiD model by directory. A new DataCite kernel is a *new* crosswalk
+document derived from the previous one, not an edit to it. The benefits are
+practical rather than theoretical: the diff between two crosswalk versions is the
+reviewable statement of what changed for a metadata expert, and it is possible to
+answer "which crosswalk produced this DOI's current metadata".
+
+Only the newest crosswalk is *executed*. Superseded versions are kept for
+provenance and diffing, not for replay — RAiD pushes a full-document PUT, so
+there is never a need to re-run an old crosswalk.
+
+The re-sync path already exists and this plugs straight into it. RAID-832
+(Ready to Deploy) added a `datacite_resync_required` flag on the `raid` table,
+cleared on every successful DataCite post, drained by a scheduled worker that
+takes a Postgres advisory lock, batches, throttles to roughly one request per
+second, and retries on failure. So the answer to "DataCite shipped a schema
+change, what about the RAiDs already minted?" is: cut the new crosswalk version,
+flag the affected records, and let the worker drain them. No bespoke backfill
+script per correction — that is precisely what RAID-832 was built to retire
+(`scripts/backfill-datacite-related-raids.sh`, the one-off written for RAID-797,
+is now a fallback only).
+
+The one thing still missing is the *selection* step: deciding which records a
+given crosswalk change affects. For a change that touches every record (a new
+constant, a changed `resourceTypeGeneral`) that is "flag everything"; for a
+narrow change (RAID-797 touched only RAiDs with a `relatedRaid`) it is a
+predicate over the data. Worth an explicit operator entry point — flag by
+predicate — rather than ad-hoc SQL each time.
+
+## Relationship to RAID-776 and RPDB-112
+
+**Same tooling, different mechanisms — and this spike narrows RAID-776's
+recommendation.**
+
+RAID-776 asked how one codebase can support per-registration-agency customised
+metadata schemas, and recommended LinkML as the single declarative source of
+truth "generating as much as possible (schema, constraints, JSON-LD/RDF, and —
+pending the DataCite PoC — mappings)", with compiled SPI modules as the escape
+hatch for imperative logic. It explicitly flagged the DataCite mapping as the
+uncertain part and scoped this spike as the PoC that gates the
+"mappings as config" claim.
+
+This spike is that PoC, and the verdict is the narrowing one: **the
+schema.org/RDF side of RAID-776's claim stands; the DataCite side does not.**
+schema.org mapping is vocabulary annotation, which LinkML does natively
+(`class_uri`, `slot_uri`, `exact_mappings`) and the build already emits. DataCite
+is a structural transformation to a different target schema, and it hits both an
+imperative floor (live name resolution, the organisation partition) and an
+execution boundary (`linkml-map` is Python; nothing executes a transform spec
+in-JVM). So DataCite mapping is not the same mechanism as the RAiD schema
+pipeline — it shares the LinkML *toolset* and the build-time-artifact *pattern*,
+but the mapping itself stays in Java.
+
+Two consequences worth carrying back to RAID-776:
+
+- Its "declarative complexity cliff" risk is now measured, not hypothetical, and
+  the cliff is where it predicted: external I/O.
+- Its framing of DataCite as consuming only the compiled core is unaffected by
+  this spike. Nothing here depends on whether per-RA extensions exist; if they
+  later do and an RA wants them in DataCite, that is a new crosswalk version for
+  the pair, which is what the versioning scheme above is for.
+
+RPDB-112 (efficient management of metadata schema versions) is about reducing the
+manual burden of rolling out new *RAiD* schema versions, and mostly
+cross-references RAID-776. The crosswalk versioning above is a direct instance of
+the same problem, so RPDB-112 should treat the (RAiD version, DataCite version)
+pair as one of the artifacts a schema rollout has to produce. It is not a
+separate mechanism to build.
+
+## Effort and maintenance cost versus continuing bespoke mapping
+
+The honest comparison, using RAID-797 as the worked example, because it is
+exactly the shape of change this spike is meant to make cheaper: DataCite added a
+native `RAiD` `relatedIdentifierType` in 4.6/4.7, and RAiD was emitting related
+RAiDs as `DOI`.
+
+**What RAID-797 actually cost under bespoke mapping.** Two production lines: one
+enum constant added to `RelatedIdentifierType`, one map value changed in
+`DataciteRelatedIdentifierFactory`. Around that: eight existing factory unit
+tests updated plus a casing guard, one gated live DataCite test-API regression
+test, and a backfill script for already-minted records (since retired by
+RAID-832's re-sync worker). The mapping edit itself was trivial. The expensive
+parts were **noticing** that DataCite had changed, and **re-pushing** the
+already-minted records.
+
+**What it would cost under a declarative vocabulary crosswalk.** One row changed
+in a governed mapping table, no Java edit, no recompile of mapping logic, and the
+same tests. The saving on the edit is real but small — one line either way. The
+change in *who can make it* is the actual difference: a metadata expert can edit
+and review a mapping table; changing `Map.of(...)` inside a factory requires a
+developer.
+
+**What it would not fix.** Neither approach notices that DataCite shipped 4.7.
+That is a monitoring problem, not a mapping-representation problem, and it is
+worth naming plainly because it was the root cause of the RAID-797 gap the ticket
+cites as the motivating example. The re-push, likewise, is solved by RAID-832
+regardless of how the mapping is expressed.
+
+So the cost/benefit:
+
+| | Bespoke Java factories (today) | Declarative vocab tables + thin adapter (recommended first step) | Hand-rolled build-time generator | Runtime config-driven engine |
+|---|---|---|---|---|
+| Build cost | zero (exists) | small: extract ~6 `Map.of` tables to a governed artifact, load them, keep the factories | moderate: a `buildSrc` generator in the existing pattern, plus authoring the crosswalk and refactoring 15 factories onto generated code | very large: JVM transform engine (~3–4k LOC on top of re-creating ~20k LOC of `linkml_runtime`), plus denormalising resolved names into the record |
+| A RAID-797-shaped vocab change | 1 dev line + tests | 1 table row + tests, editable by a metadata expert | 1 table row + tests, editable by a metadata expert | 1 spec line + tests |
+| A structural change (new field, new split rule) | Java | Java | crosswalk document, if it stays above the imperative floor | spec, if it stays above the imperative floor |
+| Imperative floor (name resolution, org split) | Java | Java | still Java (explicit delegation) | still Java |
+| Unmapped vocab value | silent `null` | build failure | build failure | silently omitted slot |
+| Needs Docker in CI | no | no | no | no |
+| Detects an upstream DataCite release | no | no | no | no |
+
+**Recommendation: the second column first, the third as its destination.** The
+vocabulary tables carry essentially all of the governance benefit the ticket asks
+for — a crosswalk a metadata expert can maintain without developer involvement —
+at a small, bounded cost, and they bring the build-time exhaustiveness check with
+them. Code generation is a sound next step on the same path (see the hand-rolled
+generator section) and should be taken if field-level mapping proves to be a real
+maintenance burden, but it is not where to start. The fourth column buys a
+near-identical end state for a large and permanent maintenance commitment
+tracking a pre-1.0 upstream in a second language, and is not recommended.
+
+Two things should happen before or alongside it: fix the two correctness bugs
+(hardcoded `publicationYear`, unwired `rightsList`), since a table-driven rewrite
+would faithfully preserve them; and add a deliberate watch on DataCite schema
+releases, since that is the gap that actually caused RAID-797.
+
+## How a LinkML-driven crosswalk would be tested
+
+The spike ships no code, but the testing shape should be settled before any of it
+is built. Four layers, all of which have existing precedent in the repo:
+
+1. **Vocabulary table coverage (new).** For each RAiD vocabulary that feeds a
+   DataCite enum, assert every RAiD value has a mapping and every mapped target
+   is a member of the DataCite enum for the targeted kernel version. This is the
+   test that does not exist today and is the direct fix for the unhandled-key risk
+   in Known issues, where `Map.get(...)` silently yields `null` for an unmapped
+   value. It is a data-driven test over the table, so it stays correct as the
+   table grows.
+2. **Factory unit tests (existing, unchanged).** The fifteen
+   `Datacite*FactoryTest` classes already cover the transformation per field with
+   mocked resolvers. A table-driven refactor must leave them green; that is the
+   regression guard for the extraction itself.
+3. **Whole-payload golden files (partly existing).** `DataciteDtoFactoryTest` and
+   `DataciteRequestFactoryTest` cover assembly. Extend to a fixture-in,
+   JSON-payload-out comparison per crosswalk version, so a crosswalk diff shows
+   as a payload diff. This is what makes a new (RAiD, DataCite) version pair
+   reviewable.
+4. **Gated live DataCite test-API check (existing pattern).**
+   `DataciteLiveRelatedRaidIntegrationTest` is self-cleaning and skipped unless
+   `DATACITE_LIVE_TEST=true` (`@EnabledIfEnvironmentVariable`). Credentials come
+   from a real service point. Any crosswalk change that touches a DataCite
+   vocabulary should get one such case, because it is the only layer that proves
+   DataCite *accepts* the value; the local mocked equivalent
+   (`DataciteRelatedRaidMockIntegrationTest`) covers the wiring in CI.
+
+Because resolution moves to an enrichment step (above), all of layers 1–3 run
+with no network at all: the crosswalk under test is a pure function of a fixture
+plus a resolved-names table. That is the main testability argument for the
+enrichment-first design.
