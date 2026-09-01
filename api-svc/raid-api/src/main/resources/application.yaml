@@ -66,6 +66,9 @@ raid:
     web-archive:
       enabled: false
       delay: 150
+    ark:
+      enabled: false
+      delay: 150
   identifier:
     schema-uri: https://raid.org/
     license: Creative Commons CC-0
