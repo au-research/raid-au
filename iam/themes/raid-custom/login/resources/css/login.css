@@ -23,6 +23,7 @@
     --border-default: #e2e8f0;
     --radius-btn: 4px;
     --radius-card: 8px;
+    --spinner-track: #c6d9f0;
 }
 
 /* Reset and Base */
@@ -292,6 +293,72 @@ body {
     color: var(--brand-primary);
 }
 
+/* ============================================
+   Loading / redirecting state
+   ============================================ */
+.loading-card {
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--surface-white);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-card);
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.06);
+    padding: 3rem 3rem 2.75rem;
+    text-align: center;
+}
+
+.loading-card__logo {
+    display: block;
+    height: 40px;
+    width: auto;
+    margin: 0 auto 1.5rem;
+}
+
+.loading-card__spinner {
+    display: inline-block;
+    width: 44px;
+    height: 44px;
+    border: 4px solid var(--spinner-track);
+    border-top-color: var(--brand-primary);
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    animation: kc-spin 0.9s linear infinite;
+}
+
+@keyframes kc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-card__title {
+    font-family: Figtree, sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.333;
+    color: var(--text-heading);
+    margin-bottom: 0.75rem;
+}
+
+.loading-card__text {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-body);
+    margin-bottom: 1.5rem;
+}
+
+.loading-card__cancel {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.loading-card__cancel:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    border-radius: 2px;
+}
+
 /* Alert Messages */
 .alert {
     width: 100%;
@@ -346,7 +413,8 @@ body {
         padding-right: 0;
     }
 
-    .signin-card {
+    .signin-card,
+    .loading-card {
         max-width: 100%;
         border: none;
         border-radius: 0;

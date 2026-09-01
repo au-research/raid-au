@@ -1,0 +1,248 @@
+/* ============================================
+   ARDC branding overrides
+   Loaded after raid-custom's login.css (see
+   theme.properties `styles=`). Only genuinely
+   ARDC-specific pieces belong here: colour
+   tokens, the ARDC top bar / taller nav, and
+   the ARDC/NCRIS footer.
+   ============================================ */
+
+:root {
+    --brand-primary: #8E489B;
+    --brand-primary-hover: rgb(99, 50, 108);
+    --brand-primary-active: rgb(99, 50, 108);
+    --focus-ring: rgba(142, 72, 155, 0.28);
+    --surface-tint: #f5f5f5;
+    --spinner-track: #e9defb;
+}
+
+html,
+body {
+    /* Keycloak's own base stylesheet sets a hard height:100%, which caps
+       the page at one viewport tall and forces flex-shrink to compress
+       .page-container instead of letting the page grow with content.
+       Reset to auto so min-height:100vh (from raid-custom's body rule)
+       acts as a floor, not a ceiling. */
+    height: auto;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.page-container {
+    flex-shrink: 0;
+}
+
+/* ==================== ARDC Top Bar ==================== */
+.ardc-top-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+}
+
+.ardc-top-bar-inner {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.ardc-explore-menu {
+    display: flex;
+    align-items: center;
+}
+
+.ardc-explore-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333;
+    text-decoration: none;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.ardc-explore-link:hover {
+    color: #000000;
+}
+
+.ardc-explore-chevron {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+}
+
+/* ==================== Top nav override ====================
+   Taller and offset below the ARDC top bar (raid-custom's
+   own .top-navbar is 52px tall, starts at top:0).
+   ==================================================== */
+.top-navbar {
+    top: 40px;
+    height: 85px;
+    border-top: solid var(--brand-primary);
+    border-bottom: 1px solid var(--brand-primary);
+}
+
+.logo-text {
+    height: 80px;
+}
+
+/* ==================== Page layout override ====================
+   ARDC's footer needs a flex sticky-footer layout; raid-custom's
+   own .page-container/.content-wrapper don't need one since it
+   has no footer.
+   ==================================================== */
+.page-container {
+    padding-top: 150px;
+    padding-bottom: 0;
+    min-height: calc(100vh - 375px);
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper {
+    flex: 1;
+    width: 100%;
+}
+
+/* ==================== Footer ====================
+   margin-top: auto pushes the footer to the bottom of the
+   viewport when content is short; flows naturally below it
+   when content is tall.
+   ==================================================== */
+.raid-footer {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-top: auto;
+    padding-top: 40px;
+    font-family: 'Figtree', sans-serif;
+    background-color: #ffffff;
+}
+
+.raid-footer-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 0 24px 30px 24px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-logo img {
+    max-height: 80px;
+    width: auto;
+}
+
+.footer-logo-placeholder {
+    color: #999;
+    font-size: 13px;
+    font-style: italic;
+    padding: 10px 16px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.raid-footer-description {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 30px 24px;
+    text-align: center;
+}
+
+.raid-footer-description p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #333333;
+    margin: 0;
+}
+
+.raid-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    background-color: #e8e8e8;
+    border-top: 1px solid #d0d0d0;
+}
+
+.raid-footer-links .footer-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.raid-footer-links .footer-link:hover {
+    color: #0066cc;
+    text-decoration: underline;
+}
+
+.raid-footer-acknowledgement {
+    background-color: #ffffff;
+    padding: 16px 24px;
+    text-align: center;
+}
+
+.raid-footer-acknowledgement p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a4a4a;
+    margin: 0;
+    max-width: 950px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==================== Responsive: footer ==================== */
+@media (max-width: 768px) {
+    .raid-footer-logos {
+        gap: 24px;
+    }
+
+    .raid-footer-links {
+        gap: 24px;
+        padding: 16px;
+    }
+
+    .raid-footer-links .footer-link {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .raid-footer-logos {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .raid-footer-links {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

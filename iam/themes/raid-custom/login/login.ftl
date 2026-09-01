@@ -101,6 +101,17 @@
             </div>
         </div>
 
+        <!-- ==================== LOADING / REDIRECTING STATE ==================== -->
+        <div id="kc-loading-card" class="loading-card" hidden aria-live="polite">
+            <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="loading-card__logo" alt="RAiD">
+            <span class="loading-card__spinner" aria-hidden="true"></span>
+            <h2 id="kc-loading-title" class="loading-card__title"></h2>
+            <p id="kc-loading-text" class="loading-card__text"></p>
+            <a href="#" id="kc-loading-cancel" class="loading-card__cancel">${msg('loadingCancelLink')}</a>
+        </div>
+
+        <script src="${url.resourcesPath}/js/login.js" defer></script>
+
     </#if>
 
 </@layout.registrationLayout>
