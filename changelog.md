@@ -1,6 +1,101 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.16.0
+
+## API
+* Fixed the web archive (`web.archive.org`) related object check introduced in 2.15.0, which
+  rejected archived links with "uri not found" even when the page is genuinely held in the Wayback
+  Machine. Two separate faults were involved: the archived address was encoded twice before being
+  sent to the availability service, so the service was asked about an address it had never seen;
+  and the request asked for one exact capture timestamp, which returns nothing when that capture is
+  a de-duplicated copy of an earlier identical one. The check now asks whether the page is archived
+  at all. A link that was never archived is still rejected (PR #635).
+
+## IAM
+* Service Point Admins can now manage their own service point's API client credentials, without
+  asking ARDC staff. New endpoints under `/realms/raid/client-credential` let an admin create,
+  list, rotate, revoke and retrieve the secret for credentials belonging to the service point they
+  administer. A credential can only ever be created for, and used against, the admin's own service
+  point (PRs #625, #626, #629, #630, #631, #632).
+* A service point is limited to 10 active client credentials. Attempting to create an eleventh
+  returns `409 Conflict` with a message explaining the limit; revoking an unused credential frees a
+  slot. Per-request rate limiting on these endpoints has been deliberately deferred rather than
+  implemented (PR #625).
+* Client credential activity is now recorded in an audit trail covering who did what, when, and to
+  which credential. Credential secrets are returned only to the admin who requests them and are
+  never written to logs (PR #630).
+* A step-by-step guide for Service Point Admins is available at
+  `doc/reference/service-point-client-credentials.md`, covering obtaining a token, creating a
+  credential and using it against the API (PR #633).
+* Documented how to configure ORCID as a login identity provider. ORCID supplies no email address
+  and no name in its token, so without three attribute-importer mappers a user signing in with
+  ORCID has their ORCID iD shown as their first name. The realm ships no identity providers, so
+  each registration agency configures this themselves (PR #628).
+
+## Static Landing Pages
+* Downloadable RAiD JSON now contains only RAiD metadata schema fields. Three display-only fields
+  the site adds when building pages — `orcidInfo` on contributors, `rorDetails` on organisations
+  and the registration agency, and `citation` on related objects — are no longer included in the
+  per-RAiD download, the per-RAiD `.json` route, the on-page raw data view or the bulk
+  `/api/raids.json` export. Anything consuming those downloads now receives schema-conformant JSON.
+  The pages themselves are unchanged and still display resolved ORCID and ROR names and citation
+  text (PR #627).
+
+# 2.15.0
+
+## API
+* Related objects identified by a Handle (`https://hdl.handle.net/`) are now accepted and validated.
+  The Handle is checked against the resolver before the RAiD is saved, and a corrected vocabulary
+  entry lets Handle related objects persist (PR #602).
+* Related objects identified by an RRID (a SciCrunch Research Resource Identifier) are now accepted
+  and validated against the SciCrunch resolver (PRs #603, #605).
+* Web archive (`web.archive.org`) related objects are now checked for existence against the Wayback
+  availability service, so a link to a page that was never archived is rejected when the RAiD is
+  minted rather than saved as a dead reference (PR #612).
+* DOI related objects submitted through the `dx.doi.org` proxy host are now accepted, alongside the
+  existing `doi.org` host. Both are valid DOI proxy services, and only `doi.org` was accepted before
+  (PR #613).
+* Malformed ISNI identifiers are now rejected by a local checksum check before the registry lookup,
+  so an invalid ISNI fails fast with a clear validation error rather than depending on the external
+  service (PR #614).
+* Related RAiDs are now sent to DataCite using DataCite's native `RAiD` related-identifier type
+  instead of a generic `DOI`, so downstream harvesters and other registration agencies can tell a
+  related RAiD apart from a real DOI reference. Existing DataCite records that reference another RAiD
+  are updated automatically in the background, with no manual step in any environment
+  (PRs #617, #619).
+* When an external identifier resolver (for example DOI, ROR, Handle or RRID) is temporarily
+  unavailable, minting or updating a RAiD now returns `503 Service Unavailable` instead of a
+  validation error. This lets callers tell a transient outage apart from an invalid identifier and
+  retry safely (PR #606).
+* The URI validators now apply bounded connection and read timeouts, so a slow or unreachable
+  external resolver fails quickly rather than holding the request open (PRs #591, #592).
+* ROR identifiers are now validated through a single hardened path, giving consistent behaviour
+  wherever a ROR identifier appears (PR #593).
+* Retired `application/ld+json` content negotiation on `GET /raid/{prefix}/{suffix}`. The API
+  endpoint no longer returns JSON-LD; the schema.org / JSON-LD representation remains available on
+  the static landing pages (PR #599).
+
+## IAM
+* Fixed a service point admin issue where a pending, never-approved group membership could grant
+  admin authority through the flat group-admin fallback. The fallback now requires an approved
+  membership (PR #610).
+
+## App-client UI
+* DOI related objects entered or bulk-uploaded through the `dx.doi.org` proxy host are now accepted
+  by the app's client-side validation, matching the API change so these DOIs are no longer flagged
+  before submission (PR #618).
+
+## Static Landing Pages
+* Citation text for related objects now renders as plain text, so citations containing an ampersand
+  or other special characters display correctly instead of being misinterpreted as markdown
+  (PR #611).
+
+## Data Model
+* The JSON-LD `@context` and the published schema.org documentation are now generated from the
+  canonical `researchproject` LinkML schema, keeping the structured-data context in step with the
+  reference specification (PR #598).
+
 # 2.14.2
 
 ## API

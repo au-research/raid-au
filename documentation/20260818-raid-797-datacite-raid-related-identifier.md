@@ -1,0 +1,87 @@
+# RAID-797: Emit related RAiDs with DataCite's native "RAiD" relatedIdentifierType
+
+- **Date:** 2026-08-18
+- **JIRA:** [RAID-797](https://ardc.atlassian.net/browse/RAID-797) (parent: [RAID-796](https://ardc.atlassian.net/browse/RAID-796))
+- **PR:** [au-research/raid-au#617](https://github.com/au-research/raid-au/pull/617)
+- **Commit:** `7c67b8d7`
+
+## What changed and why
+
+Related RAiDs were emitted to DataCite as generic `"DOI"` citations, which made them
+indistinguishable from real DOI references in downstream harvesters, aggregators and other
+registration agencies. DataCite introduced a dedicated `"RAiD"` `relatedIdentifierType` in
+Metadata Schema 4.6/4.7, so we now emit the native type instead.
+
+### Code
+- Added `RAID("RAiD")` to `RelatedIdentifierType`
+  (`api-svc/raid-api/.../vocabularies/datacite/RelatedIdentifierType.java`). The DataCite string is
+  exactly `"RAiD"` (mixed case).
+- Changed `DataciteRelatedIdentifierFactory.create(RelatedRaid)` to emit
+  `RelatedIdentifierType.RAID` instead of `DOI`. `resourceTypeGeneral` stays `"Project"`, the
+  identifier value stays the related RAiD's handle unchanged, and the `RAID_RELATION_TYPE_MAP`
+  relation-type mapping is untouched.
+
+### Tests
+- Updated the eight `relatedRaid*` cases in `DataciteRelatedIdentifierFactoryTest` to assert the
+  `"RAiD"` type, and added a casing-guard test locking `RelatedIdentifierType.RAID.getName()` to
+  the exact string `"RAiD"`.
+- Added `DataciteRelatedRaidMockIntegrationTest` (black-box `intTest` source set) — the **local,
+  CI-runnable** regression test. It mints a RAiD with a `relatedRaid` through the app, then
+  retrieves the request the DataCite MockServer (localhost:1080) recorded and asserts the outbound
+  DataCite JSON carries a `relatedIdentifier` with `relatedIdentifierType: "RAiD"`,
+  `resourceTypeGeneral: "Project"`, and the unchanged target handle. This exercises the full app
+  path (`DataciteAttributesDtoFactory` + `DataciteService` + `DataciteRelatedIdentifierFactory`),
+  needs no real DataCite credentials, and adds no `build.gradle`/classpath change (it queries
+  MockServer over HTTP). It runs in the normal `intTest` suite.
+- Added `DataciteLiveRelatedRaidIntegrationTest` (in the `src/test` source set) — the **live**
+  regression test, run on demand in the test environment. It runs the **real**
+  `DataciteRelatedIdentifierFactory` output against the live DataCite **test** API, asserts a draft
+  DOI is accepted with `relatedIdentifierType: "RAiD"` / `resourceTypeGeneral: "Project"`, then
+  deletes the draft. It lives in `src/test` (not `intTest`) to keep the deliberately black-box
+  `intTest` source set free of a `src/main` classpath dependency, and is gated by
+  `@EnabledIfEnvironmentVariable("DATACITE_LIVE_TEST")` so it is skipped in CI.
+
+## How to run the live DataCite test
+
+Skipped by default. Enable it by setting the env vars (no secrets are committed):
+
+```bash
+DATACITE_LIVE_TEST=true \
+DATACITE_TEST_REPOSITORY_ID=<service point's DataCite repository id> \
+DATACITE_TEST_PASSWORD=<that service point's DataCite password> \
+DATACITE_TEST_PREFIX=<a DOI prefix that repository may mint under, e.g. 10.82841> \
+./gradlew :api-svc:raid-api:test --tests '*DataciteLive*'
+```
+
+`DATACITE_TEST_ENDPOINT` is optional and defaults to `https://api.test.datacite.org/dois`.
+
+The DataCite repository id and password are **properties of a service point** — the same
+credentials `DataciteService` reads off the service point record to authenticate to the DataCite
+DOIs API. Any service point in the **test** environment has working DataCite test-API credentials,
+so its repository id + password can be used here directly (the test calls the DataCite repository
+directly over HTTP Basic, exactly as the app does).
+
+## Backfill of already-minted RAiDs
+
+`scripts/backfill-datacite-related-raids.sh` re-pushes corrected metadata to DataCite for existing
+records. It is **targeted** (only RAiDs that have a `relatedRaid` entry are re-posted; others are
+skipped) and **idempotent** (each re-post is a full-document PUT via `/raid/post-to-datacite`, so
+re-running produces the identical record with no duplicate `relatedIdentifier` entries). It is
+rate-limited (0.5s between requests) and logs the posted-vs-skipped counts.
+
+```bash
+# environment is one of: local, test, demo, stage, prod
+scripts/backfill-datacite-related-raids.sh <environment> <clientId> <clientSecret>
+```
+
+The client must hold the `RAID_UPGRADER_ROLE` (the same role the `/raid/non-legacy` and
+`/raid/post-to-datacite` endpoints are gated on).
+
+## Verification performed
+
+- `./gradlew :api-svc:raid-api:test` — green (updated factory tests + casing guard).
+- `./gradlew :api-svc:raid-api:intTest` — full suite green locally against a branch API on :8080,
+  including `DataciteRelatedRaidMockIntegrationTest` (the mocked local test asserting the outbound
+  DataCite payload carries `relatedIdentifierType: "RAiD"` via MockServer).
+- Live DataCite test confirmed to compile and skip when `DATACITE_LIVE_TEST` is unset; to be run
+  for real in the test environment with a service point's credentials.

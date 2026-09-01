@@ -127,6 +127,10 @@ jobs:
           VITE_RAID_DOMAIN: http://www.raid.org.au
           VITE_KEYCLOAK_E2E_USER: raid-test-user
           VITE_KEYCLOAK_E2E_PASSWORD: password
+          VITE_KEYCLOAK_E2E_OPERATOR_USER: raid-operator
+          VITE_KEYCLOAK_E2E_OPERATOR_PASSWORD: password
+          VITE_KEYCLOAK_E2E_UNAPPROVED_ADMIN_USER: raid-au-unapproved-admin
+          VITE_KEYCLOAK_E2E_UNAPPROVED_ADMIN_PASSWORD: password
         run: npx playwright test
 
       - name: Upload Playwright report
