@@ -55,7 +55,7 @@ identifierType: "DOI"}`. `DataciteRequestFactory` wraps that as `{data: …}`.
 | `descriptions[]` | `description[]` | `description=text`; `descriptionType` via description-type map; `lang` from `description.language.id` | `DataciteDescriptionFactory` |
 | `relatedIdentifiers[]` (related objects) | `relatedObject[]` | excludes objects that are BOTH category `…/191` AND type `…/272`; maps identifier type, resourceTypeGeneral, relationType (see vocab tables) | `DataciteRelatedIdentifierFactory` (RelatedObject overload) |
 | `relatedIdentifiers[]` (alternate URLs) | `alternateUrl[]` | `relatedIdentifier=url`; type `URL`; relationType `IsDocumentedBy`; resourceTypeGeneral `Other` (all constant) | `DataciteRelatedIdentifierFactory` (AlternateUrl overload) |
-| `relatedIdentifiers[]` (related RAiDs) | `relatedRaid[]` | `relatedIdentifier=id`; type **`DOI`** (constant); relationType via RAiD-relation map; resourceTypeGeneral `Project` (constant) | `DataciteRelatedIdentifierFactory` (RelatedRaid overload) |
+| `relatedIdentifiers[]` (related RAiDs) | `relatedRaid[]` | `relatedIdentifier=id`; type **`RAiD`** (constant, native 4.7 type — RAID-797); relationType via RAiD-relation map; resourceTypeGeneral `Project` (constant) | `DataciteRelatedIdentifierFactory` (RelatedRaid overload) |
 | `alternateIdentifiers[]` (agency URL) | `identifier.raidAgencyUrl` | `alternateIdentifier=raidAgencyUrl`; `alternateIdentifierType="RaidAgencyUrl"` (constant, always added first) | `DataciteAlternateIdentifierFactory` (Id overload) |
 | `alternateIdentifiers[]` (RAiD alt ids) | `alternateIdentifier[]` | `alternateIdentifier=id`; `alternateIdentifierType="URL"` (**constant — RAiD's own `alternateIdentifier.type` free-text is discarded**) | `DataciteAlternateIdentifierFactory` (AlternateIdentifier overload) |
 | `rightsList` | — | **Never populated. See Known issues.** | (`DataciteRightFactory` exists but is unwired) |
@@ -182,13 +182,16 @@ runtime logic or live network I/O and must stay in code:
 
 ## Known issues found in the code
 
-1. **`publicationYear` is hardcoded to the current year.**
+1. **`publicationYear` is hardcoded to the current year.** (Raised as
+   [RAID-858](https://ardc.atlassian.net/browse/RAID-858).)
    `setPublicationYear(String.valueOf(java.time.Year.now()))` in all three
    overloads, with an inline `// TODO: year of start date`. It should almost
    certainly derive from `date.startDate`. This means an update in a later year
    silently rewrites the DOI's publication year.
 
-2. **`rightsList` is never emitted.** `DataciteAttributesDto` has a `rightsList`
+2. **`rightsList` is never emitted.** (Raised as
+   [RAID-859](https://ardc.atlassian.net/browse/RAID-859).)
+   `DataciteAttributesDto` has a `rightsList`
    field and `DataciteRightFactory.create(Access, Id)` exists and is even
    injected into `DataciteAttributesDtoFactory` (`private final
    DataciteRightFactory dataciteRightFactory;`), but it is **never called** and
@@ -197,20 +200,20 @@ runtime logic or live network I/O and must stay in code:
    `rightsURI` as JSON key `rightsUri`, which differs from DataCite's
    `rightsUri`/`rightsURI` expectations — moot while unwired, but worth noting.)
 
-3. **`relatedRaid` is emitted with `relatedIdentifierType = "DOI"` on `main`,
-   which 4.7 makes correctable.** RAiDs are handles. Until 4.6 the DataCite
-   `relatedIdentifierType` enumeration had no `RAiD` value, so `main` uses `DOI`
-   as a pragmatic stand-in. **DataCite 4.7 (published 2026-03-03) adds `RAiD`
+3. **`relatedRaid` was emitted with `relatedIdentifierType = "DOI"`; fixed by
+   RAID-797, now merged.** RAiDs are handles. Until 4.6 the DataCite
+   `relatedIdentifierType` enumeration had no `RAiD` value, so `DOI` was used as
+   a pragmatic stand-in. **DataCite 4.7 (published 2026-03-03) adds `RAiD`
    as a native `relatedIdentifierType`** (verified in
    `datacite-relatedIdentifierType-v4.xsd` at kernel-4.7: `RAiD` and `SWHID`
    were added over 4.6), so `datacite.yaml` here includes it. RAID-797 (PR #617,
-   in review) changes this same `DataciteRelatedIdentifierFactory` RelatedRaid
-   overload to emit `RAiD` instead of `DOI` and adds `RAiD` to the app's
+   merged) changed this same `DataciteRelatedIdentifierFactory` RelatedRaid
+   overload to emit `RAiD` instead of `DOI` and added `RAiD` to the app's
    `vocabularies/datacite/RelatedIdentifierType` enum, backed by a gated live
    DataCite test. Note the sequencing: RAID-797 emitted `RAiD` before it was in
    the published XSD, relying on the REST JSON API accepting it ahead of the XML
    schema (a historical XML-XSD-vs-REST-JSON lag); 4.7 has since closed that gap.
-   Once PR #617 merges, this row's `DOI` becomes `RAiD`.
+   Resolved; retained here for provenance.
 
 4. **`alternateIdentifier.type` is discarded.** RAiD's free-text alternate
    identifier type is replaced by the constant `"URL"`.

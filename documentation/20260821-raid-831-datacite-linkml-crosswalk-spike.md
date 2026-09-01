@@ -3,6 +3,7 @@
 - Ticket: [RAID-831](https://ardc.atlassian.net/browse/RAID-831) (Spike)
 - PR: [au-research/raid-au#620](https://github.com/au-research/raid-au/pull/620)
 - Related: RAID-796 (DataCite schema alignment epic), RAID-832 (re-sync mechanism, defers the crosswalk to this spike), RAID-377 (mapping update to DataCite 4.7), RAID-776 (origin spike), RAID-797 (native RAiD relatedIdentifierType).
+- Bugs raised out of this spike: [RAID-858](https://ardc.atlassian.net/browse/RAID-858), [RAID-859](https://ardc.atlassian.net/browse/RAID-859).
 
 ## What this spike answers
 
@@ -71,13 +72,17 @@ Two design artifacts were added. No runtime behaviour changed.
   production lines. The expensive parts were **noticing** DataCite had changed and
   **re-pushing** minted records — neither of which any mapping representation fixes.
 
-## Bugs surfaced (to be raised as their own tickets)
+## Bugs surfaced (raised as their own tickets)
 
-- `publicationYear` is hardcoded to `Year.now()` in all three `DataciteAttributesDtoFactory`
-  overloads (has a `// TODO`); an update in a later year silently rewrites the DOI's
-  publication year.
-- `rightsList` is never emitted: `DataciteRightFactory` is injected but never called, so
-  RAiD's licence never reaches DataCite.
+- [RAID-858](https://ardc.atlassian.net/browse/RAID-858): `publicationYear` is hardcoded to
+  `Year.now()` in all three `DataciteAttributesDtoFactory` overloads (has a `// TODO`); an
+  update in a later year silently rewrites the DOI's publication year.
+- [RAID-859](https://ardc.atlassian.net/browse/RAID-859): `rightsList` is never emitted —
+  `DataciteRightFactory` is injected but never called, so RAiD's licence never reaches
+  DataCite. Also covers the `rightsUri` JSON key mismatch.
+
+Both were re-verified against the post-merge code, remain unfixed on `main`, and are linked
+to RAID-831 in JIRA. Neither is fixed here; the spike ships no runtime change.
 
 ## Verification performed
 
