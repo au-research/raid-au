@@ -1,6 +1,47 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.16.0
+
+## API
+* Fixed the web archive (`web.archive.org`) related object check introduced in 2.15.0, which
+  rejected archived links with "uri not found" even when the page is genuinely held in the Wayback
+  Machine. Two separate faults were involved: the archived address was encoded twice before being
+  sent to the availability service, so the service was asked about an address it had never seen;
+  and the request asked for one exact capture timestamp, which returns nothing when that capture is
+  a de-duplicated copy of an earlier identical one. The check now asks whether the page is archived
+  at all. A link that was never archived is still rejected (PR #635).
+
+## IAM
+* Service Point Admins can now manage their own service point's API client credentials, without
+  asking ARDC staff. New endpoints under `/realms/raid/client-credential` let an admin create,
+  list, rotate, revoke and retrieve the secret for credentials belonging to the service point they
+  administer. A credential can only ever be created for, and used against, the admin's own service
+  point (PRs #625, #626, #629, #630, #631, #632).
+* A service point is limited to 10 active client credentials. Attempting to create an eleventh
+  returns `409 Conflict` with a message explaining the limit; revoking an unused credential frees a
+  slot. Per-request rate limiting on these endpoints has been deliberately deferred rather than
+  implemented (PR #625).
+* Client credential activity is now recorded in an audit trail covering who did what, when, and to
+  which credential. Credential secrets are returned only to the admin who requests them and are
+  never written to logs (PR #630).
+* A step-by-step guide for Service Point Admins is available at
+  `doc/reference/service-point-client-credentials.md`, covering obtaining a token, creating a
+  credential and using it against the API (PR #633).
+* Documented how to configure ORCID as a login identity provider. ORCID supplies no email address
+  and no name in its token, so without three attribute-importer mappers a user signing in with
+  ORCID has their ORCID iD shown as their first name. The realm ships no identity providers, so
+  each registration agency configures this themselves (PR #628).
+
+## Static Landing Pages
+* Downloadable RAiD JSON now contains only RAiD metadata schema fields. Three display-only fields
+  the site adds when building pages — `orcidInfo` on contributors, `rorDetails` on organisations
+  and the registration agency, and `citation` on related objects — are no longer included in the
+  per-RAiD download, the per-RAiD `.json` route, the on-page raw data view or the bulk
+  `/api/raids.json` export. Anything consuming those downloads now receives schema-conformant JSON.
+  The pages themselves are unchanged and still display resolved ORCID and ROR names and citation
+  text (PR #627).
+
 # 2.15.0
 
 ## API
