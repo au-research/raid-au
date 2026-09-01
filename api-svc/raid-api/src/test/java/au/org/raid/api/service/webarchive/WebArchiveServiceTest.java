@@ -8,14 +8,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -28,12 +31,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class WebArchiveServiceTest {
     private static final String AVAILABILITY_URL = "https://archive.org/wayback/available";
@@ -51,7 +55,7 @@ class WebArchiveServiceTest {
     }
 
     private void stubResponse(final JsonNode body) {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(body));
     }
 
@@ -68,7 +72,7 @@ class WebArchiveServiceTest {
                         .errorType("invalidValue")
                         .message("web archive timestamp year 1406 is implausible")
         )));
-        verify(restTemplate, never()).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
+        verify(restTemplate, never()).exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
     }
 
     @Test
@@ -84,7 +88,7 @@ class WebArchiveServiceTest {
                         .errorType("invalidValue")
                         .message("web archive timestamp year 2100 is implausible")
         )));
-        verify(restTemplate, never()).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
+        verify(restTemplate, never()).exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
     }
 
     @Test
@@ -113,7 +117,7 @@ class WebArchiveServiceTest {
                         .errorType("invalidValue")
                         .message("web archive timestamp year 1995 is implausible")
         )));
-        verify(restTemplate, never()).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
+        verify(restTemplate, never()).exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
     }
 
     @Test
@@ -129,7 +133,7 @@ class WebArchiveServiceTest {
                         .errorType("invalid")
                         .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
         )));
-        verify(restTemplate, never()).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
+        verify(restTemplate, never()).exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), eq(JsonNode.class));
     }
 
     @Test
@@ -216,7 +220,7 @@ class WebArchiveServiceTest {
     @DisplayName("Timeout throws ResolverUnavailableException with resolver name Web Archive")
     void timeoutThrowsResolverUnavailable() {
         final var uri = "https://web.archive.org/web/20220101000000/https://example.com";
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
                 .thenThrow(new ResourceAccessException("Read timed out"));
 
         final var e = assertThrows(ResolverUnavailableException.class,
@@ -230,7 +234,7 @@ class WebArchiveServiceTest {
     @DisplayName("5xx response throws ResolverUnavailableException")
     void serverErrorThrowsResolverUnavailable() {
         final var uri = "https://web.archive.org/web/20220101000000/https://example.com";
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
                 .thenThrow(HttpServerErrorException.create(
                         HttpStatusCode.valueOf(503), "Service Unavailable", null, null, null));
 
@@ -245,7 +249,7 @@ class WebArchiveServiceTest {
     @DisplayName("Non-404 4xx response throws ResolverUnavailableException")
     void nonNotFoundClientErrorThrowsResolverUnavailable() {
         final var uri = "https://web.archive.org/web/20220101000000/https://example.com";
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatusCode.valueOf(403)));
 
         final var e = assertThrows(ResolverUnavailableException.class,
@@ -266,27 +270,73 @@ class WebArchiveServiceTest {
 
         webArchiveService.validate(uri, FIELD_ID);
 
-        final var captor = ArgumentCaptor.forClass(String.class);
+        final var captor = ArgumentCaptor.forClass(URI.class);
         verify(restTemplate).exchange(captor.capture(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class));
-        final var requestUrl = captor.getValue();
+        final var requestUrl = captor.getValue().toString();
 
         assertThat(requestUrl, is(
-                "https://archive.org/wayback/available?url=https%3A%2F%2Fexample.com%2Fpath%3Fa%3Db%26c%3Dd&timestamp=20220101000000"
+                "https://archive.org/wayback/available?url=https%3A%2F%2Fexample.com%2Fpath%3Fa%3Db%26c%3Dd"
         ));
 
         // the reserved characters from the original url must not survive unescaped into the
-        // url param's value - only the "?timestamp=" separator we control is allowed through.
-        final var urlParamValue = requestUrl.substring(requestUrl.indexOf("url=") + 4, requestUrl.indexOf("&timestamp="));
+        // url param's value, or they would be read as further query parameters.
+        final var urlParamValue = requestUrl.substring(requestUrl.indexOf("url=") + 4);
         assertThat(urlParamValue, not(containsString("?")));
         assertThat(urlParamValue, not(containsString("&")));
         assertThat(urlParamValue, not(containsString("=")));
     }
 
     @Test
+    @DisplayName("RAID-854: the availability request reaches the server single-encoded")
+    void availabilityRequestIsNotDoubleEncoded() {
+        final var realRestTemplate = new RestTemplate();
+        final var server = MockRestServiceServer.bindTo(realRestTemplate).build();
+        final var service = new WebArchiveService(realRestTemplate, clock, AVAILABILITY_URL);
+
+        server.expect(requestTo(
+                        "https://archive.org/wayback/available?url=https%3A%2F%2Fhealthycountryai.org%2Ffiles%2FDigitalWomenRangersProgram.pdf"))
+                .andRespond(withSuccess(
+                        "{\"archived_snapshots\":{\"closest\":{\"available\":true,\"status\":\"200\"}}}",
+                        MediaType.APPLICATION_JSON));
+
+        final var failures = service.validate(
+                "https://web.archive.org/web/20260827054756/https://healthycountryai.org/files/DigitalWomenRangersProgram.pdf",
+                FIELD_ID);
+
+        server.verify();
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("RAID-854: the availability request carries no timestamp parameter")
+    void availabilityRequestSendsNoTimestamp() {
+        final var realRestTemplate = new RestTemplate();
+        final var server = MockRestServiceServer.bindTo(realRestTemplate).build();
+        final var service = new WebArchiveService(realRestTemplate, clock, AVAILABILITY_URL);
+
+        // The reported capture (HELP-3170) is a warc/revisit record with no status code of its
+        // own. Asking the availability API for that exact timestamp returns an empty
+        // archived_snapshots even though the page is in the archive, so the timestamp must not
+        // be sent - the untimestamped query returns the closest real capture instead.
+        server.expect(requestTo(
+                        "https://archive.org/wayback/available?url=https%3A%2F%2Fhealthycountryai.org%2Ffiles%2FDigitalWomenRangersProgram.pdf"))
+                .andRespond(withSuccess(
+                        "{\"archived_snapshots\":{\"closest\":{\"available\":true,\"status\":\"200\",\"timestamp\":\"20250330052536\"}}}",
+                        MediaType.APPLICATION_JSON));
+
+        final var failures = service.validate(
+                "https://web.archive.org/web/20260827054756/https://healthycountryai.org/files/DigitalWomenRangersProgram.pdf",
+                FIELD_ID);
+
+        server.verify();
+        assertThat(failures, empty());
+    }
+
+    @Test
     @DisplayName("A 200 response with a null body is treated as no snapshot found")
     void nullResponseBodyReturnsUriDoesNotExist() {
         final var uri = "https://web.archive.org/web/20220101000000/https://example.com";
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(JsonNode.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
         final var failures = webArchiveService.validate(uri, FIELD_ID);
