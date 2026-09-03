@@ -25,6 +25,14 @@ import {
   useViewClientCredentialSecret,
 } from "./useClientCredentialMutations";
 
+const CLIENT_ID_VISIBLE_CHARS = 16;
+
+function truncateClientId(clientId: string): string {
+  return clientId.length > CLIENT_ID_VISIBLE_CHARS
+    ? `${clientId.slice(0, CLIENT_ID_VISIBLE_CHARS)}…`
+    : clientId;
+}
+
 export function ClientCredentialsTable({
   credentials,
   groupId,
@@ -64,8 +72,8 @@ export function ClientCredentialsTable({
   };
 
   return (
-    <TableContainer>
-      <Table size="small">
+    <TableContainer sx={{ overflowX: "auto" }}>
+      <Table size="small" sx={{ minWidth: 640 }}>
         <TableHead>
           <TableRow>
             <TableCell>Label</TableCell>
@@ -81,24 +89,26 @@ export function ClientCredentialsTable({
             const disabled = !credential.enabled;
             return (
               <TableRow key={credential.clientId} sx={{ opacity: disabled ? 0.55 : 1 }}>
-                <TableCell>{credential.label}</TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
-                    {credential.clientId}
-                  </Typography>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>{credential.label}</TableCell>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
+                  <Tooltip title={credential.clientId}>
+                    <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                      {truncateClientId(credential.clientId)}
+                    </Typography>
+                  </Tooltip>
                 </TableCell>
-                <TableCell>{new Date(credential.createdAt).toLocaleString("en-AU")}</TableCell>
-                <TableCell>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>{new Date(credential.createdAt).toLocaleString("en-AU")}</TableCell>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
                   {credential.lastRotatedAt ? new Date(credential.lastRotatedAt).toLocaleString("en-AU") : "—"}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
                   <Chip
                     label={credential.enabled ? "Enabled" : "Revoked"}
                     size="small"
                     color={credential.enabled ? "success" : "default"}
                   />
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                   <Tooltip title={disabled ? "Unavailable — revoked" : "View secret"}>
                     <span>
                       <IconButton
