@@ -70,7 +70,11 @@ raid:
     schema-uri: https://raid.org/
     license: Creative Commons CC-0
     landing-prefix: https://static.${raid.environment}.raid.org.au/raids/
-    registration-agency-identifier: https://ror.org/038sjwq14
+    # No default. This is the ROR of the Registration Agency operating the
+    # instance: it is published as identifier.registrationAgency.id on every RAiD
+    # minted, and the Service Point ID range is derived from it. Defaulting it to
+    # ARDC would let another agency's deployment silently inherit ARDC's identity
+    # and mint into ARDC's Service Point ID range. Every deployment must set it.
     name-prefix: https://raid.org/
   spatial-coverage:
     schema-uri:
