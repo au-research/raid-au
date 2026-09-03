@@ -1,4 +1,8 @@
-import type { Contributor, Organisation, RaidDto, RelatedRaid } from "@/generated/raid";
+import type { Contributor, RaidDto, RelatedRaid } from "@/generated/raid";
+import type { OrganisationDetails, RegistrationAgencyDetails, RelatedObjectWithCitation } from "@/model/raid";
+import generalMapping from "@/mapping/data/general-mapping.json";
+import subjectMapping from "@/mapping/data/subject-mapping.json";
+import { kebabToTitle } from "@/utils";
 
 const PRIMARY_TITLE_TYPE = "https://vocabulary.raid.org/title.type.schema/5";
 const PRIMARY_DESCRIPTION_TYPE = "https://vocabulary.raid.org/description.type.schema/318";
@@ -7,6 +11,44 @@ const FUNDER_ORGANISATION_ROLE = "https://vocabulary.raid.org/organisation.role.
 const RELATED_RAID_TYPE_IS_PART_OF = "https://vocabulary.raid.org/relatedRaid.type.schema/202";
 const RELATED_RAID_TYPE_HAS_PART = "https://vocabulary.raid.org/relatedRaid.type.schema/201";
 const RELATED_RAID_TYPE_IS_DERIVED_FROM = "https://vocabulary.raid.org/relatedRaid.type.schema/200";
+
+// Maps a related object's schemaUri to the identifier metadata used in the
+// schema.org PropertyValue. Mirrors the backend DataCite export, which only
+// treats ARK/DOI/ISBN as distinct identifier types; every other scheme
+// (Handle, web.archive.org, SciCrunch, etc.) is a plain URL and falls through
+// to the generic URL fallback below.
+const RELATED_OBJECT_IDENTIFIER_TYPES: Record<string, { propertyID: string; name: string }> = {
+  "https://doi.org/": { propertyID: "https://registry.identifiers.org/registry/doi", name: "DOI" },
+  "https://arks.org/": { propertyID: "https://registry.identifiers.org/registry/ark", name: "ARK" },
+  "https://www.isbn-international.org/": { propertyID: "https://registry.identifiers.org/registry/isbn", name: "ISBN" },
+};
+
+// Resolves a RAiD vocabulary URI (contributor.position, organisation.role,
+// relatedRaid.type) to its human-readable label using the same static mapping
+// the UI renders from. Returns undefined when the URI is not in the mapping so
+// callers can decide whether to fall back to the raw URI or omit the label.
+function lookupVocabLabel(uri: string): string | undefined {
+  return generalMapping.find((entry) => entry.key === uri)?.value;
+}
+
+// CRediT contributor roles are not in general-mapping.json; the label is
+// derived from the URI slug, mirroring contributor-roles.astro (e.g.
+// https://credit.niso.org/contributor-roles/data-curation/ -> "Data curation").
+function resolveCreditRoleLabel(uri: string): string {
+  try {
+    const slug = new URL(uri).pathname.split("/").slice(-2, -1)[0];
+    return kebabToTitle(slug) || uri;
+  } catch {
+    return uri;
+  }
+}
+
+// ANZSRC FoR subjects are keyed in subject-mapping.json by the numeric code,
+// with the full linked.data.gov.au URI held on `definition`. The RaidDto
+// subject id is that full URI, so it is matched against `definition`.
+function lookupSubjectLabel(uri: string): string | undefined {
+  return subjectMapping.find((entry) => entry.definition === uri)?.value;
+}
 
 interface PropertyValue {
   "@type": "PropertyValue";
@@ -24,6 +66,7 @@ interface Role {
   member: {
     "@type": "Person" | "Organization";
     "@id": string;
+    name?: string;
     identifier: PropertyValue;
   };
 }
@@ -31,6 +74,7 @@ interface Role {
 interface DefinedTerm {
   "@type": "DefinedTerm";
   "@id": string;
+  name?: string;
   inDefinedTermSet: string;
 }
 
@@ -39,6 +83,15 @@ interface RelatedResearchProject {
   "@id": string;
   identifier: string;
   relationshipType?: string;
+  relationshipTypeName?: string;
+}
+
+interface CreativeWorkReference {
+  "@type": "CreativeWork";
+  "@id": string;
+  name?: string;
+  identifier: PropertyValue;
+  additionalType?: string[];
 }
 
 interface ResearchProjectJsonLd {
@@ -51,6 +104,7 @@ interface ResearchProjectJsonLd {
   parentOrganization: {
     "@type": "Organization";
     "@id": string;
+    name?: string;
     identifier: PropertyValue;
   };
   description?: string;
@@ -59,6 +113,7 @@ interface ResearchProjectJsonLd {
   member: Role[];
   funder: Role[];
   knowsAbout: DefinedTerm[];
+  citation?: CreativeWorkReference[];
   isPartOf?: RelatedResearchProject[];
   hasPart?: RelatedResearchProject[];
   isBasedOn?: RelatedResearchProject[];
@@ -80,7 +135,7 @@ function buildContributorRoles(contributor: Contributor): Role[] {
   const positionRoles: Role[] = (contributor.position ?? []).map((position) => ({
     "@type": "Role",
     "@id": position.id,
-    roleName: position.id,
+    roleName: lookupVocabLabel(position.id) ?? position.id,
     startDate: position.startDate,
     endDate: position.endDate,
     member: person,
@@ -89,23 +144,30 @@ function buildContributorRoles(contributor: Contributor): Role[] {
   const creditRoles: Role[] = (contributor.role ?? []).map((role) => ({
     "@type": "Role",
     "@id": role.id,
-    roleName: role.id,
+    roleName: resolveCreditRoleLabel(role.id),
     member: person,
   }));
 
   return [...positionRoles, ...creditRoles];
 }
 
-function buildOrganisationRole(organisation: Organisation, orgRole: { id: string; startDate: string; endDate?: string }): Role {
+function buildOrganisationRole(organisation: OrganisationDetails, orgRole: { id: string; startDate: string; endDate?: string }): Role {
+  // The organisation's resolved ROR name is fetched and cached at build time by
+  // scripts/fetch-ror.js and stored on organisation.rorDetails. Emit it as the
+  // schema.org Organization `name` so consumers don't have to call the ROR API
+  // themselves (RAID-794). Omitted when resolution was unavailable so the node
+  // still emits with just the ROR identifier.
+  const resolvedName = organisation.rorDetails?.name;
   return {
     "@type": "Role",
     "@id": orgRole.id,
-    roleName: orgRole.id,
+    roleName: lookupVocabLabel(orgRole.id) ?? orgRole.id,
     startDate: orgRole.startDate,
     endDate: orgRole.endDate,
     member: {
       "@type": "Organization",
       "@id": organisation.id,
+      ...(resolvedName && { name: resolvedName }),
       identifier: {
         "@type": "PropertyValue",
         propertyID: "https://registry.identifiers.org/registry/ror",
@@ -116,13 +178,13 @@ function buildOrganisationRole(organisation: Organisation, orgRole: { id: string
   };
 }
 
-function buildOrganisationRoles(organisation: Organisation): Role[] {
+function buildOrganisationRoles(organisation: OrganisationDetails): Role[] {
   return organisation.role
     .filter((r) => r.id !== FUNDER_ORGANISATION_ROLE)
     .map((r) => buildOrganisationRole(organisation, r));
 }
 
-function buildFunderRoles(organisation: Organisation): Role[] {
+function buildFunderRoles(organisation: OrganisationDetails): Role[] {
   return organisation.role
     .filter((r) => r.id === FUNDER_ORGANISATION_ROLE)
     .map((r) => buildOrganisationRole(organisation, r));
@@ -154,6 +216,10 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
     };
     if (property === "isRelatedTo" && related.type?.id) {
       entry.relationshipType = related.type.id;
+      const label = lookupVocabLabel(related.type.id);
+      if (label) {
+        entry.relationshipTypeName = label;
+      }
     }
     (groups[property] ??= []).push(entry);
   }
@@ -166,8 +232,71 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
   };
 }
 
+// Related objects (inputs/outputs) are emitted as a flat list of schema.org
+// CreativeWork nodes under `citation`. `citation` is strictly a CreativeWork
+// property whereas ResearchProject descends from Organization, but this file
+// already uses CreativeWork properties (isPartOf/hasPart/isBasedOn) on the
+// project loosely, consistent with how harvesters consume the output. The
+// category (Input/Output/Internal) is preserved on `additionalType` rather
+// than split across distinct schema.org properties (see RAID-757). It is always
+// emitted as an array (omitted when there is no category) so the output matches
+// the multivalued `additionalType` in the LinkML CreativeWork schema; harvesters
+// treat a single-element array and a scalar identically after JSON-LD expansion
+// (RAID-782).
+//
+// The formatted citation text (APA string fetched from DOI.org by the
+// fetch-raids build step, and shown on the landing page) is carried on `name`
+// when present, so harvesters get the same human-readable reference the page
+// displays rather than a bare identifier.
+function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]): CreativeWorkReference[] {
+  const citations: CreativeWorkReference[] = [];
+
+  for (const related of relatedObjects) {
+    if (!related.id) continue;
+
+    const identifierType = RELATED_OBJECT_IDENTIFIER_TYPES[related.schemaUri ?? ""] ?? {
+      propertyID: related.schemaUri ?? "",
+      name: "URL",
+    };
+
+    const categoryIds = (related.category ?? [])
+      .map((c) => c.id)
+      .filter((id): id is string => Boolean(id));
+
+    const citation: CreativeWorkReference = {
+      "@type": "CreativeWork",
+      "@id": related.id,
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: identifierType.propertyID,
+        name: identifierType.name,
+        value: related.id,
+      },
+    };
+
+    const citationText = related.citation?.text?.trim();
+    if (citationText) {
+      citation.name = citationText;
+    }
+
+    if (categoryIds.length > 0) {
+      citation.additionalType = categoryIds;
+    }
+
+    citations.push(citation);
+  }
+
+  return citations;
+}
+
 export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProjectJsonLd {
-  const registrationAgencyId = raid.identifier?.registrationAgency?.id ?? "";
+  // registrationAgency is enriched with its resolved ROR name at build time by
+  // scripts/fetch-ror.js (RAID-794); the generated type doesn't declare it.
+  const registrationAgency = raid.identifier?.registrationAgency as
+    | RegistrationAgencyDetails
+    | undefined;
+  const registrationAgencyId = registrationAgency?.id ?? "";
+  const registrationAgencyName = registrationAgency?.rorDetails?.name;
 
   const description = raid.description
     ?.filter((d) => d.type.id === PRIMARY_DESCRIPTION_TYPE)
@@ -186,11 +315,19 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     funderRoles.push(...buildFunderRoles(organisation));
   }
 
-  const subjects: DefinedTerm[] = (raid.subject ?? []).map((subject) => ({
-    "@type": "DefinedTerm",
-    "@id": subject.id,
-    inDefinedTermSet: subject.schemaUri,
-  }));
+  const subjects: DefinedTerm[] = (raid.subject ?? []).map((subject) => {
+    const label = lookupSubjectLabel(subject.id);
+    return {
+      "@type": "DefinedTerm",
+      "@id": subject.id,
+      ...(label && { name: label }),
+      inDefinedTermSet: subject.schemaUri,
+    };
+  });
+
+  const citations = buildRelatedObjectCitations(
+    (raid.relatedObject ?? []) as RelatedObjectWithCitation[]
+  );
 
   const primaryTitle = raid.title?.find((t) => t.type?.id === PRIMARY_TITLE_TYPE)?.text
     ?? raid.title?.at(0)?.text
@@ -214,6 +351,7 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     parentOrganization: {
       "@type": "Organization",
       "@id": registrationAgencyId,
+      ...(registrationAgencyName && { name: registrationAgencyName }),
       identifier: {
         "@type": "PropertyValue",
         propertyID: "https://registry.identifiers.org/registry/ror",
@@ -227,6 +365,7 @@ export function buildResearchProjectJsonLd(raid: Partial<RaidDto>): ResearchProj
     member: memberRoles,
     funder: funderRoles,
     knowsAbout: subjects,
+    ...(citations.length > 0 && { citation: citations }),
     ...buildRelatedRaidProperties(raid.relatedRaid ?? []),
   };
 }

@@ -71,6 +71,27 @@ class ContributorPositionValidatorTest {
     }
 
     @Test
+    @DisplayName("Validation passes with empty string end date")
+    void validationPassesWithEmptyStringEndDate() {
+        final var position = new ContributorPosition()
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate("");
+
+        when(contributorPositionSchemaRepository.findActiveByUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305.getValue()))
+                .thenReturn(Optional.of(CONTRIBUTOR_POSITION_TYPE_SCHEMA_RECORD));
+
+        when(contributorPositionRepository
+                .findByUriAndSchemaId(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307.getValue(), CONTRIBUTOR_POSITION_TYPE_SCHEMA_ID))
+                .thenReturn(Optional.of(CONTRIBUTOR_POSITION_TYPE_RECORD));
+
+        final var failures = validationService.validate(position, 2, 3);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
     @DisplayName("Validation fails if end date is before start date")
     void endDateBeforeStartDate() {
         final var position = new ContributorPosition()
@@ -209,6 +230,35 @@ class ContributorPositionValidatorTest {
                 .findByUriAndSchemaId(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307.getValue(), CONTRIBUTOR_POSITION_TYPE_SCHEMA_ID))
                 .thenReturn(Optional.of(CONTRIBUTOR_POSITION_TYPE_RECORD));
 
+        final var failures = validationService.validate(position, 2, 3);
+
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[2].position[3].startDate")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
+    }
+
+    @Test
+    @DisplayName("Validation fails with empty string startDate")
+    void emptyStringStartDate() {
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate("")
+                .endDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        when(contributorPositionSchemaRepository.findActiveByUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305.getValue()))
+                .thenReturn(Optional.of(CONTRIBUTOR_POSITION_TYPE_SCHEMA_RECORD));
+
+        when(contributorPositionRepository
+                .findByUriAndSchemaId(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307.getValue(), CONTRIBUTOR_POSITION_TYPE_SCHEMA_ID))
+                .thenReturn(Optional.of(CONTRIBUTOR_POSITION_TYPE_RECORD));
+
+        // key assertion: a blank startDate must produce the NOT_SET failure (not silently pass),
+        // and must not throw InvalidDateException from the endDate/startDate comparison
         final var failures = validationService.validate(position, 2, 3);
 
         assertThat(failures, hasSize(1));

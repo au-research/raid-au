@@ -16,6 +16,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -43,16 +44,27 @@ public class DataciteService {
             return;
         }
 
-        final DataciteRequest dataciteRequest = dataciteRequestFactory.create(request, handle);
-
-        log.debug("POSTing Datacite request: {}", objectMapper.writeValueAsString(dataciteRequest));
-
-        final HttpEntity<DataciteRequest> entity = httpEntityFactory.create(dataciteRequest, repositoryId, password);
-        log.debug("Making POST request to Datacite: {}", properties.getEndpoint());
-
         try {
+            final DataciteRequest dataciteRequest = dataciteRequestFactory.create(request, handle);
+
+            log.debug("POSTing Datacite request: {}", objectMapper.writeValueAsString(dataciteRequest));
+
+            final HttpEntity<DataciteRequest> entity = httpEntityFactory.create(dataciteRequest, repositoryId, password);
+            log.debug("Making POST request to Datacite: {}", properties.getEndpoint());
+
             restTemplate.exchange(properties.getEndpoint(), HttpMethod.POST, entity, JsonNode.class);
         } catch (HttpClientErrorException e) {
+            // Kept as its own catch, before the broader RestClientException below, so this
+            // exception type still reaches RaidService.mintHandle's 422-retry logic unchanged.
+            log.error("Unable to create Datacite record", e);
+            throw e;
+        } catch (RestClientException e) {
+            // Covers ResourceAccessException (connect/read timeout, DNS failure, connection refused)
+            // and HttpServerErrorException (5xx), raised either by the ROR lookups the DataCite request
+            // factories perform (dataciteRequestFactory.create -> rorClient.getOrganisationName) or by
+            // the POST to DataCite itself. Logged here for service-layer context and rethrown
+            // unchanged; RaidExceptionHandler.handleRestClientException renders the client-facing
+            // structured 502 response once it escapes the controller boundary. See RAID-803.
             log.error("Unable to create Datacite record", e);
             throw e;
         }

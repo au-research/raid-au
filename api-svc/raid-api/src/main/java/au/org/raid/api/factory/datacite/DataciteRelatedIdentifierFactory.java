@@ -23,8 +23,9 @@ public class DataciteRelatedIdentifierFactory {
             RelatedObjectSchemaUriEnum.HTTPS_ARKS_ORG_, RelatedIdentifierType.ARK.getName(),
             RelatedObjectSchemaUriEnum.HTTPS_DOI_ORG_, RelatedIdentifierType.DOI.getName(),
             RelatedObjectSchemaUriEnum.HTTPS_WWW_ISBN_INTERNATIONAL_ORG_, RelatedIdentifierType.ISBN.getName(),
-            RelatedObjectSchemaUriEnum.HTTPS_SCICRUNCH_ORG_RESOLVER_, RelatedIdentifierType.URL.getName(),
-            RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_, RelatedIdentifierType.URL.getName()
+            RelatedObjectSchemaUriEnum.HTTPS_SCICRUNCH_ORG_RESOLVER_, RelatedIdentifierType.RRID.getName(),
+            RelatedObjectSchemaUriEnum.HTTPS_WEB_ARCHIVE_ORG_, RelatedIdentifierType.URL.getName(),
+            RelatedObjectSchemaUriEnum.HTTPS_HDL_HANDLE_NET_, RelatedIdentifierType.HANDLE.getName()
     );
 
     private static final Map<RelatedObjectTypeIdEnum, String> RESOURCE_TYPE_MAP = Map.ofEntries(
@@ -94,7 +95,7 @@ public class DataciteRelatedIdentifierFactory {
     public DataciteRelatedIdentifier create(final RelatedRaid relatedRaid) {
         return new DataciteRelatedIdentifier()
                 .setRelatedIdentifier(relatedRaid.getId())
-                .setRelatedIdentifierType(RelatedIdentifierType.DOI.getName())
+                .setRelatedIdentifierType(RelatedIdentifierType.RAID.getName())
                 .setRelationType(RAID_RELATION_TYPE_MAP.get(relatedRaid.getType().getId()))
                 .setResourceTypeGeneral(ResourceTypeGeneral.PROJECT.getName());
     }

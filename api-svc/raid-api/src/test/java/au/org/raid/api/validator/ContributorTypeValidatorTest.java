@@ -2,6 +2,7 @@ package au.org.raid.api.validator;
 
 import au.org.raid.api.client.contributor.ContributorClient;
 import au.org.raid.api.config.properties.ContributorValidationProperties.ContributorTypeValidationProperties;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.ContributorPosition;
 import au.org.raid.idl.raidv2.model.ContributorPositionIdEnum;
@@ -17,6 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,12 +32,16 @@ import static au.org.raid.api.endpoint.message.ValidationMessage.*;
 import static au.org.raid.api.util.TestConstants.VALID_ORCID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ContributorTypeValidatorTest {
     private static final String URL_PREFIX = "https://orcid.org/";
     private static final String SCHEMA_URI_PATTERN = "https://orcid.org/";
+    private static final String SANDBOX_URL_PREFIX = "https://sandbox.orcid.org/";
+    private static final String SANDBOX_SCHEMA_URI = "https://sandbox.orcid.org/";
+    private static final String SANDBOX_ORCID = "https://sandbox.orcid.org/0000-0000-0000-0001";
     private static final int CONTRIBUTOR_INDEX = 0;
 
     @Mock
@@ -58,7 +67,8 @@ class ContributorTypeValidatorTest {
                 validationProperties,
                 contributorClient,
                 roleValidator,
-                positionValidator
+                positionValidator,
+                "ORCID"
         );
     }
 
@@ -231,6 +241,135 @@ class ContributorTypeValidatorTest {
     }
 
     @Test
+    @DisplayName("Validation throws ResolverUnavailableException when contributorClient.exists() throws a connect/read timeout")
+    void existsThrowsResourceAccessException() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID)).thenThrow(new ResourceAccessException("timeout"));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is("contributor[0].id"));
+        assertThat(unavailable.getResolver(), is("ORCID"));
+        assertThat(unavailable.getDownstreamStatus(), nullValue());
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException when contributorClient.exists() throws a 5xx error")
+    void existsThrowsHttpServerErrorException() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID))
+                .thenThrow(HttpServerErrorException.create(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is("contributor[0].id"));
+        assertThat(unavailable.getResolver(), is("ORCID"));
+        assertThat(unavailable.getDownstreamStatus(), is(500));
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException when contributorClient.exists() throws a non-404 HttpClientErrorException (e.g. ORCID member-API 403)")
+    void existsThrowsHttpClientErrorExceptionNon404() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID))
+                .thenThrow(HttpClientErrorException.create(
+                        HttpStatus.FORBIDDEN, "Forbidden", null, null, null));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> validator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        final var unavailable = e.getUnavailableResolvers().get(0);
+        assertThat(unavailable.getField(), is("contributor[0].id"));
+        assertThat(unavailable.getResolver(), is("ORCID"));
+        assertThat(unavailable.getDownstreamStatus(), is(403));
+    }
+
+    @Test
+    @DisplayName("Validation throws ResolverUnavailableException with resolver=ISNI when the ISNI validator's client is unavailable")
+    void isniVariant_existsThrowsResourceAccessException() {
+        final var isniValidator = new ContributorTypeValidator(
+                validationProperties,
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ISNI"
+        );
+
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(VALID_ORCID)).thenThrow(new ResourceAccessException("timeout"));
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> isniValidator.validate(contributor, CONTRIBUTOR_INDEX));
+
+        assertThat(e.getUnavailableResolvers(), hasSize(1));
+        assertThat(e.getUnavailableResolvers().get(0).getResolver(), is("ISNI"));
+    }
+
+    @Test
     @DisplayName("Validation fails with null schema URI")
     void nullSchemaUri() {
         final var role = new ContributorRole()
@@ -259,6 +398,59 @@ class ContributorTypeValidatorTest {
                         .fieldId("contributor[0].schemaUri")
                         .errorType(NOT_SET_TYPE)
                         .message(NOT_SET_MESSAGE)
+        ));
+    }
+
+    @Test
+    @DisplayName("RAID-737: production config rejects a sandbox ORCID schemaUri")
+    void productionRejectsSandboxSchemaUri() {
+        // setUp() configures production properties (schemaUri pattern https://orcid.org/)
+        final var contributor = validContributor(VALID_ORCID, ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_);
+
+        final var failures = validator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[0].schemaUri")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE + " - should be %s".formatted(SCHEMA_URI_PATTERN))
+        ));
+    }
+
+    @Test
+    @DisplayName("RAID-737: production config accepts a production ORCID schemaUri")
+    void productionAcceptsProductionSchemaUri() {
+        final var contributor = validContributor(VALID_ORCID, ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
+
+        final var failures = validator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("RAID-737: non-production config accepts a sandbox ORCID schemaUri")
+    void nonProductionAcceptsSandboxSchemaUri() {
+        final var sandboxValidator = validatorWith(SANDBOX_URL_PREFIX, SANDBOX_SCHEMA_URI);
+        final var contributor = validContributor(SANDBOX_ORCID, ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_);
+
+        final var failures = sandboxValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("RAID-737: non-production config rejects a production ORCID schemaUri")
+    void nonProductionRejectsProductionSchemaUri() {
+        final var sandboxValidator = validatorWith(SANDBOX_URL_PREFIX, SANDBOX_SCHEMA_URI);
+        final var contributor = validContributor(SANDBOX_ORCID, ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
+
+        final var failures = sandboxValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[0].schemaUri")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE + " - should be %s".formatted(SANDBOX_SCHEMA_URI))
         ));
     }
 
@@ -596,6 +788,44 @@ class ContributorTypeValidatorTest {
     }
 
     @Test
+    @DisplayName("Validation does not throw when position start date is an empty string, and propagates NOT_SET from position validator")
+    void positionWithEmptyStringStartDate() {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate("");
+
+        final var contributor = new Contributor()
+                .id(VALID_ORCID)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        // ContributorPositionValidator is mocked here, but in production it now returns a NOT_SET
+        // failure for a blank startDate (see ContributorPositionValidatorTest) - stub the mock to
+        // match that real behaviour so this test reflects what actually happens end-to-end.
+        final var startDateNotSetFailure = new ValidationFailure()
+                .fieldId("contributor[0].position[0].startDate")
+                .errorType(NOT_SET_TYPE)
+                .message(NOT_SET_MESSAGE);
+
+        when(contributorClient.exists(VALID_ORCID)).thenReturn(true);
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(List.of(startDateNotSetFailure));
+
+        final var failures = validator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        // the key assertion for this test: the blank startDate must not throw InvalidDateException
+        // while ContributorTypeValidator's own position-sort logic resolves it internally
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(startDateNotSetFailure));
+    }
+
+    @Test
     @DisplayName("Validation fails when position without end date overlaps with earlier position")
     void positionWithoutEndDateOverlaps() {
         final var role = new ContributorRole()
@@ -632,5 +862,137 @@ class ContributorTypeValidatorTest {
                         .errorType(INVALID_VALUE_TYPE)
                         .message("Contributors can only hold one position at any given time. This position conflicts with contributor[0].position[0]")
         ));
+    }
+
+    @Test
+    @DisplayName("RAID-791: a checksum-invalid ISNI is rejected locally without calling contributorClient.exists()")
+    void isniVariant_checksumInvalidIdIsRejectedWithoutCallingExists() {
+        final var isniUrlPrefix = "https://isni.org/isni/";
+        final var isniValidationProperties = ContributorTypeValidationProperties.builder()
+                .urlPrefix(isniUrlPrefix)
+                .schemaUri("https://isni.org/")
+                .build();
+
+        final var isniValidator = new ContributorTypeValidator(
+                isniValidationProperties,
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ISNI",
+                new IsniValidator()
+        );
+
+        // Same 16-character shape as a valid ISNI, but the check character does not satisfy
+        // MOD 11-2 (calculated check character for these digits is "1", not "0").
+        final var checksumInvalidIsni = isniUrlPrefix + "0000000000000000";
+
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(checksumInvalidIsni)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = isniValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("contributor[0].id")
+                        .errorType(INVALID_VALUE_TYPE)
+                        .message(INVALID_VALUE_MESSAGE)
+        ));
+
+        verify(contributorClient, never()).exists(anyString());
+    }
+
+    @Test
+    @DisplayName("RAID-791: a checksum-valid ISNI still proceeds to contributorClient.exists()")
+    void isniVariant_checksumValidIdStillCallsExists() {
+        final var isniUrlPrefix = "https://isni.org/isni/";
+        final var isniValidationProperties = ContributorTypeValidationProperties.builder()
+                .urlPrefix(isniUrlPrefix)
+                .schemaUri("https://isni.org/")
+                .build();
+
+        final var isniValidator = new ContributorTypeValidator(
+                isniValidationProperties,
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ISNI",
+                new IsniValidator()
+        );
+
+        final var checksumValidIsni = isniUrlPrefix + "0000000121032683";
+
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        final var contributor = new Contributor()
+                .id(checksumValidIsni)
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ISNI_ORG_)
+                .role(List.of(role))
+                .position(List.of(position));
+
+        when(contributorClient.exists(checksumValidIsni)).thenReturn(true);
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+
+        final var failures = isniValidator.validate(contributor, CONTRIBUTOR_INDEX);
+
+        assertThat(failures, empty());
+
+        verify(contributorClient).exists(checksumValidIsni);
+    }
+
+    private ContributorTypeValidator validatorWith(final String urlPrefix, final String schemaUri) {
+        return new ContributorTypeValidator(
+                ContributorTypeValidationProperties.builder()
+                        .urlPrefix(urlPrefix)
+                        .schemaUri(schemaUri)
+                        .build(),
+                contributorClient,
+                roleValidator,
+                positionValidator,
+                "ORCID"
+        );
+    }
+
+    private Contributor validContributor(final String id, final ContributorSchemaUriEnum schemaUri) {
+        final var role = new ContributorRole()
+                .schemaUri(ContributorRoleSchemaUriEnum.HTTPS_CREDIT_NISO_ORG_)
+                .id(ContributorRoleIdEnum.HTTPS_CREDIT_NISO_ORG_CONTRIBUTOR_ROLES_SUPERVISION_);
+
+        final var position = new ContributorPosition()
+                .schemaUri(ContributorPositionSchemaUriEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_305)
+                .id(ContributorPositionIdEnum.HTTPS_VOCABULARY_RAID_ORG_CONTRIBUTOR_POSITION_SCHEMA_307)
+                .startDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        when(contributorClient.exists(id)).thenReturn(true);
+        when(roleValidator.validate(role, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+        when(positionValidator.validate(position, CONTRIBUTOR_INDEX, 0)).thenReturn(Collections.emptyList());
+
+        return new Contributor()
+                .id(id)
+                .schemaUri(schemaUri)
+                .role(List.of(role))
+                .position(List.of(position));
     }
 }

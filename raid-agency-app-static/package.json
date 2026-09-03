@@ -16,7 +16,7 @@
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/sitemap": "^3.7.3",
-    "@fontsource/figtree": "^5.1.1",
+    "@fontsource/figtree": "^5.3.0",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^6.4.8",
@@ -30,6 +30,8 @@
   "devDependencies": {
     "@types/node": "^22.13.10",
     "@types/trusted-types": "^2.0.7",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "vitest": "^4.1.10"
   },
   "overrides": {

@@ -46,7 +46,13 @@ public class DataciteErrorIntegrationTest extends AbstractIntegrationTest {
             raidApi.mintRaid(createRequest);
             fail("Expected mint to fail when DataCite returns 429");
         } catch (FeignException e) {
-            assertThat(e.status()).isEqualTo(500);
+            // A DataCite error during mint is an upstream-dependency failure. RaidExceptionHandler's
+            // RestClientException handler now surfaces it as a structured 502 (previously an opaque,
+            // empty-body 500 from the catch-all handler). See RAID-803.
+            assertThat(e.status()).isEqualTo(502);
+            assertThat(e.contentUTF8())
+                    .contains("UpstreamServiceException")
+                    .contains("Upstream service unavailable");
         }
     }
 }

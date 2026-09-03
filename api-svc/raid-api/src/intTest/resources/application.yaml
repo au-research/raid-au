@@ -11,16 +11,25 @@ raid:
     apids:
       enabled: true
       delay: 150
-    ror:
+    doi:
       enabled: true
       delay: 150
-    doi:
+    handle:
+      enabled: true
+      delay: 150
+    rrid:
       enabled: true
       delay: 150
     open-street-map:
       enabled: true
       delay: 150
     isni:
+      enabled: true
+      delay: 150
+    ror:
+      enabled: true
+      delay: 150
+    web-archive:
       enabled: true
       delay: 150
   identifier:

@@ -17,10 +17,14 @@ public class InMemoryStubTestData {
             "https://orcid.org/0000-0001-0000-0009";
     public static String SERVER_ERROR_TEST_ORCID =
             "https://orcid.org/0000-0002-0448-8774";
-    public static String NONEXISTENT_TEST_ROR = "https://ror.org/000000042";
-    public static String SERVER_ERROR_TEST_ROR = "https://ror.org/000000043";
     public static String NONEXISTENT_TEST_DOI = "https://doi.org/10.42/000000";
     public static String SERVER_ERROR_TEST_DOI = "https://doi.org/10.42/000001";
+
+    public static String NONEXISTENT_TEST_HANDLE = "https://hdl.handle.net/0.0/not-found";
+    public static String SERVER_ERROR_TEST_HANDLE = "https://hdl.handle.net/0.0/server-error";
+
+    public static String NONEXISTENT_TEST_RRID = "https://scicrunch.org/resolver/RRID:AB_0000000";
+    public static String SERVER_ERROR_TEST_RRID = "https://scicrunch.org/resolver/RRID:AB_5000000";
 
     public static String NONEXISTENT_TEST_GEONAMES_URI = "https://www.geonames.org/0/not-found.html";
     public static String SERVER_ERROR_TEST_GEONAMES_URI = "https://www.geonames.org/0/server-error.html";
@@ -28,6 +32,22 @@ public class InMemoryStubTestData {
     public static String NONEXISTENT_TEST_OPENSTREETMAP_URI = "https://www.openstreetmap.org/not-found";
     public static String SERVER_ERROR_TEST_OPENSTREETMAP_URI = "https://www.openstreetmap.org/server-error";
 
-    public static String NONEXISTENT_TEST_ISNI = "https://isni.org/isni/0000000000000000";
+    // Must be checksum-valid (ISO 27729 MOD 11-2) so the RAID-791 local checksum gate lets it
+    // through to the stub's existence check - calculated check character for digits
+    // "000000000000002" is "8".
+    public static String NONEXISTENT_TEST_ISNI = "https://isni.org/isni/0000000000000028";
+    // Checksum-valid - calculated check character for digits "000000000000000" is "1".
     public static String SERVER_ERROR_TEST_ISNI = "https://isni.org/isni/0000000000000001";
+    // Deliberately checksum-INVALID (calculated check character for digits
+    // "000000000000000" is "1", not "0") - used to test the RAID-791 local checksum rejection
+    // path, which must reject before ever calling the stub/live resolver.
+    public static String MALFORMED_TEST_ISNI = "https://isni.org/isni/0000000000000000";
+
+    public static String NONEXISTENT_TEST_ROR = "https://ror.org/000000000";
+    public static String SERVER_ERROR_TEST_ROR = "https://ror.org/000000001";
+
+    public static String NONEXISTENT_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
+    public static String SERVER_ERROR_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://server-error.example.com";
 }

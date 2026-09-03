@@ -208,12 +208,14 @@ Users are associated with groups and have an `activeGroupId` attribute that dete
 
 ### Test Users
 
-| Username              | Roles                                         | Active Group             | Password   |
-|-----------------------|-----------------------------------------------|--------------------------|------------|
-| `raid-test-user`      | `service-point-user`, `pid-searcher`          | raid-au                  | `password` |
-| `uq-test-user`        | `service-point-user`                          | University of Queensland | `password` |
-| `raid-operator`       | `operator`                                    | (none)                   | `password` |
-| `raid-au-group-admin` | `group-admin`, `service-point-user`           | raid-au                  | `password` |
+| Username                     | Roles                                         | Active Group             | Password   |
+|------------------------------|-----------------------------------------------|--------------------------|------------|
+| `raid-test-user`             | `service-point-user`, `pid-searcher`          | raid-au                  | `password` |
+| `uq-test-user`               | `service-point-user`                          | University of Queensland | `password` |
+| `raid-operator`              | `operator`                                    | (none)                   | `password` |
+| `raid-au-group-admin`        | `group-admin`, `service-point-user`           | raid-au                  | `password` |
+| `raid-au-pending-user`       | (none — raw, self-joined member of raid-au)   | raid-au                  | `password` |
+| `raid-au-unapproved-admin`   | `group-admin` (raw, self-joined member of raid-au, never approved — see RAID-608) | raid-au | `password` |
 
 ### User Attributes
 

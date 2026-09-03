@@ -1,6 +1,7 @@
 ---
 import type { RaidDto } from "@/generated/raid";
 import { raids } from "@/store/raids";
+import { sanitizeRaidForDownload } from "@/utils/sanitize-raid";
 
 export async function getStaticPaths() {
   return raids.map((el) => {
@@ -20,7 +21,7 @@ export async function getStaticPaths() {
 const { prefix, suffix }: { prefix: string; suffix: string } = Astro.params;
 const { raid } = Astro.props as unknown as { raid: Partial<RaidDto> };
 
-return new Response(JSON.stringify(raid), {
+return new Response(JSON.stringify(sanitizeRaidForDownload(raid)), {
   status: 200,
   headers: {
     "Content-Type": "application/json",

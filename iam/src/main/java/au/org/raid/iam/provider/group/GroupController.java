@@ -439,7 +439,8 @@ public class GroupController {
     /**
      * A user is an admin of the given group if they hold the scoped
      * "service-point-admin:&lt;groupId&gt;" realm role, or - while the flat group-admin fallback is
-     * enabled - if they hold the legacy flat group-admin role and are a member of the group.
+     * enabled - if they hold the legacy flat group-admin role and are an approved member of the
+     * group.
      */
     private boolean isGroupAdminOf(final UserModel user, final String groupId) {
         final var scopedRoleName = servicePointAdminRoleName(groupId);
@@ -450,13 +451,28 @@ public class GroupController {
             return true;
         }
 
-        return flatGroupAdminFallbackEnabled && isGroupAdmin(user) && isGroupMember(user, groupId);
+        return flatGroupAdminFallbackEnabled && isGroupAdmin(user) && isApprovedGroupMember(user, groupId);
     }
 
     private boolean isGroupMember(final UserModel user, final String groupId) {
         return !user.getGroupsStream()
                 .filter(g -> g.getId().equals(groupId))
                 .toList().isEmpty();
+    }
+
+    /**
+     * A user is an approved member of a group if they are a Keycloak group member AND hold the
+     * service-point-user role for that membership to mean anything - service-point-user is only
+     * ever granted via an explicit grant() approval, never automatically. This distinguishes a
+     * legitimate, approved service point affiliation from a raw, unapproved self-join via
+     * /group/join (see RAiD-608 / HELP-2844: a self-joined-but-never-approved membership was
+     * previously enough to satisfy the flat group-admin fallback).
+     */
+    private boolean isApprovedGroupMember(final UserModel user, final String groupId) {
+        return isGroupMember(user, groupId) &&
+                !user.getRoleMappingsStream()
+                        .filter(r -> r.getName().equals(SERVICE_POINT_USER_ROLE))
+                        .toList().isEmpty();
     }
 
     private boolean isOperator(final UserModel user) {
@@ -660,18 +676,22 @@ public class GroupController {
     /**
      * One-off, idempotent backfill for RAID-712: grants the scoped
      * "service-point-admin:&lt;groupId&gt;" realm role to every current holder of the legacy flat
-     * GROUP_ADMIN_ROLE_NAME, for each group they belong to. This preserves each flat
-     * group-admin's existing effective access while service points transition onto scoped roles
-     * (see role-permissions.md section 9).
+     * GROUP_ADMIN_ROLE_NAME, for each group they are an approved member of (see
+     * isApprovedGroupMember). This preserves each flat group-admin's existing *legitimate*
+     * effective access while service points transition onto scoped roles (see
+     * role-permissions.md section 9).
      *
      * <p>Operator-only. Safe to re-run: users who already hold the scoped role for a group are
      * counted as skipped rather than re-granted, and existing scoped roles are reused rather than
      * recreated.
      *
-     * <p>Note: this intentionally over-grants - a flat group-admin is granted the scoped admin
-     * role for every group they are a member of, not just the group(s) they were originally
-     * intended to administer. Pruning any resulting excess scoped grants is deferred to a future
-     * RAID-712 follow-up once service points have reviewed their membership.
+     * <p>Note: raw/pending memberships (groups the user has self-joined but was never granted
+     * service-point-user for) are deliberately excluded - backfilling those would silently grant
+     * admin authority the user was never approved for (RAiD-608 / HELP-2844). Within a group the
+     * member is genuinely approved for, this may still over-grant relative to what they were
+     * originally intended to administer if they are an approved member of more than one group;
+     * pruning that is deferred to a future RAID-712 follow-up once service points have reviewed
+     * their membership.
      */
     @POST
     @Path("/migrate-service-point-admins")
@@ -725,8 +745,12 @@ public class GroupController {
 
                     // Materialise before granting roles below - member.grantRole mutates this
                     // user's role mappings, and we must not mutate them while consuming a live
-                    // stream over the same underlying data.
-                    final var groups = member.getGroupsStream().toList();
+                    // stream over the same underlying data. Only backfill groups the member is
+                    // an approved (not merely raw/pending self-joined) member of - see
+                    // isApprovedGroupMember and RAiD-608 / HELP-2844.
+                    final var groups = member.getGroupsStream()
+                            .filter(g -> isApprovedGroupMember(member, g.getId()))
+                            .toList();
 
                     for (final var group : groups) {
                         final var roleName = servicePointAdminRoleName(group.getId());

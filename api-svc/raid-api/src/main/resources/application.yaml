@@ -37,22 +37,34 @@ raid:
     api-key: not-set
   stub:
     geo-names:
-      enabled: true
+      enabled: false
       delay: 150
     orcid:
-      enabled: true
+      enabled: false
       delay: 150
     apids:
-      enabled: true
-      delay: 150
-    ror:
-      enabled: true
+      enabled: false
       delay: 150
     doi:
-      enabled: true
+      enabled: false
+      delay: 150
+    handle:
+      enabled: false
+      delay: 150
+    rrid:
+      enabled: false
       delay: 150
     open-street-map:
-      enabled: true
+      enabled: false
+      delay: 150
+    isni:
+      enabled: false
+      delay: 150
+    ror:
+      enabled: false
+      delay: 150
+    web-archive:
+      enabled: false
       delay: 150
   identifier:
     schema-uri: https://raid.org/
@@ -67,8 +79,25 @@ raid:
   validation:
     geonames:
       username: geonames
+  uri-validation:
+    # Bounded connect/read timeouts for the URI validators' RestTemplate so a slow
+    # or unreachable external resolver fails gracefully rather than hanging. Scoped
+    # to validators only; the shared RestTemplate (minting etc.) is unaffected (RAID-802).
+    connect-timeout: 5s
+    read-timeout: 10s
+    web-archive:
+      availability-url: https://archive.org/wayback/available
   history:
     baseline-interval: 50
+  datacite:
+    resync:
+      # Reusable DataCite re-sync mechanism (RAID-832): a background worker drains rows
+      # flagged via the raid.datacite_resync_required column and re-pushes them through
+      # the idempotent DataCite full-document PUT. Off by default; enable per environment.
+      enabled: false
+      batch-size: 50
+      throttle-millis: 1000
+      poll-delay-millis: 60000
 server:
   forward-headers-strategy: native
 spring:

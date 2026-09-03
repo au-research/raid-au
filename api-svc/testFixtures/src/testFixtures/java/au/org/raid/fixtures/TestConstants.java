@@ -49,7 +49,9 @@ public class TestConstants {
     public static final String DESCRIPTION_TYPE_SCHEMA_URI =
             "https://vocabulary.raid.org/description.type.schema/320";
 
-    public static final String ORCID_SCHEMA_URI = "https://orcid.org/";
+    // Integration tests run under the dev profile, which enforces the sandbox ORCID schema (RAID-737).
+    // Paired with the sandbox REAL_TEST_ORCID id above.
+    public static final String ORCID_SCHEMA_URI = "https://sandbox.orcid.org/";
     public static final String ISNI_SCHEMA_URI = "https://isni.org/";
 
     public static final String CONTRIBUTOR_POSITION_SCHEMA_URI =
@@ -103,4 +105,18 @@ public class TestConstants {
     public static final String VALID_WEB_ARCHIVE_URL =
             "https://web.archive.org/web/20220101000000/https://example.com";
     public static final String INVALID_WEB_ARCHIVE_URL = "https://web.archive.org/foo/bar";
+    public static final String NONEXISTENT_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
+    public static final String SERVER_ERROR_TEST_WEB_ARCHIVE =
+            "https://web.archive.org/web/20200101000000/https://server-error.example.com";
+
+    public static final String HANDLE_SCHEMA_URI = "https://hdl.handle.net/";
+    public static final String VALID_HANDLE = "https://hdl.handle.net/20.500.12345/abc123";
+
+    public static final String RRID_SCHEMA_URI = "https://scicrunch.org/resolver/";
+    public static final String VALID_RRID = "https://scicrunch.org/resolver/RRID:AB_2298772";
+
+    public static final String DOI_SCHEMA_URI = "https://doi.org/";
+    // The dx.doi.org proxy host is accepted verbatim under the same DOI scheme (RAID-798).
+    public static final String VALID_DX_DOI = "https://dx.doi.org/10.1234/xyz";
 }

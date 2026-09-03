@@ -119,6 +119,28 @@ describe("buildResearchProjectJsonLd", () => {
     });
   });
 
+  it("includes the resolved ROR name on parentOrganization when available (RAID-794)", () => {
+    const raid = minimalRaid();
+    // rorDetails is attached to the registration agency at build time by
+    // scripts/fetch-ror.js and is not part of the generated type.
+    (raid.identifier!.registrationAgency as never as { rorDetails: { name: string } }).rorDetails = {
+      name: "Australian Research Data Commons",
+    };
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.parentOrganization).toEqual({
+      "@type": "Organization",
+      "@id": "https://ror.org/038sjwq14",
+      name: "Australian Research Data Commons",
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: "https://registry.identifiers.org/registry/ror",
+        name: "ROR",
+        value: "https://ror.org/038sjwq14",
+      },
+    });
+  });
+
   it("extracts primary description", () => {
     const raid = minimalRaid();
     raid.description = [
@@ -179,8 +201,8 @@ describe("buildResearchProjectJsonLd", () => {
         ],
         role: [
           {
-            schemaUri: "https://vocabulary.raid.org",
-            id: "https://vocabulary.raid.org/contributor.role.schema/conceptualization",
+            schemaUri: "https://credit.niso.org",
+            id: "https://credit.niso.org/contributor-roles/data-curation/",
           },
         ],
       },
@@ -192,7 +214,7 @@ describe("buildResearchProjectJsonLd", () => {
     const positionRole = result.member[0];
     expect(positionRole["@type"]).toBe("Role");
     expect(positionRole["@id"]).toBe("https://vocabulary.raid.org/contributor.position.schema/307");
-    expect(positionRole.roleName).toBe("https://vocabulary.raid.org/contributor.position.schema/307");
+    expect(positionRole.roleName).toBe("Principal or Chief Investigator");
     expect(positionRole.startDate).toBe("2025-01-01");
     expect(positionRole.endDate).toBe("2025-12-31");
     expect(positionRole.member).toEqual({
@@ -208,8 +230,53 @@ describe("buildResearchProjectJsonLd", () => {
 
     const creditRole = result.member[1];
     expect(creditRole["@type"]).toBe("Role");
-    expect(creditRole.roleName).toBe("https://vocabulary.raid.org/contributor.role.schema/conceptualization");
+    expect(creditRole["@id"]).toBe("https://credit.niso.org/contributor-roles/data-curation/");
+    expect(creditRole.roleName).toBe("Data curation");
     expect(creditRole.member["@type"]).toBe("Person");
+  });
+
+  it("derives multi-word CRediT role labels from the URI slug", () => {
+    const raid = minimalRaid();
+    raid.contributor = [
+      {
+        id: "https://orcid.org/0000-0002-4582-7728",
+        schemaUri: "https://orcid.org",
+        role: [
+          {
+            schemaUri: "https://credit.niso.org",
+            id: "https://credit.niso.org/contributor-roles/funding-acquisition/",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].roleName).toBe("Funding acquisition");
+  });
+
+  it("falls back to the position URI in roleName when the vocab term is unmapped", () => {
+    const raid = minimalRaid();
+    raid.contributor = [
+      {
+        id: "https://orcid.org/0000-0002-4582-7728",
+        schemaUri: "https://orcid.org",
+        position: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/contributor.position.schema/999",
+            startDate: "2025-01-01",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0]["@id"]).toBe(
+      "https://vocabulary.raid.org/contributor.position.schema/999"
+    );
+    expect(result.member[0].roleName).toBe(
+      "https://vocabulary.raid.org/contributor.position.schema/999"
+    );
   });
 
   it("maps non-funder organisations to member roles", () => {
@@ -235,6 +302,7 @@ describe("buildResearchProjectJsonLd", () => {
     const orgRole = result.member[0];
     expect(orgRole["@type"]).toBe("Role");
     expect(orgRole["@id"]).toBe("https://vocabulary.raid.org/organisation.role.schema/185");
+    expect(orgRole.roleName).toBe("Contractor");
     expect(orgRole.member).toEqual({
       "@type": "Organization",
       "@id": "https://ror.org/04yx6dh41",
@@ -245,6 +313,82 @@ describe("buildResearchProjectJsonLd", () => {
         value: "https://ror.org/04yx6dh41",
       },
     });
+  });
+
+  it("includes the resolved ROR name on the member Organization when available (RAID-794)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/03sd43014",
+        schemaUri: "https://ror.org",
+        rorDetails: { name: "QCIF Ltd." },
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/organisation.role.schema/185",
+            startDate: "2025-01-01",
+          },
+        ],
+        // rorDetails is attached at build time by scripts/fetch-ror.js and is
+        // not part of the generated Organisation type.
+      } as never,
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].member).toEqual({
+      "@type": "Organization",
+      "@id": "https://ror.org/03sd43014",
+      name: "QCIF Ltd.",
+      identifier: {
+        "@type": "PropertyValue",
+        propertyID: "https://registry.identifiers.org/registry/ror",
+        name: "ROR",
+        value: "https://ror.org/03sd43014",
+      },
+    });
+  });
+
+  it("omits the member Organization name when ROR resolution is unavailable (RAID-794 graceful degradation)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/03sd43014",
+        schemaUri: "https://ror.org",
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/organisation.role.schema/185",
+            startDate: "2025-01-01",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].member).not.toHaveProperty("name");
+    expect(result.member[0].member["@id"]).toBe("https://ror.org/03sd43014");
+    expect(result.member[0].member.identifier.value).toBe("https://ror.org/03sd43014");
+  });
+
+  it("omits the member Organization name when the resolved name is an empty string (RAID-794)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/03sd43014",
+        schemaUri: "https://ror.org",
+        rorDetails: { name: "" },
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: "https://vocabulary.raid.org/organisation.role.schema/185",
+            startDate: "2025-01-01",
+          },
+        ],
+      } as never,
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.member[0].member).not.toHaveProperty("name");
   });
 
   it("maps funder organisations to funder roles", () => {
@@ -270,6 +414,27 @@ describe("buildResearchProjectJsonLd", () => {
     const funderRole = result.funder[0];
     expect(funderRole["@id"]).toBe(FUNDER_ORGANISATION_ROLE);
     expect(funderRole.member["@type"]).toBe("Organization");
+  });
+
+  it("includes the resolved ROR name on funder Organizations too (RAID-794)", () => {
+    const raid = minimalRaid();
+    raid.organisation = [
+      {
+        id: "https://ror.org/04yx6dh41",
+        schemaUri: "https://ror.org",
+        rorDetails: { name: "Australian Research Council" },
+        role: [
+          {
+            schemaUri: "https://vocabulary.raid.org",
+            id: FUNDER_ORGANISATION_ROLE,
+            startDate: "2025-01-01",
+          },
+        ],
+      } as never,
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.funder[0].member.name).toBe("Australian Research Council");
   });
 
   it("splits organisation with both funder and non-funder roles", () => {
@@ -314,9 +479,26 @@ describe("buildResearchProjectJsonLd", () => {
       {
         "@type": "DefinedTerm",
         "@id": "https://linked.data.gov.au/def/anzsrc-for/2020/420399",
+        name: "Health services and systems not elsewhere classified",
         inDefinedTermSet: "https://vocabs.ardc.edu.au/viewById/316",
       },
     ]);
+  });
+
+  it("omits subject name when the FoR code is not in the mapping", () => {
+    const raid = minimalRaid();
+    raid.subject = [
+      {
+        id: "https://linked.data.gov.au/def/anzsrc-for/2020/000000",
+        schemaUri: "https://vocabs.ardc.edu.au/viewById/316",
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.knowsAbout[0]).not.toHaveProperty("name");
+    expect(result.knowsAbout[0]["@id"]).toBe(
+      "https://linked.data.gov.au/def/anzsrc-for/2020/000000"
+    );
   });
 
   it("handles empty/missing optional fields", () => {
@@ -336,6 +518,224 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result).not.toHaveProperty("hasPart");
     expect(result).not.toHaveProperty("isBasedOn");
     expect(result).not.toHaveProperty("isRelatedTo");
+    expect(result).not.toHaveProperty("citation");
+  });
+
+  it("maps related objects to citation CreativeWork nodes", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/s00442-014-2977-8",
+        schemaUri: "https://doi.org/",
+        type: {
+          id: "https://vocabulary.raid.org/relatedObject.type.schema/250",
+          schemaUri: "https://vocabulary.raid.org/relatedObject.type.schema",
+        },
+        category: [
+          {
+            id: "https://vocabulary.raid.org/relatedObject.category.id/190",
+            schemaUri: "https://vocabulary.raid.org/relatedObject.category.schema",
+          },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation).toEqual([
+      {
+        "@type": "CreativeWork",
+        "@id": "https://doi.org/10.1007/s00442-014-2977-8",
+        identifier: {
+          "@type": "PropertyValue",
+          propertyID: "https://registry.identifiers.org/registry/doi",
+          name: "DOI",
+          value: "https://doi.org/10.1007/s00442-014-2977-8",
+        },
+        additionalType: ["https://vocabulary.raid.org/relatedObject.category.id/190"],
+      },
+    ]);
+  });
+
+  it("carries the formatted citation text on name when present", () => {
+    const raid = minimalRaid();
+    const relatedObject = {
+      id: "https://doi.org/10.1007/s00442-014-2977-8",
+      schemaUri: "https://doi.org/",
+      type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+      category: [
+        { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+      ],
+      citation: {
+        text: "Smith, J. (2014). A study of things. Oecologia, 176(2), 1-10.",
+      },
+    };
+    // citation is added to relatedObject at build time by fetch-raids.js and is
+    // not part of the generated RelatedObject type, so cast through unknown.
+    raid.relatedObject = [relatedObject as unknown as (typeof raid.relatedObject)[number]];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].name).toBe(
+      "Smith, J. (2014). A study of things. Oecologia, 176(2), 1-10."
+    );
+  });
+
+  it("omits name when the related object has no citation text", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/no-citation",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0]).not.toHaveProperty("name");
+  });
+
+  it("includes both outputs and inputs in a single flat citation list", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/s00442-014-2977-8",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+      {
+        id: "https://doi.org/10.4227/05/598bd8a2e9e76",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/269", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/191", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation).toHaveLength(2);
+    expect(result.citation?.map((c) => c["@id"])).toEqual([
+      "https://doi.org/10.1007/s00442-014-2977-8",
+      "https://doi.org/10.4227/05/598bd8a2e9e76",
+    ]);
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+    ]);
+    expect(result.citation?.[1].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/191",
+    ]);
+  });
+
+  it("falls back to a URL identifier for a schemaUri outside the DOI/ARK/ISBN set", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://scicrunch.org/resolver/RRID:SCR_000000",
+        schemaUri: "https://scicrunch.org/resolver/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/266", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].identifier).toEqual({
+      "@type": "PropertyValue",
+      propertyID: "https://scicrunch.org/resolver/",
+      name: "URL",
+      value: "https://scicrunch.org/resolver/RRID:SCR_000000",
+    });
+  });
+
+  it("maps ARK and ISBN schemaUris to their identifier types", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://arks.org/12345/abcde",
+        schemaUri: "https://arks.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+      },
+      {
+        id: "https://www.isbn-international.org/978-3-16-148410-0",
+        schemaUri: "https://www.isbn-international.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/258", schemaUri: "" },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].identifier.propertyID).toBe(
+      "https://registry.identifiers.org/registry/ark"
+    );
+    expect(result.citation?.[0].identifier.name).toBe("ARK");
+    expect(result.citation?.[1].identifier.propertyID).toBe(
+      "https://registry.identifiers.org/registry/isbn"
+    );
+    expect(result.citation?.[1].identifier.name).toBe("ISBN");
+  });
+
+  it("emits additionalType as an array when a related object has multiple categories", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/example",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/192", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+      "https://vocabulary.raid.org/relatedObject.category.id/192",
+    ]);
+  });
+
+  it("omits additionalType when a related object has no category", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/no-category",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0]).not.toHaveProperty("additionalType");
+  });
+
+  it("skips related objects without an id", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result).not.toHaveProperty("citation");
+  });
+
+  it("omits citation when relatedObject is empty", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result).not.toHaveProperty("citation");
   });
 
   it("maps IsPartOf related raid to isPartOf", () => {
@@ -426,8 +826,28 @@ describe("buildResearchProjectJsonLd", () => {
         "@id": "https://raid.org/10.26259/efgh5678",
         identifier: "https://raid.org/10.26259/efgh5678",
         relationshipType: "https://vocabulary.raid.org/relatedRaid.type.schema/204",
+        relationshipTypeName: "Continues",
       },
     ]);
+  });
+
+  it("omits relationshipTypeName when the relationship type is not in the mapping", () => {
+    const raid = minimalRaid();
+    raid.relatedRaid = [
+      {
+        id: "https://raid.org/10.26259/efgh5678",
+        type: {
+          id: "https://vocabulary.raid.org/relatedRaid.type.schema/999",
+          schemaUri: "https://vocabulary.raid.org/relatedRaid.type.schema",
+        },
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.isRelatedTo?.[0].relationshipType).toBe(
+      "https://vocabulary.raid.org/relatedRaid.type.schema/999"
+    );
+    expect(result.isRelatedTo?.[0]).not.toHaveProperty("relationshipTypeName");
   });
 
   it("groups multiple related raids under correct properties", () => {

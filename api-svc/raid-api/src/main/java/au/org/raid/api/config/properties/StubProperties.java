@@ -9,15 +9,30 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "raid.stub")
 public class StubProperties {
     private Doi doi;
-    private Ror ror;
+    private Handle handle;
+    private Rrid rrid;
     private Orcid orcid;
     private GeoNames geoNames;
     private Apids apids;
     private OpenStreetMap openStreetMap;
     private Isni isni;
+    private Ror ror;
+    private WebArchive webArchive;
 
     @Data
     public static class Doi {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
+    public static class Handle {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
+    public static class Rrid {
         private boolean enabled;
         private Long delay;
     }
@@ -45,13 +60,19 @@ public class StubProperties {
     }
 
     @Data
+    public static class Isni {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
     public static class Ror {
         private boolean enabled;
         private Long delay;
     }
 
     @Data
-    public static class Isni {
+    public static class WebArchive {
         private boolean enabled;
         private Long delay;
     }

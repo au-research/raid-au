@@ -22,6 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class OrganisationIntegrationTest extends AbstractIntegrationTest {
+    /* Must match the not-found sentinel in
+       au.org.raid.api.service.stub.InMemoryStubTestData (the in-memory ROR stub returns
+       not-found only for this id; any other well-formed ROR is treated as existing). */
+    private static final String NONEXISTENT_TEST_ROR = "https://ror.org/000000000";
+
     @Test
     @DisplayName("Minting a RAiD with no organisations succeeds")
     void noOrganisations() {
@@ -215,7 +220,7 @@ public class OrganisationIntegrationTest extends AbstractIntegrationTest {
             createRequest.setOrganisation(List.of(
                     new Organisation()
                             .schemaUri(OrganizationSchemaUriEnum.fromValue(ORGANISATION_IDENTIFIER_SCHEMA_URI))
-                            .id("https://ror.org/000000042")
+                            .id(NONEXISTENT_TEST_ROR)
                             .role(List.of(
                                     new OrganisationRole()
                                             .schemaUri(OrganizationRoleSchemaUriEnum.fromValue(ORGANISATION_ROLE_SCHEMA_URI))

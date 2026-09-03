@@ -1,14 +1,22 @@
 package au.org.raid.api.validator;
 
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.repository.RelatedObjectTypeRepository;
 import au.org.raid.api.service.doi.DoiService;
+import au.org.raid.api.service.handle.HandleService;
+import au.org.raid.api.service.rrid.RridService;
+import au.org.raid.api.service.webarchive.WebArchiveService;
 import au.org.raid.idl.raidv2.model.RelatedObject;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.NOT_SET_MESSAGE;
@@ -32,26 +40,34 @@ public class RelatedObjectValidator {
 
     private static final String DOI_SCHEMA_URI = "https://doi.org/";
     private static final String WEB_ARCHIVE_SCHEMA_URI = "https://web.archive.org/";
-    private static final List<String> RELATED_OBJECT_SCHEMA_URI =
-            List.of(DOI_SCHEMA_URI, WEB_ARCHIVE_SCHEMA_URI);
-    private static final Pattern WEB_ARCHIVE_URL_PATTERN =
-            Pattern.compile("https://web\\.archive\\.org/web/\\d{14}/https?://.+");
+    private static final String HANDLE_SCHEMA_URI = "https://hdl.handle.net/";
+    private static final String RRID_SCHEMA_URI = "https://scicrunch.org/resolver/";
 
-    private final DoiService doiService;
     private final RelatedObjectTypeValidator typeValidationService;
     private final RelatedObjectCategoryValidator categoryValidationService;
+    private final Map<String, BiFunction<String, String, List<ValidationFailure>>> relatedObjectSchemaUriValidatorMap;
 
-    public RelatedObjectValidator(final RelatedObjectTypeRepository relatedObjectTypeRepository, final DoiService doiService, final RelatedObjectTypeValidator typeValidationService, final RelatedObjectCategoryValidator categoryValidationService) {
-        this.doiService = doiService;
+    public RelatedObjectValidator(final RelatedObjectTypeRepository relatedObjectTypeRepository, final DoiService doiService, final HandleService handleService, final RridService rridService, final WebArchiveService webArchiveService, final RelatedObjectTypeValidator typeValidationService, final RelatedObjectCategoryValidator categoryValidationService) {
         this.typeValidationService = typeValidationService;
         this.categoryValidationService = categoryValidationService;
+
+        // Built here (rather than as a Spring @Bean, cf. ExternalPidService#spatialCoverageUriValidatorMap)
+        // because keeping the whole dispatch map private to this validator avoids splitting a
+        // single-owner concern across two classes.
+        final var map = new LinkedHashMap<String, BiFunction<String, String, List<ValidationFailure>>>();
+        map.put(DOI_SCHEMA_URI, doiService::validate);
+        map.put(HANDLE_SCHEMA_URI, handleService::validate);
+        map.put(RRID_SCHEMA_URI, rridService::validate);
+        map.put(WEB_ARCHIVE_SCHEMA_URI, webArchiveService::validate);
+        this.relatedObjectSchemaUriValidatorMap = Collections.unmodifiableMap(map);
     }
 
-    public List<ValidationFailure> validateRelatedObjects(final List<RelatedObject> relatedObjects) {
+    public ValidationResult validateRelatedObjects(final List<RelatedObject> relatedObjects) {
         final var failures = new ArrayList<ValidationFailure>();
+        final var unavailable = new ArrayList<UnavailableResolver>();
 
         if (relatedObjects == null) {
-            return failures;
+            return new ValidationResult(failures, unavailable);
         }
 
         IntStream.range(0, relatedObjects.size())
@@ -67,17 +83,17 @@ public class RelatedObjectValidator {
                                 .fieldId(String.format("relatedObject[%d].id", index))
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
-                    }   else if (DOI_SCHEMA_URI.equals(schemaUriValue)) {
-                        failures.addAll(
-                                doiService.validate(relatedObject.getId(), String.format("relatedObject[%d].id", index))
-                        );
-                    } else if (WEB_ARCHIVE_SCHEMA_URI.equals(schemaUriValue)) {
-                        // validate web archive URL format
-                        if (!WEB_ARCHIVE_URL_PATTERN.matcher(relatedObject.getId()).matches()) {
-                            failures.add(new ValidationFailure()
-                                    .fieldId(String.format("relatedObject[%d].id", index))
-                                    .errorType("invalid")
-                                    .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)"));
+                    } else if (schemaUriValue != null && relatedObjectSchemaUriValidatorMap.containsKey(schemaUriValue)) {
+                        try {
+                            failures.addAll(
+                                    relatedObjectSchemaUriValidatorMap.get(schemaUriValue)
+                                            .apply(relatedObject.getId(), String.format("relatedObject[%d].id", index))
+                            );
+                        } catch (ResolverUnavailableException e) {
+                            // The resolver, not the relatedObject, is at fault (RAID-809). Collect
+                            // and continue so one relatedObject's resolver failure doesn't abort
+                            // validation of the rest of the request.
+                            unavailable.addAll(e.getUnavailableResolvers());
                         }
                     }
 
@@ -88,17 +104,17 @@ public class RelatedObjectValidator {
                                 .fieldId(String.format("relatedObject[%d].schemaUri", index))
                                 .errorType(NOT_SET_TYPE)
                                 .message(NOT_SET_MESSAGE));
-                    } else if (!RELATED_OBJECT_SCHEMA_URI.contains(schemaUriValue)) {
+                    } else if (!relatedObjectSchemaUriValidatorMap.containsKey(schemaUriValue)) {
                         failures.add(new ValidationFailure()
                                 .fieldId(String.format("relatedObject[%d].schemaUri", index))
                                 .errorType("invalid")
-                                .message(String.format("Only %s is supported.", RELATED_OBJECT_SCHEMA_URI)));
+                                .message(String.format("Only %s is supported.", relatedObjectSchemaUriValidatorMap.keySet())));
                     }
 
                     failures.addAll(typeValidationService.validate(relatedObject.getType(), index));
                     failures.addAll(categoryValidationService.validate(relatedObject.getCategory(), index));
                 });
 
-        return failures;
+        return new ValidationResult(failures, unavailable);
     }
 }

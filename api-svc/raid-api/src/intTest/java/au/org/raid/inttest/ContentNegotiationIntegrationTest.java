@@ -127,6 +127,25 @@ public class ContentNegotiationIntegrationTest extends AbstractIntegrationTest {
     }
 
     /**
+     * Test that the API returns 406 Not Acceptable when requested with Accept: application/ld+json header,
+     * since JSON-LD is not a supported content negotiation format.
+     */
+    @Test
+    public void testJsonLdFormatNotAcceptable() {
+        // First mint a RAID
+        RaidDto raid = mintRaid();
+
+        // Then fetch it with Accept: application/ld+json
+        String raidId = raid.getIdentifier().getId();
+        String handle = extractHandleFromRaidId(raidId);
+
+        Response response = makeRequestWithAcceptHeader(handle, "application/ld+json");
+
+        // Verify response
+        assertThat(response.status()).isEqualTo(406);
+    }
+
+    /**
      * Helper method to mint a new RAID for testing.
      */
     private RaidDto mintRaid() {

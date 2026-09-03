@@ -20,6 +20,8 @@ public enum RelatedIdentifierType {
     LSID("LSID"),
     PMID("PMID"),
     PURL("PURL"),
+    RAID("RAiD"),
+    RRID("RRID"),
     UPC("UPC"),
     URL("URL"),
     URN("URN"),

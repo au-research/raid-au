@@ -55,6 +55,25 @@ public class DataciteRelatedIdentifierFactoryTest {
     }
 
     @Test
+    @DisplayName("Create related identifier with 'Handle' identifier type")
+    public void handleIdentifierType() {
+        final var id = "https://hdl.handle.net/20.500.12345/abc123";
+
+        final var relatedObject = new RelatedObject()
+                .id(id)
+                .schemaUri(RelatedObjectSchemaUriEnum.HTTPS_HDL_HANDLE_NET_)
+                .type(new RelatedObjectType().id(RelatedObjectTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_TYPE_SCHEMA_247))
+                .category(List.of(new RelatedObjectCategory().id(RelatedObjectCategoryIdEnum.HTTPS_VOCABULARY_RAID_ORG_RELATED_OBJECT_CATEGORY_ID_191)));
+
+        final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
+
+        assertThat(result.getRelatedIdentifier(), is(id));
+        assertThat(result.getRelatedIdentifierType(), is("Handle"));
+        assertThat(result.getResourceTypeGeneral(), is("OutputManagementPlan"));
+        assertThat(result.getRelationType(), is("References"));
+    }
+
+    @Test
     @DisplayName("Create related identifier with 'Conference Poster' resource type")
     public void conferencePosterResourceType() {
         final var id = "_id";
@@ -87,7 +106,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedObject);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is("URL"));
+        assertThat(result.getRelatedIdentifierType(), is("RRID"));
         assertThat(result.getResourceTypeGeneral(), is("Workflow"));
         assertThat(result.getRelationType(), is("References"));
     }
@@ -576,7 +595,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.CONTINUES.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -593,7 +612,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.IS_CONTINUED_BY.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -610,7 +629,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.IS_PART_OF.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -627,7 +646,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.HAS_PART.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -644,7 +663,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.IS_DERIVED_FROM.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -661,7 +680,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.IS_SOURCE_OF.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -678,7 +697,7 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.OBSOLETES.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
     }
@@ -695,8 +714,14 @@ public class DataciteRelatedIdentifierFactoryTest {
         final var result = dataciteRelatedIdentifierFactory.create(relatedRaid);
 
         assertThat(result.getRelatedIdentifier(), is(id));
-        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.DOI.getName()));
+        assertThat(result.getRelatedIdentifierType(), is(RelatedIdentifierType.RAID.getName()));
         assertThat(result.getRelationType(), is(RelationType.IS_OBSOLETED_BY.getName()));
         assertThat(result.getResourceTypeGeneral(), is(ResourceTypeGeneral.PROJECT.getName()));
+    }
+
+    @Test
+    @DisplayName("RAID related identifier type has the exact DataCite casing 'RAiD'")
+    void raidIdentifierTypeHasExactCasing() {
+        assertThat(RelatedIdentifierType.RAID.getName(), is("RAiD"));
     }
 }

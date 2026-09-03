@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
@@ -50,6 +51,31 @@ class TitleValidatorTest {
                 .text(TestConstants.TITLE)
                 .startDate(TestConstants.START_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .endDate(TestConstants.END_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .language(language);
+
+        final var failures = validationService.validate(List.of(title));
+
+        assertThat(failures.size(), is(0));
+        verify(typeValidationService).validate(type, 0);
+        verify(languageValidator).validate(language, "title[0]");
+    }
+
+    @Test
+    @DisplayName("Validation passes with empty string end date")
+    void validationPassesWithEmptyStringEndDate() {
+        final var type = new TitleType()
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+
+        final var language = new Language()
+                .id(TestConstants.LANGUAGE_ID)
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+
+        final var title = new Title()
+                .type(type)
+                .text(TestConstants.TITLE)
+                .startDate(TestConstants.START_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate("")
                 .language(language);
 
         final var failures = validationService.validate(List.of(title));
@@ -177,6 +203,78 @@ class TitleValidatorTest {
         )));
         verify(typeValidationService).validate(type, 0);
         verify(languageValidator).validate(language, "title[0]");
+    }
+
+    @Test
+    @DisplayName("Validation passes with multiple primary titles where the earlier one has a blank (ongoing) end date")
+    void multiplePrimaryTitlesWithBlankEndDate() {
+        final var type = new TitleType()
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+
+        final var language = new Language()
+                .id(TestConstants.LANGUAGE_ID)
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+
+        final var title1 = new Title()
+                .type(type)
+                .text(TestConstants.TITLE)
+                .startDate(LocalDate.now().minusYears(3).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate(LocalDate.now().minusYears(2).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .language(language);
+
+        // ongoing (blank endDate) title that starts exactly when title1 ends - must not throw
+        // and must not be treated as overlapping
+        final var title2 = new Title()
+                .type(type)
+                .text(TestConstants.TITLE)
+                .startDate(LocalDate.now().minusYears(2).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .endDate("")
+                .language(language);
+
+        final var failures = validationService.validate(List.of(title1, title2));
+
+        assertThat(failures, empty());
+    }
+
+    @Test
+    @DisplayName("Validation does not throw with multiple primary titles when one has a blank start date")
+    void multiplePrimaryTitlesWithBlankStartDate() {
+        final var type = new TitleType()
+                .id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
+                .schemaUri(TitleTypeSchemaURIEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_376);
+
+        final var language = new Language()
+                .id(TestConstants.LANGUAGE_ID)
+                .schemaUri(LanguageSchemaURIEnum.HTTPS_WWW_ISO_ORG_STANDARD_74575_HTML);
+
+        // blank start/end - resolves to "today" for sorting/overlap purposes, and separately
+        // fails titleStartDateNotSet since a primary title's start date is still required
+        final var title1 = new Title()
+                .type(type)
+                .text(TestConstants.TITLE)
+                .startDate("")
+                .endDate("")
+                .language(language);
+
+        final var title2 = new Title()
+                .type(type)
+                .text(TestConstants.TITLE)
+                .startDate(LocalDate.now().minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .language(language);
+
+        final var failures = validationService.validate(List.of(title1, title2));
+
+        // key assertion: resolving the blank start date must not throw InvalidDateException in
+        // validatePrimaryTitleDates; the only failure expected is the pre-existing
+        // titleStartDateNotSet check, not an overlap failure
+        assertThat(failures, hasSize(1));
+        assertThat(failures, hasItem(
+                new ValidationFailure()
+                        .fieldId("title[0].startDate")
+                        .errorType("notSet")
+                        .message("field must be set")
+        ));
     }
 
     @Test

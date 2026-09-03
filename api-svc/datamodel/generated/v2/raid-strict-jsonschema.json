@@ -345,7 +345,8 @@
       "type": "string",
       "enum": [
         "https://isni.org/",
-        "https://orcid.org/"
+        "https://orcid.org/",
+        "https://sandbox.orcid.org/"
       ]
     },
     "ContributorStatusEnum": {
@@ -1444,7 +1445,6 @@
       "properties": {
         "endDate": {
           "description": "the date the project or activity title was changed or stopped being used",
-          "pattern": "^\\s*\\S.*$",
           "type": [
             "string",
             "null"

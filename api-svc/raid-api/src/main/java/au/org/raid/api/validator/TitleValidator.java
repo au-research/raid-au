@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
@@ -56,7 +56,7 @@ public class TitleValidator {
             if (isBlank(title.getText())) {
                 failures.add(titleNotSet(index));
             }
-            if (title.getStartDate() == null) {
+            if (isBlank(title.getStartDate())) {
                 failures.add(titleStartDateNotSet(index));
             }
             else if (!isBlank(title.getEndDate()) && DateUtil.parseDate(title.getEndDate()).isBefore(DateUtil.parseDate(title.getStartDate()))) {
@@ -85,25 +85,39 @@ public class TitleValidator {
 
         var primaryTitles = titles.stream()
                 .filter(title -> title.getType().getId() == TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)
-                .sorted((o1, o2) -> {
-                    if (o1.getStartDate().equals(o2.getStartDate())) {
-                        final var o1EndDate = o1.getEndDate() == null ? LocalDate.now() : DateUtil.parseDate(o1.getEndDate());
-                        final var o2EndDate = o2.getEndDate() == null ? LocalDate.now() : DateUtil.parseDate(o2.getEndDate());
+                .toList();
 
-                        return o1EndDate.compareTo(o2EndDate);
-                    }
-                    return DateUtil.parseDate(o1.getStartDate()).compareTo(DateUtil.parseDate(o2.getStartDate()));
-                })
-                .collect(Collectors.toCollection(ArrayList::new));
+        // resolve each title's start/end into concrete LocalDates up front (blank -> today) so the
+        // comparator and overlap check below never touch a raw, possibly-blank date String.
+        var resolvedTitles = new ArrayList<Map<String, Object>>();
+        for (final var title : primaryTitles) {
+            resolvedTitles.add(Map.of(
+                    "title", title,
+                    "start", isBlank(title.getStartDate()) ? today : DateUtil.parseDate(title.getStartDate()),
+                    "end", isBlank(title.getEndDate()) ? today : DateUtil.parseDate(title.getEndDate())
+            ));
+        }
 
-        for (int i = 1; i < primaryTitles.size(); i++) {
-            final var previous = primaryTitles.get(i - 1);
-            final var title = primaryTitles.get(i);
+        resolvedTitles.sort((o1, o2) -> {
+            final var o1Start = (LocalDate) o1.get("start");
+            final var o2Start = (LocalDate) o2.get("start");
+
+            if (o1Start.equals(o2Start)) {
+                return ((LocalDate) o1.get("end")).compareTo((LocalDate) o2.get("end"));
+            }
+            return o1Start.compareTo(o2Start);
+        });
+
+        for (int i = 1; i < resolvedTitles.size(); i++) {
+            final var previousEntry = resolvedTitles.get(i - 1);
+            final var titleEntry = resolvedTitles.get(i);
+            final var previous = (Title) previousEntry.get("title");
+            final var title = (Title) titleEntry.get("title");
             final var previousIndex = titles.indexOf(previous);
             final var index = titles.indexOf(title);
 
-            final var startDate = DateUtil.parseDate(title.getStartDate());
-            final var endDate = (previous.getEndDate() != null) ? DateUtil.parseDate(previous.getEndDate()) : today;
+            final var startDate = (LocalDate) titleEntry.get("start");
+            final var endDate = (LocalDate) previousEntry.get("end");
 
             if (title.equals(previous)) {
                 return List.of(new ValidationFailure()

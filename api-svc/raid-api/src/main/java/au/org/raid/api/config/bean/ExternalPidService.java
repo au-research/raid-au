@@ -2,21 +2,28 @@ package au.org.raid.api.config.bean;
 
 import au.org.raid.api.client.contributor.isni.IsniClient;
 import au.org.raid.api.client.contributor.isni.IsniRequestEntityFactory;
+import au.org.raid.api.client.contributor.orcid.OrcidClient;
+import au.org.raid.api.client.contributor.orcid.OrcidRequestEntityFactory;
+import au.org.raid.api.client.ror.RorClient;
+import au.org.raid.api.client.ror.RorRequestEntityFactory;
 import au.org.raid.api.config.properties.StubProperties;
 import au.org.raid.api.service.doi.DoiService;
-import au.org.raid.api.service.orcid.OrcidService;
-import au.org.raid.api.service.ror.RorService;
+import au.org.raid.api.service.handle.HandleService;
+import au.org.raid.api.service.rrid.RridService;
 import au.org.raid.api.service.stub.*;
+import au.org.raid.api.service.webarchive.WebArchiveService;
 import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
 import au.org.raid.api.validator.OpenStreetMapUriValidator;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -45,25 +52,41 @@ public class ExternalPidService {
 
     @Bean
     @Primary
-    public RorService rorService(
+    public OrcidClient orcidClient(
             StubProperties stubProperties,
+            OrcidRequestEntityFactory orcidRequestEntityFactory,
             RestTemplate restTemplate
     ) {
-        if (stubProperties.getRor().isEnabled()) {
-            log.with("rorInMemoryStubDelay", stubProperties.getRor().getDelay()).
-                    warn("using the in-memory ROR service");
-            return new RorServiceStub(stubProperties.getRor().getDelay());
+        if (stubProperties.getOrcid() != null && stubProperties.getOrcid().isEnabled()) {
+            log.with("orcidInMemoryStubDelay", stubProperties.getOrcid().getDelay()).
+                    warn("using the in-memory ORCID client");
+            return new OrcidClientStub(stubProperties.getOrcid().getDelay());
         }
 
-        return new RorService(restTemplate);
+        return new OrcidClient(orcidRequestEntityFactory, restTemplate);
     }
 
+    @Bean
+    @Primary
+    public RorClient rorClient(
+            StubProperties stubProperties,
+            RorRequestEntityFactory rorRequestEntityFactory,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getRor() != null && stubProperties.getRor().isEnabled()) {
+            log.with("rorInMemoryStubDelay", stubProperties.getRor().getDelay()).
+                    warn("using the in-memory ROR client");
+            return new RorClientStub(stubProperties.getRor().getDelay());
+        }
+
+        return new RorClient(restTemplate, rorRequestEntityFactory);
+    }
 
     @Bean
     @Primary
     public DoiService doiService(
             StubProperties stubProperties,
-            RestTemplate restTemplate
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
     ) {
         if (stubProperties.getDoi().isEnabled()) {
             log.warn("using the in-memory DOI service");
@@ -75,9 +98,53 @@ public class ExternalPidService {
 
     @Bean
     @Primary
+    public HandleService handleService(
+            StubProperties stubProperties,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getHandle().isEnabled()) {
+            log.warn("using the in-memory Handle service");
+            return new HandleServiceStub(stubProperties.getHandle().getDelay());
+        }
+
+        return new HandleService(restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public RridService rridService(
+            StubProperties stubProperties,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getRrid().isEnabled()) {
+            log.warn("using the in-memory RRID service");
+            return new RridServiceStub(stubProperties.getRrid().getDelay());
+        }
+
+        return new RridService(restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public WebArchiveService webArchiveService(
+            StubProperties stubProperties,
+            @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate,
+            Clock clock,
+            @Value("${raid.uri-validation.web-archive.availability-url:https://archive.org/wayback/available}") String availabilityUrl
+    ) {
+        if (stubProperties.getWebArchive() != null && stubProperties.getWebArchive().isEnabled()) {
+            log.warn("using the in-memory Web Archive service");
+            return new WebArchiveServiceStub(stubProperties.getWebArchive().getDelay());
+        }
+
+        return new WebArchiveService(restTemplate, clock, availabilityUrl);
+    }
+
+    @Bean
+    @Primary
     public GeoNamesUriValidator geoNamesUriValidator(
             final StubProperties stubProperties,
-            final RestTemplate restTemplate,
+            @Qualifier("uriValidatorRestTemplate") final RestTemplate restTemplate,
             @Value("${raid.validation.geonames.username}") final String username
     ) {
         if (stubProperties.getGeoNames().isEnabled()) {
@@ -92,7 +159,7 @@ public class ExternalPidService {
     @Primary
     public OpenStreetMapUriValidator openStreetMapUriValidator(
             final StubProperties stubProperties,
-            final RestTemplate restTemplate
+            @Qualifier("uriValidatorRestTemplate") final RestTemplate restTemplate
     ) {
         if (stubProperties.getOpenStreetMap().isEnabled()) {
             log.warn("using the in-memory OpenStreetMap validator");

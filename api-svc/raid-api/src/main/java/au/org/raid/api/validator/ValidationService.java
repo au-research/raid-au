@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.endpoint.message.ValidationMessage;
+import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.service.raid.id.IdentifierHandle;
 import au.org.raid.api.service.raid.id.IdentifierParser;
@@ -143,14 +144,14 @@ public class ValidationService {
         failures.addAll(relatedRaidValidator.validate(request.getRelatedRaid()));
         failures.addAll(alternateIdentifierValidator.validateAlternateIdentifier(request.getAlternateIdentifier()));
 
-        failures.addAll(runIoBoundValidators(
+        final var io = runIoBoundValidators(
                 () -> contributorValidator.validate(request.getContributor()),
                 () -> organisationValidator.validate(request.getOrganisation()),
                 () -> relatedObjectValidator.validateRelatedObjects(request.getRelatedObject()),
                 () -> spatialCoverageValidator.validate(request.getSpatialCoverage())
-        ));
+        );
 
-        return failures;
+        return applyPrecedence(failures, io);
     }
 
     public List<ValidationFailure> validateForUpdate(final String handle, final RaidUpdateRequest request) {
@@ -171,18 +172,42 @@ public class ValidationService {
         failures.addAll(relatedRaidValidator.validate(request.getRelatedRaid()));
         failures.addAll(alternateIdentifierValidator.validateAlternateIdentifier(request.getAlternateIdentifier()));
 
-        failures.addAll(runIoBoundValidators(
+        final var io = runIoBoundValidators(
                 () -> contributorValidator.validate(request.getContributor()),
                 () -> organisationValidator.validate(request.getOrganisation()),
                 () -> relatedObjectValidator.validateRelatedObjects(request.getRelatedObject()),
                 () -> spatialCoverageValidator.validate(request.getSpatialCoverage())
-        ));
+        );
 
-        return failures;
+        return applyPrecedence(failures, io);
     }
 
     public List<ValidationFailure> validateForPatch(final RaidPatchRequest request) {
-        return new ArrayList<>(contributorValidator.validateForPatch(request.getContributor()));
+        final var result = contributorValidator.validateForPatch(request.getContributor());
+
+        return applyPrecedence(new ArrayList<>(), result);
+    }
+
+    /**
+     * Cause-based precedence (RAID-809): a 400 is only ever dropped in favour of a 503 when
+     * unavailability is the SOLE blocker. Any client-resolvable failure - whether found
+     * synchronously in-memory or by an I/O-bound validator - wins over a resolver being
+     * unavailable elsewhere in the same request, so a caller's fixable mistake is never masked
+     * behind a "please retry" response.
+     */
+    private List<ValidationFailure> applyPrecedence(
+            final List<ValidationFailure> syncFailures, final ValidationResult io) {
+        syncFailures.addAll(io.failures());
+
+        if (!syncFailures.isEmpty()) {
+            return syncFailures;
+        }
+
+        if (!io.unavailableResolvers().isEmpty()) {
+            throw new ResolverUnavailableException(io.unavailableResolvers());
+        }
+
+        return syncFailures;
     }
 
     /**
@@ -190,20 +215,24 @@ public class ValidationService {
      * via allOf(), then merges their results. Every validator runs to
      * completion before any result is inspected.
      *
-     * If a validator throws a RuntimeException it is re-thrown unwrapped —
-     * the CompletionException wrapper added by CompletableFuture is removed so
-     * callers see the original exception type.
+     * The merged {@link ValidationResult} carries both the ordinary validation failures and
+     * the unavailable-resolver entries from every validator that reported one - neither is
+     * dropped in favour of the other here; that decision is made by the caller via
+     * {@link #applyPrecedence}. If a validator throws some other (non-resolver) RuntimeException,
+     * it is re-thrown unwrapped and takes precedence over everything else - the
+     * CompletionException wrapper added by CompletableFuture is removed so callers see the
+     * original exception type.
      */
     @SafeVarargs
-    private List<ValidationFailure> runIoBoundValidators(
-            Supplier<List<ValidationFailure>>... validators) {
+    private ValidationResult runIoBoundValidators(
+            Supplier<ValidationResult>... validators) {
 
         @SuppressWarnings("unchecked")
-        CompletableFuture<List<ValidationFailure>>[] futures =
+        CompletableFuture<ValidationResult>[] futures =
                 new CompletableFuture[validators.length];
 
         for (int i = 0; i < validators.length; i++) {
-            final Supplier<List<ValidationFailure>> validator = validators[i];
+            final Supplier<ValidationResult> validator = validators[i];
             futures[i] = CompletableFuture.supplyAsync(validator, taskExecutor);
         }
 
@@ -214,23 +243,36 @@ public class ValidationService {
             CompletableFuture.allOf(futures).join();
         } catch (CompletionException ignored) {
             // At least one future failed. Fall through to per-future join()
-            // calls below which will unwrap and re-throw the original exception.
+            // calls below which will unwrap and re-throw/aggregate.
         }
 
         var results = new ArrayList<ValidationFailure>();
-        for (CompletableFuture<List<ValidationFailure>> future : futures) {
+        var unavailable = new ArrayList<UnavailableResolver>();
+        RuntimeException other = null;
+
+        for (CompletableFuture<ValidationResult> future : futures) {
             // join() on an individually failed future throws CompletionException.
-            // Unwrap it so callers receive the original RuntimeException type.
+            // Unwrap it so we can inspect the original exception type.
             try {
-                results.addAll(future.join());
+                final var result = future.join();
+                results.addAll(result.failures());
+                unavailable.addAll(result.unavailableResolvers());
             } catch (CompletionException e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
-                if (cause instanceof RuntimeException re) {
-                    throw re;
+                if (other == null) {
+                    other = (cause instanceof RuntimeException re) ? re : new RuntimeException(cause);
                 }
-                throw new RuntimeException(cause);
             }
         }
-        return results;
+
+        // A genuine non-resolver RuntimeException is the highest precedence (DECIDED,
+        // RAID-809): it means something other than a client-resolvable identifier or a
+        // temporarily unavailable resolver went wrong, so it is re-thrown regardless of what
+        // the other validators found.
+        if (other != null) {
+            throw other;
+        }
+
+        return new ValidationResult(results, unavailable);
     }
 }

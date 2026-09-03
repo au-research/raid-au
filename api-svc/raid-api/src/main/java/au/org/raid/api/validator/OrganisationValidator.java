@@ -4,12 +4,12 @@ import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.idl.raidv2.model.Contributor;
 import au.org.raid.idl.raidv2.model.Organisation;
 import au.org.raid.idl.raidv2.model.OrganisationRole;
+import au.org.raid.idl.raidv2.model.UnavailableResolver;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,8 +19,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.*;
+import static au.org.raid.api.exception.ResolverUnavailableException.toUnavailableResolver;
 import static au.org.raid.api.util.StringUtil.isBlank;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrganisationValidator {
@@ -30,17 +32,18 @@ public class OrganisationValidator {
     private final OrganisationRoleValidator roleValidationService;
     private final RorClient rorClient;
 
-    public List<ValidationFailure> validate(
+    public ValidationResult validate(
             List<Organisation> organisations
     ) {
 
     /* organisations has been confirmed as optional in the metadata schema,
     rationale: an ORCID is quick to create (minutes), RORs can take months. */
         if (organisations == null) {
-            return Collections.emptyList();
+            return ValidationResult.of(Collections.emptyList());
         }
 
         var failures = new ArrayList<ValidationFailure>();
+        var unavailable = new ArrayList<UnavailableResolver>();
 
         IntStream.range(0, organisations.size()).forEach(i -> {
             final var organisation = organisations.get(i);
@@ -59,13 +62,29 @@ public class OrganisationValidator {
                             .message(INVALID_VALUE_MESSAGE + " - should match %s".formatted(regex))
                     );
 
-                } else if (!rorClient.exists(organisation.getId())) {
-                        failures.add(new ValidationFailure()
-                                .fieldId("organisation[%d].id".formatted(i))
-                                .errorType(NOT_FOUND_TYPE)
-                                .message("This ROR does not exist")
-                        );
+                } else {
+                    try {
+                        if (!rorClient.exists(organisation.getId())) {
+                            failures.add(new ValidationFailure()
+                                    .fieldId("organisation[%d].id".formatted(i))
+                                    .errorType(NOT_FOUND_TYPE)
+                                    .message("This ROR does not exist")
+                            );
+                        }
+                    } catch (RestClientException e) {
+                        // Covers ResourceAccessException (connect/read timeout, DNS failure,
+                        // connection refused), HttpServerErrorException (5xx) and, defensively,
+                        // any other RestClientException. HttpClientErrorException 404 is already
+                        // handled inside RorClient.exists() (404 -> false), so only non-404
+                        // failures reach here. The resolver, not the ROR, is at fault, so this is
+                        // collected for a 503 (RAID-809) rather than treated as a validation
+                        // failure of the organisation. Collect-then-throw so one organisation's
+                        // resolver failure doesn't abort validation of the rest of the request.
+                        log.error("External resolver check failed during ROR validation of {}", organisation.getId(), e);
+                        unavailable.add(toUnavailableResolver(
+                                "organisation[%d].id".formatted(i), organisation.getId(), "ROR", e));
                     }
+                }
             }
 
             if (organisation.getSchemaUri() == null) {
@@ -113,7 +132,7 @@ public class OrganisationValidator {
             }
         }
 
-        return failures;
+        return new ValidationResult(failures, unavailable);
     }
 }
 
