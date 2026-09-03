@@ -6,19 +6,32 @@ import { Loading } from "@/pages/loading";
 import { fetchServicePointWithMembers } from "@/services/service-points";
 import { ServicePointWithMembers } from "@/types";
 import { Home as HomeIcon, Hub as HubIcon } from "@mui/icons-material";
-import { Alert, Card, CardContent, CardHeader, Container, Stack } from "@mui/material";
+import { Alert, Card, CardContent, CardHeader, Container, Stack, Tab, Tabs } from "@mui/material";
 
 import { ServicePointUsersList } from "@/containers/header/service-point-users/ServicePointUsersList";
+import { ClientCredentialsPanel } from "./components/client-credentials/ClientCredentialsPanel";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { ServicePointUpdateForm } from "./";
 import { RefreshCcw } from "lucide-react";
+import type { SyntheticEvent } from "react";
+
+type ServicePointTab = "users" | "credentials";
 
 export const ServicePoint = () => {
-  const { isOperator } = useAuthHelper();
+  const { isOperator, isServicePointAdminOf } = useAuthHelper();
   const { isInitialized, authenticated, token, tokenParsed } = useKeycloak();
   const { servicePointId } = useParams() as { servicePointId: string };
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const activeTab: ServicePointTab = searchParams.get("tab") === "credentials" ? "credentials" : "users";
+
+  const handleTabChange = (_: SyntheticEvent, value: ServicePointTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", value);
+    setSearchParams(next);
+  };
 
   const getServicePoint = async () => {
     return await fetchServicePointWithMembers({
@@ -67,6 +80,11 @@ export const ServicePoint = () => {
     },
   ];
 
+  const groupId = servicePointQuery.data.groupId;
+  const canShowUsers =
+    !!groupId && (isOperator || tokenParsed?.service_point_group_id === groupId);
+  const canShowCredentials = !!groupId && (isOperator || isServicePointAdminOf(groupId));
+
   return (
     <Container sx={{pb:2}}>
       <Stack direction="column" gap={2}>
@@ -77,23 +95,34 @@ export const ServicePoint = () => {
             <ServicePointUpdateForm servicePoint={servicePointQuery.data!} />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader title="Service point users" />
-          <CardContent>
-            {(servicePointQuery.data.groupId &&
-              (isOperator ||
-                tokenParsed?.service_point_group_id ===
-                  servicePointQuery.data.groupId) && (
-                <ServicePointUsersList
-                  servicePointWithMembers={servicePointQuery.data}
-                />
-              )) || (
-              <Alert severity="warning">
-                No group id set or access not allowed
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+        {canShowUsers && canShowCredentials ? (
+          <Card>
+            <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: "divider", px: 1 }}>
+              <Tab label="Users" value="users" />
+              <Tab label="Client credentials" value="credentials" />
+            </Tabs>
+            <CardContent>
+              {activeTab === "users" ? (
+                <ServicePointUsersList servicePointWithMembers={servicePointQuery.data} />
+              ) : (
+                <ClientCredentialsPanel groupId={groupId as string} />
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader title="Service point users" />
+            <CardContent>
+              {canShowUsers ? (
+                <ServicePointUsersList servicePointWithMembers={servicePointQuery.data} />
+              ) : (
+                <Alert severity="warning">
+                  No group id set or access not allowed
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </Stack>
     </Container>
   );

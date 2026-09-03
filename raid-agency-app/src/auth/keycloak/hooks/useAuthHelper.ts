@@ -21,6 +21,14 @@ export function useAuthHelper() {
         [tokenParsed]
     );
 
+    // Scoped role, e.g. "service-point-admin:<groupId>" - distinct from the
+    // flat GROUP_ADMIN role, which client-credential endpoints reject outright.
+    const isServicePointAdminOf = useCallback(
+        (groupId?: string): boolean =>
+            !!groupId && !!user?.roles?.includes(`service-point-admin:${groupId}`),
+        [user]
+    );
+
     const getValidToken = async () => {
         try {
             setIsRefreshing(true);
@@ -62,12 +70,13 @@ export function useAuthHelper() {
             isOperator: hasRole(REALM_ROLES.OPERATOR),
             groupId: tokenParsed?.service_point_group_id,
             hasRole,
+            isServicePointAdminOf,
             getValidToken,
             fetchWithAuth,
             isRefreshing,
             token,
             user
         }),
-        [hasRole, tokenParsed, token, user, isRefreshing]
+        [hasRole, isServicePointAdminOf, tokenParsed, token, user, isRefreshing]
     );
 }
