@@ -6,7 +6,6 @@ package au.org.raid.db.jooq;
 
 import au.org.raid.db.jooq.tables.AccessType;
 import au.org.raid.db.jooq.tables.AccessTypeSchema;
-import au.org.raid.db.jooq.tables.AppUser;
 import au.org.raid.db.jooq.tables.Contributor;
 import au.org.raid.db.jooq.tables.ContributorPosition;
 import au.org.raid.db.jooq.tables.ContributorPositionSchema;
@@ -61,10 +60,8 @@ import au.org.raid.db.jooq.tables.TraditionalKnowledgeLabel;
 import au.org.raid.db.jooq.tables.TraditionalKnowledgeLabelSchema;
 import au.org.raid.db.jooq.tables.TraditionalKnowledgeNotice;
 import au.org.raid.db.jooq.tables.TraditionalKnowledgeNoticeSchema;
-import au.org.raid.db.jooq.tables.UserAuthzRequest;
 import au.org.raid.db.jooq.tables.records.AccessTypeRecord;
 import au.org.raid.db.jooq.tables.records.AccessTypeSchemaRecord;
-import au.org.raid.db.jooq.tables.records.AppUserRecord;
 import au.org.raid.db.jooq.tables.records.ContributorPositionRecord;
 import au.org.raid.db.jooq.tables.records.ContributorPositionSchemaRecord;
 import au.org.raid.db.jooq.tables.records.ContributorRecord;
@@ -119,7 +116,6 @@ import au.org.raid.db.jooq.tables.records.TraditionalKnowledgeLabelRecord;
 import au.org.raid.db.jooq.tables.records.TraditionalKnowledgeLabelSchemaRecord;
 import au.org.raid.db.jooq.tables.records.TraditionalKnowledgeNoticeRecord;
 import au.org.raid.db.jooq.tables.records.TraditionalKnowledgeNoticeSchemaRecord;
-import au.org.raid.db.jooq.tables.records.UserAuthzRequestRecord;
 
 import org.jooq.ForeignKey;
 import org.jooq.TableField;
@@ -141,7 +137,6 @@ public class Keys {
 
     public static final UniqueKey<AccessTypeRecord> ACCESS_TYPE_NEW_PKEY = Internal.createUniqueKey(AccessType.ACCESS_TYPE, DSL.name("access_type_new_pkey"), new TableField[] { AccessType.ACCESS_TYPE.ID }, true);
     public static final UniqueKey<AccessTypeSchemaRecord> ACCESS_TYPE_SCHEMA_PKEY = Internal.createUniqueKey(AccessTypeSchema.ACCESS_TYPE_SCHEMA, DSL.name("access_type_schema_pkey"), new TableField[] { AccessTypeSchema.ACCESS_TYPE_SCHEMA.ID }, true);
-    public static final UniqueKey<AppUserRecord> APP_USER_PKEY = Internal.createUniqueKey(AppUser.APP_USER, DSL.name("app_user_pkey"), new TableField[] { AppUser.APP_USER.ID }, true);
     public static final UniqueKey<ContributorRecord> CONTRIBUTOR_PID_SCHEMA_ID_KEY = Internal.createUniqueKey(Contributor.CONTRIBUTOR, DSL.name("contributor_pid_schema_id_key"), new TableField[] { Contributor.CONTRIBUTOR.PID, Contributor.CONTRIBUTOR.SCHEMA_ID }, true);
     public static final UniqueKey<ContributorRecord> CONTRIBUTOR_PKEY = Internal.createUniqueKey(Contributor.CONTRIBUTOR, DSL.name("contributor_pkey"), new TableField[] { Contributor.CONTRIBUTOR.ID }, true);
     public static final UniqueKey<ContributorPositionRecord> CONTRIBUTOR_POSITION_NEW_PKEY = Internal.createUniqueKey(ContributorPosition.CONTRIBUTOR_POSITION, DSL.name("contributor_position_new_pkey"), new TableField[] { ContributorPosition.CONTRIBUTOR_POSITION.ID }, true);
@@ -209,13 +204,11 @@ public class Keys {
     public static final UniqueKey<TraditionalKnowledgeLabelSchemaRecord> TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA_PKEY = Internal.createUniqueKey(TraditionalKnowledgeLabelSchema.TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA, DSL.name("traditional_knowledge_label_schema_pkey"), new TableField[] { TraditionalKnowledgeLabelSchema.TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA.ID }, true);
     public static final UniqueKey<TraditionalKnowledgeNoticeRecord> TRADITIONAL_KNOWLEDGE_NOTICE_PKEY = Internal.createUniqueKey(TraditionalKnowledgeNotice.TRADITIONAL_KNOWLEDGE_NOTICE, DSL.name("traditional_knowledge_notice_pkey"), new TableField[] { TraditionalKnowledgeNotice.TRADITIONAL_KNOWLEDGE_NOTICE.ID }, true);
     public static final UniqueKey<TraditionalKnowledgeNoticeSchemaRecord> TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA_PKEY = Internal.createUniqueKey(TraditionalKnowledgeNoticeSchema.TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA, DSL.name("traditional_knowledge_notice_schema_pkey"), new TableField[] { TraditionalKnowledgeNoticeSchema.TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA.ID }, true);
-    public static final UniqueKey<UserAuthzRequestRecord> USER_AUTHZ_REQUEST_PKEY = Internal.createUniqueKey(UserAuthzRequest.USER_AUTHZ_REQUEST, DSL.name("user_authz_request_pkey"), new TableField[] { UserAuthzRequest.USER_AUTHZ_REQUEST.ID }, true);
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AppUserRecord, ServicePointRecord> APP_USER__APP_USER_SERVICE_POINT_ID_FKEY = Internal.createForeignKey(AppUser.APP_USER, DSL.name("app_user_service_point_id_fkey"), new TableField[] { AppUser.APP_USER.SERVICE_POINT_ID }, Keys.SERVICE_POINT_PKEY, new TableField[] { ServicePoint.SERVICE_POINT.ID }, true);
     public static final ForeignKey<ContributorRecord, ContributorSchemaRecord> CONTRIBUTOR__CONTRIBUTOR_SCHEMA_ID_FKEY = Internal.createForeignKey(Contributor.CONTRIBUTOR, DSL.name("contributor_schema_id_fkey"), new TableField[] { Contributor.CONTRIBUTOR.SCHEMA_ID }, Keys.CONTRIBUTOR_SCHEMA_PKEY, new TableField[] { ContributorSchema.CONTRIBUTOR_SCHEMA.ID }, true);
     public static final ForeignKey<OrganisationRecord, OrganisationSchemaRecord> ORGANISATION__ORGANISATION_SCHEMA_ID_FKEY = Internal.createForeignKey(Organisation.ORGANISATION, DSL.name("organisation_schema_id_fkey"), new TableField[] { Organisation.ORGANISATION.SCHEMA_ID }, Keys.ORGANISATION_SCHEMA_PKEY, new TableField[] { OrganisationSchema.ORGANISATION_SCHEMA.ID }, true);
     public static final ForeignKey<RaidRecord, LanguageRecord> RAID__RAID_ACCESS_STATEMENT_LANGUAGE_ID_FKEY = Internal.createForeignKey(Raid.RAID, DSL.name("raid_access_statement_language_id_fkey"), new TableField[] { Raid.RAID.ACCESS_STATEMENT_LANGUAGE_ID }, Keys.LANGUAGE_NEW_PKEY, new TableField[] { Language.LANGUAGE.ID }, true);
@@ -259,7 +252,4 @@ public class Keys {
     public static final ForeignKey<RelatedRaidRecord, RaidRecord> RELATED_RAID__RELATED_RAID_HANDLE_FKEY = Internal.createForeignKey(RelatedRaid.RELATED_RAID, DSL.name("related_raid_handle_fkey"), new TableField[] { RelatedRaid.RELATED_RAID.HANDLE }, Keys.RAID_PKEY, new TableField[] { Raid.RAID.HANDLE }, true);
     public static final ForeignKey<SubjectTypeRecord, SubjectTypeSchemaRecord> SUBJECT_TYPE__FK_SUBJECT_TYPE_SCHEMA_ID = Internal.createForeignKey(SubjectType.SUBJECT_TYPE, DSL.name("fk_subject_type_schema_id"), new TableField[] { SubjectType.SUBJECT_TYPE.SCHEMA_ID }, Keys.SUBJECT_TYPE_SCHEMA_PKEY, new TableField[] { SubjectTypeSchema.SUBJECT_TYPE_SCHEMA.ID }, true);
     public static final ForeignKey<TraditionalKnowledgeNoticeRecord, TraditionalKnowledgeNoticeSchemaRecord> TRADITIONAL_KNOWLEDGE_NOTICE__TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA_ID_FKEY = Internal.createForeignKey(TraditionalKnowledgeNotice.TRADITIONAL_KNOWLEDGE_NOTICE, DSL.name("traditional_knowledge_notice_schema_id_fkey"), new TableField[] { TraditionalKnowledgeNotice.TRADITIONAL_KNOWLEDGE_NOTICE.SCHEMA_ID }, Keys.TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA_PKEY, new TableField[] { TraditionalKnowledgeNoticeSchema.TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA.ID }, true);
-    public static final ForeignKey<UserAuthzRequestRecord, AppUserRecord> USER_AUTHZ_REQUEST__USER_AUTHZ_REQUEST_APPROVED_USER_FKEY = Internal.createForeignKey(UserAuthzRequest.USER_AUTHZ_REQUEST, DSL.name("user_authz_request_approved_user_fkey"), new TableField[] { UserAuthzRequest.USER_AUTHZ_REQUEST.APPROVED_USER }, Keys.APP_USER_PKEY, new TableField[] { AppUser.APP_USER.ID }, true);
-    public static final ForeignKey<UserAuthzRequestRecord, AppUserRecord> USER_AUTHZ_REQUEST__USER_AUTHZ_REQUEST_RESPONDING_USER_FKEY = Internal.createForeignKey(UserAuthzRequest.USER_AUTHZ_REQUEST, DSL.name("user_authz_request_responding_user_fkey"), new TableField[] { UserAuthzRequest.USER_AUTHZ_REQUEST.RESPONDING_USER }, Keys.APP_USER_PKEY, new TableField[] { AppUser.APP_USER.ID }, true);
-    public static final ForeignKey<UserAuthzRequestRecord, ServicePointRecord> USER_AUTHZ_REQUEST__USER_AUTHZ_REQUEST_SERVICE_POINT_ID_FKEY = Internal.createForeignKey(UserAuthzRequest.USER_AUTHZ_REQUEST, DSL.name("user_authz_request_service_point_id_fkey"), new TableField[] { UserAuthzRequest.USER_AUTHZ_REQUEST.SERVICE_POINT_ID }, Keys.SERVICE_POINT_PKEY, new TableField[] { ServicePoint.SERVICE_POINT.ID }, true);
 }
