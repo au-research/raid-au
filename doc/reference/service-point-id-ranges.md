@@ -127,3 +127,46 @@ should not happen in normal operation.
 
 Changing an agency's allocation after the fact requires a migration to drop and
 recreate that constraint, so allocations are intended to be permanent.
+
+## Recovering from a Flyway validation failure
+
+Occasionally an instance refuses to start because Flyway's stored checksum for an
+already-applied migration no longer matches the file on the classpath:
+
+```
+Validate failed: Migrations have failed validation
+```
+
+This means the schema history and the artefact disagree. Understand why before
+acting: it can indicate a migration was applied out of band, or that a deployment
+is running an older artefact than the database has been migrated to.
+
+If a repair is genuinely the right answer, it is triggered through configuration
+rather than by running SQL:
+
+```
+raid.db.repair-token = <the ticket key justifying the repair>
+```
+
+On the next start, if that token has not been used before, the instance runs one
+Flyway repair, records the token, and then migrates. Set the value, deploy, and
+the repair happens as part of the deployment.
+
+The token is one-shot. Leaving it in your deployment configuration is safe and
+expected — the same value can never repair twice, so there is nothing to clean up
+afterwards. A later repair needs a new token, which is a new deliberate decision.
+
+Two limits worth knowing:
+
+- A repair rewrites stored checksums to match the artefact. That makes drift
+  disappear rather than reporting it, so the token value is the review checkpoint:
+  never set it speculatively.
+- A repair does **not** help a downgrade, where the database holds migrations
+  newer than the artefact you are deploying. That needs
+  `spring.flyway.ignore-migration-patterns` instead, and usually means the wrong
+  image is being deployed.
+
+Applied repairs are recorded in the `db_repair_log` table, with the token and a
+timestamp, as an audit trail. The table is only created when a repair is actually
+armed, and nothing happens on a database that has never been migrated, since
+there is no history to repair.

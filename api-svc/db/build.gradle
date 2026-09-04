@@ -147,6 +147,12 @@ jooq{
           database {
             name = 'org.jooq.meta.postgres.PostgresDatabase'
             outputSchemaToDefault = true
+            /* db_repair_log is created at runtime by RepairLog, before Flyway runs,
+            using plain JDBC — it cannot use a generated class, because the table
+            may not exist until RepairLog itself creates it. Generating a mapping
+            nothing uses would also make the output depend on whether the
+            developer's database happened to have had a repair armed. */
+            excludes = 'db_repair_log'
             schemata {
               schema {
                 inputSchema = apiSvcPgSchema
