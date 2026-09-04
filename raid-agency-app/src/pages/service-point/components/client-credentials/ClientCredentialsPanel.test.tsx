@@ -110,6 +110,11 @@ describe("ClientCredentialsPanel", () => {
       expect.anything()
     ));
 
+    // Client ID is shown in plaintext straight away - it's already plaintext
+    // in the table, so masking it here would only add friction (RAID-826).
+    expect(screen.getByLabelText("Client ID")).toHaveValue("raid-cred-abc123");
+    expect(screen.queryByRole("button", { name: /Reveal client id/i })).not.toBeInTheDocument();
+
     const secretField = await screen.findByLabelText("Secret");
     expect(secretField).toHaveValue("•".repeat(24));
 
