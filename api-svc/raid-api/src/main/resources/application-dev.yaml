@@ -1,5 +1,10 @@
 raid:
   environment: dev
+  identifier:
+    # Required since the default was removed: without it a local instance now
+    # refuses to start. ARDC's ROR, because local development is development of
+    # ARDC's own instance.
+    registration-agency-identifier: https://ror.org/038sjwq14
   isni-client:
     url-format: http://localhost:1080/sru/?query=pica.isn+%3D+%22__ISNI__%22&operation=searchRetrieve&recordSchema=isni-b
   orcid-client:

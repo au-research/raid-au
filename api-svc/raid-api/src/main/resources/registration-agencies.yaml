@@ -1,0 +1,42 @@
+# Service Point ID block allocations for RAiD Registration Agencies.
+#
+# Each Registration Agency is allocated a distinct numeric block so that Service
+# Point IDs are unique across the federation. The ID is published in RAiD
+# metadata as identifier.owner.servicePoint, so two agencies minting the same
+# value would be indistinguishable to consumers.
+#
+# A block's first ID is `block * blockSize`; block 2 starts at 20000000. There is
+# nothing special about a single leading digit — block 10 simply starts at
+# 100000000 — so never assume a fixed number of digits.
+#
+# Allocations are made by the RAiD Registration Authority and captured in each
+# agency's legal agreement. This file is the authoritative copy in software:
+# onboarding an agency is a pull request here plus a release, not a change an
+# agency makes in its own deployment configuration.
+#
+# An instance resolves its own entry by raid.identifier.registration-agency-identifier,
+# and refuses to start when that ROR is absent from this file.
+
+blockSize: 10000000
+
+agencies:
+  # Reserved so local development, integration tests and fixtures can never be
+  # mistaken for a real agency's Service Point.
+  - name: Local development and test
+    block: 1
+    reserved: true
+
+  - name: ARDC
+    instance: raid.org.au
+    ror: https://ror.org/038sjwq14
+    block: 2
+
+  - name: SDSC
+    instance: projectpid.org
+    ror: https://ror.org/04mg3nk07
+    block: 4
+
+  # TODO:RL SURF (block 3), DRAC (block 5) and TIB (block 6) are allocated but
+  # their RORs are not yet known. SURF is deployed, so its instance will refuse
+  # to start until its entry is added here. Blocks 3, 5 and 6 are reserved for
+  # them and must not be allocated to anyone else.
