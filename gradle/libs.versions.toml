@@ -31,6 +31,7 @@ mockito-core = "5.23.0"
 mockito-inline = "5.2.0"
 openapi-generator = "7.0.0"
 postgresql = "42.7.10"
+testcontainers = "1.21.3"
 slf4j-simple = "2.0.17"
 spring-dependency-management = "1.1.7"
 spring-security-test = "6.2.2"
@@ -78,6 +79,8 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 mockito-junit-jupiter = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito-core" }
 mockito-inline = { group = "org.mockito", name = "mockito-inline", version.ref = "mockito-inline" }
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { group = "org.testcontainers", name = "junit-jupiter", version.ref = "testcontainers" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j-simple" }
 spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "springboot" }
 spring-boot-starter-oauth2-resource-server = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-resource-server", version.ref = "springboot" }

@@ -24,6 +24,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class ServicePointIdRangeConfig implements InitializingBean {
     public static final String SERVICE_POINT_ID_START_PLACEHOLDER = "servicePointIdStart";
+    public static final String SERVICE_POINT_ID_BLOCK_SIZE_PLACEHOLDER = "servicePointIdBlockSize";
 
     private final RegistrationAgencyRegister register;
     private final IdentifierProperties identifierProperties;
@@ -48,6 +49,7 @@ public class ServicePointIdRangeConfig implements InitializingBean {
 
             final var placeholders = new HashMap<>(configuration.getPlaceholders());
             placeholders.put(SERVICE_POINT_ID_START_PLACEHOLDER, Long.toString(start));
+            placeholders.put(SERVICE_POINT_ID_BLOCK_SIZE_PLACEHOLDER, Long.toString(register.blockSize()));
             configuration.placeholders(placeholders);
         };
     }
