@@ -70,7 +70,7 @@ class RaidControllerTest {
     public static final String IDENTIFIER_OWNER_ID = "https://ror.org/02stey378";
 
     private static final String SERVICE_POINT_GROUP_ID = UUID.randomUUID().toString();
-    private static final Long SERVICE_POINT_ID = 20_000_000L;
+    private static final Long SERVICE_POINT_ID = 10_000_000L;
     private static final String PREFIX = "10378.1";
     private static final String SUFFIX = "1696639";
     private static final String USER_ID = "user-id";
@@ -309,7 +309,7 @@ class RaidControllerTest {
         final var handle = new IdentifierHandle(PREFIX, SUFFIX);
         final var id = new IdentifierUrl("https://raid.org.au", handle);
         final var endDate = startDate.plusMonths(6);
-        final var servicePointId = 20000000L;
+        final var servicePointId = 10000000L;
 
         final var input = APIFixtures.newUpdateRequest();
         final var output = createRaidForGet(title, startDate);
@@ -380,7 +380,7 @@ class RaidControllerTest {
     void updateRaid_Returns404IfNotFound() throws Exception {
         final var handle = String.join("/", PREFIX, SUFFIX);
         final var input = APIFixtures.newUpdateRequest();
-        final var servicePointId = 20000000L;
+        final var servicePointId = 10000000L;
 
         when(validationService.validateForUpdate(eq(handle), any(RaidUpdateRequest.class))).thenReturn(Collections.emptyList());
 
