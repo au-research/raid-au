@@ -143,8 +143,17 @@ export const ServicePoint = () => {
           </Card>
         ) : (
           <Card>
-            <Box sx={{ display: "flex", alignItems: "stretch" }}>
-              <Box sx={{ width: 240, flexShrink: 0, borderRight: 1, borderColor: "divider", py: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "stretch", maxHeight: "calc(100vh - 220px)" }}>
+              <Box
+                sx={{
+                  width: 240,
+                  flexShrink: 0,
+                  borderRight: 1,
+                  borderColor: "divider",
+                  py: 2,
+                  overflowY: "auto",
+                }}
+              >
                 <List component="nav">
                   {sections.map((section) => {
                     const selected = activeSection?.key === section.key;
@@ -171,7 +180,7 @@ export const ServicePoint = () => {
                   })}
                 </List>
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
+              <Box sx={{ flex: 1, minWidth: 0, p: 3, overflowY: "auto" }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   {activeSection?.label}
                 </Typography>
