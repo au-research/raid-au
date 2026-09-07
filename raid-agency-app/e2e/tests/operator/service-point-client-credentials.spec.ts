@@ -41,9 +41,12 @@ test.describe("Service point client credentials", () => {
       const servicePointId = await resolved.first().getAttribute("data-id");
       await page.goto(`/service-points/${servicePointId}`);
 
-      const credentialsTab = page.getByRole("tab", { name: "Client credentials" });
-      await expect(credentialsTab).toBeVisible({ timeout: 10000 });
-      await credentialsTab.click();
+      // RAID-826 v3: "Client credentials" is a left sidebar nav item (a
+      // button), not a tab - the page moved from a tabbed card to a
+      // dashboard-style sidebar switcher.
+      const credentialsNavItem = page.getByRole("button", { name: "Client credentials" });
+      await expect(credentialsNavItem).toBeVisible({ timeout: 10000 });
+      await credentialsNavItem.click();
       await expect(page).toHaveURL(/[?&]tab=credentials/);
 
       await page.getByText("Create client credential").click();
