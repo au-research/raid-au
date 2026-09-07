@@ -65,6 +65,13 @@ export const messages = {
     servicePointDeletionFailed: "Service point deletion failed",
     servicePointUniqueRepositoryID: "Repository ID must be unique. The provided Repository ID is already in use.",
 
+    // Client credential messages
+    clientCredentialCreated: "Client credential created successfully",
+    clientCredentialRotated: "Client credential secret rotated successfully",
+    clientCredentialRevoked: "Client credential revoked successfully",
+    clientCredentialLimitReached: (activeCount: number) =>
+        `Credential limit reached (${activeCount}/10). Revoke a credential to free up a slot.`,
+
     //Generic messages
     requestFailedTitle: "Error while processing your request",
     requestFailedContent: "Please try again or email: services@ardc.edu.au"
