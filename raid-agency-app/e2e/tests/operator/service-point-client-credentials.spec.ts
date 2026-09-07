@@ -94,7 +94,9 @@ test.describe("Service point client credentials", () => {
         await expect(row.getByText("Enabled")).toBeVisible();
 
         await row.getByLabel("rotate secret", { exact: true }).click();
-        await expect(page.getByText(/Secret rotated/i)).toBeVisible({ timeout: 10000 });
+        // Scoped to the panel's heading, not getByText: the rotate success
+        // snackbar ("...secret rotated successfully") also matches /Secret rotated/i.
+        await expect(page.getByRole("heading", { name: /Secret rotated/i })).toBeVisible({ timeout: 10000 });
         const rotatedSecret = await secretField.inputValue();
         expect(rotatedSecret).toMatch(/^•+$/);
         await page.getByRole("button", { name: "Done" }).click();
