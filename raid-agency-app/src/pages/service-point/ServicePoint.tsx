@@ -143,18 +143,34 @@ export const ServicePoint = () => {
           </Card>
         ) : (
           <Card>
-            <Box sx={{ display: "flex", alignItems: "stretch", maxHeight: "calc(100vh - 220px)" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: "stretch",
+                maxHeight: { xs: "none", sm: "calc(100vh - 220px)" },
+              }}
+            >
               <Box
                 sx={{
-                  width: 240,
+                  width: { xs: "100%", sm: 240 },
                   flexShrink: 0,
-                  borderRight: 1,
+                  borderRight: { xs: 0, sm: 1 },
+                  borderBottom: { xs: 1, sm: 0 },
                   borderColor: "divider",
-                  py: 2,
-                  overflowY: "auto",
+                  py: { xs: 1, sm: 2 },
+                  overflowY: { xs: "visible", sm: "auto" },
+                  overflowX: { xs: "auto", sm: "visible" },
                 }}
               >
-                <List component="nav">
+                <List
+                  component="nav"
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "row", sm: "column" },
+                    py: 0,
+                  }}
+                >
                   {sections.map((section) => {
                     const selected = activeSection?.key === section.key;
                     return (
@@ -162,13 +178,22 @@ export const ServicePoint = () => {
                         key={section.key}
                         selected={selected}
                         onClick={() => handleSelectSection(section.key)}
-                        sx={{
-                          borderLeft: 3,
-                          borderColor: selected ? "primary.main" : "transparent",
-                          "&.Mui-selected, &.Mui-selected:hover": {
-                            backgroundColor: "action.selected",
-                            color: "primary.main",
-                          },
+                        sx={(theme) => {
+                          const accent = selected ? theme.palette.primary.main : "transparent";
+                          return {
+                            flexShrink: 0,
+                            whiteSpace: "nowrap",
+                            [theme.breakpoints.up("sm")]: {
+                              borderLeft: `3px solid ${accent}`,
+                            },
+                            [theme.breakpoints.down("sm")]: {
+                              borderBottom: `3px solid ${accent}`,
+                            },
+                            "&.Mui-selected, &.Mui-selected:hover": {
+                              backgroundColor: theme.palette.action.selected,
+                              color: theme.palette.primary.main,
+                            },
+                          };
                         }}
                       >
                         <ListItemIcon sx={{ minWidth: 36, color: selected ? "primary.main" : "inherit" }}>
@@ -180,7 +205,7 @@ export const ServicePoint = () => {
                   })}
                 </List>
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0, p: 3, overflowY: "auto" }}>
+              <Box sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3 }, overflowY: { xs: "visible", sm: "auto" } }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   {activeSection?.label}
                 </Typography>
