@@ -75,7 +75,7 @@ describe("ClientCredentialsPanel", () => {
     expect(screen.queryByText(/last used/i)).not.toBeInTheDocument();
   });
 
-  it("lists existing credentials with Created and Last rotated, not Last used", async () => {
+  it("lists existing credentials with Created and Last rotated, not Last used or Client ID", async () => {
     mockFetchClientCredentials.mockResolvedValue([makeCredential()]);
     renderPanel();
 
@@ -83,6 +83,9 @@ describe("ClientCredentialsPanel", () => {
     expect(screen.getByText("Created")).toBeInTheDocument();
     expect(screen.getByText("Last rotated")).toBeInTheDocument();
     expect(screen.queryByText(/last used/i)).not.toBeInTheDocument();
+    // The ticket's AC only lists label/created/last-rotated for the table -
+    // Client ID isn't part of it, and only appears in the secret panel.
+    expect(screen.queryByText("Client ID")).not.toBeInTheDocument();
   });
 
   it("disables create and shows a limit message when 10 active credentials exist", async () => {
@@ -110,10 +113,13 @@ describe("ClientCredentialsPanel", () => {
       expect.anything()
     ));
 
-    // Client ID is shown in plaintext straight away - it's already plaintext
-    // in the table, so masking it here would only add friction (RAID-826).
-    expect(screen.getByLabelText("Client ID")).toHaveValue("raid-cred-abc123");
-    expect(screen.queryByRole("button", { name: /Reveal client id/i })).not.toBeInTheDocument();
+    // Client ID isn't shown anywhere else (removed from the table per the
+    // ticket's AC - RAID-826), so it stays masked-by-default here too.
+    const clientIdField = screen.getByLabelText("Client ID");
+    expect(clientIdField).toHaveValue("•".repeat(24));
+
+    fireEvent.click(screen.getByRole("button", { name: /Reveal client id/i }));
+    expect(clientIdField).toHaveValue("raid-cred-abc123");
 
     const secretField = await screen.findByLabelText("Secret");
     expect(secretField).toHaveValue("•".repeat(24));

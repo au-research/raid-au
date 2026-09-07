@@ -70,12 +70,15 @@ test.describe("Service point client credentials", () => {
         const secretField = page.getByLabel("Secret", { exact: true });
         await expect(secretField).toBeVisible({ timeout: 10000 });
 
-        // Client ID is plaintext straight away - it's already plaintext in
-        // the table below, so there's nothing to reveal (RAID-826 comment thread).
+        // Client ID isn't shown anywhere else (removed from the table per the
+        // ticket's AC), so it stays masked-by-default here, same as the secret.
+        const maskedClientId = await clientIdField.inputValue();
+        expect(maskedClientId).toMatch(/^•+$/);
+
+        await page.getByRole("button", { name: "Reveal client id" }).click();
         const revealedClientId = await clientIdField.inputValue();
         expect(revealedClientId).not.toMatch(/^•+$/);
         expect(revealedClientId.length).toBeGreaterThan(0);
-        await expect(page.getByRole("button", { name: "Reveal client id" })).toHaveCount(0);
 
         // Masked by default.
         const maskedValue = await secretField.inputValue();

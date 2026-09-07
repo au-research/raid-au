@@ -9,7 +9,6 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import {
   Visibility as VisibilityIcon,
@@ -24,14 +23,6 @@ import {
   useRevokeClientCredential,
   useViewClientCredentialSecret,
 } from "./useClientCredentialMutations";
-
-const CLIENT_ID_VISIBLE_CHARS = 16;
-
-function truncateClientId(clientId: string): string {
-  return clientId.length > CLIENT_ID_VISIBLE_CHARS
-    ? `${clientId.slice(0, CLIENT_ID_VISIBLE_CHARS)}…`
-    : clientId;
-}
 
 export function ClientCredentialsTable({
   credentials,
@@ -77,7 +68,6 @@ export function ClientCredentialsTable({
         <TableHead>
           <TableRow>
             <TableCell>Label</TableCell>
-            <TableCell>Client ID</TableCell>
             <TableCell>Created</TableCell>
             <TableCell>Last rotated</TableCell>
             <TableCell>Status</TableCell>
@@ -90,13 +80,6 @@ export function ClientCredentialsTable({
             return (
               <TableRow key={credential.clientId} sx={{ opacity: disabled ? 0.55 : 1 }}>
                 <TableCell sx={{ whiteSpace: "nowrap" }}>{credential.label}</TableCell>
-                <TableCell sx={{ whiteSpace: "nowrap" }}>
-                  <Tooltip title={credential.clientId}>
-                    <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
-                      {truncateClientId(credential.clientId)}
-                    </Typography>
-                  </Tooltip>
-                </TableCell>
                 <TableCell sx={{ whiteSpace: "nowrap" }}>{new Date(credential.createdAt).toLocaleString("en-AU")}</TableCell>
                 <TableCell sx={{ whiteSpace: "nowrap" }}>
                   {credential.lastRotatedAt ? new Date(credential.lastRotatedAt).toLocaleString("en-AU") : "—"}
