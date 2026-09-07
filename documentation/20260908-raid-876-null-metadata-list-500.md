@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-08
 **JIRA:** [RAID-876](https://ardc.atlassian.net/browse/RAID-876)
-**PR:** raid-au [#PR](https://github.com/au-research/raid-au/pull/PR)
+**PR:** raid-au [#648](https://github.com/au-research/raid-au/pull/648)
 
 ## What was wrong
 
