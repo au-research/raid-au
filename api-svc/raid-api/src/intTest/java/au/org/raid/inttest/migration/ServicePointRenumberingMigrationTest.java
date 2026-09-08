@@ -89,6 +89,13 @@ class ServicePointRenumberingMigrationTest {
         }
     }
 
+    private static String queryString(final Connection connection, final String sql) throws SQLException {
+        try (Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sql)) {
+            rs.next();
+            return rs.getString(1);
+        }
+    }
+
     /**
      * The baseline seeds its own Service Point at 20000000, so tests that need
      * particular ids start from an empty set rather than working around it.
@@ -97,7 +104,8 @@ class ServicePointRenumberingMigrationTest {
         try (var statement = connection.createStatement()) {
             statement.execute("set search_path to " + SCHEMA);
             statement.execute("""
-                    truncate table service_point, app_user, user_authz_request, raid, raid_archive cascade
+                    truncate table service_point, app_user, user_authz_request, raid, raid_archive,
+                        raid_history cascade
                     """);
         }
     }
@@ -139,12 +147,45 @@ class ServicePointRenumberingMigrationTest {
                     values (%d, 'req%d@example.org', 'client', 'subject-req-%d', 'GOOGLE',
                             'REQUESTED', 'fixture')
                     """.formatted(id, id, id));
+            // One revision per depth the id can sit at, because a patch rewrites only
+            // as much of the document as that revision changed.
+            statement.execute("""
+                    insert into raid_history (handle, revision, change_type, diff, created)
+                    values ('%s', 1, 'create', '%s', now()),
+                           ('%s', 2, 'patch', '%s', now()),
+                           ('%s', 3, 'patch', '%s', now())
+                    """.formatted(handle, wholeIdentifierPatch(id),
+                    handle, ownerPatch(id),
+                    handle, servicePointPatch(id)));
         }
     }
 
     private static String metadata(final long servicePoint) {
         return """
                 {"identifier": {"owner": {"servicePoint": %d, "id": "https://ror.org/038sjwq14"}}}"""
+                .formatted(servicePoint);
+    }
+
+    /** The shape a freshly minted RAiD records: the whole identifier added at once. */
+    private static String wholeIdentifierPatch(final long servicePoint) {
+        return """
+                [{"op": "add", "path": "/identifier", "value": {"id": "https://raid.org/10.1/aaa",\
+                 "owner": {"id": "https://ror.org/038sjwq14", "servicePoint": %d}}}]"""
+                .formatted(servicePoint);
+    }
+
+    /** An update that replaced the owner block. */
+    private static String ownerPatch(final long servicePoint) {
+        return """
+                [{"op": "replace", "path": "/identifier/owner",\
+                 "value": {"id": "https://ror.org/038sjwq14", "servicePoint": %d}}]"""
+                .formatted(servicePoint);
+    }
+
+    /** An update that touched the Service Point alone, so the value is a bare number. */
+    private static String servicePointPatch(final long servicePoint) {
+        return """
+                [{"op": "replace", "path": "/identifier/owner/servicePoint", "value": %d}]"""
                 .formatted(servicePoint);
     }
 
@@ -198,6 +239,57 @@ class ServicePointRenumberingMigrationTest {
                     values ('Next', 'a@example.org', 't@example.org', 'https://ror.org/038sjwq14')
                     returning id
                     """)).isEqualTo(50_000_003L);
+        }
+    }
+
+    @Test
+    @DisplayName("renumbers the Service Point embedded in stored raid_history patches")
+    void renumbersServicePointInRaidHistory() throws SQLException {
+        final var database = freshDatabase("history");
+        flyway(database, BEFORE_RENUMBERING, 20_000_000L).migrate();
+
+        try (var connection = connectionTo(database)) {
+            clearSeededData(connection);
+            seedServicePoint(connection, 20_000_000L, "10.1/aaa");
+
+            flyway(database, RENUMBERING, 50_000_000L).migrate();
+
+            try (var statement = connection.createStatement()) {
+                statement.execute("set search_path to " + SCHEMA);
+            }
+
+            // Nothing anywhere in the stored patches still carries the old id, and the
+            // rewrite reached every revision rather than only the first.
+            assertThat(queryLong(connection,
+                    "select count(*) from raid_history where diff like '%20000000%'")).isZero();
+            assertThat(queryLong(connection,
+                    "select count(*) from raid_history where diff like '%50000000%'")).isEqualTo(3);
+
+            // Each depth resolves to the renumbered value.
+            assertThat(queryLong(connection, """
+                    select (diff::jsonb -> 0 -> 'value' -> 'owner' ->> 'servicePoint')::bigint
+                    from raid_history where revision = 1
+                    """)).isEqualTo(50_000_000L);
+            assertThat(queryLong(connection, """
+                    select (diff::jsonb -> 0 -> 'value' ->> 'servicePoint')::bigint
+                    from raid_history where revision = 2
+                    """)).isEqualTo(50_000_000L);
+            assertThat(queryLong(connection, """
+                    select (diff::jsonb -> 0 ->> 'value')::bigint
+                    from raid_history where revision = 3
+                    """)).isEqualTo(50_000_000L);
+
+            // The patch is rebuilt element by element, so prove nothing else moved.
+            assertThat(queryString(connection, """
+                    select diff::jsonb -> 0 ->> 'op' from raid_history where revision = 1
+                    """)).isEqualTo("add");
+            assertThat(queryString(connection, """
+                    select diff::jsonb -> 0 ->> 'path' from raid_history where revision = 3
+                    """)).isEqualTo("/identifier/owner/servicePoint");
+            assertThat(queryString(connection, """
+                    select diff::jsonb -> 0 -> 'value' -> 'owner' ->> 'id'
+                    from raid_history where revision = 1
+                    """)).isEqualTo("https://ror.org/038sjwq14");
         }
     }
 
