@@ -1,0 +1,98 @@
+// RAID-861: E2E tests for auto-detect schemaUri recognition on the
+// Contributor identifier field (ISNI), plus a regression guard confirming
+// the existing ORCID lookup widget behaviour is unaffected.
+//
+// The backend has a real ISNI validator (ISO 7064 MOD 11-2 check-digit, see
+// ContributorValidator/IsniValidator) but resolves ISNI IDs against a live
+// external resolver that isn't stubbed in local/dev (unlike ORCID's
+// sandbox), so a save attempt here surfaces a "Resolver unavailable"
+// dialog. The ISNI test therefore only asserts the outgoing create-RAiD
+// request payload (schemaUri + id) and the plain-field UI, matching the
+// same-situation precedent for ARK (RAID-793) in
+// 07-related-object-identifier-inference on the RAID-800 branch. The ORCID
+// test asserts a real successful save, since that path is unchanged and
+// fully supported end to end. 0000000121032683 is a real, valid ISNI
+// (correct check digit), not a placeholder.
+
+import { test, expect } from "@playwright/test";
+import { RaidFormPage } from "../page-objects/RaidFormPage";
+import { TitleSection } from "../page-objects/sections/TitleSection";
+import { DateSection } from "../page-objects/sections/DateSection";
+import { AccessSection } from "../page-objects/sections/AccessSection";
+import { ContributorSection } from "../page-objects/sections/ContributorSection";
+import { validEmbargoExpiry } from "../utils/date-helpers";
+
+const START_DATE = "2024-03-01";
+const EMBARGOED_LABEL = "Embargoed Access";
+const ACCESS_STATEMENT = "Embargoed for contributor-identifier inference e2e testing";
+const EMBARGO_EXPIRY = validEmbargoExpiry();
+const ISNI_URL = "https://isni.org/0000000121032683";
+const ORCID_URL = "https://sandbox.orcid.org/0009-0002-5128-5184";
+
+interface ContributorPayload {
+  contributor?: Array<{ id?: string; schemaUri?: string }>;
+}
+
+// Fills the minimal set of required fields so the form can be submitted,
+// then adds one empty Contributor row ready to receive a pasted id.
+async function setUpFormWithContributorRow(page: import("@playwright/test").Page) {
+  const formPage = new RaidFormPage(page);
+  const titleSection = new TitleSection(page);
+  const dateSection = new DateSection(page);
+  const accessSection = new AccessSection(page);
+  const contributorSection = new ContributorSection(page);
+
+  await formPage.goto("/raids/new");
+  await titleSection.fillText(0, `E2E Contributor Identifier Inference Test ${Date.now()}`);
+  await dateSection.fillStartDate(START_DATE);
+  await accessSection.selectAccessType(EMBARGOED_LABEL);
+  await accessSection.fillStatementText(ACCESS_STATEMENT);
+  await accessSection.fillEmbargoExpiry(EMBARGO_EXPIRY);
+
+  await contributorSection.addItem();
+
+  return { formPage, contributorSection };
+}
+
+test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
+  test("pasting an ISNI URL infers the ISNI schemaUri and shows a plain identifier field", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+
+    await contributorSection.fillOrcidId(0, ISNI_URL);
+
+    // Plain-field UI for ISNI: the name-line row stays mounted (avoids a
+    // layout jump) but swaps to an ISNI-specific message, and there's no
+    // lookup/search button.
+    await expect(page.getByText(/^Name:/)).not.toBeVisible();
+    await expect(page.getByText("The entered ID is an ISNI")).toBeVisible();
+    await expect(page.locator('[aria-label="directions"]')).toHaveCount(0);
+
+    const [request] = await Promise.all([
+      page.waitForRequest(
+        (req) => req.method() === "POST" && /\/raid\/?$/.test(new URL(req.url()).pathname)
+      ),
+      formPage.save(),
+    ]);
+
+    const body = request.postDataJSON() as ContributorPayload;
+    const contributor = body.contributor?.[0];
+    expect(contributor?.schemaUri).toBe("https://isni.org/");
+    expect(contributor?.id).toBe(ISNI_URL);
+  });
+
+  test("pasting an ORCID iD still resolves a name and saves successfully (regression guard)", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+
+    await contributorSection.searchAndSelectOrcid(0, ORCID_URL);
+
+    await expect(page.getByText(/^Name:/)).toBeVisible();
+    await expect(page.locator('[aria-label="directions"]')).toHaveCount(1);
+
+    await formPage.save();
+    await formPage.waitForSuccessfulSave();
+  });
+});
