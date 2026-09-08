@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RegistrationAgencyRegisterTest {
     private static final String ARDC_ROR = "https://ror.org/038sjwq14";
+    private static final String SURF_ROR = "https://ror.org/009vhk114";
     private static final String SDSC_ROR = "https://ror.org/04mg3nk07";
 
     private static Resource register(final String yaml) {
@@ -28,7 +29,22 @@ class RegistrationAgencyRegisterTest {
         final var subject = shipped();
 
         assertThat(subject.servicePointIdStart(ARDC_ROR)).isEqualTo(20000000L);
+        assertThat(subject.servicePointIdStart(SURF_ROR)).isEqualTo(30000000L);
         assertThat(subject.servicePointIdStart(SDSC_ROR)).isEqualTo(40000000L);
+    }
+
+    /**
+     * SURF is deployed, so an instance of theirs starting is not hypothetical: a
+     * release that omits their ROR stops their service. This asserts against the
+     * shipped register rather than a fixture, so removing the entry fails here.
+     */
+    @Test
+    @DisplayName("resolves every deployed agency's ROR")
+    void resolvesDeployedAgencies() {
+        final var subject = shipped();
+
+        assertThat(subject.servicePointIdStart(SURF_ROR)).isPositive();
+        assertThat(subject.servicePointIdStart(SDSC_ROR)).isPositive();
     }
 
     @Test
