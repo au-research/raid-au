@@ -31,12 +31,18 @@ agencies:
     ror: https://ror.org/038sjwq14
     block: 2
 
+  # `instance` omitted: SURF's hostname is not recorded here yet. It is
+  # documentation only — nothing resolves it — so it can be added later.
+  - name: SURF
+    ror: https://ror.org/009vhk114
+    block: 3
+
   - name: SDSC
     instance: projectpid.org
     ror: https://ror.org/04mg3nk07
     block: 4
 
-  # TODO:RL SURF (block 3), DRAC (block 5) and TIB (block 6) are allocated but
-  # their RORs are not yet known. SURF is deployed, so its instance will refuse
-  # to start until its entry is added here. Blocks 3, 5 and 6 are reserved for
-  # them and must not be allocated to anyone else.
+  # TODO:RL DRAC (block 5) and TIB (block 6) are allocated but their RORs are not
+  # yet known. Neither is deployed, so their absence blocks nothing today, but an
+  # instance whose ROR is missing here refuses to start. Blocks 5 and 6 are
+  # reserved for them and must not be allocated to anyone else.
