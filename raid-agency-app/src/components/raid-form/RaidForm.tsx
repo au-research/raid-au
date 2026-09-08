@@ -16,7 +16,7 @@ import { RaidCreateRequest, RaidDto } from "@/generated/raid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Close as CloseIcon, Save as SaveIcon } from "@mui/icons-material";
 import { Fab, Stack, Tooltip } from "@mui/material";
-import { memo, useCallback, useEffect, useState, useRef } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import {ServicePointForm} from "@/entities/service-point/forms/ServicePointForm.tsx";
@@ -25,9 +25,6 @@ import { useErrorDialog } from "@/components/error-dialog";
 import { transformErrorMessage } from "../raid-form-error-message/ErrorContentUtils";
 import { formConfigService, transformFormData } from "@/services/form-service";
 import { createContext } from "react";
-import { useCodesContext } from "@/components/tree-view/context/CodesContext";
-import { CodeItem } from "../tree-view/context/CodesProvider";
-import { Loading } from "@/pages/loading";
 
 // Define JSON types locally since '@/types/json-types' is missing
 type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
@@ -66,25 +63,13 @@ export const RaidForm = memo(
   }) => {
     const { isOperator } = useAuthHelper();
     const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const hasLoadedInitialData = useRef(false);
     const { openErrorDialog } = useErrorDialog();
-    const {
-      setSelectedCodes,
-      setSelectedCodesData,
-      getCodeById,
-      globalData,
-      setSearchQueryState,
-    } = useCodesContext();
 
     const formConfig = formConfigService();
     const [formSchema, setFormSchema] = useState<JSONObject | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      formConfig.getFormConfig().then((schema: JSONObject) => {
-        setFormSchema(schema);
-        setLoading(false);
-      });
+      formConfig.getFormConfig().then((schema: JSONObject) => setFormSchema(schema));
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -97,7 +82,7 @@ export const RaidForm = memo(
       reValidateMode: "onChange",
     });
 
-    const { control, trigger, formState, setValue, clearErrors, reset } = formMethods;
+    const { control, trigger, formState } = formMethods;
 
     const handleSubmit = useCallback(
       (data: RaidDto) => {
@@ -124,53 +109,7 @@ export const RaidForm = memo(
       // and opens an error dialog with the transformed error message
     }, [formState.errors, formState.isSubmitted, openErrorDialog]);
 
-    useEffect(() => {
-      if (!hasLoadedInitialData.current && Array.isArray(raidData?.subject) && raidData.subject.length > 0 && globalData) {
-        setLoading(true);
-        const selectedSubjects = Array.isArray(raidData.subject)
-          ? raidData.subject
-          : [];
-
-        const selectedIds = selectedSubjects.map((subject) =>
-          subject.id.split("/").pop() || ""
-        );
-
-        if(selectedIds.length === 0) return;
-
-        setSelectedCodes(selectedIds);
-        const codesArray = selectedIds
-          .map(codeId => getCodeById(codeId, globalData))
-          .filter((item): item is CodeItem => item !== undefined);
-
-        if (codesArray.length > 0) {
-          setSelectedCodesData(codesArray);
-          setSearchQueryState('')
-          hasLoadedInitialData.current = true; // Mark as loaded
-          setLoading(false);
-        }
-      } else if ((!raidData?.subject || raidData.subject.length === 0) && isInitialLoad) {
-        setSelectedCodes([]);
-        setSelectedCodesData([]);
-        setValue('subject', [])
-        clearErrors('subject');
-        setSearchQueryState('');
-        setLoading(false);
-      }
-    }, [raidData.subject, getCodeById, globalData, hasLoadedInitialData.current]);
-
-    useEffect(() => {
-      if (raidData) {
-        reset(raidData); // Updates form with new values when raidData changes
-        setSelectedCodes([]);
-        setSelectedCodesData([]);
-        hasLoadedInitialData.current = false; // Reset loaded flag when raidData changes
-      }
-    }, [raidData, reset]);
-
     return (
-      loading ? (
-        <Loading />
-      ) : (
         <MetadataContext.Provider value={metadata}>
         <FormProvider {...formMethods}>
           <form
@@ -312,7 +251,6 @@ export const RaidForm = memo(
           </form>
         </FormProvider>
       </MetadataContext.Provider>
-      )
     );
   }
 );
