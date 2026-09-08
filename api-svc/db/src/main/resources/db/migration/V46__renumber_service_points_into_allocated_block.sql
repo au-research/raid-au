@@ -42,7 +42,6 @@ $$
         v_min    bigint;
         v_max    bigint;
         v_offset bigint;
-        v_missed bigint;
     begin
         select min(id), max(id) into v_min, v_max from service_point;
 
@@ -87,69 +86,6 @@ $$
                 '{identifier,owner,servicePoint}',
                 to_jsonb((metadata -> 'identifier' -> 'owner' ->> 'servicePoint')::bigint + v_offset))
         where metadata -> 'identifier' -> 'owner' ? 'servicePoint';
-
-        -- raid_history holds the JSON Patch documents that RaidHistoryService
-        -- replays to reconstruct a RaidDto, and that reconstruction backs the
-        -- single-raid GET, the edit form and the update checksum. The id is
-        -- embedded in those patches too, so leaving them alone would make the
-        -- detail view disagree with the list view and would break updates,
-        -- which look the Service Point up by the id the patches carry.
-        --
-        -- diff is text rather than jsonb and holds an array of operations, so
-        -- this rebuilds each array rather than setting a fixed path. The id can
-        -- sit at three depths depending on how much of the document a given
-        -- revision rewrote, and op is not part of the match because add and
-        -- replace need identical treatment.
-        update raid_history
-        set diff = (select jsonb_agg(
-                                   case
-                                       when element ->> 'path' = '/identifier/owner/servicePoint'
-                                           and jsonb_typeof(element -> 'value') = 'number'
-                                           then jsonb_set(element, '{value}',
-                                                          to_jsonb((element ->> 'value')::bigint + v_offset))
-                                       when element ->> 'path' = '/identifier/owner'
-                                           and element -> 'value' ? 'servicePoint'
-                                           then jsonb_set(element, '{value,servicePoint}',
-                                                          to_jsonb((element -> 'value' ->> 'servicePoint')::bigint +
-                                                                   v_offset))
-                                       when element ->> 'path' = '/identifier'
-                                           and element -> 'value' -> 'owner' ? 'servicePoint'
-                                           then jsonb_set(element, '{value,owner,servicePoint}',
-                                                          to_jsonb((element -> 'value' -> 'owner' ->> 'servicePoint')::bigint +
-                                                                   v_offset))
-                                       else element
-                                       end
-                                   order by ordinality)::text
-                    from jsonb_array_elements(diff::jsonb) with ordinality as patch(element, ordinality))
-        where jsonb_typeof(diff::jsonb) = 'array'
-          and diff like '%servicePoint%';
-
-        -- No foreign key protects these patches, so assert the rewrite reached every
-        -- one. A patch that was missed still carries a pre-renumbering id, which is
-        -- recognisable because adding the offset again lands on a Service Point that
-        -- now exists. Patches referencing a Service Point that was already gone are
-        -- left out by the same test, since nothing they point at exists either way.
-        select count(*)
-        into v_missed
-        from raid_history h,
-             lateral jsonb_array_elements(h.diff::jsonb) as element
-        where jsonb_typeof(h.diff::jsonb) = 'array'
-          and exists (select 1
-                      from service_point sp
-                      where sp.id = case
-                                        when element ->> 'path' = '/identifier/owner/servicePoint'
-                                            and jsonb_typeof(element -> 'value') = 'number'
-                                            then (element ->> 'value')::bigint + v_offset
-                                        when element ->> 'path' = '/identifier/owner'
-                                            then (element -> 'value' ->> 'servicePoint')::bigint + v_offset
-                                        when element ->> 'path' = '/identifier'
-                                            then (element -> 'value' -> 'owner' ->> 'servicePoint')::bigint + v_offset
-                          end);
-
-        if v_missed > 0 then
-            raise exception 'Renumbering left % raid_history patches carrying a pre-renumbering Service Point',
-                v_missed;
-        end if;
     end
 $$;
 
@@ -184,7 +120,7 @@ alter table service_point
 do
 $$
     declare
-        v_orphans    bigint;
+        v_orphans   bigint;
         v_mismatched bigint;
     begin
         select count(*) into v_orphans from raid_archive a

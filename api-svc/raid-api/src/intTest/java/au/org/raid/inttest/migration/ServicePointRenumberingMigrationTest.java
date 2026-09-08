@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Regression guard for V46, which renumbers Service Points into the block
- * allocated to the Registration Agency operating the instance.
+ * allocated to the Registration Agency operating the instance, and for V48,
+ * which finishes the job for raid_history. They are separate migrations because
+ * V46 had already been applied elsewhere by the time the gap was found.
  *
  * <p>Runs against a throwaway Postgres rather than the shared dev database: the
  * migration rewrites primary keys across four tables and two JSONB documents, so
@@ -36,6 +38,8 @@ class ServicePointRenumberingMigrationTest {
     /** The version immediately before the renumbering migration. */
     private static final String BEFORE_RENUMBERING = "45";
     private static final String RENUMBERING = "46";
+    /** V46 leaves raid_history alone; V48 finishes it off. */
+    private static final String HISTORY_RENUMBERING = "48";
 
     @Container
     private static final PostgreSQLContainer<?> POSTGRES =
@@ -243,6 +247,29 @@ class ServicePointRenumberingMigrationTest {
     }
 
     @Test
+    @DisplayName("leaves raid_history alone until V48 runs")
+    void leavesRaidHistoryToV48() throws SQLException {
+        final var database = freshDatabase("history_v46_only");
+        flyway(database, BEFORE_RENUMBERING, 20_000_000L).migrate();
+
+        try (var connection = connectionTo(database)) {
+            clearSeededData(connection);
+            seedServicePoint(connection, 20_000_000L, "10.1/aaa");
+
+            flyway(database, RENUMBERING, 50_000_000L).migrate();
+
+            try (var statement = connection.createStatement()) {
+                statement.execute("set search_path to " + SCHEMA);
+            }
+
+            // The gap V48 exists to close: the row moved, the stored patches did not.
+            assertThat(queryLong(connection, "select service_point_id from raid")).isEqualTo(50_000_000L);
+            assertThat(queryLong(connection,
+                    "select count(*) from raid_history where diff like '%20000000%'")).isEqualTo(3);
+        }
+    }
+
+    @Test
     @DisplayName("renumbers the Service Point embedded in stored raid_history patches")
     void renumbersServicePointInRaidHistory() throws SQLException {
         final var database = freshDatabase("history");
@@ -252,7 +279,7 @@ class ServicePointRenumberingMigrationTest {
             clearSeededData(connection);
             seedServicePoint(connection, 20_000_000L, "10.1/aaa");
 
-            flyway(database, RENUMBERING, 50_000_000L).migrate();
+            flyway(database, HISTORY_RENUMBERING, 50_000_000L).migrate();
 
             try (var statement = connection.createStatement()) {
                 statement.execute("set search_path to " + SCHEMA);
@@ -290,6 +317,100 @@ class ServicePointRenumberingMigrationTest {
                     select diff::jsonb -> 0 -> 'value' -> 'owner' ->> 'id'
                     from raid_history where revision = 1
                     """)).isEqualTo("https://ror.org/038sjwq14");
+        }
+    }
+
+    @Test
+    @DisplayName("leaves patches that already carry a renumbered Service Point untouched")
+    void leavesAlreadyRenumberedPatchesAlone() throws SQLException {
+        final var database = freshDatabase("history_partial");
+        flyway(database, BEFORE_RENUMBERING, 20_000_000L).migrate();
+
+        try (var connection = connectionTo(database)) {
+            clearSeededData(connection);
+            seedServicePoint(connection, 20_000_000L, "10.1/aaa");
+
+            flyway(database, RENUMBERING, 50_000_000L).migrate();
+
+            try (var statement = connection.createStatement()) {
+                statement.execute("set search_path to " + SCHEMA);
+                // As if this one revision had already been corrected by hand.
+                statement.execute("""
+                        update raid_history set diff = '%s' where revision = 3
+                        """.formatted(servicePointPatch(50_000_000L)));
+            }
+
+            flyway(database, HISTORY_RENUMBERING, 50_000_000L).migrate();
+
+            // Shifting it a second time would have produced 80000000.
+            assertThat(queryLong(connection, """
+                    select (diff::jsonb -> 0 ->> 'value')::bigint from raid_history where revision = 3
+                    """)).isEqualTo(50_000_000L);
+            assertThat(queryLong(connection,
+                    "select count(*) from raid_history where diff like '%50000000%'")).isEqualTo(3);
+        }
+    }
+
+    @Test
+    @DisplayName("shifts history whose raid has since been deleted")
+    void shiftsOrphanedHistory() throws SQLException {
+        final var database = freshDatabase("history_orphan");
+        flyway(database, BEFORE_RENUMBERING, 20_000_000L).migrate();
+
+        try (var connection = connectionTo(database)) {
+            clearSeededData(connection);
+            seedServicePoint(connection, 20_000_000L, "10.1/aaa");
+            seedServicePoint(connection, 20_000_001L, "10.1/bbb");
+
+            flyway(database, RENUMBERING, 50_000_000L).migrate();
+
+            try (var statement = connection.createStatement()) {
+                statement.execute("set search_path to " + SCHEMA);
+                // History outlives the raid, so it has no row to pair with. The
+                // offset has to come from the raid that is still there.
+                statement.execute("delete from raid where handle = '10.1/bbb'");
+            }
+
+            flyway(database, HISTORY_RENUMBERING, 50_000_000L).migrate();
+
+            assertThat(queryLong(connection,
+                    "select count(*) from raid_history where diff like '%20000001%'")).isZero();
+            assertThat(queryLong(connection, """
+                    select (diff::jsonb -> 0 ->> 'value')::bigint
+                    from raid_history where handle = '10.1/bbb' and revision = 3
+                    """)).isEqualTo(50_000_001L);
+        }
+    }
+
+    @Test
+    @DisplayName("refuses to guess when a raid changed Service Point")
+    void refusesAmbiguousOffset() throws SQLException {
+        final var database = freshDatabase("history_ambiguous");
+        flyway(database, BEFORE_RENUMBERING, 20_000_000L).migrate();
+
+        try (var connection = connectionTo(database)) {
+            clearSeededData(connection);
+            seedServicePoint(connection, 20_000_000L, "10.1/aaa");
+            seedServicePoint(connection, 20_000_001L, "10.1/bbb");
+
+            flyway(database, RENUMBERING, 50_000_000L).migrate();
+
+            try (var statement = connection.createStatement()) {
+                statement.execute("set search_path to " + SCHEMA);
+                // bbb now owned by the second Service Point but with history written
+                // while it belonged to the first: the two imply different offsets.
+                statement.execute("""
+                        update raid_history set diff = '%s'
+                        where handle = '10.1/bbb' and revision = 3
+                        """.formatted(servicePointPatch(20_000_000L)));
+            }
+
+            assertThatThrownBy(() -> flyway(database, HISTORY_RENUMBERING, 50_000_000L).migrate())
+                    .hasMessageContaining("different renumbering offsets");
+
+            // The failure rolls back, so nothing was half-shifted.
+            assertThat(queryLong(connection,
+                    "select count(*) from raid_history where diff like '%20000000%'")).isEqualTo(4);
         }
     }
 

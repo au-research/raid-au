@@ -9,13 +9,14 @@ raid:
     realm-uri: https://iam.${raid.environment}.raid.org.au/realms/raid
   db:
     name: raido
-    # V46 was amended to also renumber the Service Point id embedded in
-    # raid_history patches, which changed its checksum. Any instance that applied
-    # the original V46 now fails Flyway validation on boot, so this arms one
-    # repair to realign the stored checksum. The token is one-shot per database
-    # and recorded in db_repair_log, so it is safe to leave here; a later repair
-    # needs a new token, which is a new deliberate decision.
-    repair-token: RAID-878
+    # The raid_history renumbering briefly lived as an amendment to V46 and was
+    # moved out to V47, so V46 is back to its original content. raid-sandbox took
+    # the amended V46 in between and had its stored checksum repaired to match,
+    # which now disagrees with the reverted file. This arms one repair to put it
+    # back. The token is one-shot per database and recorded in db_repair_log, so
+    # it is safe to leave here; a later repair needs a new token, which is a new
+    # deliberate decision.
+    repair-token: RAID-878-v47
   isni-client:
     url-format: https://isni.oclc.org/sru/?query=pica.isn+%3D+%22__ISNI__%22&operation=searchRetrieve&recordSchema=isni-b
   orcid-client:
