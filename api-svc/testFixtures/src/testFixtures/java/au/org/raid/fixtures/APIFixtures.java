@@ -43,7 +43,7 @@ public class APIFixtures {
                 .owner(new Owner()
                         .id("https://ror.org/02stey378")
                         .schemaUri(RegistrationAgencySchemaURIEnum.fromValue("https://ror.org/"))
-                        .servicePoint(new BigDecimal(20000000)))
+                        .servicePoint(new BigDecimal(10000000)))
                 .license("Creative Commons CC-0")
                 .version(16);
         return new RaidUpdateRequest()

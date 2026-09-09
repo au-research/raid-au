@@ -144,6 +144,20 @@ testing{
         // reachable through the public API (RAID-832: advisory lock, resync flag)
         runtimeOnly libs.postgresql
 
+        // A Flyway migration can only be exercised against a real Postgres, so the
+        // V46 renumbering test (RAID-863) brings up its own throwaway database
+        // rather than touching the shared dev one. Kept out of the unit tests so
+        // `./gradlew build` does not start requiring Docker; intTest already does,
+        // and the branch pipeline's CodeBuild runs privileged.
+        // the migrations themselves live in the db module's resources
+        implementation project(':api-svc:db')
+
+        implementation libs.postgresql
+        implementation libs.testcontainers.postgresql
+        implementation libs.testcontainers.junit.jupiter
+        implementation libs.flyway.core
+        runtimeOnly libs.flyway.postgresql
+
         compileOnly libs.lombok
         annotationProcessor libs.lombok
 
