@@ -166,6 +166,11 @@ public class AbstractIntegrationTest {
      * RAID-877: resolves the real {@code service_point.id} for a service point name at runtime.
      * Needed for service points whose Keycloak group id is not stable across environments - see
      * {@link #RAID_AU_REGISTRY_2_NAME}.
+     *
+     * <p>Matches by prefix, not exact equality: the branch/test environment's Configure-
+     * ServicePoints deploy step appends a branch-specific suffix to service point names (e.g.
+     * {@code "RAiD AU Test Registry 2 (branch-raid-877)"}), whereas local dev has no suffix
+     * (e.g. {@code "RAiD AU Test Registry 2"}). A prefix match handles both.
      */
     protected Long resolveServicePointIdByName(final String name) {
         return SERVICE_POINT_ID_BY_NAME.computeIfAbsent(name, n -> {
@@ -176,11 +181,11 @@ public class AbstractIntegrationTest {
                     .isNotNull();
 
             return servicePoints.stream()
-                    .filter(sp -> n.equals(sp.getName()))
+                    .filter(sp -> sp.getName() != null && sp.getName().startsWith(n))
                     .map(ServicePoint::getId)
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException(
-                            "No service point found with name " + n));
+                            "No service point found with name starting with " + n));
         });
     }
 
