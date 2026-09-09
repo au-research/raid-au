@@ -482,18 +482,16 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
      * {@code api_svc.service_point} row backing the group, which the dynamically-created groupA/
      * groupB do not have. See {@code V32.1__update_service_point_repository.sql} and
      * {@code V40.1__update_service_point_repository.sql} for the group id / service point id
-     * pairings, and {@code AbstractIntegrationTest.RAID_AU_REGISTRY_2_SERVICE_POINT_ID} for the
-     * second.
+     * pairings. RAID-877: the actual service_point.id values are resolved at runtime via
+     * {@code AbstractIntegrationTest.resolveServicePointId(String)} rather than hardcoded, since
+     * {@code service_point.id} is a Postgres-sequence-allocated value that differs per
+     * environment - only the Keycloak group ids ({@code RAID_AU_GROUP_ID} /
+     * {@code RAID_AU_REGISTRY_2_GROUP_ID}, both inherited from {@code AbstractIntegrationTest})
+     * are stable everywhere.
      */
     @Nested
     @DisplayName("Data API access")
     class DataApiAccess {
-
-        /** Backs service point 20000000 - the "raid-au" group used by AbstractIntegrationTest's default fixture user. */
-        private static final String RAID_AU_GROUP_ID = "169bd3f3-dd42-4ac0-b89a-fb49648e5eff";
-        private static final Long RAID_AU_SERVICE_POINT_ID = 20000000L;
-        /** Backs RAID_AU_REGISTRY_2_SERVICE_POINT_ID - a different service point to RAID_AU_GROUP_ID's. */
-        private static final String RAID_AU_REGISTRY_2_GROUP_ID = "ba0b01a6-726f-464f-b501-454a10096826";
 
         // These two fixture service points are shared, persistent Keycloak groups (unlike groupA/
         // groupB above, which this class creates and deletes per test) and are capped at 10 active
@@ -562,7 +560,7 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
 
             assertThat(minted).isNotNull();
             assertThat(minted.getIdentifier().getOwner().getServicePoint().longValue())
-                    .isEqualTo(RAID_AU_SERVICE_POINT_ID);
+                    .isEqualTo(raidAuServicePointId());
         }
 
         @Test

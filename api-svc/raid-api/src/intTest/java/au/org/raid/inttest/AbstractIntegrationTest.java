@@ -26,13 +26,43 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static au.org.raid.fixtures.TestConstants.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 @SpringBootTest(classes = IntegrationTestConfig.class)
 public class AbstractIntegrationTest {
-    protected static final Long RAID_AU_REGISTRY_2_SERVICE_POINT_ID = 20000005L;
+    /**
+     * RAID-877: the "raid-au" Keycloak group backing the default fixture user's service point.
+     * Stable across every environment - it comes from the committed realm export
+     * ({@code iam/realms/raid-realm.json}) - unlike the service_point.id it backs, which is a
+     * Postgres-sequence-allocated value that differs per environment (see
+     * {@link #resolveServicePointId(String)}).
+     */
+    protected static final String RAID_AU_GROUP_ID = "169bd3f3-dd42-4ac0-b89a-fb49648e5eff";
+
+    /**
+     * RAID-877: the "RAiD AU Test Registry 2" Keycloak group, a genuinely different, real
+     * service point used to test cross-tenant isolation. Also from the committed realm export,
+     * so stable across environments.
+     */
+    protected static final String RAID_AU_REGISTRY_2_GROUP_ID = "ba0b01a6-726f-464f-b501-454a10096826";
+
+    /**
+     * RAID-877: {@code service_point.id} is allocated from a Postgres sequence
+     * ({@code B25__baseline.sql}) and assigned per environment by the Deploy stage's
+     * Configure-ServicePoints action, so it is NOT safe to hardcode (a branch test deployment
+     * can - and did - allocate a different id to the same group than the local dev database).
+     * The Keycloak group id, by contrast, comes from the committed realm export and is stable
+     * everywhere, so resolve the real id at runtime by looking it up via {@code GET /service-point/}
+     * and matching on {@code groupId}. Cached per groupId for the life of the JVM, since the
+     * mapping cannot change during a test run.
+     */
+    private static final Map<String, Long> SERVICE_POINT_ID_BY_GROUP_ID = new ConcurrentHashMap<>();
+
     protected LocalDate today = LocalDate.now();
     protected RaidCreateRequest createRequest;
 
@@ -79,6 +109,36 @@ public class AbstractIntegrationTest {
 
     protected String getName() {
         return testInfo.getDisplayName();
+    }
+
+    /**
+     * RAID-877: resolves the real {@code service_point.id} for a Keycloak groupId at runtime,
+     * rather than relying on a hardcoded literal that only happens to be correct locally. See
+     * {@link #SERVICE_POINT_ID_BY_GROUP_ID} for why this is necessary.
+     */
+    protected Long resolveServicePointId(final String groupId) {
+        return SERVICE_POINT_ID_BY_GROUP_ID.computeIfAbsent(groupId, id -> {
+            final var servicePointApi = testClient.servicePointApi(userContext.getToken());
+            final var servicePoints = servicePointApi.findAllServicePoints().getBody();
+            assertThat(servicePoints)
+                    .describedAs("GET /service-point/ should return the fixture service points")
+                    .isNotNull();
+
+            return servicePoints.stream()
+                    .filter(sp -> id.equals(sp.getGroupId()))
+                    .map(ServicePoint::getId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No service point found for Keycloak group " + id));
+        });
+    }
+
+    protected Long raidAuServicePointId() {
+        return resolveServicePointId(RAID_AU_GROUP_ID);
+    }
+
+    protected Long raidAuRegistry2ServicePointId() {
+        return resolveServicePointId(RAID_AU_REGISTRY_2_GROUP_ID);
     }
 
     public Contributor isniContributor(
