@@ -704,6 +704,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
           />
           {searchText && (
             <CloseRoundedIcon
+              aria-label="clear identifier"
               onClick={() => {
                 clearSearchText(false);
                 formMethods?.setValue?.(fieldName, '');
@@ -712,23 +713,26 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
                 setResults(null);
                 setCachedResult(false);
                 setError(null);
+                if (mode === 'validation-only') {
+                  setResolvedName(null);
+                  // RAID-861: clearing the field must also reset schemaUri -
+                  // otherwise it can be left stuck at ISNI's schema URI (or a
+                  // stale ORCID one) with an empty id, an inconsistent state
+                  // that would still pass validation.
+                  formMethods?.setValue?.(fieldName.replace(/\.id$/, '.schemaUri'), getContributorSchemaUri(), { shouldValidate: true });
+                }
               }}
             />
           )}
+          <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
           {isIsni ? (
-            <>
-              <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: '10px' }}>
-                <CircleCheckBig color="green" />
-              </Box>
-            </>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: '10px' }}>
+              <CircleCheckBig color="green" />
+            </Box>
           ) : (
-            <>
-              <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-              <IconButton onClick={(e) => handleSearch(e)} color="primary" sx={{ p: '10px' }} aria-label="directions">
-                {(isLoading && !cachedResult) ? <ClipLoader color="#36a5dd" size={25}/> : verifiedORCID ? <CircleCheckBig color='green'/> : <ScanSearch />}
-              </IconButton>
-            </>
+            <IconButton onClick={(e) => handleSearch(e)} color="primary" sx={{ p: '10px' }} aria-label="directions">
+              {(isLoading && !cachedResult) ? <ClipLoader color="#36a5dd" size={25}/> : verifiedORCID ? <CircleCheckBig color='green'/> : <ScanSearch />}
+            </IconButton>
           )}
         </Paper>
         {searchMode === 'lookup' && <FormHelperText sx={{ fontSize: '0.875rem', color: 'error.main', mr: 1 }}>{helperTextError}</FormHelperText>}
