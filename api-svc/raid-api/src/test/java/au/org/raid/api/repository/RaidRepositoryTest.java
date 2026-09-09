@@ -38,7 +38,7 @@ class RaidRepositoryTest {
     @Test
     @DisplayName("findAllViewable() with service-point-user includes all service point raids")
     void findAllViewableAsServicePointUser() {
-        final var servicePointId = 20000000L;
+        final var servicePointId = 10000000L;
         final var handles = List.of("10.26193/ABC123", "10.26193/DEF456");
 
         raidRepository.findAllViewable(servicePointId, true, handles);
@@ -49,7 +49,7 @@ class RaidRepositoryTest {
     @Test
     @DisplayName("findAllViewable() without service-point-user only includes open-access service point raids")
     void findAllViewableWithoutServicePointUserRole() {
-        final var servicePointId = 20000000L;
+        final var servicePointId = 10000000L;
         final var handles = List.of("10.26193/ABC123", "10.26193/DEF456");
 
         raidRepository.findAllViewable(servicePointId, false, handles);

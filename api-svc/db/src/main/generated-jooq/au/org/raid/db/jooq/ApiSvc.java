@@ -6,7 +6,6 @@ package au.org.raid.db.jooq;
 
 import au.org.raid.db.jooq.tables.AccessType;
 import au.org.raid.db.jooq.tables.AccessTypeSchema;
-import au.org.raid.db.jooq.tables.AppUser;
 import au.org.raid.db.jooq.tables.Contributor;
 import au.org.raid.db.jooq.tables.ContributorPosition;
 import au.org.raid.db.jooq.tables.ContributorPositionSchema;
@@ -61,7 +60,6 @@ import au.org.raid.db.jooq.tables.TraditionalKnowledgeLabel;
 import au.org.raid.db.jooq.tables.TraditionalKnowledgeLabelSchema;
 import au.org.raid.db.jooq.tables.TraditionalKnowledgeNotice;
 import au.org.raid.db.jooq.tables.TraditionalKnowledgeNoticeSchema;
-import au.org.raid.db.jooq.tables.UserAuthzRequest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -131,7 +129,6 @@ public class ApiSvc extends SchemaImpl {
         return Arrays.asList(
             AccessType.ACCESS_TYPE,
             AccessTypeSchema.ACCESS_TYPE_SCHEMA,
-            AppUser.APP_USER,
             Contributor.CONTRIBUTOR,
             ContributorPosition.CONTRIBUTOR_POSITION,
             ContributorPositionSchema.CONTRIBUTOR_POSITION_SCHEMA,
@@ -185,8 +182,7 @@ public class ApiSvc extends SchemaImpl {
             TraditionalKnowledgeLabel.TRADITIONAL_KNOWLEDGE_LABEL,
             TraditionalKnowledgeLabelSchema.TRADITIONAL_KNOWLEDGE_LABEL_SCHEMA,
             TraditionalKnowledgeNotice.TRADITIONAL_KNOWLEDGE_NOTICE,
-            TraditionalKnowledgeNoticeSchema.TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA,
-            UserAuthzRequest.USER_AUTHZ_REQUEST
+            TraditionalKnowledgeNoticeSchema.TRADITIONAL_KNOWLEDGE_NOTICE_SCHEMA
         );
     }
 }

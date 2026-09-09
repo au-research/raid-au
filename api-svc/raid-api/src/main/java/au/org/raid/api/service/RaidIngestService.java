@@ -6,10 +6,7 @@ import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.service.keycloak.KeycloakService;
 import au.org.raid.api.util.TokenUtil;
-import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +39,6 @@ public class RaidIngestService {
     private final CacheableRaidService cacheableRaidService;
     private final RaidHistoryService raidHistoryService;
     private final RaidDtoReadService raidDtoReadService;
-    private final ObjectMapper objectMapper;
     private final KeycloakService keycloakService;
 
     public void create(final RaidDto raid) {
@@ -187,26 +183,16 @@ public class RaidIngestService {
         final var isServicePointUser = TokenUtil.hasRole(TokenUtil.SERVICE_POINT_USER_ROLE);
 
         return raidRepository.findAllViewable(servicePointId, isServicePointUser, handles)
-                .stream().map(RaidRecord::getMetadata)
-                .map(raidDto -> {
-                    try {
-                        return objectMapper.readValue(raidDto.data(), RaidDto.class);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toList());
+                .stream()
+                .map(record -> raidDtoReadService.toRaidDto(record)
+                        .orElseGet(() -> cacheableRaidService.build(record)))
+                .collect(Collectors.toList());
     }
 
     public List<RaidDto> findAll() {
         return raidRepository.findAll().stream()
-                .map(RaidRecord::getMetadata)
-                .map(raidDto -> {
-                    try {
-                        return objectMapper.readValue(raidDto.data(), RaidDto.class);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
+                .map(record -> raidDtoReadService.toRaidDto(record)
+                        .orElseGet(() -> cacheableRaidService.build(record)))
                 .collect(Collectors.toList());
     }
 

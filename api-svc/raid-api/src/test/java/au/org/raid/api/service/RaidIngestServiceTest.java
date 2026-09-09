@@ -4,14 +4,17 @@ import au.org.raid.api.factory.HandleFactory;
 import au.org.raid.api.factory.RaidRecordFactory;
 import au.org.raid.api.repository.RaidRepository;
 import au.org.raid.api.service.keycloak.KeycloakService;
+import au.org.raid.api.service.keycloak.dto.RaidPermissionsResponse;
+import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -61,8 +64,6 @@ class RaidIngestServiceTest {
     RaidHistoryService raidHistoryService;
     @Mock
     RaidDtoReadService raidDtoReadService;
-    @Mock
-    ObjectMapper objectMapper;
     @Mock
     KeycloakService keycloakService;
     @InjectMocks
@@ -131,6 +132,113 @@ class RaidIngestServiceTest {
         when(cacheableRaidService.build(raidRecord)).thenReturn(RAID_DTO);
 
         final var result = raidIngestService.findAllByServicePointId(servicePointId);
+
+        assertThat(result, is(List.of(RAID_DTO)));
+    }
+
+    @Test
+    @DisplayName("findAllByServicePointIdOrHandleIn() delegates resolution to RaidDtoReadService")
+    void findAllByServicePointIdOrHandleIn() {
+        final var servicePointId = 123L;
+        final var userId = "user-id";
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
+
+        try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
+            tokenUtil.when(TokenUtil::getUserId).thenReturn(userId);
+            tokenUtil.when(() -> TokenUtil.hasRole(TokenUtil.SERVICE_POINT_USER_ROLE)).thenReturn(true);
+
+            when(keycloakService.getRaidPermissions(userId))
+                    .thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
+            when(raidRepository.findAllViewable(servicePointId, true, List.of()))
+                    .thenReturn(List.of(raidRecord));
+            when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(RAID_DTO));
+
+            final var result = raidIngestService.findAllByServicePointIdOrHandleIn(servicePointId);
+
+            assertThat(result, is(List.of(RAID_DTO)));
+        }
+    }
+
+    @Test
+    @DisplayName("findAllByServicePointIdOrHandleIn() falls back to cacheableRaidService when metadata is null")
+    void findAllByServicePointIdOrHandleInFallsBackWhenMetadataIsNull() {
+        final var servicePointId = 123L;
+        final var userId = "user-id";
+
+        // RAID-876: a record with no materialised metadata previously caused a
+        // NullPointerException that failed the whole list, not just this record.
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
+        raidRecord.setMetadata(null);
+
+        try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
+            tokenUtil.when(TokenUtil::getUserId).thenReturn(userId);
+            tokenUtil.when(() -> TokenUtil.hasRole(TokenUtil.SERVICE_POINT_USER_ROLE)).thenReturn(true);
+
+            when(keycloakService.getRaidPermissions(userId))
+                    .thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
+            when(raidRepository.findAllViewable(servicePointId, true, List.of()))
+                    .thenReturn(List.of(raidRecord));
+            when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.empty());
+            when(cacheableRaidService.build(raidRecord)).thenReturn(RAID_DTO);
+
+            final var result = raidIngestService.findAllByServicePointIdOrHandleIn(servicePointId);
+
+            assertThat(result, is(List.of(RAID_DTO)));
+        }
+    }
+
+    @Test
+    @DisplayName("findAllByServicePointIdOrHandleIn() returns resolvable raids alongside one with null metadata")
+    void findAllByServicePointIdOrHandleInResolvesMixedRecords() {
+        final var servicePointId = 123L;
+        final var userId = "user-id";
+
+        final var populatedRecord = new RaidRecord().setHandle(HANDLE);
+        final var nullMetadataRecord = new RaidRecord().setHandle("other/handle");
+        nullMetadataRecord.setMetadata(null);
+
+        try (MockedStatic<TokenUtil> tokenUtil = Mockito.mockStatic(TokenUtil.class)) {
+            tokenUtil.when(TokenUtil::getUserId).thenReturn(userId);
+            tokenUtil.when(() -> TokenUtil.hasRole(TokenUtil.SERVICE_POINT_USER_ROLE)).thenReturn(true);
+
+            when(keycloakService.getRaidPermissions(userId))
+                    .thenReturn(new RaidPermissionsResponse(List.of(), List.of()));
+            when(raidRepository.findAllViewable(servicePointId, true, List.of()))
+                    .thenReturn(List.of(populatedRecord, nullMetadataRecord));
+            when(raidDtoReadService.toRaidDto(populatedRecord)).thenReturn(Optional.of(RAID_DTO));
+            when(raidDtoReadService.toRaidDto(nullMetadataRecord)).thenReturn(Optional.empty());
+            when(cacheableRaidService.build(nullMetadataRecord)).thenReturn(RAID_DTO);
+
+            final var result = raidIngestService.findAllByServicePointIdOrHandleIn(servicePointId);
+
+            assertThat(result, is(List.of(RAID_DTO, RAID_DTO)));
+        }
+    }
+
+    @Test
+    @DisplayName("findAll() delegates resolution to RaidDtoReadService")
+    void findAll() {
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
+
+        when(raidRepository.findAll()).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(RAID_DTO));
+
+        final var result = raidIngestService.findAll();
+
+        assertThat(result, is(List.of(RAID_DTO)));
+    }
+
+    @Test
+    @DisplayName("findAll() falls back to cacheableRaidService when metadata is null")
+    void findAllFallsBackWhenMetadataIsNull() {
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
+        raidRecord.setMetadata(null);
+
+        when(raidRepository.findAll()).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.empty());
+        when(cacheableRaidService.build(raidRecord)).thenReturn(RAID_DTO);
+
+        final var result = raidIngestService.findAll();
 
         assertThat(result, is(List.of(RAID_DTO)));
     }
