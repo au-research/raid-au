@@ -1,18 +1,14 @@
 package au.org.raid.api.util;
 
-import com.nimbusds.jose.shaded.gson.internal.LinkedTreeMap;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
-import java.util.List;
 
 public class TokenUtil {
     public static final String OPERATOR_ROLE = "operator";
     public static final String SERVICE_POINT_USER_ROLE = "service-point-user";
     private static final String SUBJECT_CLAIM = "sub";
-    private static final String REALM_ACCESS_CLAIM = "realm_access";
-    private static final String ROLES_CLAIM = "roles";
 
     public static Jwt getToken() {
         return ((JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getToken();
@@ -22,14 +18,26 @@ public class TokenUtil {
         return (String) getToken().getClaims().get(SUBJECT_CLAIM);
     }
 
+    /**
+     * Does the current authentication hold the given flat role?
+     *
+     * <p>RAID-877: reads Spring Security's derived authorities rather than the raw {@code
+     * realm_access.roles} claim. Authorities are always a superset of that claim's flat entries -
+     * {@link au.org.raid.api.config.SecurityConfig#extractAuthorities} maps every role verbatim,
+     * and additionally synthesises a flat {@code ROLE_service-point-user} authority for a scoped
+     * {@code service-point-user:<groupId>} role that matches the token's own
+     * {@code service_point_group_id} claim - so this is a drop-in equivalent for a flat role, and
+     * now also correctly recognises a claim-matched scoped credential role.
+     */
     public static boolean hasRole(final String role) {
-        final var token = getToken();
-        if (token.getClaims().get(REALM_ACCESS_CLAIM) != null) {
-            final var realmAccess = (LinkedTreeMap<?, ?>) token.getClaims().get(REALM_ACCESS_CLAIM);
-            if (realmAccess.containsKey(ROLES_CLAIM) && realmAccess.get(ROLES_CLAIM) instanceof List) {
-                return ((List<?>) realmAccess.get(ROLES_CLAIM)).contains(role);
-            }
+        final var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
         }
-        return false;
+
+        final var expectedAuthority = "ROLE_" + role;
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(expectedAuthority::equals);
     }
 }

@@ -65,7 +65,16 @@ public class RaidAuthorizationService {
         return new AuthorizationDecision(false);
     }
 
-    private AuthorizationDecision anyServicePointUserUnlessEmbargoed(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    /**
+     * Grants access to any caller holding the flat {@code service-point-user} (or {@code
+     * raid-admin}) authority, denying an embargoed raid unless the caller's own service point owns
+     * it. Since RAID-877, {@link au.org.raid.api.config.SecurityConfig#extractAuthorities} also
+     * synthesises the flat {@code service-point-user} authority for a client-credential token
+     * carrying a scoped {@code service-point-user:<groupId>} role that matches its own {@code
+     * service_point_group_id} claim, so this check now also passes for a claim-matched scoped
+     * credential without any change here.
+     */
+    AuthorizationDecision anyServicePointUserUnlessEmbargoed(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         if (isPidSearch(context)) {
             return new AuthorizationDecision(false);
         }
@@ -156,6 +165,14 @@ public class RaidAuthorizationService {
         return new AuthorizationDecision(hasRole(authentication.get(), CONTRIBUTOR_WRITER_ROLE));
     }
 
+    /**
+     * Grants write/patch access when the caller holds the flat {@code service-point-user}
+     * authority and its own {@code service_point_group_id} claim owns the raid. As with {@link
+     * #anyServicePointUserUnlessEmbargoed}, the RAID-877 normalisation in {@link
+     * au.org.raid.api.config.SecurityConfig#extractAuthorities} means this also works, unchanged,
+     * for a client-credential token whose scoped {@code service-point-user:<groupId>} role matches
+     * its own claim.
+     */
     private AuthorizationDecision servicePointOwner(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         if (isPidSearch(context)) {
             return new AuthorizationDecision(false);
@@ -228,8 +245,11 @@ public class RaidAuthorizationService {
      *
      * <p>Granted authorities of this form are already passed through by
      * {@link au.org.raid.api.config.SecurityConfig#extractAuthorities}; this method gives
-     * callers the vocabulary to recognise and resolve them. Not yet consumed by any
-     * endpoint's authorization rules.
+     * callers the vocabulary to recognise and resolve them. Not yet consumed by any endpoint's
+     * authorization rules - this admin helper remains unwired. This is unrelated to the scoped
+     * {@code service-point-user:<groupId>} role handled for RAID-877, which is not resolved via a
+     * helper like this one but normalised directly into a flat authority in {@code
+     * extractAuthorities} itself (see the Javadoc there).
      */
     public Set<String> getAdministeredGroupIds(Authentication authentication) {
         return authentication.getAuthorities().stream()
