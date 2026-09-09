@@ -169,7 +169,7 @@ class RaidServiceTest {
         final var suffix = "1696639";
         final var handle = "%s/%s".formatted(prefix, suffix);
         final var raidJson = raidJson();
-        final var servicePointId = 20_000_000L;
+        final var servicePointId = 10_000_000L;
         final var repositoryId = "repository-id";
         final var password = "_password";
         final var servicePointGroupId = "service-point-group-id";
@@ -211,7 +211,7 @@ class RaidServiceTest {
     void update() throws JsonProcessingException {
         final var handle = "10378.1/1696639";
         final var raidJson = raidJson();
-        final var servicePointId = 20_000_000L;
+        final var servicePointId = 10_000_000L;
         final var repositoryId = "repository-id";
         final var password = "_password";
         final var servicePointGroupId = "service-point-group-id";
@@ -261,7 +261,7 @@ class RaidServiceTest {
     @DisplayName("No update is performed if no diff is detected")
     void noUpdateWhenNoDiff() throws JsonProcessingException, ValidationFailureException {
 
-        final var servicePointId = 20_000_000L;
+        final var servicePointId = 10_000_000L;
         final var raidJson = raidJson();
         final var repositoryId = "repository-id";
         final var password = "_password";
@@ -826,7 +826,7 @@ class RaidServiceTest {
     @Test
     @DisplayName("postToDatacite calls datacite update with correct handle, repositoryId and password")
     void postToDatacite() {
-        final var servicePointId = 20_000_000L;
+        final var servicePointId = 10_000_000L;
         final var repositoryId = "repository-id";
         final var password = "_password";
 

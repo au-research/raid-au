@@ -14,7 +14,7 @@ public class TestRaid {
     public static final int VERSION = 3;
     public static final String OWNER_ID = "https://ror.org/01ej9dk98";
     public static final String ROR_SCHEMA_URI = "https://ror.org/";
-    public static final long SERVICE_POINT_ID = 20_000_000;
+    public static final long SERVICE_POINT_ID = 10_000_000;
     public static final String REGISTRATION_AGENCY_ID = "https://ror.org/038sjwq14";
     public static final String LICENSE = "Creative Commons CC-0";
     public static final String START_DATE = "2021";

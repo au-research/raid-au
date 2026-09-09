@@ -9,6 +9,14 @@ raid:
     realm-uri: https://iam.${raid.environment}.raid.org.au/realms/raid
   db:
     name: raido
+    # The raid_history renumbering briefly lived as an amendment to V46 and was
+    # moved out to V47, so V46 is back to its original content. raid-sandbox took
+    # the amended V46 in between and had its stored checksum repaired to match,
+    # which now disagrees with the reverted file. This arms one repair to put it
+    # back. The token is one-shot per database and recorded in db_repair_log, so
+    # it is safe to leave here; a later repair needs a new token, which is a new
+    # deliberate decision.
+    repair-token: RAID-878-v47
   isni-client:
     url-format: https://isni.oclc.org/sru/?query=pica.isn+%3D+%22__ISNI__%22&operation=searchRetrieve&recordSchema=isni-b
   orcid-client:
@@ -70,7 +78,11 @@ raid:
     schema-uri: https://raid.org/
     license: Creative Commons CC-0
     landing-prefix: https://static.${raid.environment}.raid.org.au/raids/
-    registration-agency-identifier: https://ror.org/038sjwq14
+    # No default. This is the ROR of the Registration Agency operating the
+    # instance: it is published as identifier.registrationAgency.id on every RAiD
+    # minted, and the Service Point ID range is derived from it. Defaulting it to
+    # ARDC would let another agency's deployment silently inherit ARDC's identity
+    # and mint into ARDC's Service Point ID range. Every deployment must set it.
     name-prefix: https://raid.org/
   spatial-coverage:
     schema-uri:
