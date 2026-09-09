@@ -5,7 +5,7 @@
   scoped `service-point-user:<groupId>` role this bug affects),
   [RAID-712](https://ardc.atlassian.net/browse/RAID-712) (prior art for
   scoped `service-point-admin:<groupId>` roles)
-- PR: _to be added once opened_
+- PR: https://github.com/au-research/raid-au/pull/661
 - ADR: `doc/adr/2026-09-09_claim-anchored-scoped-service-point-user-authorization.md`
 - Reference doc updated:
   `doc/reference/service-point-client-credentials.md` (new "What a credential
