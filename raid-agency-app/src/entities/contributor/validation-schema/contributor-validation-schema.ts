@@ -14,13 +14,17 @@
 import { contributorPositionValidationSchema } from "@/entities/contributor-position/validation-schema/contributor-position-validation-schema";
 import { contributorRoleValidationSchema } from "@/entities/contributor-role/validation-schema/contributor-role-validation-schema";
 import { getContributorSchemaUri } from "@/utils/contributor-utils/contributor-schema-uri";
+import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 import { z } from "zod";
 
-// The ORCID regex pattern used in multiple places
-const orcidPattern =
-  "^(?:https://(sandbox\\.)?orcid\\.org/)\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$";
+// The ORCID or ISNI regex pattern used in multiple places (RAID-861 widened
+// this from ORCID-only to also accept an ISNI URL). Exported for direct unit
+// testing without needing to satisfy the full contributor schema's
+// position/role requirements.
+export const orcidPattern =
+  "^(?:(?:https://(sandbox\\.)?orcid\\.org/)\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|https://isni\\.org/\\d{15}[0-9X])$";
 const orcidErrorMsg =
-  "Invalid ORCID ID, must be full url, e.g. https://orcid.org/0000-0000-0000-0000";
+  "Invalid ORCID ID, must be full url, e.g. https://orcid.org/0000-0000-0000-0000, or a valid ISNI url, e.g. https://isni.org/0000000121032683";
 
 // Base schema for contributors
 const baseContributorSchema = z.object({
@@ -29,9 +33,9 @@ const baseContributorSchema = z.object({
   leader: z.boolean(),
   position: contributorPositionValidationSchema,
   role: contributorRoleValidationSchema,
-  schemaUri: z.string().refine((v) => v === getContributorSchemaUri(), {
+  schemaUri: z.string().refine((v) => v === getContributorSchemaUri() || v === ISNI_SCHEMA_URI, {
     message:
-      "Invalid contributor schemaUri for this environment, expected the environment-appropriate ORCID URL",
+      "Invalid contributor schemaUri, expected the environment-appropriate ORCID URL or https://isni.org/",
   }),
   status: z.string().optional(),
   uuid: z.string().optional(),
@@ -43,7 +47,7 @@ export const singleContributorValidationSchema = z.union([
     id: z
       .string()
       .trim()
-      .regex(/^(?:https:\/\/(sandbox\.)?orcid\.org\/)\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/, { message: orcidErrorMsg })
+      .regex(new RegExp(orcidPattern), { message: orcidErrorMsg })
       .optional()
   }),
   baseContributorSchema.extend({
