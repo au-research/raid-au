@@ -1,6 +1,6 @@
-// RAID-861: E2E tests for auto-detect schemaUri recognition on the
-// Contributor identifier field (ISNI), plus a regression guard confirming
-// the existing ORCID lookup widget behaviour is unaffected.
+// RAID-861 / bug/isni-helpertext: E2E tests for auto-detect schemaUri
+// recognition on the Contributor identifier field (ISNI), plus a regression
+// guard confirming the existing ORCID lookup widget behaviour is unaffected.
 //
 // The backend has a real ISNI validator (ISO 7064 MOD 11-2 check-digit, see
 // ContributorValidator/IsniValidator) but resolves ISNI IDs against a live
@@ -69,6 +69,20 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(page.getByText("The entered ID is an ISNI")).toBeVisible();
     await expect(page.locator('[aria-label="directions"]')).toHaveCount(0);
 
+    // bug/isni-helpertext: the helper text and tooltip must switch to
+    // ISNI-specific copy too, rather than continuing to describe ORCID's
+    // name-lookup behaviour once an ISNI has been entered.
+    // The Contributor card also has its own section-header info tooltip
+    // sharing the same static id, so scope to the last one - the ORCID/ISNI
+    // identifier field's own tooltip, rendered after it.
+    const contributorTooltipButton = page.locator("#contributor #tooltip-button").last();
+    await expect(page.getByText(/Enter a valid ISNI URL/)).toBeVisible();
+    await expect(page.getByText(/Enter a valid ORCID iD/)).not.toBeVisible();
+    await contributorTooltipButton.click();
+    await expect(page.getByText("ISNI Info")).toBeVisible();
+    await expect(page.getByText(/Credit Name/)).not.toBeVisible();
+    await contributorTooltipButton.click(); // close it before saving
+
     const [request] = await Promise.all([
       page.waitForRequest(
         (req) => req.method() === "POST" && /\/raid\/?$/.test(new URL(req.url()).pathname)
@@ -91,6 +105,21 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
 
     await expect(page.getByText(/^Name:/)).toBeVisible();
     await expect(page.locator('[aria-label="directions"]')).toHaveCount(1);
+
+    // bug/isni-helpertext regression guard: ORCID's own helper text/tooltip
+    // must stay exactly as before - no ISNI copy has leaked in. (The exact
+    // ORCID helper text is environment-configurable via app-config.json's
+    // orcid.helpText, so we only assert the ISNI-specific strings are absent
+    // and the ORCID tooltip title is unchanged.)
+    // The Contributor card also has its own section-header info tooltip
+    // sharing the same static id, so scope to the last one - the ORCID/ISNI
+    // identifier field's own tooltip, rendered after it.
+    const contributorTooltipButton = page.locator("#contributor #tooltip-button").last();
+    await expect(page.getByText(/Enter a valid ISNI URL/)).not.toBeVisible();
+    await contributorTooltipButton.click();
+    await expect(page.getByText("ORCID Lookup Info")).toBeVisible();
+    await expect(page.getByText("ISNI Info")).not.toBeVisible();
+    await contributorTooltipButton.click();
 
     await formPage.save();
     await formPage.waitForSuccessfulSave();

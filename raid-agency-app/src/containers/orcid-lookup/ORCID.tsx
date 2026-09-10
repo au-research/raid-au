@@ -394,6 +394,18 @@ export default function ORCIDLookup({
     genericPlaceholder: `You can search by full ORCID iD or by contributor name (e.g., John Smith).`
   };
 
+  // RAID-861 bug fix: the helper text and tooltip below the search bar were
+  // always ORCID-specific, even once a valid ISNI had been entered - ISNI has
+  // no name lookup, so the ORCID copy (Credit Name, visibility settings) is
+  // misleading in that state.
+  const isniHelpText = 'Enter a valid ISNI URL, e.g. https://isni.org/0000000121032683';
+  const isniTooltipTitle = 'ISNI Info';
+  const isniTooltipContent = (
+    <>ISNI (International Standard Name Identifier) is accepted here and is stored
+    exactly as entered - no name lookup is performed.
+    For more information, see <a href="https://isni.org" target="_blank" rel="noopener noreferrer">[ISNI website]</a></>
+  );
+
   const currentConfig = searchConfig[searchMode];
 
   const handleSearch = async (e?: React.SyntheticEvent) => {
@@ -742,13 +754,13 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
         <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between' }}>
           <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             {mode === 'validation-only'
-              ? (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097')
+              ? (isIsni ? isniHelpText : (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'))
               : searchConfig?.genericPlaceholder}
           </FormHelperText>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CustomStyledTooltip
-              title={"ORCID Lookup Info"}
-              content={searchConfig.tooltipContent}
+              title={isIsni ? isniTooltipTitle : "ORCID Lookup Info"}
+              content={isIsni ? isniTooltipContent : searchConfig.tooltipContent}
               variant="info"
               placement="top"
               tooltipIcon={<InfoOutlinedIcon />}
