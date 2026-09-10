@@ -5,6 +5,7 @@ import { Contributor } from "@/generated/raid";
 import { Divider, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import { memo } from "react";
 import { OrcidButton } from "@/components/orcid-button";
+import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 
 interface ContributorWithStatus extends Contributor {
   uuid: string;
@@ -22,16 +23,23 @@ const ContributorItemView = memo(
     orcidData?: any;
     i: number;
   }) => {
+    // Bug fix: ORCID's authenticated/unauthenticated icon and status text
+    // don't apply to ISNI - ISNI has no OAuth authentication flow, so
+    // showing them for an ISNI contributor is meaningless/misleading.
+    const isIsni = contributor.schemaUri === ISNI_SCHEMA_URI;
+
     return (
       <Stack gap={2}>
         <Typography variant="body1">Contributor #{i + 1}</Typography>
 
-        <Stack direction="row" alignItems="center" gap={1}>
-          <OrcidButton contributor={contributor} orcidData={orcidData} />
-        </Stack>
+        {!isIsni && (
+          <Stack direction="row" alignItems="center" gap={1}>
+            <OrcidButton contributor={contributor} orcidData={orcidData} />
+          </Stack>
+        )}
 
         <Grid container spacing={2}>
-          <DisplayItem label="ORCID" value={contributor.id} width={6} />
+          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={6} />
 
           <DisplayItem
             label="Leader"
