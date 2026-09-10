@@ -2,6 +2,7 @@ import { DisplayItem } from "@/components/display-item";
 import { CheckboxField } from "@/components/fields/CheckboxField";
 import ORCIDLookup from "@/containers/orcid-lookup/ORCID";
 import { Contributor } from "@/generated/raid";
+import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 import { IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import React from "react";
@@ -10,9 +11,14 @@ import { useFormContext } from "react-hook-form";
 
 function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
   const { setValue, getValues, formState: { errors } } = useFormContext();
+  // Bug fix: ORCID's authentication status (e.g. AWAITING_AUTHENTICATION)
+  // doesn't apply to ISNI - ISNI has no OAuth authentication flow, so there's
+  // no reason to lock its identifier field once a status happens to exist.
+  // Keep it editable and never show the ORCID-specific status text for it.
+  const isIsni = data?.[index]?.schemaUri === ISNI_SCHEMA_URI;
   return (
     <Grid container spacing={2}>
-      {(!data || !data[index] || !Object.hasOwn(data[index], "status")) && (
+      {(!data || !data[index] || !Object.hasOwn(data[index], "status") || isIsni) && (
         <Grid item xs={12}>
           <ORCIDLookup
             mode="validation-only"
@@ -22,7 +28,7 @@ function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
           />
         </Grid>
       )}
-      {data[index] && Object.hasOwn(data[index], "status") && (
+      {data[index] && Object.hasOwn(data[index], "status") && !isIsni && (
         <DisplayItem
           label="Contributor Status"
           value={"status" in data[index] ? String((data[index] as Contributor).status) : ""}

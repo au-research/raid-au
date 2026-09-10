@@ -280,7 +280,11 @@ export default function ORCIDLookup({
     defaultValue?: string;
   }) {
   const [searchMode, setSearchMode] = useState<'lookup' | 'search'>('lookup');
-  const [searchValue, setSearchValue] = useState('');
+  // Bug fix: the input never pre-filled from an existing saved id - harmless
+  // while this widget only ever rendered for brand-new (empty) contributors,
+  // but now that ISNI contributors stay editable after a status exists too,
+  // this needs to actually show the value being edited.
+  const [searchValue, setSearchValue] = useState(defaultValue || '');
   const [searchText, clearSearchText] = useState(false);
   const [dropBox, setDropBox] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -299,6 +303,9 @@ export default function ORCIDLookup({
   // Resolve display name on mount when a default ORCID value is already present (validation-only mode)
   React.useEffect(() => {
     if (mode !== 'validation-only' || !defaultValue) return;
+    // Bug fix: ISNI has no name lookup - don't fire a pointless ORCID API
+    // call with an ISNI value.
+    if (detectContributorIdentifierType(defaultValue) === 'isni') return;
     const normalised = normalizeOrcidId(defaultValue);
     fetchFromOrcidPublicApi(normalised)
       .then((data) => {
@@ -531,7 +538,12 @@ export default function ORCIDLookup({
     const value = (event.target as HTMLInputElement).value || '';
     setSearchValue(value);
     setVerifiedORCID(value === '' && false);
-    formMethods?.setValue?.(fieldName, value);
+    // Bug fix: this setValue call previously omitted shouldValidate, so a
+    // stale validation error on the id field never cleared as the user
+    // typed a corrected value - for ORCID it happened to clear anyway once
+    // a result was selected (selectOrcid does pass shouldValidate), but
+    // ISNI has no such follow-up step, so it never cleared at all.
+    formMethods?.setValue?.(fieldName, value, { shouldValidate: true });
     const orcid = value.trim().replace(getOrcidReplaceText(), '').match(/^\d{4}-?\d{4}-?\d{4}-?\d{3}[0-9X]$/);
     if (orcid) {
       setSearchMode('lookup');

@@ -21,6 +21,7 @@ import { DateSection } from "../page-objects/sections/DateSection";
 import { AccessSection } from "../page-objects/sections/AccessSection";
 import { ContributorSection } from "../page-objects/sections/ContributorSection";
 import { validEmbargoExpiry } from "../utils/date-helpers";
+import { extractPrefixSuffixFromUrl } from "../utils/wait-helpers";
 
 const START_DATE = "2024-03-01";
 const EMBARGOED_LABEL = "Embargoed Access";
@@ -162,5 +163,52 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(page.getByText("ISNI", { exact: true })).toBeVisible();
     await expect(page.getByText("ORCID", { exact: true })).not.toBeVisible();
     await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
+  });
+
+  test("RAiD edit page keeps the ISNI identifier editable instead of showing an ORCID-style status", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+
+    await contributorSection.fillOrcidId(0, MOCKED_ISNI_URL);
+    await formPage.save();
+    await formPage.waitForSuccessfulSave();
+
+    const [prefix, suffix] = extractPrefixSuffixFromUrl(page.url());
+    await formPage.goto(`/raids/${prefix}/${suffix}/edit`);
+
+    // Bug fix: once a saved contributor has a "status" field, ORCID's
+    // identifier field locks and shows a read-only "Contributor Status"
+    // (e.g. AWAITING_AUTHENTICATION) instead - that status concept doesn't
+    // apply to ISNI (no OAuth flow), so the field must stay editable and
+    // pre-filled with the existing ISNI, with no status text shown.
+    await expect(page.getByText(/AWAITING_AUTHENTICATION|AUTHENTICATED|UNAUTHENTICATED/)).not.toBeVisible();
+    await expect(page.locator('#contributor input[aria-label="search orcid"]')).toHaveValue(MOCKED_ISNI_URL);
+  });
+
+  test("correcting an invalid id to a valid ISNI lets the next save succeed without a stale error", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+
+    // Trigger the "Invalid ORCID ID" validation error dialog first (same
+    // setup as 04-validation.spec.ts's ORCID-format test).
+    await contributorSection.fillOrcidId(0, "not-an-orcid");
+    await formPage.save();
+    await expect(page.locator("text=Invalid ORCID ID").first()).toBeVisible({
+      timeout: 5000,
+    });
+    await page.getByRole("button", { name: "Close", exact: true }).last().click();
+
+    // Bug fix: the id field's setValue call omitted shouldValidate, so RHF's
+    // internal error state for this field never actually cleared once a
+    // corrected value was entered - re-saving kept reopening the exact same
+    // stale "Invalid ORCID ID" dialog even though the id was now a valid,
+    // recognised ISNI.
+    await contributorSection.fillOrcidId(0, ISNI_URL);
+    await formPage.save();
+    await expect(page.locator("text=Invalid ORCID ID").first()).not.toBeVisible({
+      timeout: 5000,
+    });
   });
 });
