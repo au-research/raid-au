@@ -751,7 +751,7 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
         {mode === 'validation-only' && error && (
           <FormHelperText sx={{ fontSize: '0.875rem', color: 'error.main', mr: 1 }}>{error}</FormHelperText>
         )}
-        <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between' }}>
+        <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between', minHeight: '50px' }}>
           <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             {mode === 'validation-only'
               ? (isIsni ? isniHelpText : (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'))

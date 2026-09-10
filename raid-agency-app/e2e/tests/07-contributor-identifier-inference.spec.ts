@@ -60,6 +60,15 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
   }) => {
     const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
 
+    // bug/isni-helpertext: the helper-text row must reserve enough height
+    // for the longer ISNI copy up front, so switching from the ORCID
+    // helper text to the ISNI one doesn't shift the rest of the form down.
+    const helperTextRow = page
+      .locator("#contributor")
+      .getByText(/Use the ORCID sandbox|Enter a valid ORCID iD|Enter a valid ISNI URL/)
+      .locator("..");
+    const heightBefore = (await helperTextRow.boundingBox())?.height;
+
     await contributorSection.fillOrcidId(0, ISNI_URL);
 
     // Plain-field UI for ISNI: the name-line row stays mounted (avoids a
@@ -77,6 +86,7 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     // identifier field's own tooltip, rendered after it.
     const contributorTooltipButton = page.locator("#contributor #tooltip-button").last();
     await expect(page.getByText(/Enter a valid ISNI URL/)).toBeVisible();
+    expect((await helperTextRow.boundingBox())?.height).toBe(heightBefore);
     await expect(page.getByText(/Enter a valid ORCID iD/)).not.toBeVisible();
     await contributorTooltipButton.click();
     await expect(page.getByText("ISNI Info")).toBeVisible();
