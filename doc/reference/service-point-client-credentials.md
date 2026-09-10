@@ -196,3 +196,40 @@ create a new one.
   `Cache-Control: no-store`. Do not cache or log them.
 - Secret values are never written to server logs. Credential management actions
   are audit-logged with who, when and which credential only.
+
+## What a credential can and cannot do
+
+A token obtained with a client credential (Step 3) is scoped to exactly one
+service point — the one it was created for — via a scoped
+`service-point-user:<groupId>` realm role plus a `service_point_group_id`
+claim identifying that same service point. It behaves the same way a human
+Service Point User's token does, but only for its own service point.
+
+It **can**:
+
+- Call the RAiD data API (`GET/POST/PUT/PATCH /raid/**`) and
+  `GET /service-point/**` with the same access a human Service Point User of
+  that service point has.
+- Mint new RAiDs, which are owned by its own service point.
+- Read, update and patch RAiDs owned by its own service point, including
+  ones that are closed or embargoed — a credential's own non-open-access
+  records are not truncated out of `GET /raid/` results.
+
+It **cannot**:
+
+- Access RAiDs owned by a *different* service point, including ones that are
+  open access to everyone else but administratively restricted, or
+  read/update/patch another service point's closed or embargoed RAiDs.
+- Manage other client credentials, service points, or any operator-only
+  endpoint — a credential never receives an admin role, regardless of who
+  created it.
+- Act as more than one service point at a time. A service point needing to
+  act on behalf of several service points needs a separate credential per
+  service point.
+
+If a credential's calls to the RAiD data API return `403`, and the
+credential was minted correctly (its token includes the expected
+`service_point_group_id` claim and a `service-point-user:<groupId>` role
+matching it — decode the token as in Step 1 to check), this is not expected;
+raise it as a bug rather than assuming it is a permissions gap to work
+around.

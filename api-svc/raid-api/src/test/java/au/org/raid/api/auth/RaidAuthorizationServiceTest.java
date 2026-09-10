@@ -688,4 +688,100 @@ class RaidAuthorizationServiceTest {
             assertFalse(decision.isGranted());
         }
     }
+
+    /**
+     * RAID-877: RaidAuthorizationService itself needs no code change - it already grants access on
+     * the flat "ROLE_service-point-user" authority. What changed is that
+     * SecurityConfig#extractAuthorities now also synthesises that authority for a client-credential
+     * token carrying a claim-matched scoped "service-point-user:<groupId>" role. These tests
+     * exercise RaidAuthorizationService exactly as it receives such a token post-normalisation -
+     * i.e. with the flat authority already present, same as createJwtToken(SERVICE_POINT_USER_ROLE)
+     * used throughout this file - to guard against a regression in that contract.
+     */
+    @Nested
+    @DisplayName("Scoped Service Point User Tests")
+    class ScopedServicePointUserTests {
+
+        @Test
+        @DisplayName("Should deny read/write/patch for a token holding only the scoped role, with no flat authority")
+        void shouldDenyScopedOnlyRoleWithoutFlatAuthority() {
+            // Given - a token carrying only "ROLE_service-point-user:<groupId>", never normalised
+            // into the flat "ROLE_service-point-user" authority (e.g. because SecurityConfig's claim
+            // match failed, or - as in this unit test - because createJwtToken bypasses
+            // SecurityConfig entirely and mints exactly the role string it's given). This is the
+            // assertion that would catch a future regression where someone "helpfully" adds
+            // prefix-matching to RaidAuthorizationService.hasRole and reintroduces the exact bug
+            // RAID-877 fixed at a different layer.
+            request.setRequestURI("/raid/test/handle");
+            var auth = createJwtToken(SERVICE_POINT_USER_ROLE + ":" + TEST_GROUP_ID);
+
+            // Then
+            assertFalse(raidAuthorizationService.createReadAccessManager().check(() -> auth, context).isGranted());
+            assertFalse(raidAuthorizationService.createWriteAccessManager().check(() -> auth, context).isGranted());
+            assertFalse(raidAuthorizationService.createPatchAccessManager().check(() -> auth, context).isGranted());
+        }
+
+        @Test
+        @DisplayName("Should deny read/write/patch for a raid owned by a different service point")
+        void shouldDenyForDifferentServicePoint() {
+            // Given
+            request.setRequestURI("/raid/test/handle");
+            var auth = createJwtToken(SERVICE_POINT_USER_ROLE);
+            var raid = createTestRaid(false);
+            var servicePoint = createTestServicePoint();
+            servicePoint.setId(TEST_SERVICE_POINT_ID + 1);
+
+            when(servicePointService.findByGroupId(TEST_GROUP_ID)).thenReturn(Optional.of(servicePoint));
+            when(raidHistoryService.findByHandle(TEST_HANDLE)).thenReturn(Optional.of(raid));
+
+            // Then
+            assertFalse(raidAuthorizationService.createReadAccessManager().check(() -> auth, context).isGranted());
+            assertFalse(raidAuthorizationService.createWriteAccessManager().check(() -> auth, context).isGranted());
+            assertFalse(raidAuthorizationService.createPatchAccessManager().check(() -> auth, context).isGranted());
+        }
+
+        @Test
+        @DisplayName("Should deny read of an embargoed record via anyServicePointUserUnlessEmbargoed")
+        void shouldDenyEmbargoedReadViaAnyServicePointUserUnlessEmbargoed() {
+            // Given
+            request.setRequestURI("/raid/test/handle");
+            var auth = createJwtToken(SERVICE_POINT_USER_ROLE);
+            var raid = createTestRaid(true);
+
+            when(raidHistoryService.findByHandle(TEST_HANDLE)).thenReturn(Optional.of(raid));
+
+            // When - the read access manager's anyOf includes servicePointOwner too, which does not
+            // check embargo, so exercise anyServicePointUserUnlessEmbargoed directly to prove *it*
+            // denies the embargoed record on its own. It returns false as soon as it sees the
+            // embargo, before ever resolving the service point, so no such stub is needed here.
+            var decision = raidAuthorizationService.anyServicePointUserUnlessEmbargoed(() -> auth, context);
+
+            // Then
+            assertFalse(decision.isGranted());
+        }
+
+        @Test
+        @DisplayName("Should allow read of the caller's own embargoed record via servicePointOwner")
+        void shouldAllowOwnEmbargoedRecordViaServicePointOwner() {
+            // Given
+            request.setRequestURI("/raid/test/handle");
+            var auth = createJwtToken(SERVICE_POINT_USER_ROLE);
+            var raid = createTestRaid(true);
+            var servicePoint = createTestServicePoint();
+
+            when(servicePointService.findByGroupId(TEST_GROUP_ID)).thenReturn(Optional.of(servicePoint));
+            when(raidHistoryService.findByHandle(TEST_HANDLE)).thenReturn(Optional.of(raid));
+
+            // servicePointOwner backs the read manager too (via anyOf), so the overall read
+            // decision for the caller's own embargoed record is granted even though
+            // anyServicePointUserUnlessEmbargoed alone would deny it.
+            var manager = raidAuthorizationService.createReadAccessManager();
+
+            // When
+            var decision = manager.check(() -> auth, context);
+
+            // Then
+            assertTrue(decision.isGranted());
+        }
+    }
 }

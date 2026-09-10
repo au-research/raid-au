@@ -194,8 +194,9 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
             assert raidList != null;
 
             // filter closed/embargoed raids where the service point does not match RDM@UQ
+            final var registry2ServicePointId = raidAuRegistry2ServicePointId();
             final var result = raidList.stream().filter(raid ->
-                    !raid.getIdentifier().getOwner().getServicePoint().equals(RAID_AU_REGISTRY_2_SERVICE_POINT_ID)
+                    !raid.getIdentifier().getOwner().getServicePoint().equals(registry2ServicePointId)
             ).toList();
 
             assertThat(result).isEmpty();

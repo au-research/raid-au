@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -55,6 +56,16 @@ public class SecurityConfig {
         // groupId is the Keycloak group UUID (see RAID-712). Not yet wired into any endpoint's
         // authorization rules; consumed by later RAID-712 work.
         public static final String SERVICE_POINT_ADMIN_ROLE_PREFIX = "service-point-admin";
+        // Prefix for scoped realm roles of the form "service-point-user:<groupId>", minted onto
+        // client-credential tokens (see RAID-827). Unlike the scoped admin prefix above, this one
+        // IS wired into authorization: extractAuthorities() below normalises a scoped role whose
+        // groupId matches the token's own service_point_group_id claim into the flat
+        // "ROLE_service-point-user" authority, so the existing flat-role checks throughout
+        // SecurityConfig, RaidAuthorizationService and TokenUtil work unchanged for scoped
+        // client-credential callers (RAID-877). Defined in terms of SERVICE_POINT_USER_ROLE
+        // (rather than repeating the "service-point-user" literal) so the two constants can't drift,
+        // and includes the trailing colon since every call site needs it.
+        public static final String SERVICE_POINT_USER_ROLE_PREFIX = SERVICE_POINT_USER_ROLE + ":";
 
         // API paths
         public static final String RAID_API = "/raid";
@@ -121,12 +132,66 @@ public class SecurityConfig {
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        return Optional.ofNullable(jwt.<Map<String, Collection<String>>>getClaim(REALM_ACCESS_CLAIM))
+        var roles = Optional.ofNullable(jwt.<Map<String, Collection<String>>>getClaim(REALM_ACCESS_CLAIM))
                 .map(realmAccess -> realmAccess.get(ROLES_CLAIM))
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .collect(Collectors.toList());
+                .orElse(Collections.emptyList());
+
+        var authorities = roles.stream()
+                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // RAID-877: a client-credential token can carry a scoped "service-point-user:<groupId>"
+        // realm role instead of (or as well as) the flat "service-point-user" role. Every existing
+        // authorization check (SecurityConfig.hasAnyRole/hasRole, RaidAuthorizationService.hasRole,
+        // TokenUtil.hasRole) tests for the flat authority, so a scoped-only role is otherwise
+        // invisible to them. Synthesise the flat authority here - the one place with access to both
+        // the roles and the claims - but only when a scoped role's groupId suffix matches this
+        // token's own service_point_group_id claim, so a token can never be granted flat
+        // service-point-user access for a group it does not belong to (fail closed).
+        var claimGroupId = jwt.getClaimAsString(SERVICE_POINT_GROUP_ID_CLAIM);
+        if (hasMatchingScopedServicePointUserRole(roles, claimGroupId)) {
+            // A token can carry both the flat "service-point-user" role (mapped verbatim above) and
+            // a matching scoped role at the same time; guard against adding the flat authority twice.
+            var flatAuthority = new SimpleGrantedAuthority("ROLE_" + SERVICE_POINT_USER_ROLE);
+            if (!authorities.contains(flatAuthority)) {
+                authorities.add(flatAuthority);
+            }
+        } else if (roles.stream().anyMatch(role -> role.startsWith(SERVICE_POINT_USER_ROLE_PREFIX))) {
+            // A scoped service-point-user role is present but did not translate into a usable
+            // authority - either the claim is missing, or none of the scoped roles match it. Every
+            // downstream denial in this case surfaces as an unhelpful "insufficient_scope", so flag
+            // it here while we still know why. Demoted to debug (RAID-877 review): a misconfigured
+            // credential polling the API would otherwise spam WARN-level logs indefinitely, and
+            // nothing in the stack rate-limits requests.
+            log.debug("JWT subject {} carries a scoped {} role that did not match its {} claim; " +
+                            "no flat ROLE_{} authority was synthesised",
+                    jwt.getSubject(), SERVICE_POINT_USER_ROLE_PREFIX, SERVICE_POINT_GROUP_ID_CLAIM,
+                    SERVICE_POINT_USER_ROLE);
+        }
+
+        return authorities;
+    }
+
+    /**
+     * Does {@code roles} contain a scoped {@code service-point-user:<groupId>} role whose groupId
+     * suffix exactly equals {@code claimGroupId}? Uses startsWith/substring rather than split(":")
+     * so a groupId containing a colon can't break parsing, and rejects a blank suffix (the bare
+     * "service-point-user:" role) explicitly. Requires a non-blank claim - an absent or blank
+     * service_point_group_id claim never matches, even against a role with a blank suffix.
+     */
+    private boolean hasMatchingScopedServicePointUserRole(Collection<String> roles, String claimGroupId) {
+        if (claimGroupId == null || claimGroupId.isBlank()) {
+            return false;
+        }
+
+        var prefix = SERVICE_POINT_USER_ROLE_PREFIX;
+        return roles.stream().anyMatch(role -> {
+            if (!role.startsWith(prefix)) {
+                return false;
+            }
+            var suffix = role.substring(prefix.length());
+            return !suffix.isBlank() && suffix.equals(claimGroupId);
+        });
     }
 
     @Bean

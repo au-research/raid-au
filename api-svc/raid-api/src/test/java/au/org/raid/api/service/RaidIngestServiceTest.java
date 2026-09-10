@@ -8,6 +8,7 @@ import au.org.raid.api.service.keycloak.dto.RaidPermissionsResponse;
 import au.org.raid.api.util.TokenUtil;
 import au.org.raid.db.jooq.tables.records.RaidRecord;
 import au.org.raid.idl.raidv2.model.RaidDto;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,13 +17,22 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import static au.org.raid.api.util.TestRaid.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +78,77 @@ class RaidIngestServiceTest {
     KeycloakService keycloakService;
     @InjectMocks
     RaidIngestService raidIngestService;
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    /**
+     * Places a JwtAuthenticationToken in the SecurityContextHolder whose authorities are exactly
+     * {@code authorities} - simulating whatever SecurityConfig#extractAuthorities has already
+     * produced, including the RAID-877 normalisation of a claim-matched scoped
+     * service-point-user role into the flat authority.
+     */
+    private void authenticateAs(final String subject, final String... authorities) {
+        final Collection<GrantedAuthority> granted = List.of(authorities).stream()
+                .map(SimpleGrantedAuthority::new)
+                .map(GrantedAuthority.class::cast)
+                .toList();
+
+        final var jwt = Jwt.withTokenValue("token")
+                .header("alg", "RS256")
+                .subject(subject)
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(60))
+                .build();
+
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt, granted));
+    }
+
+    @Test
+    @DisplayName("findAllByServicePointIdOrHandleIn() derives isServicePointUser=true from the " +
+            "normalised ROLE_service-point-user authority (RAID-877 regression guard)")
+    void findAllByServicePointIdOrHandleInDerivesIsServicePointUserFromNormalisedAuthority() {
+        final var servicePointId = 123L;
+        // Authority as it would appear after SecurityConfig#extractAuthorities normalises a
+        // claim-matched scoped "service-point-user:<groupId>" role - not the raw realm_access
+        // claim, which findAllByServicePointIdOrHandleIn must no longer read directly.
+        authenticateAs("service-account-some-credential", "ROLE_service-point-user");
+
+        final var permissions = new RaidPermissionsResponse(List.of(), List.of());
+        when(keycloakService.getRaidPermissions("service-account-some-credential")).thenReturn(permissions);
+
+        final var raidRecord = new RaidRecord().setHandle(HANDLE);
+        when(raidRepository.findAllViewable(eq(servicePointId), eq(true), anyList()))
+                .thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(RAID_DTO));
+
+        final var result = raidIngestService.findAllByServicePointIdOrHandleIn(servicePointId);
+
+        assertThat(result, is(List.of(RAID_DTO)));
+        // The key assertion: isServicePointUser must be true, or findAllViewable silently
+        // truncates closed-access records owned by the caller's own service point.
+        verify(raidRepository).findAllViewable(eq(servicePointId), eq(true), anyList());
+    }
+
+    @Test
+    @DisplayName("findAllByServicePointIdOrHandleIn() derives isServicePointUser=false without the " +
+            "flat authority")
+    void findAllByServicePointIdOrHandleInDerivesIsServicePointUserFalseWithoutAuthority() {
+        final var servicePointId = 123L;
+        authenticateAs("some-other-user");
+
+        final var permissions = new RaidPermissionsResponse(List.of(), List.of());
+        when(keycloakService.getRaidPermissions("some-other-user")).thenReturn(permissions);
+        when(raidRepository.findAllViewable(eq(servicePointId), eq(false), anyList()))
+                .thenReturn(List.of());
+
+        final var result = raidIngestService.findAllByServicePointIdOrHandleIn(servicePointId);
+
+        assertThat(result, is(List.of()));
+        verify(raidRepository).findAllViewable(eq(servicePointId), eq(false), anyList());
+    }
 
     @Test
     @DisplayName("create() saves raid and relations")
