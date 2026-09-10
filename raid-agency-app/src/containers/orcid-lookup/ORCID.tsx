@@ -379,7 +379,7 @@ export default function ORCIDLookup({
 
   const searchConfig = {
     lookup: {
-      placeholder: orcid.placeholder || 'Enter ORCID iD (e.g., 0000-0002-1825-0097)',
+      placeholder: orcid.placeholder || 'Enter ORCID iD or ISNI (e.g., 0000-0002-1825-0097 or https://isni.org/0000000121032683)',
       endpoint: `https://${getOrcidEnv()}researchdata.ardc.edu.au/api/v2.0/orcid.jsonp/lookup/${encodeURIComponent(searchValue)}/?api_key=public&callback=?`,
       label: 'ORCID ID',
       description: 'Search by unique ORCID identifier',

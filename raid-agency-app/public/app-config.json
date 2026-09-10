@@ -27,7 +27,7 @@
   },
   "app": {
     "orcid": {
-      "placeholder": "Enter valid sandbox ORCID iD",
+      "placeholder": "Enter valid sandbox ORCID iD or ISNI",
       "helpText": "Use the ORCID sandbox (https://orcid.org/sandbox)"
     }
   },

@@ -61,6 +61,16 @@ async function setUpFormWithContributorRow(page: import("@playwright/test").Page
 }
 
 test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
+  test("the empty field's placeholder mentions ISNI alongside ORCID", async ({
+    page,
+  }) => {
+    await setUpFormWithContributorRow(page);
+
+    await expect(
+      page.locator('#contributor input[aria-label="search orcid"]')
+    ).toHaveAttribute("placeholder", /ISNI/);
+  });
+
   test("pasting an ISNI URL infers the ISNI schemaUri and shows a plain identifier field", async ({
     page,
   }) => {
