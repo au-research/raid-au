@@ -27,6 +27,11 @@ const EMBARGOED_LABEL = "Embargoed Access";
 const ACCESS_STATEMENT = "Embargoed for contributor-identifier inference e2e testing";
 const EMBARGO_EXPIRY = validEmbargoExpiry();
 const ISNI_URL = "https://isni.org/0000000121032683";
+// This ISNI has a matching expectation in the local mockserver
+// (docker-compose/mockserver/expectations.json), so unlike ISNI_URL above it
+// resolves and saves successfully end to end in local/dev - needed for the
+// view-page test below, which must get past a real save to render.
+const MOCKED_ISNI_URL = "https://isni.org/0000000078519858";
 const ORCID_URL = "https://sandbox.orcid.org/0009-0002-5128-5184";
 
 interface ContributorPayload {
@@ -133,5 +138,29 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
 
     await formPage.save();
     await formPage.waitForSuccessfulSave();
+
+    // Regression guard: the view page must keep showing ORCID's own
+    // authenticated/unauthenticated icon and label for an ORCID contributor.
+    await expect(page.getByAltText(/authenticated/i)).toBeVisible();
+    await expect(page.getByText("ORCID", { exact: true }).first()).toBeVisible();
+  });
+
+  test("RAiD view page hides the ORCID icon and authenticated/unauthenticated text for an ISNI contributor", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+
+    await contributorSection.fillOrcidId(0, MOCKED_ISNI_URL);
+    await formPage.save();
+    await formPage.waitForSuccessfulSave();
+
+    // Bug fix: the ORCID authenticated/unauthenticated icon and status text
+    // don't apply to ISNI (no OAuth flow), and the "ORCID" label is wrong
+    // for an ISNI value - the view page must not show any of them.
+    await expect(page.getByAltText(/authenticated/i)).not.toBeVisible();
+    await expect(page.getByText(/unauthenticated/i)).not.toBeVisible();
+    await expect(page.getByText("ISNI", { exact: true })).toBeVisible();
+    await expect(page.getByText("ORCID", { exact: true })).not.toBeVisible();
+    await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
   });
 });
