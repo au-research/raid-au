@@ -50,29 +50,45 @@ See `src/config/Appconfig.ts` for the full type definitions. The main overridabl
 
 ## 2. Keycloak — Creating a New Theme
 
-### Copy the existing theme as a starting point
+`raid-custom` is the generic default theme (structure, accessibility, responsive layout) and is designed to be forked. `ardc-branding` is a working example of this: a thin child theme that inherits `raid-custom`'s structure and overrides only colours and its own header/footer — see its `theme.properties`, `resources/css/login-ardc.css`, and `login.ftl`.
+
+### Option A — fork raid-custom as a thin child theme (recommended for a colour/branding-only variant)
+
+Set your new theme's parent directly to `raid-custom`:
+
+```properties
+parent=raid-custom
+import=common/keycloak
+styles=css/login.css css/login-my-theme.css
+```
+
+Do **not** create your own `login.css` — omit it entirely so it falls back to `raid-custom`'s file (Keycloak resolves each file in `styles=` independently: child-then-parent). Add a second CSS file (loaded after the first) containing only your `:root` colour-token overrides (`--brand-primary`, `--focus-ring`, `--spinner-track`, etc. — see `raid-custom/resources/css/login.css` for the full token list) plus anything structurally unique to your theme (a different header/footer, say). If you don't need any structural additions beyond colours, `login.ftl`/`template.ftl` can be omitted too and both will fall back to `raid-custom`'s.
+
+### Option B — copy the theme as a fully independent starting point
 
 ```sh
 cp -r themes/raid-custom themes/my-new-theme
 ```
 
-### Update the theme name
+Edit `themes/my-new-theme/theme.properties` and set `parent=keycloak` instead of `raid-custom` if you want zero coupling to future `raid-custom` changes. This duplicates everything, so any later fix or accessibility improvement to `raid-custom` won't reach your theme automatically.
 
-Edit `themes/my-new-theme/theme.properties` and update the parent if needed:
+### A key difference between CSS/FTL and message bundles
 
-```properties
-parent=keycloak
-```
+- **CSS, `.ftl` templates, and other `resources/` files (images, JS) resolve as a whole file**: if your theme has its own copy, the parent's version isn't used at all — even for the parts you didn't change. There's no partial/fragment override.
+- **Message bundles (`messages_en.properties`) merge per key** across the parent chain: your theme only needs to define the keys that genuinely differ from the parent's default; everything else falls through automatically.
+
+This is why `ardc-branding`'s `messages_en.properties` is nearly empty (everything currently matches `raid-custom`'s defaults) while its `login.ftl` is a near-complete copy of `raid-custom`'s (plus its own footer markup) — CSS/FTL changes to `raid-custom` must be manually re-applied to any child theme that has its own copy of that same file.
 
 ### Customise the theme
 
-| Asset | Location |
-|-------|----------|
-| Styles | `login/resources/css/login.css` |
-| HTML structure | `login/template.ftl` |
-| Login form | `login/login.ftl` |
-| Images / logo | `login/resources/img/` |
-| Text overrides | `login/messages/messages_en.properties` |
+| Asset | Location | Resolves as |
+|-------|----------|-------------|
+| Shared structure/styles | `login/resources/css/login.css` | whole file — omit to inherit |
+| Your own colours/overrides | `login/resources/css/login-my-theme.css` (or similar, listed in `styles=`) | whole file — always your own |
+| HTML structure | `login/template.ftl` | whole file — omit to inherit |
+| Login form | `login/login.ftl` | whole file — omit to inherit, but any structural change to the parent's card must be manually mirrored if you keep your own copy |
+| Images / logo | `login/resources/img/` | whole file per filename — omit a file to inherit that one specific asset |
+| Text overrides | `login/messages/messages_en.properties` | merges per key — only list what differs |
 
 ### Register the theme in Keycloak
 
@@ -95,4 +111,4 @@ Restart the Keycloak container to pick up the new theme.
 
 ### Localization overrides
 
-Per-environment text (titles, badge label, policy links) can be set in the Keycloak admin console without touching the theme files — see [login-page-configuration.md](login-page-configuration.md).
+Per-environment text (titles, policy links, provider helper text, loading-state copy) can be set in the Keycloak admin console without touching the theme files — see [login-page-configuration.md](login-page-configuration.md).

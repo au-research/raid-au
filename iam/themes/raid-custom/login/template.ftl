@@ -24,6 +24,7 @@
 </head>
 
 <body class="${properties.kcBodyClass!}">
+
     <!-- Top Navigation Bar -->
     <nav class="top-navbar">
         <div class="nav-container">
@@ -35,7 +36,7 @@
 
     <!-- Main Content -->
     <div class="page-container">
-        <div class="content-wrapper pt-1">
+        <div class="content-wrapper">
             <#-- Display messages -->
             <#if displayMessage && message?has_content && (message.type != 'warning' || !isAppInitiatedAction??)>
                 <div class="alert alert-${message.type}">
