@@ -103,10 +103,21 @@ Dynamic realm roles named `service-point-admin:<groupId>`, where `<groupId>` is 
 **Lifecycle:**
 - Created automatically (create-if-absent) when a group is created via the IAM group SPI; the creating user is granted the scoped role
 - Granted/revoked alongside the flat `group-admin` role (dual-write) while the transition to scoped roles is in progress
+- Backfilled automatically at every Keycloak boot for existing holders of the flat `group-admin` role (RAID-884, see the deployment note below)
 
 **Relationship to the legacy `group-admin` role:** the flat `group-admin` realm role historically made a user an admin of *every* group they belonged to. During the transition, the SPI honours the flat role as a fallback (flat `group-admin` + group membership) when the `flat-group-admin-fallback` setting is enabled. Once the RAiD app consumes scoped roles, the fallback will be disabled and the flat role removed.
 
-**Deployment note:** `iam/realms/raid-realm.json` seeds the scoped roles for the two local dev groups only, and the realm JSON is imported on first boot only. In deployed environments (test/stage/prod) the scoped roles are backfilled with the operator-only idempotent migration endpoint `POST /realms/raid/group/migrate-service-point-admins` (RAID-721), which grants `service-point-admin:<groupId>` for every group each flat `group-admin` user belongs to (preserving current effective access).
+**Deployment note:** the scoped roles are provisioned automatically, with no operator action, on every Keycloak boot (RAID-884). `ServicePointAdminRoleBootstrapper` registers a listener for Keycloak's `PostMigrationEvent` from the group SPI's `postInit` hook; the listener runs the idempotent backfill against every realm, granting `service-point-admin:<groupId>` for each group a flat `group-admin` user is an *approved* member of (preserving current effective access). Realms with no flat `group-admin` role, such as `master`, are a no-op.
+
+Because this ships inside `raid-iam.jar`, it runs identically on any platform a Registration Agency deploys onto, which is what the no-manual-deployment-steps NFR requires. There is nothing to run by hand, and nothing in any deployment procedure should depend on the migration endpoint.
+
+Two things it does *not* do, both deliberate:
+- It does not create a scoped role for a service point group that has no flat `group-admin` member. Such a role would have no holders and grant nothing; groups created through the SPI get theirs at creation time.
+- It does not narrow the breadth of the backfill. A flat `group-admin` who is an approved member of several groups gains the scoped role for all of them, exactly as the flat role already allowed. Pruning that over-grant is separate work and must not happen as a side effect of a boot-time backfill.
+
+`POST /realms/raid/group/migrate-service-point-admins` (RAID-721) still exists and runs the same shared code, but it is now a **redundant safety net** for an operator who needs to re-run the backfill without a restart, not the provisioning mechanism. Relying on it as the mechanism was the bug fixed by RAID-884: the step was documented but never performed in ARDC's production, leaving the RAID-827 self-serve credential feature inert there.
+
+`iam/realms/raid-realm.json` seeds the scoped roles for the two local dev groups, but it is imported on first boot of a local dev stack only and is not a deployment mechanism for any environment.
 
 ## Special Authorization Cases
 
