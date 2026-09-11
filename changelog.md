@@ -1,6 +1,45 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.17.0
+
+## API
+* Fixed a fault where listing RAiDs returned `500 Internal Server Error` for an entire service
+  point if any single RAiD held no cached metadata. One unreadable record took down the whole
+  list rather than just that record; the list endpoints now read such records safely (PR #648).
+* Each Registration Agency is now allocated its own block of ten million Service Point ids, so
+  Service Points minted by different agencies can no longer collide in federated metadata.
+  Previously every agency started counting from the same hardcoded `20000000`. An instance derives
+  its block from the Registration Agency identifier (ROR) it already publishes on every RAiD,
+  rather than from a separately configured number, so a deployment cannot be pointed at the wrong
+  block without also publishing its RAiDs under another agency's name. The allocation register
+  ships inside the artefact and cannot be overridden by environment configuration. Existing
+  Service Points are renumbered into the agency's block on upgrade, in both current and
+  historical records (PRs #641, #642, #643, #644, #645, #646, #649).
+* Added SURF to the Registration Agency register, allocating their Service Point id block
+  (PR #652).
+* Operator documentation for Service Point id ranges is available at
+  `doc/reference/service-point-id-ranges.md` (PR #645).
+
+## IAM
+* Fixed a fault that made every self-serve client credential unusable. Tokens minted from a
+  service point's own API credentials were rejected with `403 insufficient_scope` on every RAiD
+  data endpoint, because the scoped role those credentials carry was not recognised by the API's
+  role checks. The same gap also caused a credential's own closed and embargoed records to be
+  truncated to open-access-only in list responses. Credentials created through the client
+  credentials feature now work against the API as intended (PR #661).
+* The reference guide `doc/reference/service-point-client-credentials.md` now has a "What a
+  credential can and cannot do" section (PR #661).
+
+## App-client UI
+* Service Point Admins can now manage their service point's API client credentials from the app,
+  without calling the endpoints directly. The dashboard lists existing credentials and supports
+  creating, rotating, revoking and revealing a credential secret (PR #647).
+* Contributor identifiers can now be entered as an ISNI as well as an ORCID iD. The form
+  recognises which kind of identifier has been entered and validates it accordingly, and the
+  ORCID authentication status indicator is hidden for contributors identified by ISNI
+  (PRs #650, #662).
+
 # 2.16.0
 
 ## API
