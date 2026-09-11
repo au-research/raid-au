@@ -98,4 +98,4 @@ first boot there will report `already up to date`.
 
 ## PR
 
-<!-- filled in on PR creation -->
+[PR #665](https://github.com/au-research/raid-au/pull/665)
