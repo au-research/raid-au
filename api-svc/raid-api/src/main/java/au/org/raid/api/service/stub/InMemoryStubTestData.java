@@ -50,4 +50,14 @@ public class InMemoryStubTestData {
             "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
     public static String SERVER_ERROR_TEST_WEB_ARCHIVE =
             "https://web.archive.org/web/20200101000000/https://server-error.example.com";
+
+    // NAAN 99999 is a reserved test NAAN (ARK Alliance spec / draft-kunze-ark-43 s2.3), used here
+    // only as a deterministic stub trigger; these constants exercise the in-memory ArkServiceStub
+    // and never hit the real arks.org resolver.
+    // The "reject" signal is not specific to 99999 (verified live 2026-08-18, RAID-793): genuinely
+    // unregistered, non-reserved NAANs self-loop to https://arks.org/.info/ark:..., while reserved
+    // arks-managed NAANs (incl. 99999) self-loop to http://arks.org/ark:/... — both keep the host
+    // on arks.org, which is what ArkService.isUnregistered() matches on, so both are rejected.
+    public static String NONEXISTENT_TEST_ARK = "https://arks.org/ark:/99999/not-found";
+    public static String SERVER_ERROR_TEST_ARK = "https://arks.org/ark:/99999/server-error";
 }

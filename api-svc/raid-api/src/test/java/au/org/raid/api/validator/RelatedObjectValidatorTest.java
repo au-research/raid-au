@@ -1,6 +1,7 @@
 package au.org.raid.api.validator;
 
 import au.org.raid.api.exception.ResolverUnavailableException;
+import au.org.raid.api.service.ark.ArkService;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
@@ -54,6 +55,9 @@ class RelatedObjectValidatorTest {
 
     @Mock
     private WebArchiveService webArchiveService;
+
+    @Mock
+    private ArkService arkService;
 
     @InjectMocks
     private RelatedObjectValidator validationService;

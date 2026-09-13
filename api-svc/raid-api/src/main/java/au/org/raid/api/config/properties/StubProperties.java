@@ -18,6 +18,7 @@ public class StubProperties {
     private Isni isni;
     private Ror ror;
     private WebArchive webArchive;
+    private Ark ark;
 
     @Data
     public static class Doi {
@@ -73,6 +74,12 @@ public class StubProperties {
 
     @Data
     public static class WebArchive {
+        private boolean enabled;
+        private Long delay;
+    }
+
+    @Data
+    public static class Ark {
         private boolean enabled;
         private Long delay;
     }
