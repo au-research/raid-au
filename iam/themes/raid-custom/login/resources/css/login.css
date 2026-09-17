@@ -14,7 +14,19 @@
     --brand-primary: rgb(65, 131, 206);
     --brand-primary-hover: #357ae8;
     --brand-primary-active: rgb(45, 91, 144);
+    /* --brand-primary is 3.92:1 against white - fine for non-text UI
+       (borders, icons, hover tints) which only need 3:1, but fails the
+       4.5:1 WCAG AA text threshold. --text-link is a darker shade used
+       only where the colour is actual link/button text. */
+    --text-link: #2563eb;
     --focus-ring: rgba(65, 131, 206, 0.35);
+    /* Solid (non-transparent) colour for :focus-visible outlines - a
+       translucent colour can't reach the 3:1 non-text contrast ratio
+       WCAG requires for focus indicators without becoming visually
+       opaque anyway, so the visible indicator uses this instead of
+       --focus-ring. --focus-ring itself stays as the translucent hover
+       tint background, which isn't a contrast-sensitive use. */
+    --focus-ring-solid: var(--text-link);
     --surface-tint: #c6d9f0;
     --surface-white: #ffffff;
     --text-heading: #1e293b;
@@ -167,8 +179,8 @@ body {
 }
 
 .idp-button:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--focus-ring);
+    outline: 3px solid var(--focus-ring-solid);
+    outline-offset: 2px;
     text-decoration: none;
 }
 
@@ -251,7 +263,7 @@ body {
     background: none;
     border: none;
     padding: 0;
-    color: var(--brand-primary);
+    color: var(--text-link);
     text-decoration: underline;
     font-family: Figtree, sans-serif;
     font-size: 0.875rem;
@@ -259,8 +271,8 @@ body {
 }
 
 .signin-help-toggle:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--focus-ring);
+    outline: 3px solid var(--focus-ring-solid);
+    outline-offset: 2px;
     border-radius: 2px;
 }
 
@@ -290,7 +302,13 @@ body {
 }
 
 .signin-footnote a {
-    color: var(--brand-primary);
+    color: var(--text-link);
+}
+
+.signin-footnote a:focus-visible {
+    outline: 3px solid var(--focus-ring-solid);
+    outline-offset: 2px;
+    border-radius: 2px;
 }
 
 /* ============================================
@@ -354,8 +372,8 @@ body {
 }
 
 .loading-card__cancel:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--focus-ring);
+    outline: 3px solid var(--focus-ring-solid);
+    outline-offset: 2px;
     border-radius: 2px;
 }
 
