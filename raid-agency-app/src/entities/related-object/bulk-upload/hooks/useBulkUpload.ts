@@ -8,6 +8,7 @@ import {
   TYPE_SCHEMA_URI,
   CATEGORY_SCHEMA_URI,
 } from "../types";
+import { inferRelatedObjectSchemaUri } from "@/utils/related-object-utils/related-object-schema-uri";
 
 export type BulkUploadStatus =
   | "idle"
@@ -62,7 +63,55 @@ export interface ParsedRelatedObject {
   }>;
 }
 
-const DOI_SCHEMA_URI = "https://doi.org/";
+// ------------------------------------------------------------------
+// Identifier recognition (RAID-801) — one regex per scheme confirms the
+// shape once `inferRelatedObjectSchemaUri` has structurally matched the
+// host/path, matching the detection rules used in the manual add-related-
+// object form (RAID-800).
+// ------------------------------------------------------------------
+
+// doi.org and dx.doi.org are both valid DOI proxy hosts (RAID-804), mirroring
+// related-object-validation-schema.ts and the API-side fix in DoiService (RAID-798).
+const doiRegex = /^https?:\/\/(dx\.)?doi\.org\/10\.\d{4,9}\/[^\s]+$/;
+const webArchiveRegex =
+  /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
+const handleRegex = /^https:\/\/hdl\.handle\.net\/\d+(?:\.\d+)*\/[^\s]+$/;
+const rridRegex = /^https:\/\/scicrunch\.org\/resolver\/RRID:[^\s_]+_[^\s]+$/;
+// NAAN must be exactly 5 or 9 digits; "ark:" must be the first path segment
+// after the host (RAID-793) — non-numeric NAANs are a known, unsupported edge case.
+const arkRegex = /^https:\/\/[^/\s]+\/ark:\/?(?:\d{5}|\d{9})\/[^\s]+$/i;
+
+const SCHEMA_URI_REGEXES: Record<string, RegExp> = {
+  "https://doi.org/": doiRegex,
+  "https://web.archive.org/": webArchiveRegex,
+  "https://hdl.handle.net/": handleRegex,
+  "https://scicrunch.org/resolver/": rridRegex,
+  "https://arks.org/": arkRegex,
+};
+
+const SCHEMA_URI_LABELS: Record<string, string> = {
+  "https://doi.org/": "DOI",
+  "https://web.archive.org/": "web.archive.org URL",
+  "https://hdl.handle.net/": "Handle",
+  "https://scicrunch.org/resolver/": "RRID",
+  "https://arks.org/": "ARK",
+};
+
+const IDENTIFIER_FORMAT_MESSAGE =
+  "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...), Handle (https://hdl.handle.net/...), RRID (https://scicrunch.org/resolver/RRID:...), ARK (https://.../ark:/...), or Web Archive URL";
+
+/**
+ * Classifies a bulk-upload identifier against the recognised relatedObject
+ * schemes. Returns the matched schemaUri only when the URL both structurally
+ * matches a scheme (host/path) and satisfies that scheme's shape regex —
+ * otherwise null, meaning the row should be rejected (unchanged behaviour
+ * for anything that isn't DOI/Handle/RRID/ARK/Web Archive).
+ */
+export function classifyRelatedObjectIdentifier(url: string): string | null {
+  const schemaUri = inferRelatedObjectSchemaUri(url);
+  if (!schemaUri) return null;
+  return SCHEMA_URI_REGEXES[schemaUri].test(url) ? schemaUri : null;
+}
 
 // ------------------------------------------------------------------
 // Validation schema (structural — vocab validity is checked in the mapper)
@@ -122,20 +171,13 @@ function readCellAsString(cell: { value: unknown }): string {
   return "";
 }
 
-// doi.org and dx.doi.org are both valid DOI proxy hosts (RAID-804), mirroring
-// related-object-validation-schema.ts and the API-side fix in DoiService (RAID-798).
-const doiRegex = /^https?:\/\/(dx\.)?doi\.org\/10\.\d{4,9}\/[^\s]+$/;
-const webArchiveRegex =
-  /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
-
 const bulkRelatedObjectRowSchema = z.object({
   id: z
     .string()
     .trim()
     .min(1, "Identifier is required")
-    .refine((url) => doiRegex.test(url) || webArchiveRegex.test(url), {
-      message:
-        "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...) or Web Archive URL",
+    .refine((url) => classifyRelatedObjectIdentifier(url) !== null, {
+      message: IDENTIFIER_FORMAT_MESSAGE,
     }),
   type: z.object({
     id: z.string().min(1, "Type is required"),
@@ -327,13 +369,14 @@ function mapRowToRelatedObjects(
   const categoriesRaw = (row["Categories"] ?? "").trim();
 
   // ---- Validate Identifier ----
+  const identifierSchemaUri = classifyRelatedObjectIdentifier(doiUrl);
   if (!doiUrl) {
     errors.push({ row: rowIndex, field: "Identifier", message: "Identifier is required" });
-  } else if (!doiRegex.test(doiUrl) && !webArchiveRegex.test(doiUrl)) {
+  } else if (!identifierSchemaUri) {
     errors.push({
       row: rowIndex,
       field: "Identifier",
-      message: "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...) or Web Archive URL",
+      message: IDENTIFIER_FORMAT_MESSAGE,
     });
   }
 
@@ -421,7 +464,8 @@ function mapRowToRelatedObjects(
     return {
       ...base,
       id: doiUrl,
-      schemaUri: DOI_SCHEMA_URI,
+      // Non-null: errors.length > 0 (identifierSchemaUri missing) returned above.
+      schemaUri: identifierSchemaUri!,
       type,
       category: categories,
     } as ParsedRelatedObject;
@@ -544,7 +588,8 @@ function applyDuplicateErrors(rows: EditableRow[], existingIdentifiers: string[]
     const hasDuplicateError = row.errors.Identifier?.startsWith(DUPLICATE_ERROR_PREFIX);
 
     if (isDuplicate && !row.errors.Identifier) {
-      const urlType = webArchiveRegex.test(originalUrl) ? "web.archive.org URL" : "DOI";
+      const matchedSchemaUri = classifyRelatedObjectIdentifier(originalUrl);
+      const urlType = (matchedSchemaUri && SCHEMA_URI_LABELS[matchedSchemaUri]) || "DOI";
       const message = isDuplicateInForm
         ? `Duplicate URL - ${originalUrl} is already linked to an existing Related Object.`
         : `Duplicate URL - One ${urlType} can only be linked to one type.`;
