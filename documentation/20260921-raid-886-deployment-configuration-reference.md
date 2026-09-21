@@ -45,11 +45,16 @@ describes RAiD AU's own AWS setup and is out of date.
    unoverridden deployment is also unreachable for write-back.
 
 3. **`raid.environment` is not a Spring profile.** It selects the Flyway env
-   folder through `classpath:db/env/${raid.environment}`. Every folder holds
-   RAiD AU data, and `db/env/dev` rewrites service point rows with mock DataCite
-   credentials and RAiD AU's ROR. The page recommends setting
-   `spring.flyway.locations` explicitly and omitting the env folder, which is
-   what the RAiD AU demo deployment already does.
+   folder through `classpath:db/env/${raid.environment}`. The five environment
+   names are a shared convention that agencies are expected to follow, but the
+   folders are not yet portable: they mix agency-neutral environment seeds
+   (`V42.1`, `R__grant_api_user_schema_access`) with RAiD AU one-off data
+   repairs, several of which hardcode RAiD AU hostnames. `V36.1`, present in
+   four folders, rewrites `raid_history` to `static.<env>.raid.org.au` URLs and
+   would corrupt another agency's history. `db/env/dev` additionally rewrites
+   service point rows with mock DataCite credentials and RAiD AU's ROR. The page
+   recommends omitting the env folder as a temporary measure, as the RAiD AU
+   demo deployment already does, and flags separating the folders as the fix.
 
 ## Framing
 
@@ -76,7 +81,11 @@ Raised on RAID-886 for separate tickets, not addressed here:
   contributor schema surfaces as a generic 500 rather than an error naming the
   schema. This is the likely cause of the sandbox contributor save failures
   reported by CRKN
-- provide a Flyway location set intended for agency deployments
+- separate `db/env/<name>` into agency-neutral, environment-dependent migrations
+  that every agency running that environment should apply, and RAiD AU-specific
+  data repairs that must never run elsewhere. The environment names are a shared
+  convention, so the folders should be shareable; today they are not, and
+  several repairs hardcode RAiD AU hostnames
 - fix the `raid.orcid-integration.host` default, and the non-transactional
   failure behaviour that leaves an orphaned DataCite DOI when the ORCID call
   fails mid-mint

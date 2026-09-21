@@ -85,17 +85,37 @@ activate a Spring profile. Setting a Spring profile does not set it either,
 except for the `dev` profile, which sets `raid.environment: dev` as a side
 effect.
 
-The folders `dev`, `test`, `demo`, `stage` and `prod` each hold data specific to
-one of RAiD AU's own environments, so none of them suits another deployment.
-`db/env/dev` in particular rewrites service point rows with mock server DataCite
-credentials and RAiD AU's ROR.
+The environment names themselves are a shared convention. Agencies are expected
+to use the same five, so `dev`, `test`, `demo`, `stage` and `prod` should mean
+the same thing in every deployment, and `raid.environment` should name the
+environment it is actually running as.
 
-Rather than choosing one, set the locations explicitly and leave the environment
-folder out:
+The folders, however, are not yet portable. They currently hold three different
+kinds of migration mixed together:
+
+- **Agency-neutral, environment-dependent seeds**, which every agency running
+  that environment needs. `V42.1` (the sandbox ORCID contributor schema row) and
+  `R__grant_api_user_schema_access` are the current examples.
+- **RAiD AU one-off data repairs**, such as `V36.1`, `V36.2`, `V34.1`, `V39.1`,
+  `V40.x` and `V41.1`. Several hardcode RAiD AU hostnames. `V36.1`, present in
+  `test`, `demo`, `stage` and `prod`, rewrites `raid_history` entries to
+  `https://static.<env>.raid.org.au/raids/`, which would corrupt another
+  agency's history.
+- **RAiD AU environment seeds**, notably `dev/V32.1` and `dev/V40.1`, which
+  rewrite service point rows with mock server DataCite credentials and RAiD AU's
+  ROR.
+
+Only the first kind is safe to run elsewhere. Until the folders are separated,
+set the locations explicitly and leave the environment folder out:
 
 ```
 spring.flyway.locations = classpath:db/migration,classpath:db/env/api_user
 ```
+
+This is a temporary measure, not the intended end state. Separating the
+agency-neutral migrations from the RAiD AU repairs is tracked as follow-up work,
+after which pointing `raid.environment` at the matching environment name will be
+the correct approach.
 
 One caveat, which matters if the deployment points at the ORCID sandbox.
 
@@ -122,10 +142,10 @@ where not exists (
 );
 ```
 
-The row is not environment-specific in any real sense. It follows from the
-configured schema URI, so it belongs alongside that property rather than in
-folders named after RAiD AU's environments. Moving it is tracked as follow-up
-work.
+This row is one of the agency-neutral migrations described above. It follows
+from the configured schema URI, so once the environment folders are separated it
+will apply to any agency running a sandbox-facing environment, and inserting it
+by hand will no longer be necessary.
 
 ## Required properties
 
