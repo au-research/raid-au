@@ -63,10 +63,13 @@ deployment.
 
 | Property | Ships as | Why it matters |
 | --- | --- | --- |
-| `raid.identifier.registration-agency-identifier` | RAiD AU's ROR, `https://ror.org/038sjwq14` | Stamped into every minted RAiD, and used to route ORCID contributor updates back to the originating deployment. A wrong value attributes RAiDs to RAiD AU. |
 | `datacite.registration-agency-name` | `Australian Research Data Commons` | Sent to DataCite with each record. |
 | `raid.iam.realm-uri` | `https://iam.${raid.environment}.raid.org.au/realms/raid` | A RAiD AU hostname. |
 | `raid.identifier.landing-prefix` | `https://static.${raid.environment}.raid.org.au/raids/` | A RAiD AU hostname. |
+
+`raid.identifier.registration-agency-identifier` used to belong in this list,
+defaulting to RAiD AU's ROR. It no longer has a default, and the failure is now
+loud rather than quiet: see the section below.
 
 Service point rows carry an owning organisation as well. Check that
 `identifier_owner` on each service point holds the correct ROR for the
@@ -162,6 +165,30 @@ where not exists (
 );
 ```
 
+## The agency's ROR must be allocated a Service Point ID block
+
+`raid.identifier.registration-agency-identifier` has no default. It is the ROR of
+the registration agency operating the instance, and the instance resolves its own
+Service Point ID range from it at startup, against
+[`registration-agencies.yaml`](../../api-svc/raid-api/src/main/resources/registration-agencies.yaml).
+
+Each agency gets a distinct numeric block so that Service Point IDs are unique
+across the federation, because the ID is published as
+`identifier.owner.servicePoint` in RAiD metadata. A block's first ID is
+`block * blockSize`, and there is nothing significant about the number of digits.
+
+Two failures follow from this, both at startup:
+
+- the property is unset, or
+- the ROR is set but does not appear in `registration-agencies.yaml`
+
+Allocations are made by the RAiD Registration Authority and recorded in each
+agency's legal agreement. `registration-agencies.yaml` is the authoritative copy
+in software, so onboarding an agency is a pull request against this repository
+plus a release. It is **not** something an agency can set in its own deployment
+configuration. Confirm the allocation is present in the release being deployed
+before standing an environment up.
+
 ## Required properties
 
 Set all of these. Anything not listed keeps its shipped default.
@@ -170,10 +197,13 @@ Set all of these. Anything not listed keeps its shipped default.
 
 | Property | Description |
 | --- | --- |
-| `raid.identifier.registration-agency-identifier` | The registration agency's ROR. See trap 2. |
-| `datacite.registration-agency-name` | The registration agency's name, as sent to DataCite. |
-| `raid.identifier.landing-prefix` | Prefix for the RAiD landing page URLs the deployment serves. |
-| `raid.identifier.name-prefix` | Prefix used when building identifier names. |
+| `raid.identifier.registration-agency-identifier` | The registration agency's ROR. No default, and it must be allocated a Service Point ID block. See above. |
+| `datacite.registration-agency-name` | The registration agency's name, as sent to DataCite. Defaults to RAiD AU's name. |
+| `raid.identifier.landing-prefix` | Prefix for the RAiD landing page URLs the deployment serves. Defaults to a RAiD AU hostname. |
+
+`raid.identifier.name-prefix` and `raid.identifier.schema-uri` both default to
+`https://raid.org/` and are federation-wide constants rather than per-agency
+settings. Leave them alone.
 
 ### Database
 
@@ -203,7 +233,10 @@ query fails with `relation "raid" does not exist`.
 | Property | Description |
 | --- | --- |
 | `datacite.endpoint` | DOI minting endpoint. Test is `https://api.test.datacite.org/dois`. |
-| `raid.repository-client.url` | Repositories endpoint, for managing repository accounts. |
+
+`raid.repository-client.url` is the repositories endpoint used to manage
+repository accounts. It defaults to `https://api.test.datacite.org/repositories`
+and only needs overriding for a production deployment.
 
 Per-service-point DataCite credentials live in the `service_point` table, not in
 configuration.
@@ -217,7 +250,7 @@ their own ORCID member credentials for it.
 | Property | Description |
 | --- | --- |
 | `raid.orcid-integration.host` | The raid.org ORCID integration host for the relevant environment. |
-| `raid.orcid-integration.api-key` | The API key issued by raid.org. |
+| `raid.orcid-integration.api-key` | The API key issued by raid.org for this deployment. Set it once raid.org has issued one. |
 | `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/`, or `https://sandbox.orcid.org/` for sandbox. |
 | `raid.contributor-validation.orcid.schema-uri` | Must match the url-prefix above. |
 
@@ -239,10 +272,14 @@ rather than email.
 
 | Property | Description |
 | --- | --- |
-| `raid.orcid-client.base-url` | ORCID API. Defaults to the sandbox. |
-| `raid.ror-client.base-url` | ROR API. |
+These all have workable defaults. Override them only where noted.
+
+| Property | Description |
+| --- | --- |
+| `raid.orcid-client.base-url` | ORCID API. Defaults to the sandbox, so a production deployment must override it. |
+| `raid.ror-client.base-url` | ROR API. The default is current. |
 | `raid.ror-client.client-id` | ROR API client ID. A RAiD AU value ships as the default; obtain a separate one. |
-| `raid.isni-client.url-format` | ISNI SRU query URL. |
+| `raid.isni-client.url-format` | ISNI SRU query URL. The default is current. |
 
 ### Optional
 
@@ -250,8 +287,14 @@ rather than email.
 | --- | --- | --- |
 | `raid.datacite.resync.enabled` | `false` | Background re-push of records flagged for DataCite re-sync. |
 | `raid.history.baseline-interval` | `50` | How often a full history baseline is written. |
-| `logging.level.root` | | Root log level. |
-| `raid.stub.*.enabled` | `false` | In-memory stubs for external resolvers. Leave off in a deployed environment. |
+| `logging.level.root` | `info` | Root log level. `logging.level.<package>` can raise or lower individual loggers. |
+| `raid.stub.<resolver>.enabled` | `false` | In-memory stub for one external resolver. Leave off in a deployed environment. |
+
+The stub switches exist for local development and integration tests, and the
+resolvers are `ark`, `doi`, `geonames`, `handle`, `isni`, `openstreetmap`,
+`orcid`, `ror`, `rrid` and `web-archive`. They already default to `false`, so a
+deployment need not set them; RAiD AU sets all ten explicitly so the value is
+visible in the environment rather than implied.
 
 ## Secrets
 
@@ -282,11 +325,59 @@ copy. It is defined in
 [`registration-agency/cdk/config/environment-properties.ts`](https://github.com/au-research/raido-v2-aws-private/blob/main/registration-agency/cdk/config/environment-properties.ts),
 with the secret wiring in
 [`api-service.ts`](https://github.com/au-research/raido-v2-aws-private/blob/main/registration-agency/cdk/lib/raid/construct/ecs/api-service.ts).
-Those repositories are private; request access if the detail is useful.
+Those repositories are private; request access if the detail is useful. The
+values below are the ones the running container actually has, read from its task
+definition, with the database hostname omitted.
 
-Note that it sets `spring.flyway.locations` explicitly and overrides every
-property that would otherwise interpolate `raid.environment`, rather than setting
-`raid.environment` itself.
+```
+raid.environment                               = demo
+spring.flyway.locations                        = classpath:db/migration,classpath:db/env/api_user,classpath:db/env/demo
+
+raid.identifier.registration-agency-identifier = https://ror.org/038sjwq14
+raid.identifier.landing-prefix                 = https://static.demo.raid.org.au/raids/
+
+raid.db.name                                   = raido
+raid.db.port                                   = 5432
+raid.db.user                                   = api_user
+
+raid.iam.realm-uri                             = https://iam.demo.raid.org.au/realms/raid
+raid.raid-permissions.client-id                = raid-permissions-admin
+raid.cors.origins                              = https://app.demo.raid.org.au
+spring.security.oauth2.client.registration.keycloak.client-id = raid-api-2
+
+datacite.endpoint                              = https://api.test.datacite.org/dois
+
+raid.orcid-integration.host                    = https://orcid.demo.raid.org
+raid.contributor-validation.orcid.url-prefix   = https://sandbox.orcid.org/
+raid.contributor-validation.orcid.schema-uri   = https://sandbox.orcid.org/
+
+raid.datacite.resync.enabled                   = true
+raid.history.baseline-interval                 = 500
+logging.level.root                             = ERROR
+logging.level.au.org.raid                      = debug
+
+raid.stub.ark.enabled = raid.stub.doi.enabled = raid.stub.geonames.enabled
+  = raid.stub.handle.enabled = raid.stub.isni.enabled
+  = raid.stub.openstreetmap.enabled = raid.stub.orcid.enabled
+  = raid.stub.ror.enabled = raid.stub.rrid.enabled
+  = raid.stub.web-archive.enabled = false
+```
+
+Four points worth drawing out, because they are the ones an agency has to decide
+for itself:
+
+- It sets `raid.environment=demo` **and** `spring.flyway.locations` explicitly.
+  The two agree, so the explicit locations are belt and braces rather than an
+  override, and `db/env/demo` is applied as described above.
+- It does not set `datacite.registration-agency-name`. RAiD AU is the agency the
+  default names, so the default happens to be correct here. It will not be for
+  anyone else.
+- It does not set `raid.orcid-client.base-url` or `raid.repository-client.url`,
+  because the shipped defaults already point at the ORCID sandbox and the
+  DataCite test API, which is what a demo environment wants. A production
+  environment overrides both.
+- The thirteen secrets in the previous section are injected separately from AWS
+  Secrets Manager and are not present in this list.
 
 ## Checking what a deployment actually loaded
 

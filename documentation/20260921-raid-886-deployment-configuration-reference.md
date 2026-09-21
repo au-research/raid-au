@@ -68,6 +68,44 @@ describes RAiD AU's own AWS setup and is out of date.
    `V36.1` has a different checksum in each), so `raid.environment` must not be
    changed once an environment exists.
 
+## Verification against the running deployment
+
+The property list was reconciled against the RAiD AU demo task definition read
+from ECS, rather than against the CDK source. That found three things.
+
+1. **The Service Point ID block allocation was missing from the page.**
+   `raid.identifier.registration-agency-identifier` no longer defaults to RAiD
+   AU's ROR; RAID-862 removed the default and made the instance resolve its
+   Service Point ID range from
+   `api-svc/raid-api/src/main/resources/registration-agencies.yaml` at startup,
+   refusing to start when the ROR is unset or unallocated. This is a hard gate on
+   any new deployment and is now documented in its own section. Note that DRAC
+   and TIB have blocks reserved but no ROR recorded, so a deployment for either
+   would not start on the current release.
+
+2. **The worked example was wrong.** It claimed the demo environment overrides
+   every property that would otherwise interpolate `raid.environment` rather than
+   setting `raid.environment` itself. The running container sets
+   `raid.environment=demo` and sets `spring.flyway.locations` to the matching
+   value. The example is now the actual environment read from the task
+   definition, with the database hostname omitted, and calls out the four
+   decisions an agency has to make for itself.
+
+3. **Smaller corrections.** `raid.identifier.name-prefix` was listed as
+   required; it is a federation-wide constant (`https://raid.org/`) and the demo
+   environment does not set it. `raid.repository-client.url` and
+   `raid.orcid-client.base-url` were listed as required; both have defaults that
+   suit a test or demo environment and only need overriding in production. The
+   ten `raid.stub.<resolver>.enabled` switches are now named.
+
+All thirteen secrets listed on the page match the thirteen the running container
+receives from Secrets Manager, with no additions or omissions.
+
+The CDK source in `raido-v2-aws-private` does not match the deployed task
+definition on either branch checked, including `origin/main`, so the deployed
+environment was the right thing to verify against. That drift is a separate
+concern and is not addressed here.
+
 ## Framing
 
 The page uses neutral terminology throughout. raid.org is the registration
@@ -81,8 +119,13 @@ of one agency's configuration rather than a template to copy.
 
 Raised on RAID-886 for separate tickets, not addressed here:
 
-- `registration-agency-identifier` and `registration-agency-name` should not
-  default to RAiD AU values; consider failing startup when unset
+- `datacite.registration-agency-name` should not default to a RAiD AU value.
+  `registration-agency-identifier` was fixed by RAID-862
+- the CDK source in `raido-v2-aws-private` has drifted from the deployed demo
+  task definition on `origin/main`; reconcile the two
+- DRAC and TIB have Service Point ID blocks reserved in
+  `registration-agencies.yaml` but no ROR recorded, so neither can start a
+  deployment until their entries are completed
 - `V42.1` inserts the sandbox ORCID `contributor_schema` row and is
   environment-neutral, but ships only in the environment folders (`dev`, `test`,
   `demo` and `stage` each carry a near-identical copy; `prod` deliberately omits
