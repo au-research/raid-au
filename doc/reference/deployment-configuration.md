@@ -85,37 +85,40 @@ activate a Spring profile. Setting a Spring profile does not set it either,
 except for the `dev` profile, which sets `raid.environment: dev` as a side
 effect.
 
-The environment names themselves are a shared convention. Agencies are expected
-to use the same five, so `dev`, `test`, `demo`, `stage` and `prod` should mean
-the same thing in every deployment, and `raid.environment` should name the
-environment it is actually running as.
+Every registration agency is expected to run a `demo` and a `prod` environment,
+so those two names mean the same thing in every deployment and `raid.environment`
+should name the environment it is actually running as. The `dev`, `test` and
+`stage` folders cover RAiD AU's own internal pipeline and are not part of that
+shared convention.
 
-The folders, however, are not yet portable. They currently hold three different
-kinds of migration mixed together:
+The folders themselves are not yet portable, because they mix two unrelated
+things:
 
 - **Agency-neutral, environment-dependent seeds**, which every agency running
-  that environment needs. `V42.1` (the sandbox ORCID contributor schema row) and
-  `R__grant_api_user_schema_access` are the current examples.
-- **RAiD AU one-off data repairs**, such as `V36.1`, `V36.2`, `V34.1`, `V39.1`,
-  `V40.x` and `V41.1`. Several hardcode RAiD AU hostnames. `V36.1`, present in
-  `test`, `demo`, `stage` and `prod`, rewrites `raid_history` entries to
-  `https://static.<env>.raid.org.au/raids/`, which would corrupt another
-  agency's history.
-- **RAiD AU environment seeds**, notably `dev/V32.1` and `dev/V40.1`, which
-  rewrite service point rows with mock server DataCite credentials and RAiD AU's
-  ROR.
+  that environment needs. `V42.1`, the sandbox ORCID contributor schema row, is
+  the only current example in a shared folder. It is correctly present in `demo`
+  and absent from `prod`, since demo points at the ORCID sandbox and production
+  at real ORCID.
+- **RAiD AU one-off data repairs**, which must never run anywhere else. Several
+  hardcode RAiD AU hostnames. `V36.1`, present in both shared folders, rewrites
+  `raid_history` entries to `https://static.<env>.raid.org.au/raids/`, which
+  would corrupt another agency's history.
 
-Only the first kind is safe to run elsewhere. Until the folders are separated,
-set the locations explicitly and leave the environment folder out:
+As things stand, `db/env/demo` holds one agency-neutral migration and six RAiD AU
+repairs, and `db/env/prod` holds six RAiD AU repairs and nothing portable at all.
+So the two folders every agency is expected to use are exactly the two that will
+damage a deployment other than RAiD AU's.
+
+Until they are separated, set the locations explicitly and leave the environment
+folder out:
 
 ```
 spring.flyway.locations = classpath:db/migration,classpath:db/env/api_user
 ```
 
-This is a temporary measure, not the intended end state. Separating the
-agency-neutral migrations from the RAiD AU repairs is tracked as follow-up work,
-after which pointing `raid.environment` at the matching environment name will be
-the correct approach.
+This is a temporary measure, not the intended end state. Making `db/env/demo` and
+`db/env/prod` agency-neutral is tracked as follow-up work, after which setting
+`raid.environment` to `demo` or `prod` will be the correct approach.
 
 One caveat, which matters if the deployment points at the ORCID sandbox.
 
@@ -128,9 +131,9 @@ ordinary configuration; the row arrives only through a migration.
 `V42.1` inserts the row for `https://sandbox.orcid.org/`, and it ships only
 inside the environment folders: `dev`, `test`, `demo` and `stage` each carry a
 copy, and `prod` deliberately does not. Omitting the environment folder, as
-recommended above, therefore also drops that row, and every sandbox contributor
-save then fails with a generic 500 rather than an error naming the missing
-schema.
+recommended above, therefore also drops that row from a demo deployment, and
+every sandbox contributor save then fails with a generic 500 rather than an
+error naming the missing schema.
 
 So a deployment accepting sandbox contributors needs the row inserted directly:
 
