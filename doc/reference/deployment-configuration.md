@@ -23,6 +23,12 @@ own configuration appears here as a worked example for the same reason: it is th
 deployment the defaults were drawn from, so the contrast is the clearest way to
 show what needs setting.
 
+> **Which release this describes.** Service Point ID block allocation arrived in
+> **2.17.0** and changed how the agency's ROR is configured. Where behaviour
+> differs, this page describes 2.17.0 and later and says what 2.16.0 and earlier
+> do instead. Check the release being deployed before following the ROR guidance,
+> because the two behave in opposite ways when the property is unset.
+
 ## How configuration is supplied
 
 The API is a Spring Boot application, so every property below can be supplied as
@@ -67,9 +73,13 @@ deployment.
 | `raid.iam.realm-uri` | `https://iam.${raid.environment}.raid.org.au/realms/raid` | A RAiD AU hostname. |
 | `raid.identifier.landing-prefix` | `https://static.${raid.environment}.raid.org.au/raids/` | A RAiD AU hostname. |
 
-`raid.identifier.registration-agency-identifier` used to belong in this list,
-defaulting to RAiD AU's ROR. It no longer has a default, and the failure is now
-loud rather than quiet: see the section below.
+**On 2.16.0 and earlier, `raid.identifier.registration-agency-identifier` belongs
+in this list too, and is the worst of them.** It defaults to RAiD AU's ROR, so an
+instance that does not set it attributes every RAiD it mints to RAiD AU and
+routes ORCID contributor updates to RAiD AU's API. Nothing reports this.
+
+From 2.17.0 the property has no default and the failure is loud instead: see the
+section below.
 
 Service point rows carry an owning organisation as well. Check that
 `identifier_owner` on each service point holds the correct ROR for the
@@ -167,6 +177,13 @@ where not exists (
 
 ## The agency's ROR must be allocated a Service Point ID block
 
+**From 2.17.0.** On 2.16.0 and earlier there is no register, no allocation is
+needed, and `service_point.id` starts at a hardcoded `20000000` on every
+instance, so Service Point IDs are not unique between agencies. Upgrading across
+this boundary renumbers existing Service Points into the allocated block, so an
+agency already running 2.16.0 or earlier should read this section before
+upgrading rather than after.
+
 `raid.identifier.registration-agency-identifier` has no default. It is the ROR of
 the registration agency operating the instance, and the instance resolves its own
 Service Point ID range from it at startup, against
@@ -197,7 +214,7 @@ Set all of these. Anything not listed keeps its shipped default.
 
 | Property | Description |
 | --- | --- |
-| `raid.identifier.registration-agency-identifier` | The registration agency's ROR. No default, and it must be allocated a Service Point ID block. See above. |
+| `raid.identifier.registration-agency-identifier` | The registration agency's ROR. From 2.17.0 it has no default and must be allocated a Service Point ID block; on 2.16.0 and earlier it silently defaults to RAiD AU's ROR. See above. |
 | `datacite.registration-agency-name` | The registration agency's name, as sent to DataCite. Defaults to RAiD AU's name. |
 | `raid.identifier.landing-prefix` | Prefix for the RAiD landing page URLs the deployment serves. Defaults to a RAiD AU hostname. |
 
@@ -327,7 +344,9 @@ with the secret wiring in
 [`api-service.ts`](https://github.com/au-research/raido-v2-aws-private/blob/main/registration-agency/cdk/lib/raid/construct/ecs/api-service.ts).
 Those repositories are private; request access if the detail is useful. The
 values below are the ones the running container actually has, read from its task
-definition, with the database hostname omitted.
+definition, with the database hostname omitted. It is running a build later than
+2.17.0, so it sits on the far side of the release boundary noted at the top of
+this page.
 
 ```
 raid.environment                               = demo

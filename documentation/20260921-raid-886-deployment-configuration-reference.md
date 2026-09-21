@@ -106,6 +106,24 @@ definition on either branch checked, including `origin/main`, so the deployed
 environment was the right thing to verify against. That drift is a separate
 concern and is not addressed here.
 
+## Release boundary
+
+Verifying against RAiD AU's deployed demo environment introduced a hazard of its
+own: that deployment is not the one other agencies are working from. Demo runs
+image `5e6894fc`, which is `origin/main`, later than 2.17.0. RAID-862 first
+shipped in **2.17.0**, so `registration-agencies.yaml`, the V46 to V48
+renumbering migrations and the removal of the RAiD AU ROR default are all absent
+from 2.16.0 and earlier.
+
+The two sides behave in opposite ways when
+`raid.identifier.registration-agency-identifier` is unset. On 2.16.0 it silently
+defaults to RAiD AU's ROR; from 2.17.0 the instance refuses to start. An agency
+deploying an earlier release and reading only the 2.17.0 guidance would be told
+to get a block allocated, when its actual exposure is silent misattribution.
+
+The page now carries the boundary at the top and qualifies each affected
+statement. Both currently deploying agencies are on the earlier side of it.
+
 ## Framing
 
 The page uses neutral terminology throughout. raid.org is the registration
