@@ -46,8 +46,8 @@ describes RAiD AU's own AWS setup and is out of date.
 
 3. **`raid.environment` is not a Spring profile.** It selects the Flyway env
    folder through `classpath:db/env/${raid.environment}`. Every agency runs a
-   `demo` and a `prod` environment, so those two folders are shared; `dev`,
-   `test` and `stage` are RAiD AU-internal.
+   `demo` and a `prod` environment, so those two folders are shared; `dev` is
+   for running the API locally and `test` and `stage` are RAiD AU-internal.
 
    Against an empty database, `demo` and `prod` are safe to use and `demo` is
    necessary. Every `db/env/prod` migration is an `UPDATE` matching nothing. In
@@ -56,12 +56,16 @@ describes RAiD AU's own AWS setup and is out of date.
    and the rest match nothing; only `V42.1` takes effect, supplying the sandbox
    ORCID contributor schema row a demo environment needs.
 
-   `dev` is the harmful one and is not part of the convention. `V40.1` is above
-   the baseline and inserts a service point carrying RAiD AU's ROR and mock
-   DataCite credentials, so it does change an empty database. Both SURF and CRKN
-   set `raid.environment=dev`, which is why both ended up with a service point
-   that looked usable, attributed RAiDs to RAiD AU and could not authenticate to
-   DataCite.
+   `dev` is for running the API on a developer's own machine, and the page
+   encourages that: `./gradlew bootRunLocal`, per `README.md`, brings up
+   PostgreSQL, Keycloak and MockServer and starts the API, which is the quickest
+   way to get a working instance to explore. What makes that work is what makes
+   it wrong when deployed. `V40.1` is above the baseline and inserts a
+   ready-made service point carrying RAiD AU's ROR and mock DataCite
+   credentials, so it does change an empty database. Both SURF and CRKN set
+   `raid.environment=dev` on a deployed environment, which is why both ended up
+   with a service point that looked usable, attributed RAiDs to RAiD AU and
+   could not authenticate to DataCite.
 
    The page also warns that the minor versions are positional and reused across
    folders (`V40.1` is a different migration in `dev`, `demo` and `prod`;
@@ -154,9 +158,11 @@ Raised on RAID-886 for separate tickets, not addressed here:
   contributor schema surfaces as a generic 500 rather than an error naming the
   schema. This is the likely cause of the sandbox contributor save failures
   reported by CRKN
-- `db/env/dev` inserts a RAiD AU service point (`V40.1`) on an empty database,
-  and both SURF and CRKN used it. Either make `dev` safe for external use or
-  make it obviously RAiD AU-internal, since agencies reach for it first
+- `db/env/dev` inserts a RAiD AU service point (`V40.1`) on an empty database.
+  That is correct for local development, which is what `dev` is for, but both
+  SURF and CRKN used it on a deployed environment. Consider making the seeded
+  service point carry the deployment's own ROR, so the folder stays convenient
+  locally without misattributing anything when it is reached for elsewhere
 - the RAiD AU repairs in `db/env/demo` and `db/env/prod` are harmless on an
   empty database but not on a populated one, and some embed RAiD AU hostnames
   (`V36.1`). Consider separating them so the shared folders contain only

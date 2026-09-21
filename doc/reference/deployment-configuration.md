@@ -40,9 +40,11 @@ rules apply, so `raid.db.host` and `RAID_DB_HOST` are equivalent.
 The defaults live in
 [`api-svc/raid-api/src/main/resources/application.yaml`](../../api-svc/raid-api/src/main/resources/application.yaml).
 
-> **Do not base a deployment on `application-dev.yaml`.** That profile points the
-> API at the mock server in this repository's Docker Compose setup, which exists
-> only for local development.
+> **`application-dev.yaml` is the local development profile, not a deployment
+> template.** It points the API at the mock server in this repository's Docker
+> Compose setup, which is what makes `./gradlew bootRunLocal` work out of the box
+> on a developer's machine. Use it for that, and set the properties below
+> explicitly for a deployed environment rather than starting from it.
 
 ## Three traps to know about first
 
@@ -100,9 +102,9 @@ effect.
 
 Every registration agency is expected to run a `demo` and a `prod` environment,
 so those two names mean the same thing in every deployment and `raid.environment`
-should name the environment it is actually running as. The `dev`, `test` and
-`stage` folders cover RAiD AU's own internal pipeline and are not part of that
-shared convention.
+should name the environment it is actually running as. `dev` is for running the
+API locally, and `test` and `stage` cover RAiD AU's own internal pipeline, so
+none of the three belongs on another agency's deployed environment.
 
 ### Creating a new environment
 
@@ -120,16 +122,27 @@ that a demo environment needs.
 
 So a demo environment should use `db/env/demo` rather than skip it.
 
-### Do not use `dev`
+### `dev` is for running the API locally
 
-`db/env/dev` is a RAiD AU developer environment and is not part of the shared
-convention. Unlike the others it does change an empty database: `V40.1` inserts
-a service point carrying RAiD AU's ROR and placeholder DataCite credentials that
-authenticate only against the local mock server.
+`dev` is the environment for a developer's own machine, and it is worth using
+for that. Everything it needs is in this repository: following
+[`README.md`](../../README.md), `./gradlew bootRunLocal` starts PostgreSQL,
+Keycloak and MockServer through Docker Compose and then launches the API on
+`http://localhost:8080` with the `dev` profile. That is the whole setup, and it
+is the quickest way to get a working instance to explore before deploying one.
 
-An agency that sets `raid.environment=dev` therefore starts with a service point
-that appears usable, attributes RAiDs to RAiD AU, and cannot authenticate to
-DataCite. `test` and `stage` are likewise RAiD AU-internal.
+What makes it work locally is exactly what makes it wrong for a deployed
+environment. `db/env/dev` is the only environment folder that changes an empty
+database: `V40.1` inserts a ready-made service point so there is something to
+mint against immediately. That service point carries RAiD AU's ROR and
+placeholder DataCite credentials that only authenticate against the local mock
+server, which is ideal on a laptop and unusable anywhere else.
+
+An agency that sets `raid.environment=dev` on a deployed environment therefore
+starts with a service point that looks usable, attributes RAiDs to RAiD AU, and
+cannot authenticate to DataCite. Use `demo` or `prod` there instead. `test` and
+`stage` cover RAiD AU's own internal pipeline and are similarly not meant for
+another agency's deployment.
 
 ### Two things to be careful of later
 
