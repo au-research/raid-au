@@ -47,16 +47,26 @@ describes RAiD AU's own AWS setup and is out of date.
 3. **`raid.environment` is not a Spring profile.** It selects the Flyway env
    folder through `classpath:db/env/${raid.environment}`. Every agency runs a
    `demo` and a `prod` environment, so those two folders are shared; `dev`,
-   `test` and `stage` cover RAiD AU's internal pipeline only. The shared folders
-   are not portable: `db/env/demo` holds one agency-neutral migration (`V42.1`,
-   the sandbox ORCID contributor schema row) and six RAiD AU data repairs, and
-   `db/env/prod` holds six repairs and nothing portable. `V36.1`, in both,
-   rewrites `raid_history` to `static.<env>.raid.org.au` URLs and would corrupt
-   another agency's history. So the two folders every agency is expected to use
-   are exactly the two that will damage a non-RAiD AU deployment. The page
-   recommends omitting the env folder as a temporary measure, as the RAiD AU demo
-   deployment already does, and flags making `demo` and `prod` agency-neutral as
-   the fix.
+   `test` and `stage` are RAiD AU-internal.
+
+   Against an empty database, `demo` and `prod` are safe to use and `demo` is
+   necessary. Every `db/env/prod` migration is an `UPDATE` matching nothing. In
+   `db/env/demo` the two migrations that insert or delete real data (`V8_1`,
+   `V24.1`) fall below `baseline-version: 25` and never run on a fresh database,
+   and the rest match nothing; only `V42.1` takes effect, supplying the sandbox
+   ORCID contributor schema row a demo environment needs.
+
+   `dev` is the harmful one and is not part of the convention. `V40.1` is above
+   the baseline and inserts a service point carrying RAiD AU's ROR and mock
+   DataCite credentials, so it does change an empty database. Both SURF and CRKN
+   set `raid.environment=dev`, which is why both ended up with a service point
+   that looked usable, attributed RAiDs to RAiD AU and could not authenticate to
+   DataCite.
+
+   The page also warns that the minor versions are positional and reused across
+   folders (`V40.1` is a different migration in `dev`, `demo` and `prod`;
+   `V36.1` has a different checksum in each), so `raid.environment` must not be
+   changed once an environment exists.
 
 ## Framing
 
@@ -83,15 +93,17 @@ Raised on RAID-886 for separate tickets, not addressed here:
   contributor schema surfaces as a generic 500 rather than an error naming the
   schema. This is the likely cause of the sandbox contributor save failures
   reported by CRKN
-- make `db/env/demo` and `db/env/prod` agency-neutral, since every agency runs
-  those two environments. Separate the environment-dependent migrations every
-  agency needs from the RAiD AU data repairs that must never run elsewhere;
-  `dev`, `test` and `stage` can stay RAiD AU-internal. Today `demo` carries one
-  portable migration against six repairs and `prod` carries none against six,
-  and `V36.1` in both hardcodes RAiD AU hostnames
-- check whether any agency has already run with `raid.environment` set to
-  `demo` or `prod`, since `V36.1` would have rewritten their `raid_history` to
-  RAiD AU URLs
+- `db/env/dev` inserts a RAiD AU service point (`V40.1`) on an empty database,
+  and both SURF and CRKN used it. Either make `dev` safe for external use or
+  make it obviously RAiD AU-internal, since agencies reach for it first
+- the RAiD AU repairs in `db/env/demo` and `db/env/prod` are harmless on an
+  empty database but not on a populated one, and some embed RAiD AU hostnames
+  (`V36.1`). Consider separating them so the shared folders contain only
+  migrations every agency should run
+- minor versions are positional and reused across folders for unrelated changes,
+  so `raid.environment` cannot be changed after an environment is created
+  without a Flyway validation failure. Worth resolving before more agencies
+  onboard
 - fix the `raid.orcid-integration.host` default, and the non-transactional
   failure behaviour that leaves an orphaned DataCite DOI when the ORCID call
   fails mid-mint

@@ -91,51 +91,68 @@ should name the environment it is actually running as. The `dev`, `test` and
 `stage` folders cover RAiD AU's own internal pipeline and are not part of that
 shared convention.
 
-The folders themselves are not yet portable, because they mix two unrelated
-things:
+### Creating a new environment
 
-- **Agency-neutral, environment-dependent seeds**, which every agency running
-  that environment needs. `V42.1`, the sandbox ORCID contributor schema row, is
-  the only current example in a shared folder. It is correctly present in `demo`
-  and absent from `prod`, since demo points at the ORCID sandbox and production
-  at real ORCID.
-- **RAiD AU one-off data repairs**, which must never run anywhere else. Several
-  hardcode RAiD AU hostnames. `V36.1`, present in both shared folders, rewrites
-  `raid_history` entries to `https://static.<env>.raid.org.au/raids/`, which
-  would corrupt another agency's history.
+Set `raid.environment` to `demo` or `prod` to match the environment being
+created. Against an empty database that is safe.
 
-As things stand, `db/env/demo` holds one agency-neutral migration and six RAiD AU
-repairs, and `db/env/prod` holds six RAiD AU repairs and nothing portable at all.
-So the two folders every agency is expected to use are exactly the two that will
-damage a deployment other than RAiD AU's.
+Most of what those two folders contain is one-off repair of RAiD AU data, but
+none of it does anything to a database with no rows in it. Every migration in
+`db/env/prod` is an `UPDATE` that matches nothing. In `db/env/demo`, the two
+migrations that would insert or delete real data sit below the baseline
+(`baseline-version: 25`, applied from `B25__baseline.sql`) and so never run on a
+fresh database, and the remainder match nothing. The one migration that does
+take effect is `V42.1`, which inserts the sandbox ORCID contributor schema row
+that a demo environment needs.
 
-Until they are separated, set the locations explicitly and leave the environment
-folder out:
+So a demo environment should use `db/env/demo` rather than skip it.
 
-```
-spring.flyway.locations = classpath:db/migration,classpath:db/env/api_user
-```
+### Do not use `dev`
 
-This is a temporary measure, not the intended end state. Making `db/env/demo` and
-`db/env/prod` agency-neutral is tracked as follow-up work, after which setting
-`raid.environment` to `demo` or `prod` will be the correct approach.
+`db/env/dev` is a RAiD AU developer environment and is not part of the shared
+convention. Unlike the others it does change an empty database: `V40.1` inserts
+a service point carrying RAiD AU's ROR and placeholder DataCite credentials that
+authenticate only against the local mock server.
 
-One caveat, which matters if the deployment points at the ORCID sandbox.
+An agency that sets `raid.environment=dev` therefore starts with a service point
+that appears usable, attributes RAiDs to RAiD AU, and cannot authenticate to
+DataCite. `test` and `stage` are likewise RAiD AU-internal.
+
+### Two things to be careful of later
+
+These do not affect creating an environment, but are worth knowing.
+
+The repairs are written for RAiD AU's data, and some embed RAiD AU hostnames.
+`V36.1`, present in both shared folders, rewrites `raid_history` entries to
+`https://static.<env>.raid.org.au/raids/`. Harmless against no rows, but not
+against a populated database, so take care if migrations are ever applied after
+restoring a dump rather than before loading data.
+
+The minor version numbers are positional rather than meaningful, and are reused
+across folders for unrelated changes. `V40.1` is `delete_demo_raids` in `demo`
+and `fix_raid_history_schema_uris` in `prod`, and `V36.1` has a different
+checksum in each folder. `flyway_schema_history` records only the version and
+checksum, so changing `raid.environment` after an environment exists will fail
+validation with a checksum mismatch or `Detected resolved migration not
+applied`. Choose the value when the environment is created and leave it alone.
+
+### Sandbox ORCID contributors
 
 Whether a contributor can be saved depends on two things agreeing.
 `raid.contributor-validation.orcid.schema-uri` declares which ORCID namespace is
 accepted, and `ContributorService` separately requires a matching row in the
 `contributor_schema` table, refusing the save when there is none. The property is
-ordinary configuration; the row arrives only through a migration.
+ordinary configuration; the row arrives through a migration.
 
-`V42.1` inserts the row for `https://sandbox.orcid.org/`, and it ships only
-inside the environment folders: `dev`, `test`, `demo` and `stage` each carry a
-copy, and `prod` deliberately does not. Omitting the environment folder, as
-recommended above, therefore also drops that row from a demo deployment, and
-every sandbox contributor save then fails with a generic 500 rather than an
-error naming the missing schema.
+`V42.1` inserts the row for `https://sandbox.orcid.org/`. It is present in
+`db/env/demo` and deliberately absent from `db/env/prod`, which matches the
+convention that demo points at the ORCID sandbox and production at real ORCID.
+Using the matching environment folder therefore gets this right automatically.
 
-So a deployment accepting sandbox contributors needs the row inserted directly:
+If the environment folder is skipped, or a production environment is pointed at
+the sandbox, the row is missing and every sandbox contributor save fails with a
+generic 500 rather than an error naming the missing schema. Insert it directly
+in that case:
 
 ```sql
 insert into contributor_schema (uri, status)
@@ -144,11 +161,6 @@ where not exists (
     select 1 from contributor_schema where uri = 'https://sandbox.orcid.org/'
 );
 ```
-
-This row is one of the agency-neutral migrations described above. It follows
-from the configured schema URI, so once the environment folders are separated it
-will apply to any agency running a sandbox-facing environment, and inserting it
-by hand will no longer be necessary.
 
 ## Required properties
 
