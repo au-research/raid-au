@@ -79,4 +79,4 @@ Raised on RAID-886 for separate tickets, not addressed here:
 ## Links
 
 - JIRA: [RAID-886](https://ardc.atlassian.net/browse/RAID-886)
-- PR: pending
+- PR: [au-research/raid-au#674](https://github.com/au-research/raid-au/pull/674)
