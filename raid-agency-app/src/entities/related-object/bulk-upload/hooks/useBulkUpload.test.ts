@@ -6,7 +6,8 @@ import type { BulkUploadVocabulary } from "../types";
 
 // ------------------------------------------------------------------
 // Pure classification logic — one case per recognised scheme, plus the
-// unrecognised/malformed cases (RAID-801).
+// unrecognised/malformed cases (RAID-801). ARK cases are commented out —
+// see the note in useBulkUpload.ts.
 // ------------------------------------------------------------------
 
 describe("classifyRelatedObjectIdentifier", () => {
@@ -28,11 +29,12 @@ describe("classifyRelatedObjectIdentifier", () => {
       "https://scicrunch.org/resolver/RRID:AB_2298772",
       "https://scicrunch.org/resolver/",
     ],
-    [
-      "ARK",
-      "https://example-repository.edu/ark:/13030/kt6f59n8z3",
-      "https://arks.org/",
-    ],
+    // RAID-801: ARK recognition is commented out for now — see useBulkUpload.ts.
+    // [
+    //   "ARK",
+    //   "https://example-repository.edu/ark:/13030/kt6f59n8z3",
+    //   "https://arks.org/",
+    // ],
   ])("classifies a valid %s identifier", (_label, url, expectedSchemaUri) => {
     expect(classifyRelatedObjectIdentifier(url)).toBe(expectedSchemaUri);
   });
@@ -42,7 +44,8 @@ describe("classifyRelatedObjectIdentifier", () => {
     ["a generic, unrecognised URL", "https://example.com/some-unrelated-path"],
     ["a malformed Handle (no suffix after the NAAN)", "https://hdl.handle.net/20.500.12345"],
     ["a malformed RRID (missing the underscore-separated value)", "https://scicrunch.org/resolver/RRID:AB"],
-    ["a malformed ARK (non-numeric NAAN)", "https://example.edu/ark:/abcde/kt6f59n8z3"],
+    // RAID-801: ARK recognition is commented out for now — see useBulkUpload.ts.
+    // ["a malformed ARK (non-numeric NAAN)", "https://example.edu/ark:/abcde/kt6f59n8z3"],
   ])("returns null for %s", (_label, url) => {
     expect(classifyRelatedObjectIdentifier(url)).toBeNull();
   });
@@ -71,13 +74,14 @@ function makeCsvFile(rows: string[]): File {
 }
 
 describe("useBulkUpload row classification (integration)", () => {
-  it("classifies Handle, RRID, and ARK rows as valid, and flags an unrecognised identifier", async () => {
+  it("classifies Handle and RRID rows as valid, and flags an unrecognised identifier", async () => {
     const { result } = renderHook(() => useBulkUpload(VOCABULARY));
 
     const file = makeCsvFile([
       "https://hdl.handle.net/20.500.12345/abc123,Dataset,Output",
       "https://scicrunch.org/resolver/RRID:AB_2298772,Dataset,Output",
-      "https://example-repository.edu/ark:/13030/kt6f59n8z3,Dataset,Output",
+      // RAID-801: ARK recognition is commented out for now — see useBulkUpload.ts.
+      // "https://example-repository.edu/ark:/13030/kt6f59n8z3,Dataset,Output",
       "https://example.com/some-unrelated-path,Dataset,Output",
     ]);
 
@@ -85,16 +89,15 @@ describe("useBulkUpload row classification (integration)", () => {
       await result.current.handleFileUpload(file);
     });
 
-    await waitFor(() => expect(result.current.editableRows).toHaveLength(4));
+    await waitFor(() => expect(result.current.editableRows).toHaveLength(3));
 
-    const [handleRow, rridRow, arkRow, badRow] = result.current.editableRows;
+    const [handleRow, rridRow, badRow] = result.current.editableRows;
 
     expect(handleRow.errors.Identifier).toBeUndefined();
     expect(rridRow.errors.Identifier).toBeUndefined();
-    expect(arkRow.errors.Identifier).toBeUndefined();
 
     // Regression guard: an identifier matching no recognised scheme still
-    // fails the same way it did before Handle/RRID/ARK were recognised.
+    // fails the same way it did before Handle/RRID were recognised.
     expect(badRow.errors.Identifier).toMatch(/Must be a valid DOI/);
 
     expect(result.current.status).toBe("invalid");

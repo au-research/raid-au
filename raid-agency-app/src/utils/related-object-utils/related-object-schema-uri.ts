@@ -3,13 +3,14 @@ type SchemeMatcher = {
   test: (url: URL) => boolean;
 };
 
-function firstPathSegment(url: URL): string {
-  return url.pathname.replace(/^\/+/, "").split("/")[0] ?? "";
-}
+// RAID-801: ARK recognition is commented out for now — RAID-793 (the ARK
+// backend validator) hasn't merged, so an ARK row would classify correctly
+// here but the API would still reject it. Re-enable both this helper and
+// the ARK matcher below once RAID-793 lands.
+// function firstPathSegment(url: URL): string {
+//   return url.pathname.replace(/^\/+/, "").split("/")[0] ?? "";
+// }
 
-// ARK isn't tied to one fixed host (RAID-793) — every publisher can run its own
-// resolver — so it's matched structurally: "ark:" must be the first path segment
-// after the host, not just present anywhere in the URL.
 const schemeMatchers: SchemeMatcher[] = [
   {
     schemaUri: "https://doi.org/",
@@ -29,10 +30,14 @@ const schemeMatchers: SchemeMatcher[] = [
     test: (url) =>
       url.hostname === "scicrunch.org" && url.pathname.startsWith("/resolver/"),
   },
-  {
-    schemaUri: "https://arks.org/",
-    test: (url) => /^ark:/i.test(firstPathSegment(url)),
-  },
+  // RAID-801: ARK isn't tied to one fixed host (RAID-793) — every publisher can
+  // run its own resolver — so it would be matched structurally: "ark:" must be
+  // the first path segment after the host, not just present anywhere in the
+  // URL. Commented out until RAID-793's backend validator merges.
+  // {
+  //   schemaUri: "https://arks.org/",
+  //   test: (url) => /^ark:/i.test(firstPathSegment(url)),
+  // },
 ];
 
 /**

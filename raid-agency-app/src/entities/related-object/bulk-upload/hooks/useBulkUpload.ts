@@ -77,16 +77,20 @@ const webArchiveRegex =
   /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
 const handleRegex = /^https:\/\/hdl\.handle\.net\/\d+(?:\.\d+)*\/[^\s]+$/;
 const rridRegex = /^https:\/\/scicrunch\.org\/resolver\/RRID:[^\s_]+_[^\s]+$/;
+// RAID-801: ARK recognition is commented out for now — RAID-793 (the ARK
+// backend validator) hasn't merged, so an ARK row would classify correctly
+// here but the API would still reject it. Re-enable this regex and the two
+// "https://arks.org/" map entries below once RAID-793 lands.
 // NAAN must be exactly 5 or 9 digits; "ark:" must be the first path segment
 // after the host (RAID-793) — non-numeric NAANs are a known, unsupported edge case.
-const arkRegex = /^https:\/\/[^/\s]+\/ark:\/?(?:\d{5}|\d{9})\/[^\s]+$/i;
+// const arkRegex = /^https:\/\/[^/\s]+\/ark:\/?(?:\d{5}|\d{9})\/[^\s]+$/i;
 
 const SCHEMA_URI_REGEXES: Record<string, RegExp> = {
   "https://doi.org/": doiRegex,
   "https://web.archive.org/": webArchiveRegex,
   "https://hdl.handle.net/": handleRegex,
   "https://scicrunch.org/resolver/": rridRegex,
-  "https://arks.org/": arkRegex,
+  // "https://arks.org/": arkRegex,
 };
 
 const SCHEMA_URI_LABELS: Record<string, string> = {
@@ -94,18 +98,18 @@ const SCHEMA_URI_LABELS: Record<string, string> = {
   "https://web.archive.org/": "web.archive.org URL",
   "https://hdl.handle.net/": "Handle",
   "https://scicrunch.org/resolver/": "RRID",
-  "https://arks.org/": "ARK",
+  // "https://arks.org/": "ARK",
 };
 
 const IDENTIFIER_FORMAT_MESSAGE =
-  "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...), Handle (https://hdl.handle.net/...), RRID (https://scicrunch.org/resolver/RRID:...), ARK (https://.../ark:/...), or Web Archive URL";
+  "Must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...), Handle (https://hdl.handle.net/...), RRID (https://scicrunch.org/resolver/RRID:...), or Web Archive URL";
 
 /**
  * Classifies a bulk-upload identifier against the recognised relatedObject
  * schemes. Returns the matched schemaUri only when the URL both structurally
  * matches a scheme (host/path) and satisfies that scheme's shape regex —
  * otherwise null, meaning the row should be rejected (unchanged behaviour
- * for anything that isn't DOI/Handle/RRID/ARK/Web Archive).
+ * for anything that isn't DOI/Handle/RRID/Web Archive).
  */
 export function classifyRelatedObjectIdentifier(url: string): string | null {
   const schemaUri = inferRelatedObjectSchemaUri(url);
