@@ -67,8 +67,15 @@ Raised on RAID-886 for separate tickets, not addressed here:
 - `registration-agency-identifier` and `registration-agency-name` should not
   default to RAiD AU values; consider failing startup when unset
 - `V42.1` inserts the sandbox ORCID `contributor_schema` row and is
-  environment-neutral, but ships only in the `dev`, `test` and `demo` folders,
-  so agencies omitting the env folder lose it
+  environment-neutral, but ships only in the environment folders (`dev`, `test`,
+  `demo` and `stage` each carry a near-identical copy; `prod` deliberately omits
+  it), so agencies omitting the env folder lose it. The row follows from
+  `raid.contributor-validation.orcid.schema-uri` and belongs with that property.
+  The `test` copy's comment claiming stage omits the row is also stale
+- `ContributorSchemaNotFoundException` has no `@ExceptionHandler`, so a missing
+  contributor schema surfaces as a generic 500 rather than an error naming the
+  schema. This is the likely cause of the sandbox contributor save failures
+  reported by CRKN
 - provide a Flyway location set intended for agency deployments
 - fix the `raid.orcid-integration.host` default, and the non-transactional
   failure behaviour that leaves an orphaned DataCite DOI when the ORCID call

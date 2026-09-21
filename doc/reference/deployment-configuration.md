@@ -97,11 +97,35 @@ folder out:
 spring.flyway.locations = classpath:db/migration,classpath:db/env/api_user
 ```
 
-One caveat. Accepting ORCID sandbox contributors also requires a
-`contributor_schema` row for `https://sandbox.orcid.org/`, which today is
-delivered only by the `dev`, `test` and `demo` folders (`V42.1`). Without it,
-saving a sandbox ORCID contributor fails. Insert that row directly until the
-migration moves somewhere environment-neutral.
+One caveat, which matters if the deployment points at the ORCID sandbox.
+
+Whether a contributor can be saved depends on two things agreeing.
+`raid.contributor-validation.orcid.schema-uri` declares which ORCID namespace is
+accepted, and `ContributorService` separately requires a matching row in the
+`contributor_schema` table, refusing the save when there is none. The property is
+ordinary configuration; the row arrives only through a migration.
+
+`V42.1` inserts the row for `https://sandbox.orcid.org/`, and it ships only
+inside the environment folders: `dev`, `test`, `demo` and `stage` each carry a
+copy, and `prod` deliberately does not. Omitting the environment folder, as
+recommended above, therefore also drops that row, and every sandbox contributor
+save then fails with a generic 500 rather than an error naming the missing
+schema.
+
+So a deployment accepting sandbox contributors needs the row inserted directly:
+
+```sql
+insert into contributor_schema (uri, status)
+select 'https://sandbox.orcid.org/', 'active'::schema_status
+where not exists (
+    select 1 from contributor_schema where uri = 'https://sandbox.orcid.org/'
+);
+```
+
+The row is not environment-specific in any real sense. It follows from the
+configured schema URI, so it belongs alongside that property rather than in
+folders named after RAiD AU's environments. Moving it is tracked as follow-up
+work.
 
 ## Required properties
 
