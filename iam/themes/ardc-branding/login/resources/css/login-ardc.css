@@ -11,6 +11,13 @@
     --brand-primary: #8E489B;
     --brand-primary-hover: rgb(99, 50, 108);
     --brand-primary-active: rgb(99, 50, 108);
+    /* #8E489B already passes the 4.5:1 WCAG AA text threshold (5.91:1),
+       unlike raid-custom's blue, so the link-text token can just reuse
+       it directly - no separate darker shade needed. --focus-ring-solid
+       (defined in raid-custom's login.css as var(--text-link)) resolves
+       through this automatically, since CSS custom properties re-resolve
+       at compute time, not at the point they were declared. */
+    --text-link: #8E489B;
     --focus-ring: rgba(142, 72, 155, 0.28);
     --surface-tint: #f5f5f5;
     --spinner-track: #e9defb;
