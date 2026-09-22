@@ -24,9 +24,14 @@ public class GroupControllerResourceProviderFactory implements RealmResourceProv
 
     }
 
+    /**
+     * Provisions the scoped service-point-admin roles at boot (RAID-884), replacing the manual
+     * operator call to /group/migrate-service-point-admins that the deployment procedure used to
+     * depend on. See {@link ServicePointAdminRoleBootstrapper}.
+     */
     @Override
     public void postInit(final KeycloakSessionFactory factory) {
-
+        ServicePointAdminRoleBootstrapper.register(factory);
     }
 
     @Override
