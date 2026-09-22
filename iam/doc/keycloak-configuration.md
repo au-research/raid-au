@@ -2,6 +2,10 @@
 
 This document describes the configuration of the `raid` Keycloak realm used by the RAiD Registration Agency. It covers clients, client scopes, roles, groups, users, and token settings as configured in the local development environment.
 
+> The production realm has drifted from local dev and holds clients that appear in
+> no realm import file. See [keycloak-production-clients.md](keycloak-production-clients.md)
+> for the clients that exist at `iam.prod.raid.org.au` and what uses them.
+
 The local Keycloak instance runs **Keycloak 26.5.5** on **Java 21**.
 
 ## Admin Console
