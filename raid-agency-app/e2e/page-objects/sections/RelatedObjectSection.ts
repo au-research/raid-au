@@ -34,4 +34,23 @@ export class RelatedObjectSection {
       .click();
     await this.page.getByRole("option", { name: value }).click();
   }
+
+  // ---- Bulk upload (RAID-801) ----
+
+  async openBulkUpload(): Promise<void> {
+    await this.card
+      .getByRole("button", { name: "Upload Bulk Related Objects" })
+      .click();
+  }
+
+  async uploadBulkFile(filePath: string): Promise<void> {
+    await this.card.locator('input[type="file"]').setInputFiles(filePath);
+  }
+
+  /** The preview-table row whose Identifier cell holds this exact value. */
+  bulkPreviewRow(identifier: string) {
+    return this.card
+      .locator("table tbody tr")
+      .filter({ has: this.page.locator(`input[value="${identifier}"]`) });
+  }
 }

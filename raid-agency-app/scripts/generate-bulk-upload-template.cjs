@@ -102,7 +102,7 @@ async function generate() {
     "No more than 100 relatedObjects can be added at one time",
     `Add extra rows below the headers between the rows labelled "${IMPORT_START_MARKER}" and "${IMPORT_END_MARKER}"`,
     `Do not delete the rows labelled "${IMPORT_START_MARKER}" and "${IMPORT_END_MARKER}"`,
-    "Identifier must be the full URL of one of the types supported by RAiD. For example, a DOI would look like https://doi.org/10.0001/01238",
+    "Identifier must be the full URL of a DOI, Handle, RRID, or Web Archive snapshot. For example, a DOI would look like https://doi.org/10.0001/01238",
     "Use the Excel drop-down lists to avoid typos",
   ];
 
