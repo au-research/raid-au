@@ -2,7 +2,7 @@
 
 **Date:** 22 September 2026
 **JIRA:** [RAID-889](https://ardc.atlassian.net/browse/RAID-889) (no sub-tasks)
-**PR:** _pending_
+**PR:** [au-research/raid-au#675](https://github.com/au-research/raid-au/pull/675)
 
 ## What changed
 
