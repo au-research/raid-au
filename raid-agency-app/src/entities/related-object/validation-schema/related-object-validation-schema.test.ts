@@ -35,9 +35,19 @@ describe("relatedObjectIdSchema DOI validation", () => {
     ).toBe(true);
   });
 
+  // RAID-800: a URL that doesn't structurally match any recognised scheme's
+  // host/path is a generic related-object identifier and is accepted as-is,
+  // with no schemaUri inferred — it's only rejected once it *does* look like
+  // an attempt at a known scheme (e.g. doi.org) but doesn't match that
+  // scheme's shape.
+  it("accepts a generic URL that doesn't match any recognised scheme", () => {
+    expect(
+      relatedObjectIdSchema.safeParse("https://example.com/10.1234/xyz").success
+    ).toBe(true);
+  });
+
   it.each([
     "not-a-url",
-    "https://example.com/10.1234/xyz",
     "https://doi.org/not-a-doi",
   ])("rejects %s", (url) => {
     expect(relatedObjectIdSchema.safeParse(url).success).toBe(false);

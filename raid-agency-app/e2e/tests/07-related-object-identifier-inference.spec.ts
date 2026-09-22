@@ -1,15 +1,16 @@
 // RAID-800: E2E tests for paste-and-infer schemaUri recognition on the
-// Related Object identifier field (Handle, RRID, ARK), plus regression
-// guards for the existing DOI/unrecognised-URL behaviour.
+// Related Object identifier field (Handle, RRID), plus regression guards
+// for the existing DOI/unrecognised-URL behaviour.
 //
 // DOI, Handle (RAID-786) and RRID (RAID-787) all now have real backend
 // validators (stubbed to avoid live external lookups in dev/local/CI — see
-// ExternalPidService), so those tests assert actual save success. ARK
-// (RAID-793) has no backend validator yet — POST /raid rejects any
-// relatedObject with schemaUri "https://arks.org/" — so that test, and the
-// unrecognised-URL regression guard (which never gets a schemaUri at all),
-// still only assert on the outgoing request payload rather than save
-// success.
+// ExternalPidService), so those tests assert actual save success.
+//
+// ARK recognition is commented out for now — RAID-793 (the ARK backend
+// validator) hasn't merged, so an ARK row would classify correctly but the
+// API would still reject it. Re-enable the commented-out test below (and in
+// related-object-validation-schema.ts / related-object-schema-uri.ts) once
+// RAID-793 lands.
 
 import { test, expect } from "@playwright/test";
 import { RaidFormPage } from "../page-objects/RaidFormPage";
@@ -110,21 +111,19 @@ test.describe("Related Object identifier paste-and-infer", { tag: "@local" }, ()
     expect(relatedObject?.id).toBe("https://scicrunch.org/resolver/RRID:AB_2298772");
   });
 
-  // RAID-793 (ARK backend validator) hasn't landed — POST /raid rejects any
-  // relatedObject with schemaUri "https://arks.org/", so this only asserts
-  // what the frontend classifier sent, not that the API accepted it.
-  test("pasting an ARK URL infers the ARK schemaUri, regardless of host", async ({
-    page,
-  }) => {
-    const relatedObject = await capturedSchemaUriFor(
-      page,
-      "https://example-repository.edu/ark:/13030/kt6f59n8z3"
-    );
-    expect(relatedObject?.schemaUri).toBe("https://arks.org/");
-    expect(relatedObject?.id).toBe(
-      "https://example-repository.edu/ark:/13030/kt6f59n8z3"
-    );
-  });
+  // RAID-801: ARK recognition is commented out for now — see the note above.
+  // test("pasting an ARK URL infers the ARK schemaUri, regardless of host", async ({
+  //   page,
+  // }) => {
+  //   const relatedObject = await capturedSchemaUriFor(
+  //     page,
+  //     "https://example-repository.edu/ark:/13030/kt6f59n8z3"
+  //   );
+  //   expect(relatedObject?.schemaUri).toBe("https://arks.org/");
+  //   expect(relatedObject?.id).toBe(
+  //     "https://example-repository.edu/ark:/13030/kt6f59n8z3"
+  //   );
+  // });
 
   test("pasting a DOI URL still infers the DOI schemaUri and saves successfully (regression guard)", async ({
     page,

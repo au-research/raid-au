@@ -7,7 +7,10 @@ const urlTypeLabels: Record<string, string> = {
   "https://web.archive.org/": "web.archive.org URL",
   "https://hdl.handle.net/": "Handle",
   "https://scicrunch.org/resolver/": "RRID",
-  "https://arks.org/": "ARK",
+  // RAID-801: ARK recognition is commented out for now — see the note in
+  // related-object-schema-uri.ts. Re-enable alongside that once RAID-793's
+  // backend validator merges.
+  // "https://arks.org/": "ARK",
 };
 
 // doi.org and dx.doi.org are both valid DOI proxy hosts (RAID-804), mirroring the API-side
@@ -17,16 +20,19 @@ export const webArchiveRegex =
   /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/.*/;
 const handleRegex = /^https:\/\/hdl\.handle\.net\/\d+(?:\.\d+)*\/[^\s]+$/;
 const rridRegex = /^https:\/\/scicrunch\.org\/resolver\/RRID:[^\s_]+_[^\s]+$/;
+// RAID-801: ARK recognition is commented out for now — RAID-793 (the ARK
+// backend validator) hasn't merged. Re-enable this regex and the
+// "https://arks.org/" map entry below once RAID-793 lands.
 // NAAN must be exactly 5 or 9 digits; "ark:" must be the first path segment
 // after the host (RAID-793) — non-numeric NAANs are a known, unsupported edge case.
-const arkRegex = /^https:\/\/[^/\s]+\/ark:\/?(?:\d{5}|\d{9})\/[^\s]+$/i;
+// const arkRegex = /^https:\/\/[^/\s]+\/ark:\/?(?:\d{5}|\d{9})\/[^\s]+$/i;
 
 const schemaUriRegexes: Record<string, RegExp> = {
   "https://doi.org/": doiRegex,
   "https://web.archive.org/": webArchiveRegex,
   "https://hdl.handle.net/": handleRegex,
   "https://scicrunch.org/resolver/": rridRegex,
-  "https://arks.org/": arkRegex,
+  // "https://arks.org/": arkRegex,
 };
 
 export const relatedObjectIdSchema = z
@@ -44,7 +50,7 @@ export const relatedObjectIdSchema = z
     },
     {
       message:
-        "URL must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...), Handle, RRID, ARK, or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
+        "URL must be a valid DOI (https://doi.org/10.xxxx/... or https://dx.doi.org/10.xxxx/...), Handle, RRID, or a Web Archive snapshot (https://web.archive.org/web/{14-digit-timestamp}/https://...)",
     }
   );
 

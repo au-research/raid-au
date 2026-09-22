@@ -28,30 +28,33 @@ describe("inferRelatedObjectSchemaUri", () => {
     ).toBe("https://scicrunch.org/resolver/");
   });
 
-  it("recognises an ARK URL regardless of host", () => {
-    expect(
-      inferRelatedObjectSchemaUri(
-        "https://example-repository.edu/ark:/13030/kt6f59n8z3"
-      )
-    ).toBe("https://arks.org/");
-  });
-
-  it("recognises an ARK URL without the optional slash after ark:", () => {
-    expect(
-      inferRelatedObjectSchemaUri("https://example-repository.edu/ark:13030/kt6f59n8z3")
-    ).toBe("https://arks.org/");
-  });
-
-  it("does not match an ARK-shaped path that isn't the first segment", () => {
-    expect(
-      inferRelatedObjectSchemaUri("https://example.edu/not-ark/ark:/13030/kt6f59n8z3")
-    ).toBeNull();
-  });
-
-  it("returns null for a bare ARK with no host", () => {
-    // Not a valid absolute URL — RAiD stores every identifier fully qualified.
-    expect(inferRelatedObjectSchemaUri("ark:/13030/kt6f59n8z3")).toBeNull();
-  });
+  // RAID-801: ARK recognition is commented out for now — see the note in
+  // related-object-schema-uri.ts. Re-enable these cases once RAID-793's
+  // backend validator merges.
+  // it("recognises an ARK URL regardless of host", () => {
+  //   expect(
+  //     inferRelatedObjectSchemaUri(
+  //       "https://example-repository.edu/ark:/13030/kt6f59n8z3"
+  //     )
+  //   ).toBe("https://arks.org/");
+  // });
+  //
+  // it("recognises an ARK URL without the optional slash after ark:", () => {
+  //   expect(
+  //     inferRelatedObjectSchemaUri("https://example-repository.edu/ark:13030/kt6f59n8z3")
+  //   ).toBe("https://arks.org/");
+  // });
+  //
+  // it("does not match an ARK-shaped path that isn't the first segment", () => {
+  //   expect(
+  //     inferRelatedObjectSchemaUri("https://example.edu/not-ark/ark:/13030/kt6f59n8z3")
+  //   ).toBeNull();
+  // });
+  //
+  // it("returns null for a bare ARK with no host", () => {
+  //   // Not a valid absolute URL — RAiD stores every identifier fully qualified.
+  //   expect(inferRelatedObjectSchemaUri("ark:/13030/kt6f59n8z3")).toBeNull();
+  // });
 
   it("returns null for an unrecognised URL", () => {
     expect(inferRelatedObjectSchemaUri("https://example.com/some-path")).toBeNull();

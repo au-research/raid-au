@@ -49,7 +49,7 @@ function FieldGrid({
       <TextInputField
         name={`relatedObject.${index}.id`}
         label="URL"
-        helperText="Enter full DOI, Handle, RRID, ARK, or web archive URL"
+        helperText="Enter full DOI, Handle, RRID, or web archive URL"
         errorText={idErrorMessage}
       />
       <TextSelectField
