@@ -88,10 +88,10 @@ const { label, value, tooltip, isLink, markdown = false } = Astro.props as Props
             </svg>
             {value}
           </a>
-        ) : (
+        ) : value ? (
           <div set:html={markdownContent(markdown, value)} class="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 htags"/>
-           || 
-           "---"
+        ) : (
+          "---"
         )
       }
     </span>
