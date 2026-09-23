@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -169,7 +170,8 @@ public class RaidController implements RaidApi {
 
 
     @Override
-    public ResponseEntity<List<RaidDto>> findAllPublicRaids() {
+    public ResponseEntity<List<RaidDto>> findAllPublicRaids(final OffsetDateTime updatedSince) {
+        // IMPROVE: updatedSince filtering is not yet implemented - see RAID-899
         return ResponseEntity.ok(raidService.findAllPublic());
     }
 
