@@ -375,6 +375,21 @@ paths:
         - raid
       operationId: findAllPublicRaids
       summary: List raids
+      parameters:
+        - name: updatedSince
+          in: query
+          required: false
+          description: >
+            Filter to RAiDs whose updated timestamp is strictly after this
+            value. Must be a full ISO 8601 date-time including a timezone
+            offset. The underlying timestamp has one-second granularity, so
+            a write occurring in the same second as the supplied value may
+            not appear in this call. Clients should subtract one second
+            from their cursor value and de-duplicate results by handle and
+            version.
+          schema:
+            type: string
+            format: date-time
       responses:
         200:
           description: success
