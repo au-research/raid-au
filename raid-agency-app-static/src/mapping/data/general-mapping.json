@@ -43,6 +43,12 @@
   },
   {
     "field": "description.type.id",
+    "key": "https://vocabulary.raid.org/description.type.schema/392",
+    "value": "Acknowledgements",
+    "definition": "Acknowledgement of participants not listed as Contributors (people and organisations)."
+  },
+  {
+    "field": "description.type.id",
     "key": "https://vocabulary.raid.org/description.type.schema/319",
     "value": "Alternative",
     "definition": "Additional full description or abstract"
