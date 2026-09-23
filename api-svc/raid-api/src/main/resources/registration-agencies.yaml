@@ -42,7 +42,12 @@ agencies:
     ror: https://ror.org/04mg3nk07
     block: 4
 
-  # TODO:RL DRAC (block 5) and TIB (block 6) are allocated but their RORs are not
-  # yet known. Neither is deployed, so their absence blocks nothing today, but an
-  # instance whose ROR is missing here refuses to start. Blocks 5 and 6 are
-  # reserved for them and must not be allocated to anyone else.
+  - name: DRAC
+    instance: raid.alliancecan.ca
+    ror: https://ror.org/010r6td27
+    block: 5
+
+  # TODO:RL TIB (block 6) is allocated but its ROR is not yet known. It is not
+  # deployed, so its absence blocks nothing today, but an instance whose ROR is
+  # missing here refuses to start. Block 6 is reserved for it and must not be
+  # allocated to anyone else.
