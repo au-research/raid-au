@@ -1,6 +1,41 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.18.0
+
+## API
+* Added DRAC (Digital Research Alliance of Canada) to the Registration Agency register,
+  allocating their Service Point id block (PR #677).
+* Documented the configuration required to deploy the API for a new Registration Agency,
+  covering identity, database, authentication, DataCite and ORCID integration settings, and
+  which values must come from a secret store. The most common deployment mistakes are explained:
+  an ORCID integration host that defaults to a local mock server, RAiD AU's identity used by
+  default rather than the deploying agency's own, and Flyway environment folders that seed RAiD
+  AU test data (`doc/reference/deployment-configuration.md`) (PR #674).
+
+## IAM
+* Fixed a fault that left Service Point Admin client credentials unusable in every environment
+  where an operator had not separately run a one-off migration endpoint by hand, including
+  production, where that step had never been performed. The roles these credentials depend on
+  are now created automatically every time Keycloak starts (PR #665).
+* Redesigned the RAiD sign-in page, with consistent identity provider buttons, a "Which sign-in
+  option is right for me?" help panel, a loading state while redirecting to a provider, and a
+  mobile-friendly layout. A follow-up fix corrected two colour-contrast failures found on the new
+  page, so link text and focus indicators now meet WCAG AA contrast requirements (PRs #666, #669).
+* Documented all OIDC clients configured in the production Keycloak realm, tracing each back to
+  the code that uses it (`iam/doc/keycloak-production-clients.md`) (PR #675).
+
+## App-client UI
+* Related Object identifiers can now be entered as a Handle or an RRID, in addition to DOI and
+  Web Archive links, both when adding a related object manually and in the bulk-upload
+  spreadsheet. The bulk-upload template instructions have been updated to mention the newly
+  recognised schemes (PRs #615, #670).
+
+## Static Landing Pages
+* Fixed a missing label and definition for descriptions of type "Acknowledgements" on RAiD
+  landing pages, which previously rendered blank. Separately fixed a build failure that some
+  `astro check` toolchains raised against unrelated markdown-rendering code (PR #676).
+
 # 2.17.0
 
 ## API
