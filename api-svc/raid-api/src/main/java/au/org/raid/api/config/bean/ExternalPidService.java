@@ -7,6 +7,7 @@ import au.org.raid.api.client.contributor.orcid.OrcidRequestEntityFactory;
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.client.ror.RorRequestEntityFactory;
 import au.org.raid.api.config.properties.StubProperties;
+import au.org.raid.api.service.ark.ArkService;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
@@ -138,6 +139,20 @@ public class ExternalPidService {
         }
 
         return new WebArchiveService(restTemplate, clock, availabilityUrl);
+    }
+
+    @Bean
+    @Primary
+    public ArkService arkService(
+            StubProperties stubProperties,
+            @Qualifier("arkResolverRestTemplate") RestTemplate restTemplate
+    ) {
+        if (stubProperties.getArk() != null && stubProperties.getArk().isEnabled()) {
+            log.warn("using the in-memory ARK service");
+            return new ArkServiceStub(stubProperties.getArk().getDelay());
+        }
+
+        return new ArkService(restTemplate);
     }
 
     @Bean
