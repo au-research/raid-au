@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record4;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,16 @@ public class RaidRepository {
     private static final int OPEN_ACCESS_LEGACY_ID = 1;
     /** Current open access type (COAR vocab c_abf2, seeded in V29) */
     private static final int OPEN_ACCESS_COAR_ID = 4;
+
+    /**
+     * Predicate for the RAID-837 "updatedSince" incremental federation sync filter.
+     * This expression MUST match the V49 index expression (idx_raid_updated_since,
+     * see RAID-898) exactly, textually, or Postgres will silently stop using the
+     * index and fall back to a full table scan.
+     */
+    private static final Field<BigDecimal> UPDATED_SINCE_EPOCH_SECONDS = DSL.field(
+            "coalesce(({0} -> 'metadata' ->> 'updated')::numeric, extract(epoch from {1}))",
+            BigDecimal.class, RAID.METADATA, RAID.DATE_CREATED);
 
     private final ContributorValidationProperties contributorValidationProperties;
 //    private static final String ORCID_URI_FORMAT = "https://orcid.org/%s";
@@ -186,25 +198,31 @@ public class RaidRepository {
                 .fetchInto(RaidRecord.class);
     }
 
-    public List<RaidRecord> findAllPublic() {
-        return dslContext.select()
-                .distinctOn(RAID.HANDLE)
-                .from(RAID)
-                .join(RAID_HISTORY).on(RAID_HISTORY.HANDLE.eq(RAID.HANDLE))
-                .where(RAID.ACCESS_TYPE_ID.in(OPEN_ACCESS_LEGACY_ID, OPEN_ACCESS_COAR_ID)
-                        .and(RAID.METADATA_SCHEMA.notIn(Metaschema.legacy_metadata_schema_v1, Metaschema.raido_metadata_schema_v1))
-                )
-                .fetchInto(RaidRecord.class);
+    public List<RaidRecord> findAllPublic(final BigDecimal updatedSinceEpochSeconds) {
+        var condition = RAID.ACCESS_TYPE_ID.in(OPEN_ACCESS_LEGACY_ID, OPEN_ACCESS_COAR_ID)
+                .and(RAID.METADATA_SCHEMA.notIn(Metaschema.legacy_metadata_schema_v1, Metaschema.raido_metadata_schema_v1));
+
+        if (updatedSinceEpochSeconds != null) {
+            condition = condition.and(UPDATED_SINCE_EPOCH_SECONDS.gt(updatedSinceEpochSeconds));
+        }
+
+        return dslContext.selectFrom(RAID)
+                .where(condition)
+                .andExists(DSL.selectOne().from(RAID_HISTORY).where(RAID_HISTORY.HANDLE.eq(RAID.HANDLE)))
+                .fetch();
     }
 
-    public List<RaidRecord> findAllEmbargoed() {
-        return dslContext.select()
-                .distinctOn(RAID.HANDLE)
-                .from(RAID)
-                .join(RAID_HISTORY).on(RAID_HISTORY.HANDLE.eq(RAID.HANDLE))
-                .where(RAID.ACCESS_TYPE_ID.eq(5)
-                )
-                .fetchInto(RaidRecord.class);
+    public List<RaidRecord> findAllEmbargoed(final BigDecimal updatedSinceEpochSeconds) {
+        var condition = RAID.ACCESS_TYPE_ID.eq(5);
+
+        if (updatedSinceEpochSeconds != null) {
+            condition = condition.and(UPDATED_SINCE_EPOCH_SECONDS.gt(updatedSinceEpochSeconds));
+        }
+
+        return dslContext.selectFrom(RAID)
+                .where(condition)
+                .andExists(DSL.selectOne().from(RAID_HISTORY).where(RAID_HISTORY.HANDLE.eq(RAID.HANDLE)))
+                .fetch();
     }
 
     public List<RaidRecord> findAllNonLegacyRaids() {
