@@ -17,7 +17,7 @@
   - https://github.com/au-research/raid-au/pull/682 (RAID-900)
   - https://github.com/au-research/raid-au/pull/683 (RAID-901)
   - https://github.com/au-research/raid-au/pull/684 (RAID-902)
-  - this PR (RAID-903) — link to be added once opened
+  - https://github.com/au-research/raid-au/pull/685 (RAID-903)
 
 ## What changed and why
 
