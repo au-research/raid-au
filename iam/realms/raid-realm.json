@@ -140,6 +140,14 @@
       "containerId" : "aacef42c-ba11-42f6-89de-89f3c8126f00",
       "attributes" : { }
     }, {
+      "id" : "5cf2d205-d6bc-4c33-96c6-3761eaad2199",
+      "name" : "raid-access-handler",
+      "description" : "",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "aacef42c-ba11-42f6-89de-89f3c8126f00",
+      "attributes" : { }
+    }, {
       "id" : "59a3771f-39ea-4f74-a7ca-035a6b37fca9",
       "name" : "offline_access",
       "description" : "${role_offline-access}",
