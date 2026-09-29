@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.Set;
@@ -250,6 +251,33 @@ public class RaidExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+
+    /*
+    RAID-900: a query parameter failed Spring's type conversion (e.g. updatedSince on
+    /raid/all-public and /raid/all-embargoed not parsing as an ISO 8601 OffsetDateTime with a
+    timezone offset, per @DateTimeFormat(ISO.DATE_TIME)). Without this handler the exception
+    falls through to defaultExceptionHandler's super.handleException delegation, which returns
+    a generic 400 ProblemDetail that doesn't name the offending parameter, its rejected value,
+    or the expected format, and doesn't match this class's structured FailureResponse shape.
+    This is deliberately app-wide (any typed query param on any endpoint, e.g. countRaids'
+    startDate/servicePointId) rather than scoped to updatedSince: same 400 status, just a more
+    informative body, consistent with the rest of this handler class.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<FailureResponse> handleMethodArgumentTypeMismatch(final MethodArgumentTypeMismatchException e) {
+        final var body = new FailureResponse()
+                .type("https://raid.org.au/errors#InvalidParameterFormat")
+                .title("Invalid parameter format")
+                .status(HttpStatus.BAD_REQUEST.value())
+                .detail("Parameter '%s' with value '%s' could not be parsed. Expected an ISO 8601 date-time with a timezone offset, e.g. 2026-09-24T01:02:03Z or 2026-09-24T01:02:03+10:00."
+                        .formatted(e.getName(), e.getValue()))
+                .instance("https://raid.org.au");
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body);
     }
