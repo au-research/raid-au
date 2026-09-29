@@ -349,7 +349,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
 
             raidApi.mintRaid(createRequest);
 
-            final var raidList = testClient.raidApi(user.getToken()).findAllPublicRaids().getBody();
+            final var raidList = testClient.raidApi(user.getToken()).findAllPublicRaids(null).getBody();
             assert raidList != null;
 
             // find all raids in resultset that don't have an embargoed access type
@@ -385,7 +385,7 @@ public class RaidIntegrationTest extends AbstractIntegrationTest {
             raidApi.mintRaid(createRequest);
 
 
-            testClient.raidApi(user.getToken()).findAllPublicRaids().getBody();
+            testClient.raidApi(user.getToken()).findAllPublicRaids(null).getBody();
         } catch (RaidApiValidationException e) {
             fail(e.getMessage());
         } catch (FeignException e) {

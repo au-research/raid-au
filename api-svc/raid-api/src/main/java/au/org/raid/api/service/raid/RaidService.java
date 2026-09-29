@@ -31,7 +31,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -250,8 +252,9 @@ public class RaidService {
                 .build());
     }
 
-    public List<RaidDto> findAllPublic() {
-        final var raidRecords = raidRepository.findAllPublic();
+    public List<RaidDto> findAllPublic(final OffsetDateTime updatedSince) {
+        final var updatedSinceEpochSeconds = updatedSince == null ? null : BigDecimal.valueOf(updatedSince.toEpochSecond());
+        final var raidRecords = raidRepository.findAllPublic(updatedSinceEpochSeconds);
         final var raids = new ArrayList<RaidDto>();
 
         for (final var record : raidRecords) {
@@ -386,8 +389,9 @@ public class RaidService {
                 .orElseThrow(() -> new ServicePointNotFoundException(servicePointId));
     }
 
-    public List<RaidDto> findAllEmbargoed() {
-        final var raidRecords = raidRepository.findAllEmbargoed();
+    public List<RaidDto> findAllEmbargoed(final OffsetDateTime updatedSince) {
+        final var updatedSinceEpochSeconds = updatedSince == null ? null : BigDecimal.valueOf(updatedSince.toEpochSecond());
+        final var raidRecords = raidRepository.findAllEmbargoed(updatedSinceEpochSeconds);
 
         final var raids = new ArrayList<RaidDto>();
 

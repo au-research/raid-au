@@ -48,6 +48,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -1041,6 +1042,110 @@ class RaidControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(raidService).postToDatacite(any(RaidUpdateRequest.class));
+    }
+
+    @Test
+    @DisplayName("findAllPublicRaids binds updatedSince and forwards it to the service")
+    void findAllPublicRaids_forwardsUpdatedSince() throws Exception {
+        final var updatedSince = "2026-01-15T10:30:45Z";
+        final var expected = OffsetDateTime.parse(updatedSince);
+
+        when(raidService.findAllPublic(expected)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/raid/all-public").queryParam("updatedSince", updatedSince))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(raidService).findAllPublic(expected);
+    }
+
+    @Test
+    @DisplayName("findAllPublicRaids omits filtering when updatedSince is not supplied")
+    void findAllPublicRaids_withoutUpdatedSince() throws Exception {
+        when(raidService.findAllPublic(null)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/raid/all-public"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(raidService).findAllPublic(null);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoedRaids binds updatedSince and forwards it to the service")
+    void findAllEmbargoedRaids_forwardsUpdatedSince() throws Exception {
+        final var updatedSince = "2026-01-15T10:30:45Z";
+        final var expected = OffsetDateTime.parse(updatedSince);
+
+        when(raidService.findAllEmbargoed(expected)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/raid/all-embargoed").queryParam("updatedSince", updatedSince))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(raidService).findAllEmbargoed(expected);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoedRaids omits filtering when updatedSince is not supplied")
+    void findAllEmbargoedRaids_withoutUpdatedSince() throws Exception {
+        when(raidService.findAllEmbargoed(null)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/raid/all-embargoed"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(raidService).findAllEmbargoed(null);
+    }
+
+    @Test
+    @DisplayName("findAllPublicRaids returns a structured 400 for a malformed updatedSince value")
+    void findAllPublicRaids_malformedUpdatedSince_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-public").queryParam("updatedSince", "not-a-timestamp"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("not-a-timestamp")));
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    @DisplayName("findAllPublicRaids returns a structured 400 when updatedSince is missing a timezone offset")
+    void findAllPublicRaids_updatedSinceWithoutOffset_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-public").queryParam("updatedSince", "2026-09-24T01:02:03"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")));
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoedRaids returns a structured 400 for a malformed updatedSince value")
+    void findAllEmbargoedRaids_malformedUpdatedSince_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-embargoed").queryParam("updatedSince", "not-a-timestamp"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("not-a-timestamp")));
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoedRaids returns a structured 400 when updatedSince is missing a timezone offset")
+    void findAllEmbargoedRaids_updatedSinceWithoutOffset_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-embargoed").queryParam("updatedSince", "2026-09-24T01:02:03"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")));
+
+        verifyNoInteractions(raidService);
     }
 
     private RaidDto createRaidForGet(final String title, final LocalDate startDate) throws IOException {

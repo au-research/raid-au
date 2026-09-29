@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -169,13 +170,15 @@ public class RaidController implements RaidApi {
 
 
     @Override
-    public ResponseEntity<List<RaidDto>> findAllPublicRaids() {
-        return ResponseEntity.ok(raidService.findAllPublic());
+    public ResponseEntity<List<RaidDto>> findAllPublicRaids(final OffsetDateTime updatedSince) {
+        return ResponseEntity.ok(raidService.findAllPublic(updatedSince));
     }
 
     @GetMapping(value = "/raid/all-embargoed")
-    public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids() {
-        return ResponseEntity.ok(raidService.findAllEmbargoed());
+    public ResponseEntity<List<RaidDto>> findAllEmbargoedRaids(
+            @RequestParam(value = "updatedSince", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final OffsetDateTime updatedSince) {
+        return ResponseEntity.ok(raidService.findAllEmbargoed(updatedSince));
     }
 
     @GetMapping(value="/raid/non-legacy")

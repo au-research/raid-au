@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static au.org.raid.db.jooq.tables.Raid.RAID;
@@ -53,6 +54,38 @@ class RaidRepositoryTest {
         final var handles = List.of("10.26193/ABC123", "10.26193/DEF456");
 
         raidRepository.findAllViewable(servicePointId, false, handles);
+
+        verify(dslContext).selectFrom(RAID);
+    }
+
+    @Test
+    @DisplayName("findAllPublic(null) selects from raid directly, without an updatedSince filter")
+    void findAllPublicWithoutUpdatedSince() {
+        raidRepository.findAllPublic(null);
+
+        verify(dslContext).selectFrom(RAID);
+    }
+
+    @Test
+    @DisplayName("findAllPublic() with a non-null updatedSince still selects from raid directly")
+    void findAllPublicWithUpdatedSince() {
+        raidRepository.findAllPublic(BigDecimal.valueOf(1_700_000_000L));
+
+        verify(dslContext).selectFrom(RAID);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoed(null) selects from raid directly, without an updatedSince filter")
+    void findAllEmbargoedWithoutUpdatedSince() {
+        raidRepository.findAllEmbargoed(null);
+
+        verify(dslContext).selectFrom(RAID);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoed() with a non-null updatedSince still selects from raid directly")
+    void findAllEmbargoedWithUpdatedSince() {
+        raidRepository.findAllEmbargoed(BigDecimal.valueOf(1_700_000_000L));
 
         verify(dslContext).selectFrom(RAID);
     }

@@ -46,6 +46,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -857,6 +858,78 @@ class RaidServiceTest {
         when(servicePointRepository.findById(servicePointId)).thenReturn(Optional.empty());
 
         assertThrows(ServicePointNotFoundException.class, () -> raidService.postToDatacite(raid));
+    }
+
+    @Test
+    @DisplayName("findAllPublic(null) passes null through to the repository, applying no updatedSince filter")
+    void findAllPublic_nullUpdatedSince() throws JsonProcessingException {
+        final var raidJson = raidJson();
+        final var raidRecord = new RaidRecord().setHandle("10378.1/1696639");
+        final var raidDto = objectMapper.readValue(raidJson, RaidDto.class);
+
+        when(raidRepository.findAllPublic(null)).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(raidDto));
+
+        final var result = raidService.findAllPublic(null);
+
+        assertThat(result, Matchers.is(List.of(raidDto)));
+        verify(raidRepository).findAllPublic(null);
+    }
+
+    @Test
+    @DisplayName("findAllPublic() converts a non-null updatedSince to the correct epoch-second BigDecimal")
+    void findAllPublic_convertsUpdatedSinceToEpochSeconds() throws JsonProcessingException {
+        final var raidJson = raidJson();
+        final var raidRecord = new RaidRecord().setHandle("10378.1/1696639");
+        final var raidDto = objectMapper.readValue(raidJson, RaidDto.class);
+
+        // Deliberately includes sub-second precision (nanos): toEpochSecond() operates on
+        // whole seconds, so the nanos are dropped (floored) during conversion.
+        final var updatedSince = OffsetDateTime.parse("2026-01-15T10:30:45.999Z");
+        final var expectedEpochSeconds = BigDecimal.valueOf(updatedSince.toEpochSecond());
+
+        when(raidRepository.findAllPublic(expectedEpochSeconds)).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(raidDto));
+
+        final var result = raidService.findAllPublic(updatedSince);
+
+        assertThat(result, Matchers.is(List.of(raidDto)));
+        verify(raidRepository).findAllPublic(expectedEpochSeconds);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoed(null) passes null through to the repository, applying no updatedSince filter")
+    void findAllEmbargoed_nullUpdatedSince() throws JsonProcessingException {
+        final var raidJson = raidJson();
+        final var raidRecord = new RaidRecord().setHandle("10378.1/1696639");
+        final var raidDto = objectMapper.readValue(raidJson, RaidDto.class);
+
+        when(raidRepository.findAllEmbargoed(null)).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(raidDto));
+
+        final var result = raidService.findAllEmbargoed(null);
+
+        assertThat(result, Matchers.is(List.of(raidDto)));
+        verify(raidRepository).findAllEmbargoed(null);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoed() converts a non-null updatedSince to the correct epoch-second BigDecimal")
+    void findAllEmbargoed_convertsUpdatedSinceToEpochSeconds() throws JsonProcessingException {
+        final var raidJson = raidJson();
+        final var raidRecord = new RaidRecord().setHandle("10378.1/1696639");
+        final var raidDto = objectMapper.readValue(raidJson, RaidDto.class);
+
+        final var updatedSince = OffsetDateTime.parse("2026-01-15T10:30:45.999Z");
+        final var expectedEpochSeconds = BigDecimal.valueOf(updatedSince.toEpochSecond());
+
+        when(raidRepository.findAllEmbargoed(expectedEpochSeconds)).thenReturn(List.of(raidRecord));
+        when(raidDtoReadService.toRaidDto(raidRecord)).thenReturn(Optional.of(raidDto));
+
+        final var result = raidService.findAllEmbargoed(updatedSince);
+
+        assertThat(result, Matchers.is(List.of(raidDto)));
+        verify(raidRepository).findAllEmbargoed(expectedEpochSeconds);
     }
 
     private String raidJson() {
