@@ -18,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
@@ -309,6 +310,27 @@ class RaidExceptionHandlerTest {
         assertThat(body.getDetail(), is("A database error occurred. Please try again later."));
         assertThat(body.getDetail(), not(containsString("SQL")));
         assertThat(body.getDetail(), not(containsString("select")));
+    }
+
+    @Test
+    @DisplayName("MethodArgumentTypeMismatchException (e.g. malformed updatedSince) maps to a structured 400 naming the parameter and rejected value")
+    void methodArgumentTypeMismatchException_mapsToBadRequest() {
+        final var ex = new MethodArgumentTypeMismatchException(
+                "not-a-timestamp", java.time.OffsetDateTime.class, "updatedSince", null, null);
+
+        final var response = handler.handleMethodArgumentTypeMismatch(ex);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getHeaders().getContentType(), is(MediaType.APPLICATION_JSON));
+
+        final var body = response.getBody();
+        assertThat(body, notNullValue());
+        assertThat(body.getType(), is("https://raid.org.au/errors#InvalidParameterFormat"));
+        assertThat(body.getTitle(), is("Invalid parameter format"));
+        assertThat(body.getStatus(), is(400));
+        assertThat(body.getInstance(), is("https://raid.org.au"));
+        assertThat(body.getDetail(), containsString("updatedSince"));
+        assertThat(body.getDetail(), containsString("not-a-timestamp"));
     }
 
     @Test

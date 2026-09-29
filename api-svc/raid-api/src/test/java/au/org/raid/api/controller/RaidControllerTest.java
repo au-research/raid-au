@@ -1098,6 +1098,56 @@ class RaidControllerTest {
         verify(raidService).findAllEmbargoed(null);
     }
 
+    @Test
+    @DisplayName("findAllPublicRaids returns a structured 400 for a malformed updatedSince value")
+    void findAllPublicRaids_malformedUpdatedSince_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-public").queryParam("updatedSince", "not-a-timestamp"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("not-a-timestamp")));
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    @DisplayName("findAllPublicRaids returns a structured 400 when updatedSince is missing a timezone offset")
+    void findAllPublicRaids_updatedSinceWithoutOffset_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-public").queryParam("updatedSince", "2026-09-24T01:02:03"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")));
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoedRaids returns a structured 400 for a malformed updatedSince value")
+    void findAllEmbargoedRaids_malformedUpdatedSince_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-embargoed").queryParam("updatedSince", "not-a-timestamp"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("not-a-timestamp")));
+
+        verifyNoInteractions(raidService);
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoedRaids returns a structured 400 when updatedSince is missing a timezone offset")
+    void findAllEmbargoedRaids_updatedSinceWithoutOffset_returns400() throws Exception {
+        mockMvc.perform(get("/raid/all-embargoed").queryParam("updatedSince", "2026-09-24T01:02:03"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://raid.org.au/errors#InvalidParameterFormat"))
+                .andExpect(jsonPath("$.detail", Matchers.containsString("updatedSince")));
+
+        verifyNoInteractions(raidService);
+    }
+
     private RaidDto createRaidForGet(final String title, final LocalDate startDate) throws IOException {
         final String json = FileUtil.resourceContent("/fixtures/raid.json");
 
