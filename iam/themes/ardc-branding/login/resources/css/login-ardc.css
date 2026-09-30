@@ -61,8 +61,11 @@ body {
     position: static;
     z-index: auto;
     height: 64px;
-    border-top: solid var(--brand-primary);
-    border-bottom: 1px solid var(--brand-primary);
+    /* raid-custom's own border-top is blue (its brand colour); this
+       theme just drops the accent border entirely rather than
+       recolouring it, matching the design's plain header. */
+    border-top: none;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .logo-text {

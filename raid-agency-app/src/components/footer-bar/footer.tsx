@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { AppConfigContext } from '../../config/Appconfigcontext';
 import { AppConfig } from '../../config/Appconfig';
 import { useExternalScript } from '@/hooks/useExternalScript';
@@ -11,9 +11,37 @@ const ARDC_ACN_URL =
 
 const ArdcFooter = ({ config }: { config: AppConfig }) => {
     useExternalScript(FOOTER_SCRIPT_SRC, () => {
-        const el = document.querySelector<HTMLElement>('.ardc-footer');
+        const el = document.querySelector<HTMLElement>('ardc-footer');
         if (el) el.style.display = 'none';
     });
+
+    // The footer's own inner wrapper (inside its shadow root) needs extra
+    // top padding; that's inside the ARDC-hosted component's shadow DOM, so
+    // it can't be reached with a normal stylesheet selector. Its content
+    // renders asynchronously once footer.min.js finishes its own init, so
+    // this polls briefly rather than trying once on mount. Selecting by
+    // tag name, not the "ardc-footer" class - the component's own script
+    // strips the light-DOM class attribute once it upgrades the element.
+    useEffect(() => {
+        let attempts = 0;
+        const applyPadding = () => {
+            const host = document.querySelector<HTMLElement>('ardc-footer');
+            const inner = host?.shadowRoot?.querySelector<HTMLElement>('.ardc-footer__footer');
+            if (inner) {
+                inner.style.paddingTop = '30px';
+                return true;
+            }
+            return false;
+        };
+        if (applyPadding()) return;
+        const interval = setInterval(() => {
+            attempts += 1;
+            if (applyPadding() || attempts > 40) {
+                clearInterval(interval);
+            }
+        }, 250);
+        return () => clearInterval(interval);
+    }, []);
 
     const quickLinks = config.footer.links.filter((link) => link.contact);
     const legalLinks = config.footer.links.filter((link) => !link.contact);

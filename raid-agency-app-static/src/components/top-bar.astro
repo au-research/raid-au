@@ -30,6 +30,33 @@ const { topBar } = getSiteConfig().header;
     data-no-optimize
     onerror="document.getElementById('ardc-menu').style.display='none'"
   ></script>
+  <script is:inline>
+    // The trigger bar's own inner wrapper (inside its shadow root) needs
+    // extra right padding so the button isn't flush against the true
+    // viewport edge; that's inside the ARDC-hosted component's shadow
+    // DOM, so it can't be reached with a normal stylesheet selector. Its
+    // content renders asynchronously, so this polls briefly rather than
+    // assuming it exists on page load.
+    (function () {
+      var attempts = 0;
+      function applyPadding() {
+        var host = document.getElementById("ardc-menu");
+        var inner = host && host.shadowRoot && host.shadowRoot.querySelector(".ardc-header__top-bar-inner");
+        if (inner) {
+          inner.style.paddingRight = "24px";
+          return true;
+        }
+        return false;
+      }
+      if (applyPadding()) return;
+      var interval = setInterval(function () {
+        attempts += 1;
+        if (applyPadding() || attempts > 40) {
+          clearInterval(interval);
+        }
+      }, 250);
+    })();
+  </script>
 )}
 
 <style>

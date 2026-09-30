@@ -84,7 +84,6 @@ export const AppNavBar = () => {
       elevation={1}
       sx={{
         backgroundColor: theme.palette.mode === "dark" ? "black" : "white",
-        borderTop: "solid",
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
       data-testid="app-nav-bar"

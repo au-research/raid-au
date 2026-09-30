@@ -47,6 +47,33 @@
         data-no-optimize
         onerror="document.getElementById('ardc-menu').style.display='none'"
     ></script>
+    <script>
+        // The trigger bar's own inner wrapper (inside its shadow root)
+        // needs extra right padding so the button isn't flush against the
+        // true viewport edge; that's inside the ARDC-hosted component's
+        // shadow DOM, so it can't be reached with a normal stylesheet
+        // selector. Its content renders asynchronously, so this polls
+        // briefly rather than assuming it exists on page load.
+        (function () {
+            var attempts = 0;
+            function applyPadding() {
+                var host = document.getElementById('ardc-menu');
+                var inner = host && host.shadowRoot && host.shadowRoot.querySelector('.ardc-header__top-bar-inner');
+                if (inner) {
+                    inner.style.paddingRight = '24px';
+                    return true;
+                }
+                return false;
+            }
+            if (applyPadding()) return;
+            var interval = setInterval(function () {
+                attempts += 1;
+                if (applyPadding() || attempts > 40) {
+                    clearInterval(interval);
+                }
+            }, 250);
+        })();
+    </script>
 
     <!-- Top Navigation Bar.
          TODO: About/Documentation currently point at this dev
@@ -115,8 +142,37 @@
         src="https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/footer.min.js"
         defer
         data-no-optimize
-        onerror="document.querySelector('.ardc-footer').style.display='none'"
+        onerror="document.querySelector('ardc-footer').style.display='none'"
     ></script>
+    <script>
+        // The footer's own inner wrapper (inside its shadow root) needs
+        // extra top padding; that's inside the ARDC-hosted component's
+        // shadow DOM, so it can't be reached with a normal stylesheet
+        // selector. Its content renders asynchronously once footer.min.js
+        // finishes its own init, so this polls briefly rather than
+        // assuming it exists on page load. Selecting by tag name, not the
+        // "ardc-footer" class - the component's own script strips the
+        // light-DOM class attribute once it upgrades the element.
+        (function () {
+            var attempts = 0;
+            function applyPadding() {
+                var host = document.querySelector('ardc-footer');
+                var inner = host && host.shadowRoot && host.shadowRoot.querySelector('.ardc-footer__footer');
+                if (inner) {
+                    inner.style.paddingTop = '30px';
+                    return true;
+                }
+                return false;
+            }
+            if (applyPadding()) return;
+            var interval = setInterval(function () {
+                attempts += 1;
+                if (applyPadding() || attempts > 40) {
+                    clearInterval(interval);
+                }
+            }, 250);
+        })();
+    </script>
 </body>
 </html>
 </#macro>
