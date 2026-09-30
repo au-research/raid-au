@@ -26,6 +26,7 @@ public class CredentialAuditLogger {
     public static final String ACTION_LIST = "credential.list";
     public static final String ACTION_ROTATE = "credential.rotate";
     public static final String ACTION_REVOKE = "credential.revoke";
+    public static final String ACTION_DELETE = "credential.delete";
     public static final String ACTION_REVEAL_SECRET = "credential.reveal-secret";
 
     private final Logger auditLog;

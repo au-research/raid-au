@@ -234,6 +234,16 @@ class CredentialSecretHandlingTest {
         }
 
         @Test
+        void deleteIsAudited() {
+            existingCredential();
+            try (MockedConstruction<ClientManager> ignored = mockConstruction(ClientManager.class,
+                    (mock, ctx) -> when(mock.removeClient(any(), any())).thenReturn(true))) {
+                controller().delete("raid-cred-a1");
+            }
+            verify(auditLogger).record(CredentialAuditLogger.ACTION_DELETE, user, "raid-cred-a1", GROUP_A);
+        }
+
+        @Test
         void secretRevealIsAudited() {
             existingCredential();
             controller().getSecret("raid-cred-a1");

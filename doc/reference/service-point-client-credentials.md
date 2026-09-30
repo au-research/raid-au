@@ -181,6 +181,24 @@ curl -s -X DELETE \
 A revoked credential cannot be rotated. If you need a working credential again,
 create a new one.
 
+## Step 8: Delete a credential
+
+Permanently removes the credential. Unlike revoking, which leaves a disabled
+credential in your list, deleting removes it from the list entirely and cannot
+be undone. You can delete an active or a revoked credential. Like revoking,
+deleting an active credential frees a slot against the 10-credential limit.
+
+Revoke instead if you want to keep a record that the credential existed.
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" -X DELETE \
+  "$IAM/realms/raid/client-credential/delete?clientId=$CLIENT_ID" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+A successful delete returns `204 No Content`. Deleting a credential that has
+already been deleted returns `404`.
+
 ## Common responses
 
 | Status | Meaning |
