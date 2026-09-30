@@ -25,25 +25,54 @@
 
 <body class="${properties.kcBodyClass!}">
 
-    <!-- ARDC Top Bar -->
-    <div class="ardc-top-bar">
-        <div class="ardc-top-bar-inner">
-            <div class="ardc-explore-menu">
-                <a href="https://ardc.edu.au" class="ardc-explore-link">
-                    Explore ARDC
-                    <svg class="ardc-explore-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </a>
-            </div>
-        </div>
+    <!-- ARDC Mega-menu (centrally managed by ARDC - see ARDC Web Components
+         Developer Documentation). Real content/height only arrive once
+         megamenu.min.js runs; onerror hides the element if that script
+         can't load rather than leaving a dead placeholder on screen.
+         The wrapping div gives the component's transparent bottom edge a
+         solid white background to sit on (doc §3.5) - without it, this
+         page's own tinted body background (--surface-tint) shows through
+         as a faint grey/washed-out seam under the button. -->
+    <div class="ardc-megamenu-wrap">
+        <ardc-megamenu
+            id="ardc-menu"
+            data-host="RAiD App"
+            data-content-width="full"
+            style="display: block; opacity: 0; min-height: 20px;"
+        ></ardc-megamenu>
     </div>
+    <script
+        src="https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/megamenu.min.js"
+        defer
+        data-no-optimize
+        onerror="document.getElementById('ardc-menu').style.display='none'"
+    ></script>
 
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar.
+         TODO: About/Documentation currently point at this dev
+         environment's React app / raid.org.au as placeholders - the
+         Keycloak theme has no config mechanism today for the React
+         app's actual per-environment origin (dev/test/demo/prod), and
+         no real Documentation destination exists yet anywhere in the
+         repo. Both need real, environment-aware targets before this
+         ships beyond local dev. -->
     <nav class="top-navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="logo-text" alt="logo"></img>
+                <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="logo-text" alt="logo">
+                <span class="nav-title">${msg("org.header.title")}</span>
+            </div>
+            <div class="nav-links">
+                <#assign externalLinkIcon>
+                    <svg class="nav-link-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 3h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 14 21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </#assign>
+                <a href="http://localhost:7080/about-raid" target="_blank" rel="noopener noreferrer">About ${externalLinkIcon?no_esc}</a>
+                <a href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer">Documentation ${externalLinkIcon?no_esc}</a>
+                <a href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer">raid.org ${externalLinkIcon?no_esc}</a>
             </div>
         </div>
     </nav>
@@ -61,6 +90,33 @@
             <#nested "form">
         </div>
     </div>
+
+    <!-- ARDC Footer (centrally managed by ARDC - see ARDC Web Components
+         Developer Documentation). data-show-ardc-logo is set because RAiD
+         carries its own RAiD-branded logo, not an ARDC-branded one, per
+         the docs' ARDC Logo Visibility Rule. -->
+    <ardc-footer
+        class="ardc-footer ardc-custom-component"
+        data-content-width="normal"
+        data-show-ardc-logo
+        style="opacity: 0;"
+    >
+        <ul id="quick-links">
+            <li><a href="mailto:${msg("contact")}">${msg("contact")}</a></li>
+        </ul>
+        <ul id="legal-links">
+            <li><a href="${msg("termsOfUse")}">Terms of use</a></li>
+            <li><a href="${msg("accessibility")}">Accessibility</a></li>
+            <li><a href="${msg("privacyPolicy")}">Privacy policy</a></li>
+        </ul>
+        <a id="ardc-footer-acn" href="https://www.acnc.gov.au/charity/charities/eca273f3-f5be-e911-a98a-000d3ad02a61/profile">ACN 633 798 857</a>
+    </ardc-footer>
+    <script
+        src="https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/footer.min.js"
+        defer
+        data-no-optimize
+        onerror="document.querySelector('.ardc-footer').style.display='none'"
+    ></script>
 </body>
 </html>
 </#macro>

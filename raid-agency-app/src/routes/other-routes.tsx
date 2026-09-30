@@ -1,4 +1,5 @@
 import { AppNavBar } from "@/components/app-nav-bar";
+import { Footer } from "@/components/footer-bar/footer";
 import { ProtectedRoute } from "@/pages/protected-route";
 import { AboutRaid } from "@/pages/about-raid";
 import { ApiKey } from "@/pages/api-key";
@@ -30,9 +31,13 @@ export const otherRoutes: RouteObject[] = [
     path: ROUTES.LOGIN,
     // No need for ProtectedRoute here since this is the login page
     element: (
-      <Box sx={{ pt: 5 }}>
-        <Login />
-      </Box>
+      <>
+        <AppNavBar />
+        <Box sx={{ pt: 5 }}>
+          <Login />
+        </Box>
+        <Footer />
+      </>
     ),
   },
   {

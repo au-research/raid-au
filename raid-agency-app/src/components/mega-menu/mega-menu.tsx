@@ -1,26 +1,20 @@
-import { Button, Paper, Stack, Typography } from "@mui/material";
-import React from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { useExternalScript } from "@/hooks/useExternalScript";
+
+const MEGAMENU_SCRIPT_SRC =
+  "https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/megamenu.min.js";
 
 export const MegaMenu = () => {
-    const [toggleBtn, setToggleBtn] = React.useState(false);
+    useExternalScript(MEGAMENU_SCRIPT_SRC, () => {
+        const el = document.getElementById("ardc-menu");
+        if (el) el.style.display = "none";
+    });
+
     return (
-        <Paper elevation={1} sx={{width: '100%', zIndex: 1200, position: 'relative', padding: "0 27px"}}>
-            <Stack direction="row" spacing={2} justifyContent="right" alignItems="center">
-                <Button onClick={() => setToggleBtn(!toggleBtn)}>
-                    <Typography
-                      component="a"
-                      href="https://ardc.edu.au/"
-                      sx={{
-                        textTransform: "capitalize",
-                        color: "text.primary",
-                        display: "contents",
-                        alignItems: "center",
-                        fontWeight: 600,
-                      }}
-                    >{("Explore").toLowerCase()} ARDC {toggleBtn ? <ChevronUp  strokeWidth={3} absoluteStrokeWidth style={{marginLeft: "4px", fontWeight: 600}} size={20} /> : <ChevronDown  strokeWidth={3} absoluteStrokeWidth style={{marginLeft: "4px"}} size={20} />}</Typography>
-                </Button>
-            </Stack>
-        </Paper>
+        <ardc-megamenu
+            id="ardc-menu"
+            data-host="RAiD App"
+            data-content-width="full"
+            style={{ display: "block", opacity: 0, minHeight: "20px" }}
+        />
     );
 }
