@@ -35,9 +35,15 @@ The test had no way to delete a client. The SPI had no delete operation, and `in
 - The DataApiAccess nested class's own revoke teardown is removed because the shared cleanup now covers it.
 - New `Deletion` tests: delete removes the client and its service account; a revoked credential can be deleted; deleting twice returns 404; a cross-service-point delete is denied and the credential survives.
 
+### Test secret logging
+
+- `TokenService` in the intTest sources logged the full token request body at DEBUG level. That body carries the client secret for `getClientToken`, and the user's password for `getUserToken`; in CI that is the real `raid-test-user` password. Both lines now log only the grant type and the user or client identity.
+- The intTest has no logging configuration, so the default INFO level meant these lines did not print. They would have leaked as soon as DEBUG was enabled for diagnosis.
+
 ### Documentation
 
 - `doc/reference/service-point-client-credentials.md`: new "Step 8: Delete a credential".
+- `iam/doc/spis.md`: new "Client Credential Controller" section listing all six endpoints, their authorisation and secret handling. Its header no longer claims there are "two" SPIs; four are registered.
 
 ## Verification
 
@@ -45,7 +51,7 @@ Run locally against a freshly rebuilt IAM image:
 
 - `iam` unit tests: 202 passed, 0 failed.
 - `ClientCredentialIntegrationTest`: 29 of 29 passed. Afterwards the realm contained 0 `raid-cred-*` clients and 0 credential service accounts.
-- Full `intTest`: 254 tests, 0 failures, 16 pre-existing skips in unrelated classes. This run was before the review follow-ups, which changed only the delete endpoint's response for a race and the test assertions.
+- Full `intTest`, after the review follow-ups and the `TokenService` fix: 253 tests, 0 failures, 16 pre-existing skips in unrelated classes. The count is one lower than the first run's 254 because the live "realm client" delete test was removed.
 
 ## Environment cleanup (2026-09-30)
 
@@ -64,6 +70,5 @@ One apparently real credential (`matthias-cc`) was kept.
 - **Deploy order.** The branch pipeline tests against the shared test IAM, which is deployed from `main`. The new `Deletion` tests fail there until this is merged and IAM is redeployed, or until the branch IAM is deployed with `scripts/deploy-iam-to-test.sh`.
 - **RAID-922.** The e2e suite should call this endpoint in its teardown.
 - **Not ticketed yet:**
-  - `iam/doc/spis.md` lists none of the client-credential endpoints.
-  - `TokenService.getClientToken` in the intTest sources logs the client secret at DEBUG level.
   - Deleting a group still leaves its credentials behind.
+  - `iam/doc/spis.md` does not document the `localization` SPI.
