@@ -238,6 +238,11 @@ class ClientCredentialControllerTest {
         void getSecretReturns401WhenUnauthenticated() {
             assertThat(unauthenticatedController().getSecret("x").getStatus(), is(401));
         }
+
+        @Test
+        void deleteReturns401WhenUnauthenticated() {
+            assertThat(unauthenticatedController().delete("x").getStatus(), is(401));
+        }
     }
 
     @Nested
@@ -697,6 +702,122 @@ class ClientCredentialControllerTest {
     }
 
     @Nested
+    class Delete {
+
+        /** Runs the delete with ClientManager intercepted, returning the constructed manager. */
+        private ClientManager deleteWithClientManager(final String clientId, final boolean removed,
+                                                      final int[] status) {
+            try (MockedConstruction<ClientManager> clientManager = mockConstruction(ClientManager.class,
+                    (mock, ctx) -> when(mock.removeClient(any(), any())).thenReturn(removed))) {
+                status[0] = controller().delete(clientId).getStatus();
+                return clientManager.constructed().isEmpty() ? null : clientManager.constructed().get(0);
+            }
+        }
+
+        @Test
+        void deleteRemovesTheClientThroughClientManager() {
+            givenScopedAdminOf(GROUP_A);
+            final var client = registerCredential("raid-cred-a1", GROUP_A, true);
+            final var status = new int[1];
+
+            final var clientManager = deleteWithClientManager("raid-cred-a1", true, status);
+
+            assertThat(status[0], is(204));
+            // ClientManager, not ClientProvider#removeClient, so the service account user and
+            // sessions are removed with the client.
+            verify(clientManager).removeClient(realm, client);
+            verify(clientProvider, never()).removeClient(any(), anyString());
+        }
+
+        @Test
+        void deleteWorksOnARevokedCredential() {
+            givenScopedAdminOf(GROUP_A);
+            final var client = registerCredential("raid-cred-a1", GROUP_A, false);
+            final var status = new int[1];
+
+            final var clientManager = deleteWithClientManager("raid-cred-a1", true, status);
+
+            assertThat(status[0], is(204));
+            verify(clientManager).removeClient(realm, client);
+        }
+
+        @Test
+        void operatorCanDeleteAnyServicePointsCredential() {
+            givenRoles("operator");
+            final var client = registerCredential("raid-cred-b1", GROUP_B, true);
+            final var status = new int[1];
+
+            final var clientManager = deleteWithClientManager("raid-cred-b1", true, status);
+
+            assertThat(status[0], is(204));
+            verify(clientManager).removeClient(realm, client);
+        }
+
+        @Test
+        void adminOfOneServicePointCannotDeleteAnothers() {
+            givenScopedAdminOf(GROUP_A);
+            registerCredential("raid-cred-b1", GROUP_B, true);
+
+            try (MockedConstruction<ClientManager> clientManager = mockConstruction(ClientManager.class)) {
+                final var controller = controller();
+                assertThrows(NotAuthorizedException.class, () -> controller.delete("raid-cred-b1"));
+                assertThat(clientManager.constructed(), is(empty()));
+            }
+        }
+
+        @Test
+        void flatGroupAdminCannotDelete() {
+            givenRoles("group-admin", "service-point-user");
+            registerCredential("raid-cred-a1", GROUP_A, true);
+
+            final var controller = controller();
+            assertThrows(NotAuthorizedException.class, () -> controller.delete("raid-cred-a1"));
+        }
+
+        @Test
+        void aRealmClientCannotBeDeleted() {
+            // An operator, so authorisation cannot be what stops it: only the managed-client check.
+            givenRoles("operator");
+            final var appClient = backedClient("raid-api", new HashMap<>(), true);
+            when(clientProvider.getClientByClientId(realm, "raid-api")).thenReturn(appClient);
+            final var status = new int[1];
+
+            final var clientManager = deleteWithClientManager("raid-api", true, status);
+
+            assertThat(status[0], is(404));
+            assertThat(clientManager, is(nullValue()));
+        }
+
+        @Test
+        void unknownCredentialIsNotFound() {
+            givenScopedAdminOf(GROUP_A);
+            final var status = new int[1];
+
+            deleteWithClientManager("nope", true, status);
+
+            assertThat(status[0], is(404));
+        }
+
+        @Test
+        void blankClientIdIsABadRequest() {
+            givenScopedAdminOf(GROUP_A);
+            assertThat(controller().delete("  ").getStatus(), is(400));
+        }
+
+        @Test
+        void removalThatRemovesNothingIsNotFound() {
+            // A concurrent delete won the race: report it as already gone, as deleting twice is.
+            givenScopedAdminOf(GROUP_A);
+            registerCredential("raid-cred-a1", GROUP_A, true);
+            final var status = new int[1];
+
+            deleteWithClientManager("raid-cred-a1", false, status);
+
+            assertThat(status[0], is(404));
+        }
+    }
+
+    @Nested
     class GetSecret {
 
         @Test
@@ -755,6 +876,12 @@ class ClientCredentialControllerTest {
         void secretPreflightAdvertisesGet() {
             assertThat(controller().secretPreflight().getHeaderString("Access-Control-Allow-Methods"),
                     containsString("GET"));
+        }
+
+        @Test
+        void deletePreflightAdvertisesDelete() {
+            assertThat(controller().deletePreflight().getHeaderString("Access-Control-Allow-Methods"),
+                    containsString("DELETE"));
         }
     }
 }

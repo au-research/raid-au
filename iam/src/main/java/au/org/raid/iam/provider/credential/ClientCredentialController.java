@@ -361,6 +361,57 @@ public class ClientCredentialController {
                 Response.ok().entity(objectMapper.writeValueAsString(toResponse(client))));
     }
 
+    @OPTIONS
+    @Path("/delete")
+    public Response deletePreflight() {
+        return cors.buildOptionsResponse("DELETE", "OPTIONS");
+    }
+
+    /**
+     * RAID-921: permanently deletes a credential's client, unlike {@link #revoke}, which only disables
+     * it and so keeps the credential's label and timestamps. Lets anything that creates credentials
+     * transiently, such as the integration suite, remove them rather than leaving a disabled client
+     * behind on every run. Authorised exactly as revoke is, and likewise refuses any client this
+     * feature does not manage.
+     *
+     * <p>Goes through {@link ClientManager#removeClient}, the path the Admin API's client delete
+     * uses, so the service account user and any sessions are removed with the client.
+     */
+    @DELETE
+    @Path("/delete")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(@QueryParam("clientId") final String clientId) {
+        log.debug("Deleting client credential {}", clientId);
+
+        final var user = authenticatedUser();
+        if (user == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        if (isBlank(clientId)) {
+            return badRequest("clientId parameter is required");
+        }
+
+        final var realm = session.getContext().getRealm();
+        final var client = findManagedCredential(realm, clientId.trim());
+        if (client == null) {
+            return notFound("Client credential not found");
+        }
+
+        final var groupId = ownerGroupId(client);
+        requireAuthorisedFor(user, groupId);
+
+        // False means nothing was removed. The managed check above rules out Keycloak's internal
+        // clients, so in practice a concurrent delete got there first: report it as already gone,
+        // consistent with deleting twice.
+        if (!new ClientManager(new RealmManager(session)).removeClient(realm, client)) {
+            return notFound("Client credential not found");
+        }
+
+        auditLogger.record(CredentialAuditLogger.ACTION_DELETE, user, clientId.trim(), groupId);
+
+        return cors.buildCorsResponse("DELETE", Response.noContent());
+    }
+
     private UserModel authenticatedUser() {
         if (this.auth == null) {
             return null;
