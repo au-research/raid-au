@@ -1,4 +1,4 @@
-import { Home as HomeIcon } from "@mui/icons-material";
+import { Home as HomeIcon, OpenInNew as OpenInNewIcon } from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -6,11 +6,10 @@ import {
   IconButton,
   Stack,
   Toolbar,
+  Typography,
   useTheme,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import { ServicePointSwitcher } from "../../containers/header/service-point-switcher";
-import { NavigationDrawer } from "../../containers/header/NavigationDrawer";
+import { Link, NavLink } from "react-router-dom";
 import { UserDropdown } from "../../containers/header/UserDropdown";
 import { NotificationBell } from '../alert-notifications/Notifications';
 import { useServicePointPendingRequest } from "@/shared/service-point/service-point-pending-request";
@@ -22,23 +21,64 @@ import { useAppConfig } from "@/config/Appconfigcontext";
 import { useRuntimeConfig } from "@/config";
 import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
+import { ROUTES } from "@/constants/routes";
+
+// About/Documentation/raid.org currently point at this dev environment's
+// React app / raid.org.au as placeholders - there's no environment-aware
+// config for the real per-environment targets yet (same gap as the
+// Keycloak login theme's equivalent nav links), and no real Documentation
+// destination exists yet anywhere in the repo.
+const HeaderNavLinks = () => {
+  const theme = useTheme();
+  // AppBar's default color="primary" sets text to its contrastText
+  // (white) regardless of the AppBar's backgroundColor override, which
+  // is invisible against the white/black background set there - same
+  // issue as the header title text, fixed the same way.
+  const textColor = theme.palette.mode === "dark" ? "#fff" : theme.palette.text.primary;
+  const linkSx = { color: textColor, textDecoration: "none", fontWeight: 600, fontSize: "0.9rem" };
+  const navLinkStyle = ({ isActive }: { isActive: boolean }): React.CSSProperties => ({
+    textDecoration: isActive ? "underline" : "none",
+    textUnderlineOffset: "6px",
+    color: textColor,
+    fontWeight: 600,
+    fontSize: "0.9rem",
+  });
+
+  return (
+    <Stack direction="row" alignItems="center" gap={3} sx={{ display: { xs: "none", md: "flex" } }}>
+      <NavLink to={ROUTES.HOME} style={navLinkStyle} end>
+        Home
+      </NavLink>
+      <NavLink to={ROUTES.RAIDS} style={navLinkStyle}>
+        Your RAiDs
+      </NavLink>
+      <Stack component="a" href={ROUTES.ABOUT_RAID} target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
+        About <OpenInNewIcon sx={{ fontSize: 16 }} />
+      </Stack>
+      <Stack component="a" href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
+        Documentation <OpenInNewIcon sx={{ fontSize: 16 }} />
+      </Stack>
+      <Stack component="a" href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
+        raid.org <OpenInNewIcon sx={{ fontSize: 16 }} />
+      </Stack>
+    </Stack>
+  );
+};
 
 const AuthenticatedNavbarContent = () => {
   const { isOperator, isGroupAdmin } = useAuthHelper();
   const { environment } = useRuntimeConfig();
   useServicePointPendingRequest();
   return (
-    <Stack direction="row" alignItems="center" gap={1}>
-      <ServicePointSwitcher />
+    <Stack direction="row" alignItems="center" gap={2}>
+      <HeaderNavLinks />
       {isOperator || isGroupAdmin ? <NotificationBell /> : null}
-      <UserDropdown />
       <Chip
         label={environment.toUpperCase()}
         color="error"
         size="small"
-        sx={{ mr: 2 }}
       />
-      <NavigationDrawer />
+      <UserDropdown />
     </Stack>
   );
 };
@@ -47,7 +87,7 @@ const AuthenticatedNavbarContent = () => {
  * Main application navigation bar
  * 
  * Provides consistent navigation across the application with authentication-aware
- * display of user controls, service point switcher, and navigation options.
+ * display of user controls and navigation options.
  * 
  * @param {boolean} authenticated - Whether a user is currently authenticated
  * @returns {JSX.Element} Navigation bar with appropriate controls based on auth state
@@ -89,10 +129,13 @@ export const AppNavBar = () => {
       data-testid="app-nav-bar"
     >
        {!config.default && (<MegaMenu />)}
-      <Toolbar variant={"dense"}>
+      <Toolbar variant={"dense"} sx={{ minHeight: "64px" }}>
         <Stack direction="row" alignItems="center">
-          <Link to="/" style={{ lineHeight: 0 }}>
-            <Box>
+          <Link
+            to="/"
+            style={{ lineHeight: 0, textDecoration: "none", color: "inherit" }}
+          >
+            <Stack direction="row" alignItems="center" gap={1.5}>
               <img
                 src={
                   theme.palette.mode === "dark"
@@ -100,9 +143,23 @@ export const AppNavBar = () => {
                     : config.header.logo.src
                 }
                 alt="logo"
-                height={config.header.logo.height + "px"}
+                width={62}
+                height={34}
               />
-            </Box>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  // AppBar's default color="primary" sets text to its
+                  // contrastText (white) regardless of the backgroundColor
+                  // override above, which is invisible against white.
+                  color: theme.palette.mode === "dark" ? "white" : "text.primary",
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                ARDC Research Activity Identifier
+              </Typography>
+            </Stack>
           </Link>
         </Stack>
         <div style={{ flexGrow: 1 }} />

@@ -42,7 +42,7 @@ body {
 
 .ardc-megamenu-wrap {
     width: 100%;
-    min-height: 48px;
+    min-height: 40px;
     background-color: #ffffff;
 }
 
@@ -69,7 +69,8 @@ body {
 }
 
 .logo-text {
-    height: 56px;
+    width: 62px;
+    height: 34px;
 }
 
 /* raid-custom's .nav-container only ever needed to hold the logo, so

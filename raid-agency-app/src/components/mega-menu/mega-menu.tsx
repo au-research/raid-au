@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Box } from "@mui/material";
 import { useExternalScript } from "@/hooks/useExternalScript";
 
 const MEGAMENU_SCRIPT_SRC =
@@ -10,27 +11,31 @@ export const MegaMenu = () => {
         if (el) el.style.display = "none";
     });
 
-    // The trigger bar's own inner wrapper (inside its shadow root) needs
-    // extra right padding so the button isn't flush against the true
-    // viewport edge; that's inside the ARDC-hosted component's shadow
-    // DOM, so it can't be reached with a normal stylesheet selector. Its
-    // content renders asynchronously, so this polls briefly rather than
-    // assuming it exists on mount.
+    // The trigger button itself (inside the component's shadow root) is
+    // position:absolute; right:0, so it's flush against the true viewport
+    // edge regardless of any padding set on its parents - padding only
+    // affects normal-flow children, not absolutely-positioned ones. Its
+    // own `right` is what needs overriding, and that content renders
+    // asynchronously, so this polls briefly rather than assuming it
+    // exists on mount.
     useEffect(() => {
         let attempts = 0;
-        const applyPadding = () => {
+        const applyInset = () => {
             const host = document.getElementById("ardc-menu");
-            const inner = host?.shadowRoot?.querySelector<HTMLElement>(".ardc-header__top-bar-inner");
-            if (inner) {
-                inner.style.paddingRight = "24px";
+            const btn = host?.shadowRoot?.querySelector<HTMLElement>(".ardc-header__explore-btn");
+            if (btn) {
+                // The component's own shadow stylesheet sets `right` with
+                // !important, so a plain inline-style assignment loses -
+                // setProperty with "important" priority is required to win.
+                btn.style.setProperty("right", "24px", "important");
                 return true;
             }
             return false;
         };
-        if (applyPadding()) return;
+        if (applyInset()) return;
         const interval = setInterval(() => {
             attempts += 1;
-            if (applyPadding() || attempts > 40) {
+            if (applyInset() || attempts > 40) {
                 clearInterval(interval);
             }
         }, 250);
@@ -38,11 +43,18 @@ export const MegaMenu = () => {
     }, []);
 
     return (
-        <ardc-megamenu
-            id="ardc-menu"
-            data-host="RAiD App"
-            data-content-width="full"
-            style={{ display: "block", opacity: 0, minHeight: "20px" }}
-        />
+        // The real component's rendered height exceeds the 20px FOUC
+        // placeholder once it loads; without this reserved min-height the
+        // AppBar doesn't leave it enough room, so it overlaps the Toolbar
+        // row below instead of pushing it down (same fix already applied
+        // to the Keycloak login theme and the static site).
+        <Box sx={{ width: "100%", minHeight: "40px", bgcolor: "#ffffff" }}>
+            <ardc-megamenu
+                id="ardc-menu"
+                data-host="RAiD App"
+                data-content-width="full"
+                style={{ display: "block", opacity: 0, minHeight: "20px" }}
+            />
+        </Box>
     );
 }

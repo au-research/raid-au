@@ -48,27 +48,31 @@
         onerror="document.getElementById('ardc-menu').style.display='none'"
     ></script>
     <script>
-        // The trigger bar's own inner wrapper (inside its shadow root)
-        // needs extra right padding so the button isn't flush against the
-        // true viewport edge; that's inside the ARDC-hosted component's
-        // shadow DOM, so it can't be reached with a normal stylesheet
-        // selector. Its content renders asynchronously, so this polls
-        // briefly rather than assuming it exists on page load.
+        // The trigger button itself (inside the component's shadow root)
+        // is position:absolute; right:0, so it's flush against the true
+        // viewport edge regardless of any padding set on its parents -
+        // padding only affects normal-flow children, not absolutely-
+        // positioned ones. Its own `right` is what needs overriding, and
+        // that content renders asynchronously, so this polls briefly
+        // rather than assuming it exists on page load.
         (function () {
             var attempts = 0;
-            function applyPadding() {
+            function applyInset() {
                 var host = document.getElementById('ardc-menu');
-                var inner = host && host.shadowRoot && host.shadowRoot.querySelector('.ardc-header__top-bar-inner');
-                if (inner) {
-                    inner.style.paddingRight = '24px';
+                var btn = host && host.shadowRoot && host.shadowRoot.querySelector('.ardc-header__explore-btn');
+                if (btn) {
+                    // The component's own shadow stylesheet sets `right`
+                    // with !important, so a plain inline-style assignment
+                    // loses - setProperty with "important" priority wins.
+                    btn.style.setProperty('right', '24px', 'important');
                     return true;
                 }
                 return false;
             }
-            if (applyPadding()) return;
+            if (applyInset()) return;
             var interval = setInterval(function () {
                 attempts += 1;
-                if (applyPadding() || attempts > 40) {
+                if (applyInset() || attempts > 40) {
                     clearInterval(interval);
                 }
             }, 250);
@@ -86,7 +90,7 @@
     <nav class="top-navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="logo-text" alt="logo">
+                <img src="${url.resourcesPath}/img/raid-logo-mark.svg" class="logo-text" alt="logo">
                 <span class="nav-title">${msg("org.header.title")}</span>
             </div>
             <div class="nav-links">

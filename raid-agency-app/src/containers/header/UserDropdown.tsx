@@ -1,54 +1,42 @@
-import { ErrorAlertComponent } from "@/components/error-alert-component";
-import { SnackbarContextInterface, useSnackbar } from "@/components/snackbar";
+import { useAuthHelper } from "@/auth/keycloak";
 import { useKeycloak } from "@/contexts/keycloak-context";
-import { Loading } from "@/pages/loading";
-import { fetchCurrentUserKeycloakGroups } from "@/services/keycloak-groups";
-import { KeycloakGroup } from "@/types";
-import { copyToClipboardWithNotification } from "@/utils/copy-utils/copyWithNotify";
+import { ROUTES } from "@/constants/routes";
 import {
-  AccountCircle as AccountCircleIcon,
   ExitToApp as ExitToAppIcon,
   ExpandMore as ExpandMoreIcon,
+  Hub as HubIcon,
+  Key as KeyIcon,
+  Layers as LayersIcon,
 } from "@mui/icons-material";
 import {
+  Avatar,
+  Box,
   Button,
   Divider,
-  IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
   MenuList,
+  Tooltip,
   Typography,
 } from "@mui/material";
-
-import { useQuery } from "@tanstack/react-query";
-import { KeycloakTokenParsed } from "keycloak-js";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const keycloakInternalRoles = [
-  "default-roles-raid",
-  "offline_access",
-  "uma_authorization",
-];
-
-function getRolesFromToken({
-  tokenParsed,
-}: {
-  tokenParsed: KeycloakTokenParsed | undefined;
-}): string[] | undefined {
-  return tokenParsed?.realm_access?.roles.filter(
-    (el) => !keycloakInternalRoles.includes(el)
-  );
+function getInitials(firstName?: string, lastName?: string, email?: string): string {
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  }
+  return email ? email[0].toUpperCase() : "?";
 }
 
 export function UserDropdown() {
-  const { isInitialized, tokenParsed, token, authenticated, logout } =
-    useKeycloak();
-  const snackbar = useSnackbar();
+  const { isInitialized, tokenParsed, authenticated, logout, user } = useKeycloak();
+  const { isOperator, isGroupAdmin, hasServicePointGroup, isServicePointUser } = useAuthHelper();
+  const navigate = useNavigate();
 
-  const [accountMenuAnchor, setAccountMenuAnchor] =
-    React.useState<null | HTMLElement>(null);
+  const [accountMenuAnchor, setAccountMenuAnchor] = React.useState<null | HTMLElement>(null);
 
   const handleAccountMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAccountMenuAnchor(event.currentTarget);
@@ -58,156 +46,116 @@ export function UserDropdown() {
     setAccountMenuAnchor(null);
   };
 
-  const roles = getRolesFromToken({ tokenParsed: tokenParsed });
+  const goTo = (path: string) => {
+    handleAccountMenuClose();
+    navigate(path);
+  };
 
-  const keycloakGroupsQuery = useQuery<KeycloakGroup[]>({
-    queryKey: ["keycloak-groups"],
-    queryFn: async () => {
-      const servicePoints = await fetchCurrentUserKeycloakGroups({
-        token: token,
-      });
-      return servicePoints;
-    },
-  });
-
-  if (keycloakGroupsQuery.isLoading) {
-    return <Loading />;
+  if (!authenticated || !isInitialized) {
+    return null;
   }
 
-  if (keycloakGroupsQuery.isError) {
-    return <ErrorAlertComponent error="Keycloak groups could not be fetched" />;
-  }
+  const canManageServicePoints = isOperator || isGroupAdmin;
+
+  const statusLabel = isOperator
+    ? "Operator"
+    : hasServicePointGroup && isServicePointUser
+      ? "Active"
+      : hasServicePointGroup && !isServicePointUser
+        ? "Access Pending"
+        : "No Service Point";
+
+  const displayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : tokenParsed?.email || "";
 
   return (
-    <>
-      {authenticated && isInitialized && (
-        <div>
-          {(authenticated && tokenParsed?.email && (
-            <Button
-              variant="outlined"
-              startIcon={<AccountCircleIcon />}
-              endIcon={<ExpandMoreIcon />}
-              color="primary"
-              onClick={handleAccountMenuOpen}
-              sx={{
-                textTransform: "none",
-              }}
-            >
-              <Typography
-                sx={{
-                  display: { xs: "none", md: "block" },
-                }}
-              >
-                {tokenParsed?.email}
-              </Typography>
-            </Button>
-          )) || (
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleAccountMenuOpen}
-            >
-              <AccountCircleIcon />
-            </IconButton>
-          )}
-          <Menu
-            id="menu-appbar"
-            anchorEl={accountMenuAnchor}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            open={Boolean(accountMenuAnchor)}
-            onClose={handleAccountMenuClose}
+    <div>
+      <Button
+        variant="outlined"
+        endIcon={<ExpandMoreIcon />}
+        color="primary"
+        onClick={handleAccountMenuOpen}
+        sx={{ textTransform: "none", pl: 0.5, borderRadius: "8px" }}
+      >
+        <Avatar sx={{ width: 28, height: 28, mr: 1, fontSize: 13, bgcolor: "primary.main" }}>
+          {getInitials(user?.firstName, user?.lastName, tokenParsed?.email)}
+        </Avatar>
+        <Typography>{tokenParsed?.email}</Typography>
+      </Button>
+      <Menu
+        id="menu-appbar"
+        anchorEl={accountMenuAnchor}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        open={Boolean(accountMenuAnchor)}
+        onClose={handleAccountMenuClose}
+        PaperProps={{ sx: { borderRadius: "8px", mt: 0.5 } }}
+      >
+        <Box sx={{ px: 2, py: 1 }}>
+          <Typography variant="subtitle2" fontWeight={700}>
+            {displayName}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {statusLabel}
+          </Typography>
+        </Box>
+        <Divider />
+        <MenuList dense>
+          <MenuItem onClick={() => goTo(ROUTES.API_KEY)}>
+            <ListItemIcon>
+              <KeyIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="API Tokens"
+              secondary="Create and manage integration tokens"
+            />
+          </MenuItem>
+          <MenuItem onClick={() => goTo(ROUTES.CACHE_MANAGER)}>
+            <ListItemIcon>
+              <LayersIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Cache Manager"
+              secondary="Refresh locally cached reference data"
+            />
+          </MenuItem>
+          <Tooltip
+            title={canManageServicePoints ? "" : "Requires service point administrator role"}
+            placement="left"
           >
-            <MenuList dense>
-              {tokenParsed?.email && (
-                <MenuItem
-                  onClick={async () => {
-                      await copyToClipboardWithNotification(
-                        tokenParsed?.email || "",
-                        "Copied email to clipboard",
-                        snackbar as SnackbarContextInterface
-                      );
-                    handleAccountMenuClose();
-                    }
-                  }
-                >
-                  <ListItemText
-                    primary="Email"
-                    secondary={tokenParsed?.email || ""}
-                  />
-                </MenuItem>
-              )}
+            <span>
               <MenuItem
-                onClick={async () => {
-                    await copyToClipboardWithNotification(
-                      tokenParsed?.sub || "",
-                      "Copied identity to clipboard",
-                      snackbar as SnackbarContextInterface
-                    );
-                  handleAccountMenuClose();
-                  }
-                }
-              >
-                <ListItemText primary="Identity" secondary={tokenParsed?.sub} />
-              </MenuItem>
-              <MenuItem disabled>
-                <ListItemText
-                  primary="Signed in (24h format)"
-                  secondary={
-                    tokenParsed?.iat &&
-                    Intl.DateTimeFormat("en-AU", {
-                      timeStyle: "short",
-                      dateStyle: "medium",
-                      hour12: false,
-                    }).format(+tokenParsed?.iat * 1000)
-                  }
-                />
-              </MenuItem>
-              <MenuItem disabled>
-                <ListItemText
-                  primary="Session expiry (24h format)"
-                  secondary={
-                    tokenParsed?.exp &&
-                    Intl.DateTimeFormat("en-AU", {
-                      timeStyle: "short",
-                      dateStyle: "medium",
-                      hour12: false,
-                    }).format(+tokenParsed?.exp * 1000)
-                  }
-                />
-              </MenuItem>
-              <Divider />
-              <MenuItem>
-                <ListItemText
-                  primary="Roles"
-                  secondary={roles?.sort().join(" | ")}
-                />
-              </MenuItem>
-              <Divider />
-              <MenuItem
-                onClick={() => {
-                  localStorage.removeItem("client_id");
-                  logout();
-                }}
+                disabled={!canManageServicePoints}
+                onClick={() => goTo(ROUTES.SERVICE_POINTS)}
               >
                 <ListItemIcon>
-                  <ExitToAppIcon fontSize="small" />
+                  <HubIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Sign out</ListItemText>
+                <ListItemText
+                  primary="Manage Service Points"
+                  secondary={canManageServicePoints ? undefined : "Requires service point administrator role"}
+                />
               </MenuItem>
-            </MenuList>
-          </Menu>
-        </div>
-      )}
-    </>
+            </span>
+          </Tooltip>
+        </MenuList>
+        <Divider />
+        <MenuList dense>
+          <MenuItem
+            onClick={() => {
+              localStorage.removeItem("client_id");
+              logout();
+            }}
+          >
+            <ListItemIcon>
+              <ExitToAppIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Sign Out</ListItemText>
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    </div>
   );
 }
