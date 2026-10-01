@@ -16,6 +16,8 @@ import au.org.raid.inttest.service.Handle;
 import feign.FeignException;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -52,6 +54,13 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
     private UserContext adminA;
 
     /**
+     * RAID-921: every credential a test creates, so teardown can delete its client. Revoking only
+     * disables a client and deleting a group leaves its credentials behind, so without this each run
+     * left about 42 clients in the realm of whichever Keycloak it ran against.
+     */
+    private final List<String> createdClientIds = new ArrayList<>();
+
+    /**
      * Keycloak's Admin API needs {@code realm-management} permissions, which the RAiD realm's
      * "operator" role does not confer - an operator is an application-level administrator, not a
      * Keycloak realm administrator. Admin API assertions therefore go through the
@@ -73,6 +82,8 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
 
     @AfterEach
     void tearDownCredentialFixtures() {
+        // Before the operator is deleted, since its token is what authorises the deletes.
+        deleteCreatedCredentialsQuietly();
         deleteUserQuietly(adminA);
         deleteGroupQuietly(groupA);
         deleteGroupQuietly(groupB);
@@ -126,9 +137,33 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    private void deleteCreatedCredentialsQuietly() {
+        if (operator == null) {
+            return;
+        }
+        final var api = keycloakClient.keycloakApi(operator.getToken());
+        for (final var clientId : createdClientIds) {
+            try {
+                api.deleteClientCredential(clientId);
+            } catch (Exception e) {
+                // Already deleted by the test itself, or the deployed IAM predates the delete
+                // endpoint - not a failure of the test itself.
+            }
+        }
+        createdClientIds.clear();
+    }
+
+    /** Records a successfully created credential for teardown, and returns the response unchanged. */
+    private ResponseEntity<CredentialSecretResponse> tracked(final ResponseEntity<CredentialSecretResponse> response) {
+        if (response.getBody() != null && response.getBody().clientId() != null) {
+            createdClientIds.add(response.getBody().clientId());
+        }
+        return response;
+    }
+
     private CredentialSecretResponse createCredential(final UserContext as, final String groupId, final String label) {
-        final var response = keycloakClient.keycloakApi(as.getToken())
-                .createClientCredential(new CreateCredentialRequest(groupId, label));
+        final var response = tracked(keycloakClient.keycloakApi(as.getToken())
+                .createClientCredential(new CreateCredentialRequest(groupId, label)));
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isNotNull();
         return response.getBody();
@@ -220,8 +255,8 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("create response sets Cache-Control: no-store and returns the label")
         void createResponseIsUncacheableAndCarriesTheLabel() {
-            final var response = keycloakClient.keycloakApi(adminA.getToken())
-                    .createClientCredential(new CreateCredentialRequest(groupA.getId(), "labelled"));
+            final var response = tracked(keycloakClient.keycloakApi(adminA.getToken())
+                    .createClientCredential(new CreateCredentialRequest(groupA.getId(), "labelled")));
 
             assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
             assertThat(response.getBody()).isNotNull();
@@ -310,6 +345,74 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
             assertThat(api.revokeClientCredential(credential.clientId()).getStatusCode().value()).isEqualTo(200);
             assertThat(api.revokeClientCredential(credential.clientId()).getStatusCode().value()).isEqualTo(200);
         }
+    }
+
+    @Nested
+    @DisplayName("Deletion")
+    class Delete {
+
+        @Test
+        @DisplayName("delete removes the client and its service account, and it can no longer authenticate")
+        void deleteRemovesTheClientAndItsServiceAccount() {
+            final var credential = createCredential(adminA, groupA.getId(), "delete me");
+            tokenService.getClientToken(credential.clientId(), credential.secret());
+
+            final var response = keycloakClient.keycloakApi(adminA.getToken())
+                    .deleteClientCredential(credential.clientId());
+            assertThat(response.getStatusCode().value()).isEqualTo(204);
+
+            // Typed, so a network error cannot pass for a rejected credential.
+            assertThatThrownBy(() -> tokenService.getClientToken(credential.clientId(), credential.secret()))
+                    .describedAs("a deleted credential must not authenticate")
+                    .isInstanceOf(HttpClientErrorException.class)
+                    .satisfies(e -> assertThat(((HttpClientErrorException) e).getStatusCode().value())
+                            .isIn(400, 401));
+            // Verified via the Admin API, not inferred: the service account must go with the client.
+            assertThat(adminApi().findUserByUsername("service-account-" + credential.clientId()).getBody())
+                    .describedAs("the credential's service account user must be deleted with it")
+                    .isNullOrEmpty();
+            assertThat(keycloakClient.keycloakApi(adminA.getToken()).listClientCredentials(groupA.getId()).getBody())
+                    .extracting("clientId").doesNotContain(credential.clientId());
+        }
+
+        @Test
+        @DisplayName("a revoked credential can be deleted")
+        void revokedCredentialCanBeDeleted() {
+            final var credential = createCredential(adminA, groupA.getId(), "revoke then delete");
+            final var api = keycloakClient.keycloakApi(adminA.getToken());
+            api.revokeClientCredential(credential.clientId());
+
+            assertThat(api.deleteClientCredential(credential.clientId()).getStatusCode().value()).isEqualTo(204);
+        }
+
+        @Test
+        @DisplayName("deleting an already-deleted credential is 404")
+        void deletingTwiceIsNotFound() {
+            final var credential = createCredential(adminA, groupA.getId(), "delete twice");
+            final var api = keycloakClient.keycloakApi(adminA.getToken());
+            api.deleteClientCredential(credential.clientId());
+
+            assertThatThrownBy(() -> api.deleteClientCredential(credential.clientId()))
+                    .isInstanceOf(FeignException.class)
+                    .satisfies(e -> assertThat(((FeignException) e).status()).isEqualTo(404));
+        }
+
+        @Test
+        @DisplayName("an admin of one service point cannot delete another's credential")
+        void cannotDeleteAnotherServicePointsCredential() {
+            final var theirs = createCredential(operator, groupB.getId(), "theirs");
+            final var api = keycloakClient.keycloakApi(adminA.getToken());
+            assertDenied(() -> api.deleteClientCredential(theirs.clientId()));
+
+            // The denial must not have deleted it anyway.
+            assertThat(keycloakClient.keycloakApi(operator.getToken()).listClientCredentials(groupB.getId()).getBody())
+                    .extracting("clientId").contains(theirs.clientId());
+        }
+
+        // Deliberately no live "realm clients cannot be deleted" test: it would have to target a real
+        // client such as raid-api, which a regression would genuinely delete from the environment the
+        // suite runs against. ClientCredentialControllerTest.Delete#aRealmClientCannotBeDeleted covers
+        // the managed-client guard instead.
     }
 
     @Nested
@@ -462,8 +565,8 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
 
             api.revokeClientCredential(first.clientId());
 
-            final var afterRevoke = api.createClientCredential(
-                    new CreateCredentialRequest(groupA.getId(), "reused slot"));
+            final var afterRevoke = tracked(api.createClientCredential(
+                    new CreateCredentialRequest(groupA.getId(), "reused slot")));
             assertThat(afterRevoke.getStatusCode().value()).isEqualTo(201);
         }
     }
@@ -495,26 +598,10 @@ class ClientCredentialIntegrationTest extends AbstractIntegrationTest {
 
         // These two fixture service points are shared, persistent Keycloak groups (unlike groupA/
         // groupB above, which this class creates and deletes per test) and are capped at 10 active
-        // credentials each, so every credential minted against them here must be revoked - tracked
-        // and cleaned up in tearDown() rather than left for a future run to trip the cap.
-        private final List<String> credentialClientIdsToRevoke = new ArrayList<>();
-
-        @AfterEach
-        void revokeCredentials() {
-            final var api = keycloakClient.keycloakApi(operator.getToken());
-            for (final var clientId : credentialClientIdsToRevoke) {
-                try {
-                    api.revokeClientCredential(clientId);
-                } catch (Exception e) {
-                    // Already gone, or the test that created it failed before revocation mattered.
-                }
-            }
-        }
-
+        // credentials each. createCredential() tracks every credential minted against them, and the
+        // outer teardown deletes it, so a future run never trips the cap.
         private CredentialSecretResponse credential(final String groupId, final String label) {
-            final var created = createCredential(operator, groupId, label);
-            credentialClientIdsToRevoke.add(created.clientId());
-            return created;
+            return createCredential(operator, groupId, label);
         }
 
         private RaidApi credentialRaidApi(final CredentialSecretResponse credential) {

@@ -109,6 +109,9 @@ public interface KeycloakApi {
     @RequestMapping(method = RequestMethod.DELETE, value = "/realms/raid/client-credential")
     ResponseEntity<CredentialSummary> revokeClientCredential(@RequestParam final String clientId);
 
+    @RequestMapping(method = RequestMethod.DELETE, value = "/realms/raid/client-credential/delete")
+    ResponseEntity<Void> deleteClientCredential(@RequestParam final String clientId);
+
     // RAID-848: role-grant assertions must be verified via a direct Keycloak Admin API query rather
     // than inferred from the SPI's own responses. Note the /admin/realms/raid/clients endpoints are
     // NOT usable from these tests: integration-test-client's service account holds only

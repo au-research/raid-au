@@ -34,7 +34,8 @@ public class TokenService {
 
         final var body = "client_id=%s&username=%s&password=%s&grant_type=%s".formatted(clientId, username, password, grantType);
 
-        log.debug("Requesting token with body {}", body);
+        // Never log the body: it carries the password.
+        log.debug("Requesting {} token for user {} via client {}", grantType, username, clientId);
 
         final var httpEntity = new HttpEntity<>(body, headers);
 
@@ -52,12 +53,13 @@ public class TokenService {
 
         final var body = "client_id=%s&client_secret=%s&grant_type=client_credentials".formatted(clientId, clientSecret);
 
-        log.debug("Requesting token with body {}", body);
+        // Never log the body: it carries the client secret.
+        log.debug("Requesting client_credentials token for client {}", clientId);
 
         final var httpEntity = new HttpEntity<>(body, headers);
 
         final var tokenResponse = restTemplate.postForEntity(tokenUri, httpEntity, TokenResponse.class);
-        log.debug("Token request returned {} for user {}", tokenResponse.getStatusCode(), clientId);
+        log.debug("Token request returned {} for client {}", tokenResponse.getStatusCode(), clientId);
 
         return Objects.requireNonNull(tokenResponse.getBody()).getAccessToken();
     }
