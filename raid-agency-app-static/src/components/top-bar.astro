@@ -38,27 +38,48 @@ const { topBar } = getSiteConfig().header;
     // positioned ones. Its own `right` is what needs overriding, and
     // that content renders asynchronously, so this polls briefly rather
     // than assuming it exists on page load.
+    //
+    // The component reveals itself (opacity 0 -> 1) as soon as it
+    // initialises, which can happen before this poll has run - visibly
+    // flashing the button flush-right for a moment before it jumps to
+    // its corrected position. An inline opacity:0 override can't
+    // reliably prevent that: the component appears to replace its own
+    // inline `style` attribute wholesale at some point after first
+    // mount, which silently wipes out anything set via host.style,
+    // including an !important inline override. An external stylesheet
+    // rule doesn't live on the element's style attribute at all, so it
+    // survives that replacement - hide via a stylesheet instead, and
+    // only remove the rule once a fixed safety window has elapsed with
+    // the position fix continuously re-applied throughout.
     (function () {
-      var attempts = 0;
-      function applyInset() {
-        var host = document.getElementById("ardc-menu");
-        var btn = host && host.shadowRoot && host.shadowRoot.querySelector(".ardc-header__explore-btn");
-        if (btn) {
-          // The component's own shadow stylesheet sets `right` with
-          // !important, so a plain inline-style assignment loses -
-          // setProperty with "important" priority is required to win.
-          btn.style.setProperty("right", "24px", "important");
-          return true;
-        }
-        return false;
+      var host = document.getElementById("ardc-menu");
+      if (!host) return;
+
+      var hideStyle = document.createElement("style");
+      hideStyle.textContent = "#ardc-menu { opacity: 0 !important; }";
+      document.head.appendChild(hideStyle);
+
+      function applyFix() {
+        var btn = host.shadowRoot && host.shadowRoot.querySelector(".ardc-header__explore-btn");
+        if (!btn) return false;
+        // The component's own shadow stylesheet sets `right` with
+        // !important, so a plain inline-style assignment loses -
+        // setProperty with "important" priority is required to win.
+        btn.style.setProperty("right", "24px", "important");
+        return true;
       }
-      if (applyInset()) return;
+
+      var elapsedMs = 0;
+      var tickMs = 50;
+      var safetyWindowMs = 800;
       var interval = setInterval(function () {
-        attempts += 1;
-        if (applyInset() || attempts > 40) {
+        applyFix();
+        elapsedMs += tickMs;
+        if (elapsedMs >= safetyWindowMs) {
           clearInterval(interval);
+          hideStyle.remove();
         }
-      }, 250);
+      }, tickMs);
     })();
   </script>
 )}

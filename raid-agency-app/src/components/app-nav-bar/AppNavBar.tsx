@@ -1,9 +1,11 @@
-import { Home as HomeIcon, OpenInNew as OpenInNewIcon } from "@mui/icons-material";
+import { Home as HomeIcon, Menu as MenuIcon, OpenInNew as OpenInNewIcon } from "@mui/icons-material";
 import {
   AppBar,
   Box,
   Chip,
   IconButton,
+  Menu,
+  MenuItem,
   Stack,
   Toolbar,
   Typography,
@@ -23,11 +25,12 @@ import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
 import { ROUTES } from "@/constants/routes";
 
-// About/Documentation/raid.org currently point at this dev environment's
-// React app / raid.org.au as placeholders - there's no environment-aware
-// config for the real per-environment targets yet (same gap as the
-// Keycloak login theme's equivalent nav links), and no real Documentation
-// destination exists yet anywhere in the repo.
+// Real destinations per ARDC's RAiD domain/service guide (not this app's
+// own routes - About/Documentation/raid.org are deliberately external).
+const ABOUT_URL = "https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/";
+const DOCUMENTATION_URL = "https://documentation.ardc.edu.au/raid";
+const RAID_ORG_URL = "https://raid.org";
+
 const HeaderNavLinks = () => {
   const theme = useTheme();
   // AppBar's default color="primary" sets text to its contrastText
@@ -52,16 +55,49 @@ const HeaderNavLinks = () => {
       <NavLink to={ROUTES.RAIDS} style={navLinkStyle}>
         Your RAiDs
       </NavLink>
-      <Stack component="a" href={ROUTES.ABOUT_RAID} target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
+      <Stack component="a" href={ABOUT_URL} target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
         About <OpenInNewIcon sx={{ fontSize: 16 }} />
       </Stack>
-      <Stack component="a" href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
+      <Stack component="a" href={DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
         Documentation <OpenInNewIcon sx={{ fontSize: 16 }} />
       </Stack>
-      <Stack component="a" href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
+      <Stack component="a" href={RAID_ORG_URL} target="_blank" rel="noopener noreferrer" direction="row" alignItems="center" gap={0.4} sx={linkSx}>
         raid.org <OpenInNewIcon sx={{ fontSize: 16 }} />
       </Stack>
     </Stack>
+  );
+};
+
+// HeaderNavLinks hides below the "md" breakpoint with nowhere else to
+// go, since the hamburger drawer that used to hold these was removed
+// (it wasn't in the design and largely duplicated the new nav links /
+// user menu) - this is the mobile-only replacement, a compact menu
+// button that opens the same five links.
+const MobileNavMenu = () => {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  return (
+    <Box sx={{ display: { xs: "flex", md: "none" } }}>
+      <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} aria-label="navigation menu">
+        <MenuIcon />
+      </IconButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+        <MenuItem component={NavLink} to={ROUTES.HOME} onClick={() => setAnchorEl(null)}>
+          Home
+        </MenuItem>
+        <MenuItem component={NavLink} to={ROUTES.RAIDS} onClick={() => setAnchorEl(null)}>
+          Your RAiDs
+        </MenuItem>
+        <MenuItem component="a" href={ABOUT_URL} target="_blank" rel="noopener noreferrer" onClick={() => setAnchorEl(null)}>
+          About
+        </MenuItem>
+        <MenuItem component="a" href={DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer" onClick={() => setAnchorEl(null)}>
+          Documentation
+        </MenuItem>
+        <MenuItem component="a" href={RAID_ORG_URL} target="_blank" rel="noopener noreferrer" onClick={() => setAnchorEl(null)}>
+          raid.org
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 };
 
@@ -72,6 +108,7 @@ const AuthenticatedNavbarContent = () => {
   return (
     <Stack direction="row" alignItems="center" gap={2}>
       <HeaderNavLinks />
+      <MobileNavMenu />
       {isOperator || isGroupAdmin ? <NotificationBell /> : null}
       <Chip
         label={environment.toUpperCase()}

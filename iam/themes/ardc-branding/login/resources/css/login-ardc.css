@@ -117,6 +117,61 @@ body {
     text-decoration: underline;
 }
 
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 8px;
+    margin: 0;
+    color: var(--text-heading);
+    cursor: pointer;
+}
+
+/* Matches the React app's own responsive breakpoints for the same
+   elements (Typography sm, Stack md) - without these, the title and
+   nav links have nowhere to go on a narrow viewport and wrap on top
+   of each other instead. */
+@media (max-width: 599px) {
+    .nav-title {
+        display: none;
+    }
+}
+
+@media (max-width: 899px) {
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        z-index: 10;
+    }
+
+    .nav-links.nav-links--open {
+        display: flex;
+    }
+
+    .nav-links a {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        box-sizing: border-box;
+    }
+
+    .mobile-nav-toggle {
+        display: inline-flex;
+    }
+
+    .top-navbar {
+        position: relative;
+    }
+}
+
 /* ==================== Sign-in card compaction ====================
    raid-custom's own card sizing (100px logo, 3rem+ padding) was tuned
    for a page with no footer below it. With the real ARDC footer now

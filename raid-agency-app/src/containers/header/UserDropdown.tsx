@@ -77,7 +77,21 @@ export function UserDropdown() {
         endIcon={<ExpandMoreIcon />}
         color="primary"
         onClick={handleAccountMenuOpen}
-        sx={{ textTransform: "none", pl: 0.5, borderRadius: "8px" }}
+        sx={{
+          textTransform: "none",
+          pl: 0.5,
+          borderRadius: "8px",
+          // MUI's default outlined-button border is the theme colour at
+          // 50% opacity, which read as too faint against the mock's
+          // bolder purple outline - set explicitly to full opacity, with
+          // a light purple tint behind it instead of a transparent fill.
+          borderColor: "primary.main",
+          backgroundColor: "rgba(142, 72, 155, 0.06)",
+          "&:hover": {
+            backgroundColor: "rgba(142, 72, 155, 0.12)",
+            borderColor: "primary.main",
+          },
+        }}
       >
         <Avatar sx={{ width: 28, height: 28, mr: 1, fontSize: 13, bgcolor: "primary.main" }}>
           {getInitials(user?.firstName, user?.lastName, tokenParsed?.email)}

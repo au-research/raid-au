@@ -55,45 +55,61 @@
         // positioned ones. Its own `right` is what needs overriding, and
         // that content renders asynchronously, so this polls briefly
         // rather than assuming it exists on page load.
+        //
+        // The component reveals itself (opacity 0 -> 1) as soon as it
+        // initialises, which can happen before this poll has run -
+        // visibly flashing the button flush-right for a moment before it
+        // jumps to its corrected position. An inline opacity:0 override
+        // can't reliably prevent that: the component appears to replace
+        // its own inline `style` attribute wholesale at some point after
+        // first mount, which silently wipes out anything set via
+        // host.style, including an !important inline override. An
+        // external stylesheet rule doesn't live on the element's style
+        // attribute at all, so it survives that replacement - hide via a
+        // stylesheet instead, and only remove the rule once a fixed
+        // safety window has elapsed with the position fix continuously
+        // re-applied throughout.
         (function () {
-            var attempts = 0;
-            function applyInset() {
-                var host = document.getElementById('ardc-menu');
-                var btn = host && host.shadowRoot && host.shadowRoot.querySelector('.ardc-header__explore-btn');
-                if (btn) {
-                    // The component's own shadow stylesheet sets `right`
-                    // with !important, so a plain inline-style assignment
-                    // loses - setProperty with "important" priority wins.
-                    btn.style.setProperty('right', '24px', 'important');
-                    return true;
-                }
-                return false;
+            var host = document.getElementById('ardc-menu');
+            if (!host) return;
+
+            var hideStyle = document.createElement('style');
+            hideStyle.textContent = '#ardc-menu { opacity: 0 !important; }';
+            document.head.appendChild(hideStyle);
+
+            function applyFix() {
+                var btn = host.shadowRoot && host.shadowRoot.querySelector('.ardc-header__explore-btn');
+                if (!btn) return false;
+                // The component's own shadow stylesheet sets `right`
+                // with !important, so a plain inline-style assignment
+                // loses - setProperty with "important" priority wins.
+                btn.style.setProperty('right', '24px', 'important');
+                return true;
             }
-            if (applyInset()) return;
+
+            var elapsedMs = 0;
+            var tickMs = 50;
+            var safetyWindowMs = 800;
             var interval = setInterval(function () {
-                attempts += 1;
-                if (applyInset() || attempts > 40) {
+                applyFix();
+                elapsedMs += tickMs;
+                if (elapsedMs >= safetyWindowMs) {
                     clearInterval(interval);
+                    hideStyle.remove();
                 }
-            }, 250);
+            }, tickMs);
         })();
     </script>
 
-    <!-- Top Navigation Bar.
-         TODO: About/Documentation currently point at this dev
-         environment's React app / raid.org.au as placeholders - the
-         Keycloak theme has no config mechanism today for the React
-         app's actual per-environment origin (dev/test/demo/prod), and
-         no real Documentation destination exists yet anywhere in the
-         repo. Both need real, environment-aware targets before this
-         ships beyond local dev. -->
+    <!-- Top Navigation Bar. About/Documentation/raid.org are real,
+         external destinations per ARDC's RAiD domain/service guide. -->
     <nav class="top-navbar">
         <div class="nav-container">
             <div class="nav-logo">
                 <img src="${url.resourcesPath}/img/raid-logo-mark.svg" class="logo-text" alt="logo">
                 <span class="nav-title">${msg("org.header.title")}</span>
             </div>
-            <div class="nav-links">
+            <div class="nav-links" id="nav-links">
                 <#assign externalLinkIcon>
                     <svg class="nav-link-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -101,10 +117,37 @@
                         <path d="M10 14 21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </#assign>
-                <a href="http://localhost:7080/about-raid" target="_blank" rel="noopener noreferrer">About ${externalLinkIcon?no_esc}</a>
-                <a href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer">Documentation ${externalLinkIcon?no_esc}</a>
-                <a href="https://www.raid.org.au" target="_blank" rel="noopener noreferrer">raid.org ${externalLinkIcon?no_esc}</a>
+                <a href="https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/" target="_blank" rel="noopener noreferrer">About ${externalLinkIcon?no_esc}</a>
+                <a href="https://documentation.ardc.edu.au/raid" target="_blank" rel="noopener noreferrer">Documentation ${externalLinkIcon?no_esc}</a>
+                <a href="https://raid.org" target="_blank" rel="noopener noreferrer">raid.org ${externalLinkIcon?no_esc}</a>
             </div>
+            <!-- Mobile-only equivalent of React's MobileNavMenu: .nav-links
+                 has nowhere to go below 899px (see login-ardc.css), so this
+                 toggles it open as a dropdown instead of leaving it with no
+                 way to reach these links at all. -->
+            <button
+                type="button"
+                class="mobile-nav-toggle"
+                id="mobile-nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false"
+                aria-controls="nav-links"
+            >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <script>
+                (function () {
+                    var toggle = document.getElementById('mobile-nav-toggle');
+                    var links = document.getElementById('nav-links');
+                    if (!toggle || !links) return;
+                    toggle.addEventListener('click', function () {
+                        var isOpen = links.classList.toggle('nav-links--open');
+                        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    });
+                })();
+            </script>
         </div>
     </nav>
 
