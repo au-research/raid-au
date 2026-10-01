@@ -24,12 +24,11 @@ import { useRuntimeConfig } from "@/config";
 import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
 import { ROUTES } from "@/constants/routes";
+import { EXTERNAL_LINKS } from "@/constants/external-links";
 
-// Real destinations per ARDC's RAiD domain/service guide (not this app's
-// own routes - About/Documentation/raid.org are deliberately external).
-const ABOUT_URL = "https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/";
-const DOCUMENTATION_URL = "https://documentation.ardc.edu.au/raid";
-const RAID_ORG_URL = "https://raid.org";
+const ABOUT_URL = EXTERNAL_LINKS.ABOUT_RAID;
+const DOCUMENTATION_URL = EXTERNAL_LINKS.DOCUMENTATION;
+const RAID_ORG_URL = EXTERNAL_LINKS.RAID_ORG;
 
 const HeaderNavLinks = () => {
   const theme = useTheme();

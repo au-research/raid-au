@@ -175,13 +175,29 @@
         data-show-ardc-logo
         style="opacity: 0;"
     >
+        <!-- Real, external destinations per ARDC's RAiD domain/service
+             guide - same URLs as the React app's footer quick-links
+             (src/constants/external-links.ts), kept in sync manually
+             since this theme has no shared build step with that app. -->
         <ul id="quick-links">
-            <li><a href="mailto:${msg("contact")}">${msg("contact")}</a></li>
+            <li><a href="https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/" target="_blank" rel="noopener noreferrer">About RAiD</a></li>
+            <li><a href="https://raid.org" target="_blank" rel="noopener noreferrer">Visit raid.org</a></li>
+            <li><a href="https://documentation.ardc.edu.au/raid" target="_blank" rel="noopener noreferrer">RAiD User Guides</a></li>
+            <li><a href="https://metadata.raid.org/" target="_blank" rel="noopener noreferrer">RAiD Schema Documentation</a></li>
+            <li><a href="mailto:contact@raid.org">Request Support</a></li>
+            <li><a href="mailto:services@ardc.edu.au">Contact the ARDC</a></li>
         </ul>
         <ul id="legal-links">
-            <li><a href="${msg("termsOfUse")}">Terms of use</a></li>
-            <li><a href="${msg("accessibility")}">Accessibility</a></li>
-            <li><a href="${msg("privacyPolicy")}">Privacy policy</a></li>
+            <!-- Not msg()-driven: "termsOfUse"/"accessibility" aren't
+                 defined anywhere in this theme (render as the literal key
+                 name), and "privacyPolicy" is a realm-level localization
+                 override that's a full HTML link snippet meant to be
+                 dropped inline, not a bare URL - wrapping it in another
+                 <a href> put raw HTML inside an href attribute. Same real
+                 URLs as React's app-config.json footer.links. -->
+            <li><a href="https://ardc.edu.au/terms-and-conditions/" target="_blank" rel="noopener noreferrer">Terms of use</a></li>
+            <li><a href="https://ardc.edu.au/accessibility-statement-for-ardc/" target="_blank" rel="noopener noreferrer">Accessibility</a></li>
+            <li><a href="https://ardc.edu.au/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy policy</a></li>
         </ul>
         <a id="ardc-footer-acn" href="https://www.acnc.gov.au/charity/charities/eca273f3-f5be-e911-a98a-000d3ad02a61/profile">ACN 633 798 857</a>
     </ardc-footer>

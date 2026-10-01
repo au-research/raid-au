@@ -2,6 +2,19 @@ import { useContext, useEffect } from 'react';
 import { AppConfigContext } from '../../config/Appconfigcontext';
 import { AppConfig } from '../../config/Appconfig';
 import { useExternalScript } from '@/hooks/useExternalScript';
+import { EXTERNAL_LINKS } from '@/constants/external-links';
+
+// Per the mock's full Quick Links list - these are fixed, external
+// destinations (same as the header nav links), not config-driven like
+// the legal links below.
+const QUICK_LINKS = [
+    { label: 'About RAiD', path: EXTERNAL_LINKS.ABOUT_RAID },
+    { label: 'Visit raid.org', path: EXTERNAL_LINKS.RAID_ORG },
+    { label: 'RAiD User Guides', path: EXTERNAL_LINKS.DOCUMENTATION },
+    { label: 'RAiD Schema Documentation', path: EXTERNAL_LINKS.SCHEMA_DOCUMENTATION },
+    { label: 'Request Support', path: EXTERNAL_LINKS.REQUEST_SUPPORT },
+    { label: 'Contact the ARDC', path: EXTERNAL_LINKS.CONTACT_ARDC },
+];
 
 const FOOTER_SCRIPT_SRC =
     'https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/footer.min.js';
@@ -43,7 +56,6 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
         return () => clearInterval(interval);
     }, []);
 
-    const quickLinks = config.footer.links.filter((link) => link.contact);
     const legalLinks = config.footer.links.filter((link) => !link.contact);
 
     return (
@@ -54,7 +66,7 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
             style={{ opacity: 0 }}
         >
             <ul id="quick-links">
-                {quickLinks.map((link, index) => (
+                {QUICK_LINKS.map((link, index) => (
                     <li key={index}><a href={link.path}>{link.label}</a></li>
                 ))}
             </ul>
