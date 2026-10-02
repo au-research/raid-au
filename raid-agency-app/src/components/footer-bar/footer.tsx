@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react';
 import { AppConfigContext } from '../../config/Appconfigcontext';
-import { AppConfig } from '../../config/Appconfig';
+import { AppConfig } from '@/config/Appconfig';
 import { useExternalScript } from '@/hooks/useExternalScript';
 import { EXTERNAL_LINKS } from '@/constants/external-links';
 

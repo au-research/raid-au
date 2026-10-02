@@ -2,6 +2,7 @@ import { useAuthHelper } from "@/auth/keycloak";
 import { useKeycloak } from "@/contexts/keycloak-context";
 import { ROUTES } from "@/constants/routes";
 import {
+  AccountCircle as AccountCircleIcon,
   ExitToApp as ExitToAppIcon,
   ExpandMore as ExpandMoreIcon,
   Hub as HubIcon,
@@ -70,6 +71,12 @@ export function UserDropdown() {
       ? `${user.firstName} ${user.lastName}`
       : tokenParsed?.email || "";
 
+  // Federated SSO (SATOSA/eduGAIN) doesn't always release an email or
+  // name claim - with neither, there's nothing meaningful to show as
+  // initials or a label, so fall back to a plain account icon instead
+  // of a bare "?" avatar with empty text next to it.
+  const hasIdentity = Boolean((user?.firstName && user?.lastName) || tokenParsed?.email);
+
   return (
     <div>
       <Button
@@ -94,9 +101,13 @@ export function UserDropdown() {
         }}
       >
         <Avatar sx={{ width: 28, height: 28, mr: 1, fontSize: 13, bgcolor: "primary.main" }}>
-          {getInitials(user?.firstName, user?.lastName, tokenParsed?.email)}
+          {hasIdentity ? (
+            getInitials(user?.firstName, user?.lastName, tokenParsed?.email)
+          ) : (
+            <AccountCircleIcon fontSize="small" />
+          )}
         </Avatar>
-        <Typography>{tokenParsed?.email}</Typography>
+        {tokenParsed?.email && <Typography>{tokenParsed.email}</Typography>}
       </Button>
       <Menu
         id="menu-appbar"
