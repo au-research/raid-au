@@ -3,7 +3,7 @@
 - JIRA: [RAID-812](https://ardc.atlassian.net/browse/RAID-812) (Task)
 - Related: [RAID-892](https://ardc.atlassian.net/browse/RAID-892), [RAID-893](https://ardc.atlassian.net/browse/RAID-893), [RAID-835](https://ardc.atlassian.net/browse/RAID-835), [RAID-809](https://ardc.atlassian.net/browse/RAID-809)
 - Status: draft for review, 5 October 2026
-- PR: not yet raised
+- PR: [#698](https://github.com/au-research/raid-au/pull/698)
 
 Labels used below: **Verified** means checked against `origin/main` source on 2 October 2026 or a primary web source. **Unverified** means an assumption that still needs confirming.
 
