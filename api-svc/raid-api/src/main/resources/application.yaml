@@ -97,8 +97,12 @@ raid:
     # to validators only; the shared RestTemplate (minting etc.) is unaffected (RAID-802).
     connect-timeout: 5s
     read-timeout: 10s
-    web-archive:
-      availability-url: https://archive.org/wayback/available
+    # Per-instance cache of related objects whose resolver check succeeded (RAID-935), so a
+    # save retried after a 503 does not re-check links already confirmed. Failures and 503s are
+    # never cached. Both values are chosen, not measured. A zero expiry or size disables it.
+    success-cache:
+      expire-after-write: 30m
+      maximum-size: 10000
   history:
     baseline-interval: 50
   datacite:
@@ -113,6 +117,10 @@ raid:
 server:
   forward-headers-strategy: native
 spring:
+  cache:
+    # Pinned because Caffeine is now on the classpath (RAID-935), which would otherwise make
+    # Spring Boot swap the @Cacheable schema lookups from the simple cache to Caffeine.
+    type: simple
   jackson:
     default-property-inclusion: non_null
     serialization:

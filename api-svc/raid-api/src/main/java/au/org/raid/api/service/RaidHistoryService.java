@@ -145,6 +145,7 @@ public class RaidHistoryService {
         return objectMapper.readValue(jsonValueFactory.create(history, diff).toString(), RaidDto.class);
     }
 
+    @Transactional(readOnly = true)
     @SneakyThrows
     public Optional<String> findByHandleAndVersion(final String handle, final Integer version) {
         final var history = raidHistoryRepository.findAllByHandleAndVersion(handle, version).stream()

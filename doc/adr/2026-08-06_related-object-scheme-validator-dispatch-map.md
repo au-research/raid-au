@@ -23,9 +23,11 @@ into a **scheme-to-validator map**.
    Entries: `doi.org -> doiService::validate`,
    `hdl.handle.net -> handleService::validate`, and
    `web.archive.org -> ` a local lambda running the inline
-   `WEB_ARCHIVE_URL_PATTERN` regex (web-archive has no resolver call, so it
-   keeps its regex-only behaviour). DOI and Handle are resolver-backed
-   validators extending `AbstractUriValidator`.
+   `WEB_ARCHIVE_URL_PATTERN` regex. (Update: that was the original RAID-786
+   behaviour. Since RAID-788 web archive is also resolver-backed; since
+   RAID-885 `WebArchiveService` extends `AbstractUriValidator` and HEAD-checks
+   the supplied playback link.) DOI and Handle are resolver-backed validators
+   extending `AbstractUriValidator`.
 
 2. **Built in the constructor, not as a Spring bean.** The map is assembled in
    the `RelatedObjectValidator` constructor from the injected `DoiService` and

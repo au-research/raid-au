@@ -66,6 +66,8 @@ dependencies{
   implementation 'jakarta.annotation:jakarta.annotation-api'
 
   implementation libs.geonames.ws.client
+  // RAID-935 URI-validation success cache
+  implementation libs.caffeine
   compileOnly libs.lombok
   annotationProcessor libs.lombok
 

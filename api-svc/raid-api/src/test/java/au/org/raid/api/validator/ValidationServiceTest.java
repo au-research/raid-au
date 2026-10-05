@@ -6,10 +6,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,6 +55,8 @@ class ValidationServiceTest {
     private SpatialCoverageValidator spatialCoverageValidator;
     @Mock
     private DateValidator dateValidator;
+    @Mock
+    private au.org.raid.api.service.RaidHistoryService raidHistoryService;
 
     private ValidationService validationService;
 
@@ -69,7 +75,9 @@ class ValidationServiceTest {
                 relatedRaidValidator,
                 spatialCoverageValidator,
                 dateValidator,
-                DIRECT_EXECUTOR
+                DIRECT_EXECUTOR,
+                raidHistoryService,
+                new ObjectMapper()
         );
     }
 
@@ -304,7 +312,7 @@ class ValidationServiceTest {
 
         when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of(contributorFailure)));
         when(organisationValidator.validate(any())).thenReturn(ValidationResult.of(List.of(orgFailure)));
-        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of(relatedObjectFailure)));
+        when(relatedObjectValidator.validateRelatedObjects(any(), any())).thenReturn(ValidationResult.of(List.of(relatedObjectFailure)));
         when(spatialCoverageValidator.validate(any())).thenReturn(ValidationResult.of(List.of(spatialFailure)));
 
         var failures = validationService.validateForUpdate(handle, request);
@@ -334,7 +342,7 @@ class ValidationServiceTest {
 
         verify(contributorValidator, times(1)).validate(any());
         verify(organisationValidator, times(1)).validate(any());
-        verify(relatedObjectValidator, times(1)).validateRelatedObjects(any());
+        verify(relatedObjectValidator, times(1)).validateRelatedObjects(any(), any());
         verify(spatialCoverageValidator, times(1)).validate(any());
     }
 
@@ -490,6 +498,147 @@ class ValidationServiceTest {
     }
 
     // -----------------------------------------------------------------------
+    // RAID-935: the stored related objects used to skip unchanged resolver checks
+    // -----------------------------------------------------------------------
+
+    private static final String HANDLE_935 = "10.25.1/abc123";
+
+    private RaidUpdateRequest updateRequestWithRelatedObject(final Integer version) {
+        final var request = new RaidUpdateRequest()
+                .identifier(new Id().id("https://raid.org.au/" + HANDLE_935).version(version))
+                .relatedObject(List.of(new RelatedObject().id("https://doi.org/10.1000/a")));
+        return request;
+    }
+
+    private void handleMatches() throws Exception {
+        final var parsedUrl = mock(au.org.raid.api.service.raid.id.IdentifierUrl.class);
+        final var parsedHandle = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        final var urlHandle = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        when(idParser.parseUrlWithException(any())).thenReturn(parsedUrl);
+        when(idParser.parseHandleWithException(any())).thenReturn(parsedHandle);
+        when(parsedUrl.handle()).thenReturn(urlHandle);
+        when(parsedHandle.format()).thenReturn(HANDLE_935);
+        when(urlHandle.format()).thenReturn(HANDLE_935);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<RelatedObjectKey> capturedStoredKeys() {
+        final var captor = ArgumentCaptor.forClass(Set.class);
+        verify(relatedObjectValidator).validateRelatedObjects(any(), captor.capture());
+        return captor.getValue();
+    }
+
+    @Test
+    @DisplayName("validateForUpdate reads the stored version for the request's handle and version and passes its related objects")
+    void validateForUpdate_looksUpStoredVersionByHandleAndVersion() throws Exception {
+        stubAllValidatorsEmpty();
+        handleMatches();
+        when(raidHistoryService.findByHandleAndVersion(HANDLE_935, 3)).thenReturn(Optional.of("""
+                {"relatedObject":[{"id":"https://doi.org/10.1000/a","schemaUri":"https://doi.org/"}]}"""));
+
+        validationService.validateForUpdate(HANDLE_935, updateRequestWithRelatedObject(3));
+
+        assertThat(capturedStoredKeys(), equalTo(Set.of(
+                new RelatedObjectKey("https://doi.org/", "https://doi.org/10.1000/a"))));
+        verify(raidHistoryService, times(1)).findByHandleAndVersion(HANDLE_935, 3);
+        verify(raidHistoryService, never()).findByHandle(any());
+    }
+
+    @Test
+    @DisplayName("validateForUpdate does not look up the stored version when the handle check fails")
+    void validateForUpdate_noLookupWhenHandleMismatch() throws Exception {
+        stubAllValidatorsEmpty();
+        final var parsedUrl = mock(au.org.raid.api.service.raid.id.IdentifierUrl.class);
+        final var parsedHandle = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        final var urlHandle = mock(au.org.raid.api.service.raid.id.IdentifierHandle.class);
+        when(idParser.parseUrlWithException(any())).thenReturn(parsedUrl);
+        when(idParser.parseHandleWithException(any())).thenReturn(parsedHandle);
+        when(parsedUrl.handle()).thenReturn(urlHandle);
+        when(parsedHandle.format()).thenReturn(HANDLE_935);
+        when(urlHandle.format()).thenReturn("10.25.1/different");
+
+        final var failures = validationService.validateForUpdate(HANDLE_935, updateRequestWithRelatedObject(3));
+
+        assertThat(failures, hasSize(1));
+        assertThat(capturedStoredKeys(), empty());
+        verifyNoInteractions(raidHistoryService);
+    }
+
+    @Test
+    @DisplayName("validateForUpdate does not look up the stored version when the version is null")
+    void validateForUpdate_noLookupWhenVersionNull() throws Exception {
+        stubAllValidatorsEmpty();
+        handleMatches();
+
+        validationService.validateForUpdate(HANDLE_935, updateRequestWithRelatedObject(null));
+
+        assertThat(capturedStoredKeys(), empty());
+        verifyNoInteractions(raidHistoryService);
+    }
+
+    @Test
+    @DisplayName("validateForUpdate does not look up the stored version when the request has no related objects")
+    void validateForUpdate_noLookupWhenNoRelatedObjects() throws Exception {
+        stubAllValidatorsEmpty();
+        handleMatches();
+        final var request = updateRequestWithRelatedObject(3).relatedObject(null);
+
+        validationService.validateForUpdate(HANDLE_935, request);
+
+        assertThat(capturedStoredKeys(), empty());
+        verifyNoInteractions(raidHistoryService);
+    }
+
+    @Test
+    @DisplayName("validateForUpdate checks everything when the stored history is empty")
+    void validateForUpdate_checksEverythingWhenHistoryEmpty() throws Exception {
+        stubAllValidatorsEmpty();
+        handleMatches();
+        when(raidHistoryService.findByHandleAndVersion(HANDLE_935, 3)).thenReturn(Optional.empty());
+
+        validationService.validateForUpdate(HANDLE_935, updateRequestWithRelatedObject(3));
+
+        assertThat(capturedStoredKeys(), empty());
+    }
+
+    @Test
+    @DisplayName("validateForUpdate checks everything, and does not fail, when the history lookup throws")
+    void validateForUpdate_checksEverythingWhenLookupThrows() throws Exception {
+        stubAllValidatorsEmpty();
+        handleMatches();
+        when(raidHistoryService.findByHandleAndVersion(HANDLE_935, 3)).thenThrow(new RuntimeException("db down"));
+
+        final var failures = validationService.validateForUpdate(HANDLE_935, updateRequestWithRelatedObject(3));
+
+        assertThat(failures, empty());
+        assertThat(capturedStoredKeys(), empty());
+    }
+
+    @Test
+    @DisplayName("validateForUpdate checks everything when the stored json cannot be parsed")
+    void validateForUpdate_checksEverythingWhenStoredJsonMalformed() throws Exception {
+        stubAllValidatorsEmpty();
+        handleMatches();
+        when(raidHistoryService.findByHandleAndVersion(HANDLE_935, 3)).thenReturn(Optional.of("{not json"));
+
+        validationService.validateForUpdate(HANDLE_935, updateRequestWithRelatedObject(3));
+
+        assertThat(capturedStoredKeys(), empty());
+    }
+
+    @Test
+    @DisplayName("validateForCreate never reads the stored history and checks every related object")
+    void validateForCreate_neverUsesHistory() {
+        stubAllValidatorsEmpty();
+
+        validationService.validateForCreate(new RaidCreateRequest());
+
+        verifyNoInteractions(raidHistoryService);
+        verify(relatedObjectValidator).validateRelatedObjects(any());
+        verify(relatedObjectValidator, never()).validateRelatedObjects(any(), any());
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
@@ -503,7 +652,9 @@ class ValidationServiceTest {
         when(alternateIdentifierValidator.validateAlternateIdentifier(any())).thenReturn(List.of());
         when(contributorValidator.validate(any())).thenReturn(ValidationResult.of(List.of()));
         when(organisationValidator.validate(any())).thenReturn(ValidationResult.of(List.of()));
-        when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of()));
+        lenient().when(relatedObjectValidator.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of()));
+        // validateForUpdate calls the two-argument overload (RAID-935)
+        lenient().when(relatedObjectValidator.validateRelatedObjects(any(), any())).thenReturn(ValidationResult.of(List.of()));
         when(spatialCoverageValidator.validate(any())).thenReturn(ValidationResult.of(List.of()));
     }
 }

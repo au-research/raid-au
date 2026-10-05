@@ -129,15 +129,14 @@ public class ExternalPidService {
     public WebArchiveService webArchiveService(
             StubProperties stubProperties,
             @Qualifier("uriValidatorRestTemplate") RestTemplate restTemplate,
-            Clock clock,
-            @Value("${raid.uri-validation.web-archive.availability-url:https://archive.org/wayback/available}") String availabilityUrl
+            Clock clock
     ) {
         if (stubProperties.getWebArchive() != null && stubProperties.getWebArchive().isEnabled()) {
             log.warn("using the in-memory Web Archive service");
             return new WebArchiveServiceStub(stubProperties.getWebArchive().getDelay());
         }
 
-        return new WebArchiveService(restTemplate, clock, availabilityUrl);
+        return new WebArchiveService(restTemplate, clock);
     }
 
     @Bean

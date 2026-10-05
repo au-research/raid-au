@@ -60,6 +60,13 @@ raid:
     web-archive:
       enabled: true
       delay: 150
+  uri-validation:
+    # RAID-935: the success cache is off under the dev profile (GitHub CI and local intTests), so
+    # RelatedObjectIntegrationTest proves the stored-version skip on its own. Branch envs do not
+    # use this profile and run with the cache on, where a cached success can also explain a
+    # skipped resolver call. The intTests are written to pass either way.
+    success-cache:
+      expire-after-write: 0s
 spring:
   security:
     oauth2:

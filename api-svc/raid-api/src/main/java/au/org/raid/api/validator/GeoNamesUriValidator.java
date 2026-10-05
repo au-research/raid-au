@@ -30,7 +30,7 @@ public class GeoNamesUriValidator implements UriValidator {
     @Value("${raid.validation.geonames.username}")
     private final String username;
     @Override
-    public List<ValidationFailure> validate(String uri, String fieldId) {
+    public List<ValidationFailure> validateLocally(String uri, String fieldId) {
         final var failures = new ArrayList<ValidationFailure>();
 
         if (!uri.matches(regex)) {
@@ -39,7 +39,16 @@ public class GeoNamesUriValidator implements UriValidator {
                     .errorType(INVALID_VALUE_TYPE)
                     .message(INVALID_VALUE_MESSAGE + " - should match " + regex)
             );
-        } else {
+        }
+
+        return failures;
+    }
+
+    @Override
+    public List<ValidationFailure> validate(String uri, String fieldId) {
+        final var failures = new ArrayList<>(validateLocally(uri, fieldId));
+
+        if (failures.isEmpty()) {
             final var pattern = Pattern.compile("^[^\\d]+(\\d+)[^\\d]+$");
             Matcher matcher = pattern.matcher(uri);
 
