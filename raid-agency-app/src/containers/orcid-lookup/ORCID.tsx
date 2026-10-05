@@ -495,9 +495,12 @@ export default function ORCIDLookup({
     if (mode === 'validation-only' && detectContributorIdentifierType(searchValue) === 'isni') {
       return;
     }
-    // validation-only mode: reject non-ORCID input with a format error
+    // validation-only mode: reject input matching neither recognised scheme.
+    // RAID-883 follow-up: this field accepts ISNI as well as ORCID, so the
+    // ORCID-specific getErrorMessage(400) wording ("Invalid ORCID iD format")
+    // used for genuine ORCID API failures elsewhere is misleading here.
     if (mode === 'validation-only') {
-      setError(getErrorMessage(400));
+      setError('Unrecognised identifier format. Please check your entry and try again.');
       return;
     }
     // SEARCH MODE - No caching
@@ -538,6 +541,16 @@ export default function ORCIDLookup({
     const value = (event.target as HTMLInputElement).value || '';
     setSearchValue(value);
     setVerifiedORCID(value === '' && false);
+    // RAID-883 follow-up: the format-error message set by handleSearch (e.g.
+    // after pressing Enter on an invalid value) lived in its own `error`
+    // state, separate from the form's shouldValidate-driven error, so fixing
+    // the value never re-validated it - and for a recognised ISNI there's no
+    // search button left to re-trigger handleSearch and clear it that way,
+    // so the stale message could persist indefinitely. Re-validate the
+    // syntax on every edit and clear the error once it's corrected.
+    if (!value.trim() || detectContributorIdentifierType(value) !== 'unrecognised') {
+      setError(null);
+    }
     // Bug fix: this setValue call previously omitted shouldValidate, so a
     // stale validation error on the id field never cleared as the user
     // typed a corrected value - for ORCID it happened to clear anyway once

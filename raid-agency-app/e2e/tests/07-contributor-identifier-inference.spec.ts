@@ -221,4 +221,30 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
       timeout: 5000,
     });
   });
+
+  test("inline identifier-format error clears on its own once corrected to a valid ISNI", async ({
+    page,
+  }) => {
+    const { contributorSection } = await setUpFormWithContributorRow(page);
+    const input = page.locator('#contributor input[aria-label="search orcid"]');
+
+    // RAID-883 follow-up (Matthias, 2026-09-30): a value matching neither
+    // the ORCID digit pattern nor the ISNI URL pattern (here, an ISNI URL
+    // with an extra "isni/" path segment) surfaces the inline format error
+    // below the field once submitted.
+    await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
+    await input.press("Enter");
+    const inlineError = page
+      .locator("#contributor")
+      .getByText("Unrecognised identifier format. Please check your entry and try again.");
+    await expect(inlineError).toBeVisible({ timeout: 5000 });
+
+    // Correcting the value to a valid, recognised ISNI must clear the stale
+    // error by itself - once isIsni is true, the search button that used to
+    // re-trigger validation is swapped for a static check icon, so there is
+    // no way to re-submit and clear the error other than the field
+    // re-validating as the user types.
+    await contributorSection.fillOrcidId(0, ISNI_URL);
+    await expect(inlineError).not.toBeVisible({ timeout: 5000 });
+  });
 });
