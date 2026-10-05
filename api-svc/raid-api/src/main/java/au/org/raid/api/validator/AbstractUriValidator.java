@@ -53,7 +53,12 @@ public abstract class AbstractUriValidator implements UriValidator {
         return RequestEntity.head(resolverUri).build();
     }
 
-    public List<ValidationFailure> validate(final String uri, final String fieldId) {
+    /**
+     * The format check, with no network call. The message is the same one {@link #validate}
+     * has always reported.
+     */
+    @Override
+    public List<ValidationFailure> validateLocally(final String uri, final String fieldId) {
         final var failures = new ArrayList<ValidationFailure>();
 
         final var regex = getRegex();
@@ -65,8 +70,16 @@ public abstract class AbstractUriValidator implements UriValidator {
                             .errorType(INVALID_VALUE_TYPE)
                             .message(INVALID_VALUE_MESSAGE + " - should match %s".formatted(regex))
             );
+        }
 
-        } else {
+        return failures;
+    }
+
+    @Override
+    public List<ValidationFailure> validate(final String uri, final String fieldId) {
+        final var failures = new ArrayList<>(validateLocally(uri, fieldId));
+
+        if (failures.isEmpty()) {
             final var resolverUri = resolverUri(uri);
             final var requestEntity = headRequest(resolverUri);
             try {

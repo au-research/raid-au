@@ -45,6 +45,8 @@ class RaidoStableV1ValidatorTest {
     private AccessValidator accessValidationService;
     @Mock
     private DateValidator dateValidator;
+    @Mock
+    private au.org.raid.api.service.RaidHistoryService raidHistoryService;
 
     private ValidationService validationService;
 
@@ -63,7 +65,9 @@ class RaidoStableV1ValidatorTest {
                 relatedRaidValidationService,
                 spatialCoverageValidationService,
                 dateValidator,
-                DIRECT_EXECUTOR
+                DIRECT_EXECUTOR,
+                raidHistoryService,
+                new com.fasterxml.jackson.databind.ObjectMapper()
         );
 
         // These tests only verify that each synchronous in-memory validator is invoked with
@@ -74,6 +78,7 @@ class RaidoStableV1ValidatorTest {
         lenient().when(contribSvc.validate(any())).thenReturn(ValidationResult.of(List.of()));
         lenient().when(orgSvc.validate(any())).thenReturn(ValidationResult.of(List.of()));
         lenient().when(relatedObjectValidationService.validateRelatedObjects(any())).thenReturn(ValidationResult.of(List.of()));
+        lenient().when(relatedObjectValidationService.validateRelatedObjects(any(), any())).thenReturn(ValidationResult.of(List.of()));
         lenient().when(spatialCoverageValidationService.validate(any())).thenReturn(ValidationResult.of(List.of()));
     }
 
@@ -166,7 +171,7 @@ class RaidoStableV1ValidatorTest {
                 .relatedObject(relatedObjects);
 
         validationService.validateForUpdate(handle, raid);
-        verify(relatedObjectValidationService).validateRelatedObjects(relatedObjects);
+        verify(relatedObjectValidationService).validateRelatedObjects(relatedObjects, java.util.Set.of());
     }
 
     @Test

@@ -2,6 +2,7 @@
 
 - JIRA: [RAID-885](https://ardc.atlassian.net/browse/RAID-885) (Bug, from HELP-3215)
 - PR: [#699](https://github.com/au-research/raid-au/pull/699)
+- Sub-task: [RAID-935](https://ardc.atlassian.net/browse/RAID-935), only re-validate new or changed related objects on update, plus a success cache (branch `feature/RAID-935`, PR into `feature/RAID-885`)
 - Follow-up: [RAID-933](https://ardc.atlassian.net/browse/RAID-933), other URI validators double-encode percent-escaped identifiers
 - Related: RAID-788 (original check), RAID-854 (encoding and timestamp fixes), RAID-809 (503 for unavailable resolvers)
 
@@ -59,6 +60,42 @@ Live probes, 5 October 2026, using the HELP-3215 URL and a never-archived contro
 - intTest `RelatedObjectIntegrationTest` with the stub disabled, against the live archive:
   6 of 7 web archive tests pass. The one failure is the stub-only `server-error` sentinel, which
   the real archive correctly answers with 404.
+
+## RAID-935: skip unchanged links and cache successful checks
+
+The HEAD check alone still left two parts of the HELP-3215 report unsolved:
+- Every update re-checked every saved link, so an unrelated edit could fail because of a link
+  that was already accepted.
+- A rate-limited save was blocked with a 503.
+
+A bounded probe on 5 October 2026 (sequential HEADs from one office IP) found that
+web.archive.org throttles by refusing TCP connections, not with a 429. It tripped after about 20
+requests at roughly 2.7 s spacing, and after about 14 back-to-back requests. The block cleared in
+under a minute.
+
+What changed:
+- On update, the external check is skipped for each related object whose exact
+  `(schemaUri, id)` is in the version being edited. That version is read with
+  `RaidHistoryService.findByHandleAndVersion`, the same call `RaidService.update` uses. The local
+  checks (format, timestamp year, type, category, allow-list) still run on every item. If the
+  stored version can't be read, everything is checked, as before.
+- A per-instance Caffeine cache records successful checks, so a save retried after a 503 skips
+  links already confirmed. Failures and 503s are never cached. The defaults (30 minutes,
+  10,000 entries) were chosen, not measured. The cache is off under the `dev` profile, so
+  intTests prove the stored-version skip end to end.
+- `UriValidator` has a new `validateLocally` method, and the related-object dispatch map now
+  holds validator objects.
+- Decisions: links saved before checks existed are skipped like any other stored link, and the
+  change is recorded in `doc/adr/2026-10-05_verify-related-object-links-on-entry.md`.
+- RAID-793 (ARK, PR #616) must implement `validateLocally` when the two meet; this is noted on
+  that ticket.
+
+Testing (RAID-935, local):
+- Unit tests: 1001 tests, 0 failed, 17 skipped.
+- intTest (dev profile, cache off): 256 tests, 0 failed, 16 skipped. The new update tests use a
+  stub link that passes on its first check and returns 503 on any later one, so re-checking an
+  unchanged link would fail them. They are written to pass with the cache on as well, which is
+  how branch environments run.
 
 ## Still to do
 

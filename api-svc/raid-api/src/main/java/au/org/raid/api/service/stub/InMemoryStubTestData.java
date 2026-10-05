@@ -50,4 +50,12 @@ public class InMemoryStubTestData {
             "https://web.archive.org/web/20200101000000/https://nonexistent.example.com";
     public static String SERVER_ERROR_TEST_WEB_ARCHIVE =
             "https://web.archive.org/web/20200101000000/https://server-error.example.com";
+
+    /*
+     * "Validate once" sentinel (RAID-935): a url under this prefix passes the first time the
+     * Web Archive stub sees it and gets a 503 on every later call, so a test can prove the API
+     * did not send an unchanged link to the resolver a second time. Append a fresh UUID per test.
+     */
+    public static String VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX =
+            "https://web.archive.org/web/20200101000000/https://validate-once.example.com/";
 }

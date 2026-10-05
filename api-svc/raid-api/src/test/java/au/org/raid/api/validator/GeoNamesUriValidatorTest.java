@@ -87,4 +87,28 @@ class GeoNamesUriValidatorTest {
             assertThat(unavailable.getDownstreamStatus(), nullValue());
         }
     }
+
+    @Test
+    @DisplayName("validateLocally returns no failures for a well-formed uri and makes no call to GeoNames")
+    void validateLocallyValidUri() {
+        try (MockedStatic<WebService> webService = mockStatic(WebService.class)) {
+            final var failures = validator.validateLocally("https://www.geonames.org/2158177/london.html", "field-id");
+
+            assertThat(failures, is(Collections.emptyList()));
+            webService.verifyNoInteractions();
+        }
+    }
+
+    @Test
+    @DisplayName("validateLocally reports a malformed uri and makes no call to GeoNames")
+    void validateLocallyInvalidUri() {
+        try (MockedStatic<WebService> webService = mockStatic(WebService.class)) {
+            final var failures = validator.validateLocally("https://example.org/not-geonames", "field-id");
+
+            assertThat(failures, hasSize(1));
+            assertThat(failures.get(0).getFieldId(), is("field-id"));
+            assertThat(failures.get(0).getErrorType(), is("invalidValue"));
+            webService.verifyNoInteractions();
+        }
+    }
 }

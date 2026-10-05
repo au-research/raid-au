@@ -77,10 +77,14 @@ public class WebArchiveService extends AbstractUriValidator {
         return "Web Archive";
     }
 
+    /**
+     * The format check (with its web-archive specific message and errorType, rather than the
+     * generic "should match <regex>" one) and the capture-year plausibility check, neither of
+     * which makes an HTTP call. {@link AbstractUriValidator#validate} runs this before the HEAD,
+     * and RAID-935 runs it on its own for a link already confirmed against the archive.
+     */
     @Override
-    public List<ValidationFailure> validate(final String uri, final String fieldId) {
-        // Checked here, ahead of the base class, so the web-archive specific message and
-        // errorType are kept rather than the generic "should match <regex>" one.
+    public List<ValidationFailure> validateLocally(final String uri, final String fieldId) {
         if (!hasValidFormat(uri)) {
             return List.of(new ValidationFailure()
                     .fieldId(fieldId)
@@ -93,7 +97,7 @@ public class WebArchiveService extends AbstractUriValidator {
             return List.of(yearFailure);
         }
 
-        return super.validate(uri, fieldId);
+        return List.of();
     }
 
     /**
@@ -163,7 +167,7 @@ public class WebArchiveService extends AbstractUriValidator {
      * "https://web.archive.org/web/20220101000000/https://example.com".
      * <p>
      * Precondition: only call this after the uri has matched {@link #WEB_ARCHIVE_URL_PATTERN}
-     * (as {@link #validate} does before calling it). That guarantees {@code matcher.find()}
+     * (as {@link #validateLocally} does before calling it). That guarantees {@code matcher.find()}
      * succeeds, so the result isn't checked here.
      */
     protected String extractTimestamp(final String uri) {

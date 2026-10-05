@@ -228,6 +228,30 @@ class WebArchiveServiceTest {
     }
 
     @Test
+    @DisplayName("validateLocally accepts a well-formed link with no HTTP call")
+    void validateLocallyValidNoHttpCall() {
+        assertThat(webArchiveService.validateLocally(LINK, FIELD_ID), empty());
+        server.verify();
+    }
+
+    @Test
+    @DisplayName("validateLocally reports the format failure with no HTTP call")
+    void validateLocallyFormatFailureNoHttpCall() {
+        assertThat(webArchiveService.validateLocally("https://web.archive.org/foo/bar", FIELD_ID),
+                is(formatFailure()));
+        server.verify();
+    }
+
+    @Test
+    @DisplayName("validateLocally reports an implausible year with no HTTP call")
+    void validateLocallyYearFailureNoHttpCall() {
+        assertThat(webArchiveService.validateLocally(
+                "https://web.archive.org/web/19950101000000/https://example.com", FIELD_ID),
+                is(yearFailure(1995)));
+        server.verify();
+    }
+
+    @Test
     @DisplayName("Over a real connection a HEAD 302 is not followed, is valid, and the path stays single-encoded")
     void realConnectionDoesNotFollowRedirect() throws IOException {
         final var rawRequestUri = new AtomicReference<String>();

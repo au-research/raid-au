@@ -3,17 +3,21 @@ package au.org.raid.api.validator;
 import au.org.raid.api.endpoint.message.ValidationMessage;
 import au.org.raid.api.exception.ResolverUnavailableException;
 import au.org.raid.api.exception.ValidationFailureException;
+import au.org.raid.api.service.Handle;
+import au.org.raid.api.service.RaidHistoryService;
 import au.org.raid.api.service.raid.id.IdentifierHandle;
 import au.org.raid.api.service.raid.id.IdentifierParser;
 import au.org.raid.api.service.raid.id.IdentifierUrl;
 import au.org.raid.api.util.Log;
 import au.org.raid.idl.raidv2.model.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -44,6 +48,8 @@ public class ValidationService {
     private final SpatialCoverageValidator spatialCoverageValidator;
     private final DateValidator dateValidator;
     private final Executor taskExecutor;
+    private final RaidHistoryService raidHistoryService;
+    private final ObjectMapper objectMapper;
 
     public ValidationService(
             final TitleValidator titleValidator,
@@ -58,7 +64,9 @@ public class ValidationService {
             final RelatedRaidValidator relatedRaidValidator,
             final SpatialCoverageValidator spatialCoverageValidator,
             final DateValidator dateValidator,
-            @Qualifier("applicationTaskExecutor") final Executor taskExecutor
+            @Qualifier("applicationTaskExecutor") final Executor taskExecutor,
+            final RaidHistoryService raidHistoryService,
+            final ObjectMapper objectMapper
     ) {
         this.titleValidator = titleValidator;
         this.descriptionValidator = descriptionValidator;
@@ -73,6 +81,8 @@ public class ValidationService {
         this.spatialCoverageValidator = spatialCoverageValidator;
         this.dateValidator = dateValidator;
         this.taskExecutor = taskExecutor;
+        this.raidHistoryService = raidHistoryService;
+        this.objectMapper = objectMapper;
     }
 
     private List<ValidationFailure> validateUpdateHandle(final String decodedHandleFromPath, final Id id) {
@@ -162,7 +172,9 @@ public class ValidationService {
         String decodedHandle = urlDecode(handle);
 
         // Run in-memory validators synchronously — they are essentially free.
-        final var failures = new ArrayList<>(validateUpdateHandle(decodedHandle, request.getIdentifier()));
+        final var handleFailures = validateUpdateHandle(decodedHandle, request.getIdentifier());
+        final var handleValid = handleFailures.isEmpty();
+        final var failures = new ArrayList<>(handleFailures);
         failures.addAll(dateValidator.validate(request.getDate()));
         failures.addAll(accessValidator.validate(request.getAccess()));
         failures.addAll(titleValidator.validate(request.getTitle()));
@@ -175,11 +187,47 @@ public class ValidationService {
         final var io = runIoBoundValidators(
                 () -> contributorValidator.validate(request.getContributor()),
                 () -> organisationValidator.validate(request.getOrganisation()),
-                () -> relatedObjectValidator.validateRelatedObjects(request.getRelatedObject()),
+                () -> relatedObjectValidator.validateRelatedObjects(
+                        request.getRelatedObject(), storedRelatedObjectKeys(request, handleValid)),
                 () -> spatialCoverageValidator.validate(request.getSpatialCoverage())
         );
 
         return applyPrecedence(failures, io);
+    }
+
+    /**
+     * The related objects on the stored version the client is editing (RAID-935), so an unchanged
+     * link is not sent to its resolver again. Read with the same call RaidService.update uses to
+     * rebuild that version. It must not be RaidHistoryService.findByHandle, which can write a new
+     * history version, nor raid.metadata, which is only a list-read copy and can be null.
+     * <p>
+     * Any doubt means an empty set, so everything is checked, which is the behaviour before
+     * RAID-935: the handle check failed, no version or related objects were sent, there is no
+     * history, or the read failed. Runs inside the related-object async task, in parallel with
+     * the other I/O validators.
+     */
+    private Set<RelatedObjectKey> storedRelatedObjectKeys(final RaidUpdateRequest request, final boolean handleValid) {
+        final var identifier = request.getIdentifier();
+
+        if (!handleValid || identifier == null || identifier.getId() == null || identifier.getVersion() == null
+                || request.getRelatedObject() == null || request.getRelatedObject().isEmpty()) {
+            return Set.of();
+        }
+
+        try {
+            final var handle = new Handle(identifier.getId()).toString();
+            final var stored = raidHistoryService.findByHandleAndVersion(handle, identifier.getVersion());
+
+            if (stored.isEmpty()) {
+                return Set.of();
+            }
+
+            return RelatedObjectKey.extractFrom(objectMapper.readTree(stored.get()));
+        } catch (Exception e) {
+            log.warnEx("Could not read the stored related objects for %s, so all of them will be checked",
+                    e, identifier.getId());
+            return Set.of();
+        }
     }
 
     public List<ValidationFailure> validateForPatch(final RaidPatchRequest request) {

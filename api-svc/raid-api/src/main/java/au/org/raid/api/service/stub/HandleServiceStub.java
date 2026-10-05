@@ -26,17 +26,9 @@ public class HandleServiceStub extends HandleService {
     @Override
     @SneakyThrows
     public List<ValidationFailure> validate(String uri, String fieldId) {
-        final var failures = new ArrayList<ValidationFailure>();
-        final var regex = getRegex();
+        final var failures = new ArrayList<ValidationFailure>(validateLocally(uri, fieldId));
 
-        if (!uri.matches(regex)) {
-            failures.add(
-                    new ValidationFailure()
-                            .fieldId(fieldId)
-                            .errorType(INVALID_VALUE_TYPE)
-                            .message(INVALID_VALUE_MESSAGE + " - should match %s".formatted(regex))
-            );
-        } else {
+        if (failures.isEmpty()) {
             log.debug("delay {}", delayMilliseconds);
             log.debug("simulate Handle validation check");
 
