@@ -174,6 +174,29 @@ class AbstractUriValidatorTest {
         assertThat(unavailable.getDownstreamStatus(), nullValue());
     }
 
+    @Test
+    @DisplayName("validateLocally returns no failures for a matching uri and makes no HTTP call")
+    void validateLocallyValidUriNoHttpCall() {
+        final var failures = uriValidator.validateLocally("http://localhost", "field-id");
+
+        assertThat(failures, empty());
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    @DisplayName("validateLocally returns the unchanged regex failure and makes no HTTP call")
+    void validateLocallyRegexFailureNoHttpCall() {
+        final var failures = uriValidator.validateLocally("http://example.org", "field-id");
+
+        assertThat(failures, is(List.of(
+                new ValidationFailure()
+                        .fieldId("field-id")
+                        .errorType("invalidValue")
+                        .message("has invalid/unsupported value - should match ^http://localhost")
+        )));
+        verifyNoInteractions(restTemplate);
+    }
+
     private class TestUriValidator extends AbstractUriValidator {
         @Override
         protected String getRegex() {

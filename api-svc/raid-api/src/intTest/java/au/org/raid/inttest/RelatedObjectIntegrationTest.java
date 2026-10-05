@@ -1,5 +1,7 @@
 package au.org.raid.inttest;
 
+import au.org.raid.idl.raidv2.model.RaidDto;
+import au.org.raid.idl.raidv2.model.RaidUpdateRequest;
 import au.org.raid.idl.raidv2.model.RelatedObject;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategory;
 import au.org.raid.idl.raidv2.model.RelatedObjectCategoryIdEnum;
@@ -9,12 +11,14 @@ import au.org.raid.idl.raidv2.model.RelatedObjectType;
 import au.org.raid.idl.raidv2.model.RelatedObjectTypeIdEnum;
 import au.org.raid.idl.raidv2.model.RelatedObjectTypeSchemaUriEnum;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
+import au.org.raid.inttest.service.Handle;
 import au.org.raid.inttest.service.RaidApiValidationException;
 import feign.RetryableException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static au.org.raid.fixtures.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +40,16 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
        au.org.raid.api.service.stub.InMemoryStubTestData */
     private static final String NONEXISTENT_TEST_RRID = "https://scicrunch.org/resolver/RRID:AB_0000000";
     private static final String SERVER_ERROR_TEST_RRID = "https://scicrunch.org/resolver/RRID:AB_5000000";
+
+    /* "validate once" sentinel understood by the in-memory Web Archive stub, see
+       au.org.raid.api.service.stub.InMemoryStubTestData (RAID-935): a url under this prefix passes
+       the first time the stub sees it and returns 503 on every later call. */
+    private static final String VALIDATE_ONCE_WEB_ARCHIVE_PREFIX =
+            "https://web.archive.org/web/20200101000000/https://validate-once.example.com/";
+
+    private static String freshValidateOnceLink() {
+        return VALIDATE_ONCE_WEB_ARCHIVE_PREFIX + UUID.randomUUID();
+    }
 
     private RelatedObject webArchiveRelatedObject(String id) {
         return new RelatedObject()
@@ -417,4 +431,124 @@ public class RelatedObjectIntegrationTest extends AbstractIntegrationTest {
     // for inspecting the outbound DataCite request body. It is covered by the unit test
     // DataciteRelatedIdentifierFactoryTest, which asserts relatedIdentifierType is "RRID" for a
     // scicrunch-scoped RelatedObject.
+
+    // RAID-935: an unchanged link is verified on entry, not on every save. These tests rely on the
+    // "validate once" stub sentinel: a second resolver call for the same link would be a 503.
+    //
+    // These tests must pass with the success cache ON (branch envs, which enable the stubs by
+    // env var and use the 30m default) and OFF (the dev profile used by GitHub CI and local runs:
+    // raid.uri-validation.success-cache.expire-after-write: 0s in application-dev.yaml). With the
+    // cache off, a PUT that passes proves the stored-version skip end to end. In a branch env a
+    // cached success can also explain the pass, so only the dev profile proves the stored skip.
+    // The sentinel itself is proven in WebArchiveServiceStubTest, and the cache in
+    // RelatedObjectValidatorTest, so there is deliberately no "second mint gets a 503" test here:
+    // it would get a cache hit and fail when the cache is on.
+
+    @Test
+    @DisplayName("Updating an unrelated field keeps an already accepted web archive link without re-checking it")
+    void updateUnrelatedFieldDoesNotRecheckUnchangedLink() {
+        final var link = freshValidateOnceLink();
+        createRequest.setRelatedObject(List.of(webArchiveRelatedObject(link)));
+
+        final var minted = raidApi.mintRaid(createRequest).getBody();
+        assertThat(minted).isNotNull();
+        final var handle = new Handle(minted.getIdentifier().getId());
+
+        try {
+            // version 1 -> 2: the link is in the stored version, the stub would now answer 503
+            final var firstUpdate = titleUpdate(handle, " first");
+            assertThat(firstUpdate.getIdentifier().getVersion()).isEqualTo(2);
+            assertThat(firstUpdate.getRelatedObject().get(0).getId()).isEqualTo(link);
+
+            // version 2 -> 3: the link is in version 2 too
+            final var secondUpdate = titleUpdate(handle, " second");
+            assertThat(secondUpdate.getIdentifier().getVersion()).isEqualTo(3);
+            assertThat(secondUpdate.getRelatedObject().get(0).getId()).isEqualTo(link);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Adding a new link on update checks only the new link; the existing link is not re-checked")
+    void updateAddingNewLinkChecksOnlyTheNewLink() {
+        final var existing = freshValidateOnceLink();
+        final var added = freshValidateOnceLink();
+        createRequest.setRelatedObject(List.of(webArchiveRelatedObject(existing)));
+
+        final var minted = raidApi.mintRaid(createRequest).getBody();
+        assertThat(minted).isNotNull();
+        final var handle = new Handle(minted.getIdentifier().getId());
+
+        try {
+            final var read = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody();
+            assertThat(read).isNotNull();
+            final var update = mapReadToUpdate(read);
+            // the new link goes first, so the unchanged one moves index; order does not matter
+            update.setRelatedObject(List.of(webArchiveRelatedObject(added), webArchiveRelatedObject(existing)));
+
+            final var result = raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), update).getBody();
+
+            assertThat(result).isNotNull();
+            assertThat(result.getRelatedObject()).extracting(RelatedObject::getId).containsExactly(added, existing);
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    @Test
+    @DisplayName("Changing a link to a web archive snapshot that does not exist is still rejected on update")
+    void updateChangingLinkToNonExistentStillFails() {
+        final var link = freshValidateOnceLink();
+        createRequest.setRelatedObject(List.of(webArchiveRelatedObject(link)));
+
+        final var minted = raidApi.mintRaid(createRequest).getBody();
+        assertThat(minted).isNotNull();
+        final var handle = new Handle(minted.getIdentifier().getId());
+        final var read = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody();
+        assertThat(read).isNotNull();
+        final var update = mapReadToUpdate(read);
+        update.setRelatedObject(List.of(webArchiveRelatedObject(NONEXISTENT_TEST_WEB_ARCHIVE)));
+
+        try {
+            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), update);
+            fail("No exception thrown when changing a link to a non-existent Web Archive snapshot");
+        } catch (RaidApiValidationException e) {
+            assertThat(e.getFailures()).containsExactly(new ValidationFailure()
+                    .fieldId("relatedObject[0].id")
+                    .errorType("invalidValue")
+                    .message("uri not found"));
+        } catch (Exception e) {
+            failOnError(e);
+        }
+    }
+
+    private RaidDto titleUpdate(final Handle handle, final String titleSuffix) {
+        final var read = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody();
+        assertThat(read).isNotNull();
+        final var update = mapReadToUpdate(read);
+        update.getTitle().get(0).setText(update.getTitle().get(0).getText() + titleSuffix);
+
+        final var result = raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), update).getBody();
+        assertThat(result).isNotNull();
+        return result;
+    }
+
+    private RaidUpdateRequest mapReadToUpdate(final RaidDto read) {
+        return new RaidUpdateRequest()
+                .metadata(read.getMetadata())
+                .identifier(read.getIdentifier())
+                .title(read.getTitle())
+                .date(read.getDate())
+                .description(read.getDescription())
+                .access(read.getAccess())
+                .alternateUrl(read.getAlternateUrl())
+                .contributor(read.getContributor())
+                .organisation(read.getOrganisation())
+                .subject(read.getSubject())
+                .relatedRaid(read.getRelatedRaid())
+                .relatedObject(read.getRelatedObject())
+                .alternateIdentifier(read.getAlternateIdentifier())
+                .spatialCoverage(read.getSpatialCoverage());
+    }
 }

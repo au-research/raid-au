@@ -1,5 +1,6 @@
 [versions]
 annotations = "26.1.0"
+caffeine = "3.3.0"
 assertj = "3.27.7"
 commons-compress = "1.26.2"
 commons-lang3 = "3.18.0"
@@ -44,6 +45,7 @@ xjc = "1.8.2"
 [libraries]
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 assertj = { group = 'org.assertj', name = "assertj-core", version.ref = "assertj" }
+caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "commons-compress" }
 commons-math3 = { group = "org.apache.commons", name = "commons-math3", version.ref = "commons-math3" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }

@@ -1,5 +1,6 @@
 package au.org.raid.api;
 
+import au.org.raid.api.validator.RelatedObjectSuccessCache;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,6 +75,19 @@ public class Api {
         requestFactory.setReadTimeout(readTimeout);
 
         return new RestTemplate(requestFactory);
+    }
+
+    /**
+     * Per-instance cache of related objects whose resolver check succeeded (RAID-935). The
+     * defaults are baked into the {@code @Value}s, as for the RestTemplate timeouts above, so a
+     * missing property cannot break startup. The defaults are chosen, not measured. A
+     * non-positive expiry or size disables the cache.
+     */
+    @Bean
+    public RelatedObjectSuccessCache relatedObjectSuccessCache(
+            @Value("${raid.uri-validation.success-cache.expire-after-write:30m}") final Duration expireAfterWrite,
+            @Value("${raid.uri-validation.success-cache.maximum-size:10000}") final long maximumSize) {
+        return new RelatedObjectSuccessCache(expireAfterWrite, maximumSize);
     }
 
     public static void main(String[] args) {

@@ -12,16 +12,25 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static au.org.raid.api.endpoint.message.ValidationMessage.INVALID_VALUE_TYPE;
 import static au.org.raid.api.endpoint.message.ValidationMessage.URI_DOES_NOT_EXIST;
 import static au.org.raid.api.service.stub.InMemoryStubTestData.NONEXISTENT_TEST_WEB_ARCHIVE;
 import static au.org.raid.api.service.stub.InMemoryStubTestData.SERVER_ERROR_TEST_WEB_ARCHIVE;
+import static au.org.raid.api.service.stub.InMemoryStubTestData.VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX;
 import static au.org.raid.api.util.ObjectUtil.areEqual;
 
 @Slf4j
 public class WebArchiveServiceStub extends WebArchiveService {
     private final Long delayMilliseconds;
+
+    /**
+     * Urls under {@link InMemoryStubTestData#VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX} already seen
+     * by this stub (RAID-935). Thread-safe because requests validate concurrently.
+     */
+    private final Set<String> validateOnceSeen = ConcurrentHashMap.newKeySet();
 
     public WebArchiveServiceStub(final Long delayMilliseconds) {
         super(null, Clock.systemUTC());
@@ -31,19 +40,9 @@ public class WebArchiveServiceStub extends WebArchiveService {
     @Override
     @SneakyThrows
     public List<ValidationFailure> validate(final String uri, final String fieldId) {
-        final var failures = new ArrayList<ValidationFailure>();
+        final var failures = new ArrayList<ValidationFailure>(validateLocally(uri, fieldId));
 
-        if (!hasValidFormat(uri)) {
-            failures.add(new ValidationFailure()
-                    .fieldId(fieldId)
-                    .errorType("invalid")
-                    .message(INVALID_WEB_ARCHIVE_URL_MESSAGE));
-            return failures;
-        }
-
-        final var yearFailure = checkPlausibleYear(extractTimestamp(uri), fieldId);
-        if (yearFailure != null) {
-            failures.add(yearFailure);
+        if (!failures.isEmpty()) {
             return failures;
         }
 
@@ -61,7 +60,10 @@ public class WebArchiveServiceStub extends WebArchiveService {
                     .fieldId(fieldId)
                     .errorType(INVALID_VALUE_TYPE)
                     .message(URI_DOES_NOT_EXIST));
-        } else if (areEqual(uri, SERVER_ERROR_TEST_WEB_ARCHIVE)) {
+        } else if (areEqual(uri, SERVER_ERROR_TEST_WEB_ARCHIVE)
+                || (uri.startsWith(VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX) && !validateOnceSeen.add(uri))) {
+            // "Validate once" sentinel: the first call for a url under the prefix passes, any
+            // later call is a 503. It proves a url was NOT sent to the resolver again (RAID-935).
             throw new ResolverUnavailableException(List.of(
                     new UnavailableResolver()
                             .field(fieldId)

@@ -9,6 +9,7 @@ import java.util.List;
 
 import static au.org.raid.api.service.stub.InMemoryStubTestData.NONEXISTENT_TEST_WEB_ARCHIVE;
 import static au.org.raid.api.service.stub.InMemoryStubTestData.SERVER_ERROR_TEST_WEB_ARCHIVE;
+import static au.org.raid.api.service.stub.InMemoryStubTestData.VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -88,5 +89,21 @@ class WebArchiveServiceStubTest {
                         .errorType("invalid")
                         .message("Must be a valid Web Archive URL (e.g. https://web.archive.org/web/20220101000000/https://example.com)")
         )));
+    }
+
+    @Test
+    @DisplayName("Validate-once sentinel: the first call passes, a second call for the same url is a 503, a different url passes")
+    void validateOnceSentinel() {
+        final var first = VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX + java.util.UUID.randomUUID();
+        final var other = VALIDATE_ONCE_TEST_WEB_ARCHIVE_PREFIX + java.util.UUID.randomUUID();
+
+        assertThat(webArchiveServiceStub.validate(first, FIELD_ID), empty());
+
+        final var e = assertThrows(ResolverUnavailableException.class,
+                () -> webArchiveServiceStub.validate(first, FIELD_ID));
+        assertThat(e.getUnavailableResolvers().get(0).getDownstreamStatus(), is(503));
+        assertThat(e.getUnavailableResolvers().get(0).getResolver(), is("Web Archive"));
+
+        assertThat(webArchiveServiceStub.validate(other, FIELD_ID), empty());
     }
 }
