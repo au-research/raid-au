@@ -30,6 +30,15 @@ class WebArchiveServiceStubTest {
     }
 
     @Test
+    @DisplayName("Format behaviour matches the real service: illegal characters are accepted, bad shape is rejected")
+    void formatMatchesRealService() {
+        assertThat(webArchiveServiceStub.validate(
+                "https://web.archive.org/web/20220101000000/https://example.com/a b/M\u00fcnchen", FIELD_ID), empty());
+        assertThat(webArchiveServiceStub.validate("https://web.archive.org/foo", FIELD_ID).get(0).getErrorType(),
+                is("invalid"));
+    }
+
+    @Test
     @DisplayName("NONEXISTENT_TEST_WEB_ARCHIVE returns URI_DOES_NOT_EXIST")
     void nonexistentSentinelReturnsUriDoesNotExist() {
         final var failures = webArchiveServiceStub.validate(NONEXISTENT_TEST_WEB_ARCHIVE, FIELD_ID);

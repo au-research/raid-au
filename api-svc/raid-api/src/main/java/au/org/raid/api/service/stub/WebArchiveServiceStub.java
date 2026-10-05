@@ -24,7 +24,7 @@ public class WebArchiveServiceStub extends WebArchiveService {
     private final Long delayMilliseconds;
 
     public WebArchiveServiceStub(final Long delayMilliseconds) {
-        super(null, Clock.systemUTC(), null);
+        super(null, Clock.systemUTC());
         this.delayMilliseconds = delayMilliseconds != null ? delayMilliseconds : 0L;
     }
 
@@ -33,7 +33,7 @@ public class WebArchiveServiceStub extends WebArchiveService {
     public List<ValidationFailure> validate(final String uri, final String fieldId) {
         final var failures = new ArrayList<ValidationFailure>();
 
-        if (!WEB_ARCHIVE_URL_PATTERN.matcher(uri).matches()) {
+        if (!hasValidFormat(uri)) {
             failures.add(new ValidationFailure()
                     .fieldId(fieldId)
                     .errorType("invalid")

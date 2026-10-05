@@ -40,6 +40,19 @@ public abstract class AbstractUriValidator implements UriValidator {
         return uri;
     }
 
+    /**
+     * Builds the HEAD request for the resolver URL. {@code RequestEntity.head(String)} treats its
+     * argument as a URI <em>template</em> and encodes it again, so a stored uri containing
+     * percent-encoded characters reaches the resolver mangled ({@code %3A} becomes {@code %253A},
+     * RAID-854). Subclasses whose uris must be sent byte-for-byte override this to pass a
+     * {@link java.net.URI} instead (see WebArchiveService). The default is unchanged because the
+     * other validators' regexes admit characters {@code URI.create} rejects (e.g. spaces in a
+     * DOI suffix), which would turn a validation failure into an HTTP 500.
+     */
+    protected RequestEntity<Void> headRequest(final String resolverUri) {
+        return RequestEntity.head(resolverUri).build();
+    }
+
     public List<ValidationFailure> validate(final String uri, final String fieldId) {
         final var failures = new ArrayList<ValidationFailure>();
 
@@ -55,7 +68,7 @@ public abstract class AbstractUriValidator implements UriValidator {
 
         } else {
             final var resolverUri = resolverUri(uri);
-            final var requestEntity = RequestEntity.head(resolverUri).build();
+            final var requestEntity = headRequest(resolverUri);
             try {
                 final var start = Instant.now();
                 getRestTemplate().exchange(requestEntity, Void.class);

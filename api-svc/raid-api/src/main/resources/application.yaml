@@ -97,8 +97,6 @@ raid:
     # to validators only; the shared RestTemplate (minting etc.) is unaffected (RAID-802).
     connect-timeout: 5s
     read-timeout: 10s
-    web-archive:
-      availability-url: https://archive.org/wayback/available
   history:
     baseline-interval: 50
   datacite:
