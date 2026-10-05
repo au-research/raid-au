@@ -36,9 +36,9 @@
     "default": false,
     "header": {
       "logo": {
-        "src": "/RAiD-Strapline.svg",
+        "src": "/raid-logo-mark.svg",
         "alt": "App Logo",
-        "height": 80
+        "height": 36
       },
       "title": "RAiD",
       "subtitle": "Research Activity Identifier",
