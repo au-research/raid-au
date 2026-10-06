@@ -29,7 +29,8 @@ The RAID system uses a multi-layered authorization approach combining:
 - Create new RAIDs (`POST /raid/**`)
 - Read access to specific RAIDs listed in `admin_raids` JWT claim
 - Write access to specific RAIDs listed in `admin_raids` JWT claim
-- Subject to embargo restrictions (cannot access embargoed RAIDs unless via service point ownership)
+- Read access to open-access RAIDs owned by their own service point (via `service_point_group_id` JWT claim)
+- Embargoed RAIDs: can read those listed in `admin_raids`; cannot read other embargoed RAIDs from their service point unless they also hold `service-point-user`
 
 **Managed by:** Service point users can grant/revoke raid-admin role to users
 
@@ -47,12 +48,12 @@ The RAID system uses a multi-layered authorization approach combining:
 
 **Permissions:**
 - Create new RAIDs (`POST /raid/**`)
-- Read access to RAIDs owned by their service point (via `service_point_group_id` JWT claim)
+- Read access to RAIDs owned by their service point (via `service_point_group_id` JWT claim), **including embargoed RAIDs**
 - Write access to RAIDs owned by their service point
 - Patch access to RAIDs owned by their service point
 - Read access to service point information (`GET /service-point/**`)
 - Can grant/revoke `raid-admin` role to other users
-- **Cannot access embargoed RAIDs** (even from own service point)
+- Cannot access RAIDs owned by any other service point, embargoed or not
 
 **Authorization mechanism:** JWT token must contain `service_point_group_id` claim matching the service point that owns the RAID
 
@@ -62,7 +63,7 @@ The RAID system uses a multi-layered authorization approach combining:
 **Permissions:**
 - Read access to specific RAIDs listed in `user_raids` JWT claim
 - Write access to specific RAIDs listed in `user_raids` JWT claim
-- Subject to embargo restrictions (cannot access embargoed RAIDs)
+- Embargoed RAIDs: can read those listed in `user_raids`; no access to any other embargoed RAID
 
 **Managed by:** Users with `raid-permissions-admin` client role can add/remove RAID access
 
@@ -122,10 +123,12 @@ Two things it does *not* do, both deliberate:
 ## Special Authorization Cases
 
 ### Embargo Protection
-- **Embargoed RAIDs** (access type = embargoed) have restricted access
-- Only `operator` and `contributor-writer` roles can access embargoed content
-- Service point users cannot access embargoed RAIDs even from their own service point
-- Embargo status is checked via `SchemaValues.ACCESS_TYPE_EMBARGOED`
+- **Embargoed RAIDs** (access type = embargoed) are hidden from the public and from callers with no relationship to the RAID
+- `operator` and `contributor-writer` can read all embargoed RAIDs
+- `service-point-user` can read embargoed RAIDs owned by their own service point, through both `GET /raid` (list) and `GET /raid/{handle}`. Owners need this to manage their own RAIDs during the embargo period (decided in RAID-521, confirmed in RAID-929)
+- `raid-admin` and `raid-user` can read embargoed RAIDs explicitly listed in their `admin_raids` / `user_raids` claims
+- A `raid-admin` without `service-point-user` sees only the open-access RAIDs of their service point, beyond those in `admin_raids`
+- Implementation: `RaidRepository.findAllViewable` (list) and `RaidAuthorizationService.createReadAccessManager` (single RAID). Embargo is identified by the COAR access type `c_f1cf`; open access is `c_abf2`
 
 ### Service Point Ownership
 - Authorization based on matching `service_point_group_id` JWT claim with RAID's owning service point
@@ -171,9 +174,9 @@ Two things it does *not* do, both deliberate:
 |------|-------------|-----------|------------|------------|-------------------|----------------|-------------|
 | operator | ✓ | ✓ (all) | ✓ (all) | ✓ (all) | ✓ | ✓ | ✓ |
 | contributor-writer | ✗ | ✓ (all) | ✗ | ✓ (all) | ✗ | ✗ | ✗ |
-| service-point-user | ✓ | ✓ (owned, non-embargoed) | ✓ (owned) | ✓ (owned) | ✓ (read) | ✗ | ✗ |
-| raid-admin | ✓ | ✓ (specific, non-embargoed) | ✓ (specific) | ✗ | ✗ | ✗ | ✗ |
-| raid-user | ✗ | ✓ (specific, non-embargoed) | ✓ (specific) | ✗ | ✗ | ✗ | ✗ |
+| service-point-user | ✓ | ✓ (owned, incl. embargoed) | ✓ (owned) | ✓ (owned) | ✓ (read) | ✗ | ✗ |
+| raid-admin | ✓ | ✓ (specific, incl. embargoed; owned open-access) | ✓ (specific) | ✗ | ✗ | ✗ | ✗ |
+| raid-user | ✗ | ✓ (specific, incl. embargoed) | ✓ (specific) | ✗ | ✗ | ✗ | ✗ |
 | pid-searcher | ✗ | ✓ (search only) | ✗ | ✗ | ✗ | ✗ | ✗ |
 | raid-dumper | ✗ | ✓ (bulk public) | ✗ | ✗ | ✗ | ✓ | ✗ |
 | raid-upgrader | ✗ | ✓ (bulk public) | ✗ | ✗ | ✗ | ✓ | ✓ |

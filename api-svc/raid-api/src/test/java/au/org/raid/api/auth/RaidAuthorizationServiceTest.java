@@ -205,6 +205,26 @@ class RaidAuthorizationServiceTest {
         }
 
         @Test
+        @DisplayName("Should allow raid admin to read an embargoed raid listed in admin_raids (RAID-929)")
+        void shouldAllowRaidAdminToReadEmbargoedRaidWithValidHandle() {
+            // Given
+            request.setRequestURI("/raid/test/handle");
+            var auth = createJwtToken(RAID_ADMIN_ROLE);
+            var permissions = new RaidPermissionsResponse(List.of(), List.of(TEST_HANDLE));
+            when(keycloakService.getRaidPermissions(eq(TEST_USER_ID))).thenReturn(permissions);
+            // anyServicePointUserUnlessEmbargoed also runs for raid-admin and denies on the embargo,
+            // so the grant must come from hasRaidAdminPermissions, which does not check access type.
+            when(raidHistoryService.findByHandle(TEST_HANDLE)).thenReturn(Optional.of(createTestRaid(true)));
+            var manager = raidAuthorizationService.createReadAccessManager();
+
+            // When
+            var decision = manager.check(() -> auth, context);
+
+            // Then
+            assertTrue(decision.isGranted());
+        }
+
+        @Test
         @DisplayName("Should allow raid user with valid handle")
         void shouldAllowRaidUserWithValidHandle() {
             // Given
