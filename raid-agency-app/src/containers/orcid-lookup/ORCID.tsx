@@ -218,7 +218,7 @@ const getErrorMessage = (responseCode: number): string => {
   }
 };
 
-async function fetchFromOrcidPublicApi(orcidId: string) {
+export async function fetchFromOrcidPublicApi(orcidId: string) {
   const base = getRuntimeConfig().environment === 'prod'
     ? 'https://pub.orcid.org'
     : 'https://pub.sandbox.orcid.org';
