@@ -47,7 +47,8 @@ agencies:
     ror: https://ror.org/010r6td27
     block: 5
 
-  # TODO:RL TIB (block 6) is allocated but its ROR is not yet known. It is not
-  # deployed, so its absence blocks nothing today, but an instance whose ROR is
-  # missing here refuses to start. Block 6 is reserved for it and must not be
-  # allocated to anyone else.
+  # `instance` omitted: TIB's hostname is not recorded here yet. It is
+  # documentation only, so it can be added once their deployment is known.
+  - name: TIB
+    ror: https://ror.org/04aj4c181
+    block: 6
