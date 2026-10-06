@@ -4,8 +4,10 @@ import { ContributorRoleItemView } from "@/entities/contributor-role/views/contr
 import { Contributor } from "@/generated/raid";
 import { Divider, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import { memo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { OrcidButton } from "@/components/orcid-button";
-import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
+import { fetchFromOrcidPublicApi } from "@/containers/orcid-lookup/ORCID";
+import { getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 
 interface ContributorWithStatus extends Contributor {
   uuid: string;
@@ -28,6 +30,30 @@ const ContributorItemView = memo(
     // showing them for an ISNI contributor is meaningless/misleading.
     const isIsni = contributor.schemaUri === ISNI_SCHEMA_URI;
 
+    // RAID-920: resolve the contributor's display name live from the ORCID
+    // public API so the "Name" field below isn't just the dead orcidData
+    // prop (its real fetch is commented out in ContributorsView - this is
+    // independent of that). ISNI has no public name-lookup API yet, so it's
+    // deliberately left unresolved for now - identifier-only is the full
+    // scope for ISNI this round.
+    const orcidBody = !isIsni ? getOrcidBody(contributor.id ?? "") : null;
+    const nameQuery = useQuery({
+      queryKey: ["orcid-name", orcidBody],
+      queryFn: async () => {
+        const person = await fetchFromOrcidPublicApi(orcidBody!);
+        return (
+          person.creditName ||
+          [person.givenName, person.lastName].filter(Boolean).join(" ")
+        );
+      },
+      enabled: !!orcidBody,
+    });
+    const resolvedName = nameQuery.isPending
+      ? "Resolving…"
+      : nameQuery.isError || !nameQuery.data
+      ? "Not available"
+      : nameQuery.data;
+
     return (
       <Stack gap={2}>
         <Typography variant="body1">Contributor #{i + 1}</Typography>
@@ -39,7 +65,11 @@ const ContributorItemView = memo(
         )}
 
         <Grid container spacing={2}>
-          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={6} />
+          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={isIsni ? 6 : 4} />
+
+          {!isIsni && (
+            <DisplayItem label="Name" value={resolvedName} width={4} testid="contributor-name-display" />
+          )}
 
           <DisplayItem
             label="Leader"

@@ -175,7 +175,7 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
   });
 
-  test("RAiD edit page keeps the ISNI identifier editable instead of showing an ORCID-style status", async ({
+  test("RAiD edit page lets the ISNI identifier be made editable instead of showing an ORCID-style status", async ({
     page,
   }) => {
     const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
@@ -187,12 +187,21 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     const [prefix, suffix] = extractPrefixSuffixFromUrl(page.url());
     await formPage.goto(`/raids/${prefix}/${suffix}/edit`);
 
-    // Bug fix: once a saved contributor has a "status" field, ORCID's
-    // identifier field locks and shows a read-only "Contributor Status"
-    // (e.g. AWAITING_AUTHENTICATION) instead - that status concept doesn't
-    // apply to ISNI (no OAuth flow), so the field must stay editable and
-    // pre-filled with the existing ISNI, with no status text shown.
+    // Bug fix (RAID-883): once a saved contributor has a "status" field,
+    // ORCID's identifier field locks and shows a read-only "Contributor
+    // Status" (e.g. AWAITING_AUTHENTICATION) instead - that status concept
+    // doesn't apply to ISNI (no OAuth flow), so no such status text must
+    // ever appear for it.
     await expect(page.getByText(/AWAITING_AUTHENTICATION|AUTHENTICATED|UNAUTHENTICATED/)).not.toBeVisible();
+
+    // RAID-920: existing identifiers now start read-only (identifier shown,
+    // no editable input) with an explicit pencil toggle into the same
+    // editable widget RAID-883 fixed - this replaces the "always editable"
+    // behaviour this test originally asserted.
+    await expect(contributorSection.identifierDisplay(0)).toHaveText(MOCKED_ISNI_URL);
+    await expect(page.locator('#contributor input[aria-label="search orcid"]')).toHaveCount(0);
+
+    await contributorSection.clickEditIdentifier(0);
     await expect(page.locator('#contributor input[aria-label="search orcid"]')).toHaveValue(MOCKED_ISNI_URL);
   });
 
