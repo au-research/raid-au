@@ -66,9 +66,11 @@ public class RaidAuthorizationService {
     }
 
     /**
-     * Grants access to any caller holding the flat {@code service-point-user} (or {@code
-     * raid-admin}) authority, denying an embargoed raid unless the caller's own service point owns
-     * it. Since RAID-877, {@link au.org.raid.api.config.SecurityConfig#extractAuthorities} also
+     * Grants access to a caller holding the flat {@code service-point-user} (or {@code
+     * raid-admin}) authority when the raid is not embargoed and the caller's own service point
+     * owns it. This check denies every embargoed raid, including the caller's own; the read
+     * manager still grants an owner's embargoed raid through {@link #servicePointOwner}, which
+     * does not check access type (RAID-929). Since RAID-877, {@link au.org.raid.api.config.SecurityConfig#extractAuthorities} also
      * synthesises the flat {@code service-point-user} authority for a client-credential token
      * carrying a scoped {@code service-point-user:<groupId>} role that matches its own {@code
      * service_point_group_id} claim, so this check now also passes for a claim-matched scoped
