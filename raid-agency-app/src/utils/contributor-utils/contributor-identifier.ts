@@ -23,3 +23,16 @@ export function detectContributorIdentifierType(value: string): ContributorIdent
 
   return "unrecognised";
 }
+
+// A looser check than isniRegex - matches anything clearly aimed at the ISNI
+// scheme (the isni.org domain) even if the rest of the value is malformed
+// (wrong digit count, an extra path segment, etc). Used to choose
+// ISNI-specific guidance/error copy for a bad ISNI attempt, instead of
+// silently falling back to ORCID's copy just because the strict format
+// check failed.
+const isniDomainRegex = /^https?:\/\/(www\.)?isni\.org\b/i;
+
+export function looksLikeIsniAttempt(value: string): boolean {
+  const trimmed = value.trim();
+  return !!trimmed && isniDomainRegex.test(trimmed) && detectContributorIdentifierType(trimmed) !== "isni";
+}

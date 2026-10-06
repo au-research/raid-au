@@ -231,12 +231,15 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     // RAID-883 follow-up (Matthias, 2026-09-30): a value matching neither
     // the ORCID digit pattern nor the ISNI URL pattern (here, an ISNI URL
     // with an extra "isni/" path segment) surfaces the inline format error
-    // below the field once submitted.
+    // below the field once submitted. It's recognisably aimed at isni.org,
+    // so the error is ISNI-specific rather than the generic fallback.
     await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
     await input.press("Enter");
+    // Matches only the red error text ("Invalid ISNI format.<details>"), not
+    // the shorter "Invalid ISNI format" subtitle heading above the field.
     const inlineError = page
       .locator("#contributor")
-      .getByText("Unrecognised identifier format. Please check your entry and try again.");
+      .getByText(/Invalid ISNI format\./);
     await expect(inlineError).toBeVisible({ timeout: 5000 });
 
     // Correcting the value to a valid, recognised ISNI must clear the stale
@@ -246,5 +249,24 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     // re-validating as the user types.
     await contributorSection.fillOrcidId(0, ISNI_URL);
     await expect(inlineError).not.toBeVisible({ timeout: 5000 });
+  });
+
+  test("malformed ISNI shows ISNI-specific guidance instead of ORCID's, without needing to submit", async ({
+    page,
+  }) => {
+    const { contributorSection } = await setUpFormWithContributorRow(page);
+
+    // Manual UX review finding (2026-10-06): typing a malformed ISNI used to
+    // leave the unrelated ORCID sandbox helper text showing below the
+    // field, since detectContributorIdentifierType only recognises a fully
+    // well-formed ISNI and the UI silently fell back to ORCID's copy for
+    // anything else. No Enter/submit needed - this is live, as-you-type
+    // feedback.
+    await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
+
+    const card = page.locator("#contributor");
+    await expect(card.getByText(/Use the ORCID sandbox/)).not.toBeVisible();
+    await expect(card.getByText(/Invalid ISNI format/).first()).toBeVisible({ timeout: 5000 });
+    await expect(card.getByText("Invalid ISNI format", { exact: true })).toBeVisible();
   });
 });
