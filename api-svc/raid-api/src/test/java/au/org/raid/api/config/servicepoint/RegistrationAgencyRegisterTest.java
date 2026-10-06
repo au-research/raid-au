@@ -13,6 +13,7 @@ class RegistrationAgencyRegisterTest {
     private static final String ARDC_ROR = "https://ror.org/038sjwq14";
     private static final String SURF_ROR = "https://ror.org/009vhk114";
     private static final String SDSC_ROR = "https://ror.org/04mg3nk07";
+    private static final String TIB_ROR = "https://ror.org/04aj4c181";
 
     private static Resource register(final String yaml) {
         return new ByteArrayResource(yaml.getBytes());
@@ -31,6 +32,7 @@ class RegistrationAgencyRegisterTest {
         assertThat(subject.servicePointIdStart(ARDC_ROR)).isEqualTo(20000000L);
         assertThat(subject.servicePointIdStart(SURF_ROR)).isEqualTo(30000000L);
         assertThat(subject.servicePointIdStart(SDSC_ROR)).isEqualTo(40000000L);
+        assertThat(subject.servicePointIdStart(TIB_ROR)).isEqualTo(60000000L);
     }
 
     /**
