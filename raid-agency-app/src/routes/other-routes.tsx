@@ -9,6 +9,7 @@ import { Invites } from "@/pages/invites";
 import { Login } from "@/pages/login";
 import { Privacy } from "@/pages/privacy";
 import { UsageTerms } from "@/pages/usage-terms";
+import { Box } from "@mui/material";
 import { RouteObject } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import OrcidSuccess from "@/pages/orcid-success/orcid-success";
@@ -27,14 +28,12 @@ export const otherRoutes: RouteObject[] = [
   },
   {
     path: ROUTES.LOGIN,
-    // No need for ProtectedRoute here since this is the login page.
-    // Login itself is a transient, full-viewport redirect screen (it
-    // bounces to Keycloak or to the post-login destination as soon as
-    // auth state resolves) - mounting AppNavBar/Footer around it briefly
-    // shows full authenticated header chrome (MegaMenu, UserDropdown,
-    // etc.) for an already-authenticated user on the one render before
-    // the redirect fires, so it's left out entirely rather than guarded.
-    element: <Login />,
+    // No need for ProtectedRoute here since this is the login page
+    element: (
+      <Box sx={{ pt: 5 }}>
+        <Login />
+      </Box>
+    ),
   },
   {
     path: ROUTES.PRIVACY,
