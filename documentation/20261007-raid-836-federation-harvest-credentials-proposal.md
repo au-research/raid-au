@@ -3,6 +3,7 @@
 - JIRA: [RAID-836](https://ardc.atlassian.net/browse/RAID-836) (Spike), parent [RAID-739](https://ardc.atlassian.net/browse/RAID-739)
 - Related: [RAID-884](https://ardc.atlassian.net/browse/RAID-884) (boot-time provisioning hook), [RAID-827](https://ardc.atlassian.net/browse/RAID-827) (in-process client creation), [RAID-752](https://ardc.atlassian.net/browse/RAID-752) (federation ingest)
 - Status: draft for review, 7 October 2026 (evidence gathered 30 September 2026)
+- PR: [#706](https://github.com/au-research/raid-au/pull/706)
 - Findings: [`20260930-raid-836-ra-credential-spike.md`](./20260930-raid-836-ra-credential-spike.md)
 - ADR (proposed): [`2026-09-30_federation-harvest-client-uses-private-key-jwt.md`](../doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md)
 - Evidence: [`iam/probe/private-key-jwt/`](../iam/probe/private-key-jwt/README.md)

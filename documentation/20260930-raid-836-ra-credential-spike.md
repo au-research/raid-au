@@ -2,7 +2,7 @@
 
 - **Ticket:** [RAID-836](https://ardc.atlassian.net/browse/RAID-836) (Spike), parent epic [RAID-739](https://ardc.atlassian.net/browse/RAID-739)
 - **Related:** [RAID-752](https://ardc.atlassian.net/browse/RAID-752) (federation ingest), [RAID-884](https://ardc.atlassian.net/browse/RAID-884) (boot-time provisioning hook), [RAID-825](https://ardc.atlassian.net/browse/RAID-825)/[RAID-826](https://ardc.atlassian.net/browse/RAID-826)/[RAID-827](https://ardc.atlassian.net/browse/RAID-827) (in-process credential SPI)
-- **Pull request:** _to be added_
+- **Pull request:** [#706](https://github.com/au-research/raid-au/pull/706)
 - **ADR:** [`doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md`](../doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md) (proposed)
 - **Evidence:** [`iam/probe/private-key-jwt/`](../iam/probe/private-key-jwt/README.md); test-environment client `raid-836-signed-jwt-probe` in `iam.test.raid.org.au` realm `raid` (token with `raid-dumper`, `GET /raid/all-public` HTTP 200, 2029 RAiDs; client and service account deleted on 30 September 2026)
 - **Proposal for review:** [`20261007-raid-836-federation-harvest-credentials-proposal.md`](./20261007-raid-836-federation-harvest-credentials-proposal.md)
