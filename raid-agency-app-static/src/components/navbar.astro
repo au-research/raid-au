@@ -12,7 +12,7 @@ const { topBar } = getSiteConfig().header;
   >
     <a href="/" aria-label="RAiD home">
       <div class="flex flex-1 items-center gap-x-6">
-        <img src="/raid-logo-mark.svg" class="h-8 w-auto" alt="" style={`height: ${topBar.height}`}/>
+        <img src=`${topBar.show ? "/RAiD-Strapline.svg" : "/raid-logo-light.svg"}` class="h-8 w-auto" alt="" style={`height: ${topBar.height}`}/>
       </div>
     </a>
 
