@@ -2,7 +2,8 @@ import { DisplayItem } from "@/components/display-item";
 import { CheckboxField } from "@/components/fields/CheckboxField";
 import ORCIDLookup, { fetchFromOrcidPublicApi } from "@/containers/orcid-lookup/ORCID";
 import { Contributor } from "@/generated/raid";
-import { getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
+import { fetchIsniName } from "@/services/isni";
+import { getIsniBody, getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 import { Edit as EditIcon, IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
@@ -27,8 +28,10 @@ function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
   const showEditableWidget = !isExisting || isEditingIdentifier;
   const identifierId: string | undefined = getValues(`contributor.${index}.id`);
 
+  // RAID-920: ORCID resolves via its own public API (as elsewhere); ISNI
+  // has no equivalent, so it goes through our own backend's ISNI endpoint.
   const orcidBody = !isIsni && identifierId ? getOrcidBody(identifierId) : null;
-  const nameQuery = useQuery({
+  const orcidNameQuery = useQuery({
     queryKey: ["orcid-name", orcidBody],
     queryFn: async () => {
       const person = await fetchFromOrcidPublicApi(orcidBody!);
@@ -39,6 +42,13 @@ function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
     },
     enabled: !!orcidBody && !showEditableWidget,
   });
+  const isniBody = isIsni && identifierId ? getIsniBody(identifierId) : null;
+  const isniNameQuery = useQuery({
+    queryKey: ["isni-name", isniBody],
+    queryFn: () => fetchIsniName({ isni: isniBody! }),
+    enabled: !!isniBody && !showEditableWidget,
+  });
+  const nameQuery = isIsni ? isniNameQuery : orcidNameQuery;
   const resolvedName = nameQuery.isPending
     ? "Resolving…"
     : nameQuery.isError || !nameQuery.data
@@ -61,7 +71,7 @@ function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
           <Stack direction="row" alignItems="center" gap={1}>
             <DisplayItem
               label={isIsni ? "ISNI" : "ORCID"}
-              value={isIsni ? identifierId : `${identifierId} — ${resolvedName}`}
+              value={`${identifierId} — ${resolvedName}`}
               width={11}
               testid="contributor-identifier-display"
             />

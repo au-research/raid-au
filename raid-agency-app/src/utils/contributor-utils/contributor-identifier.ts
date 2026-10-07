@@ -49,3 +49,14 @@ export function getOrcidBody(value: string): string | null {
   const orcidBody = trimmed.replace(/^https:\/\/(sandbox\.)?orcid\.org\//, "");
   return orcidBodyRegex.test(orcidBody) ? orcidBody : null;
 }
+
+/**
+ * Strips a recognised ISNI URL down to its bare 16-character id (for the
+ * name-resolution API call). Returns null when the value isn't a recognised
+ * ISNI.
+ */
+export function getIsniBody(value: string): string | null {
+  const trimmed = value.trim();
+  if (!isniRegex.test(trimmed)) return null;
+  return trimmed.replace(/^https:\/\/isni\.org\//, "");
+}
