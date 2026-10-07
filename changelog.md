@@ -40,10 +40,6 @@ See the [Changelog audience](#changelog-audience) section for info about
 * Corrected the role documentation: a Service Point user can read their own Service Point's
   embargoed RAiDs (PR #704).
 
-## Dependencies
-* Various minor dependency updates in `raid-agency-app` and `raid-agency-app-static`
-  (PRs #690, #693, #694, #695).
-
 # 2.18.0
 
 ## API
