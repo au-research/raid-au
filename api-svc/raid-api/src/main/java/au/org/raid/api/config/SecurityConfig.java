@@ -70,6 +70,11 @@ public class SecurityConfig {
         // API paths
         public static final String RAID_API = "/raid";
         public static final String SERVICE_POINT_API = "/service-point";
+        // RAID-920 follow-up: the only public, no-auth data path in the app - a thin
+        // read-only wrapper around the existing ISNI name resolver, so the frontend can
+        // show a contributor's resolved name the same way it already does for ORCID
+        // (ORCID has its own public CORS-enabled API; ISNI's real resolver does not).
+        public static final String ISNI_API = "/isni";
     }
 
     private final CorsConfigurationSource corsConfigurationSource;
@@ -95,6 +100,7 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/swagger-ui*/**", "/docs/**", "/actuator/**", "/error").permitAll()
+                .requestMatchers(GET, ISNI_API + "/**").permitAll()
 
                 // Upgrade endpoints
                 .requestMatchers(GET, "/legacy").hasRole(RAID_UPGRADER_ROLE)
