@@ -7,7 +7,8 @@ import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { OrcidButton } from "@/components/orcid-button";
 import { fetchFromOrcidPublicApi } from "@/containers/orcid-lookup/ORCID";
-import { getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
+import { fetchIsniName } from "@/services/isni";
+import { getIsniBody, getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 
 interface ContributorWithStatus extends Contributor {
   uuid: string;
@@ -30,14 +31,14 @@ const ContributorItemView = memo(
     // showing them for an ISNI contributor is meaningless/misleading.
     const isIsni = contributor.schemaUri === ISNI_SCHEMA_URI;
 
-    // RAID-920: resolve the contributor's display name live from the ORCID
-    // public API so the "Name" field below isn't just the dead orcidData
-    // prop (its real fetch is commented out in ContributorsView - this is
-    // independent of that). ISNI has no public name-lookup API yet, so it's
-    // deliberately left unresolved for now - identifier-only is the full
-    // scope for ISNI this round.
+    // RAID-920: resolve the contributor's display name live - from ORCID's
+    // own public API for ORCID (the "Name" field below isn't just the dead
+    // orcidData prop; its real fetch is commented out in ContributorsView,
+    // independent of this), and from our own backend's ISNI name endpoint
+    // for ISNI (ISNI's real resolver has no public, CORS-enabled API the
+    // browser can call directly, unlike ORCID's).
     const orcidBody = !isIsni ? getOrcidBody(contributor.id ?? "") : null;
-    const nameQuery = useQuery({
+    const orcidNameQuery = useQuery({
       queryKey: ["orcid-name", orcidBody],
       queryFn: async () => {
         const person = await fetchFromOrcidPublicApi(orcidBody!);
@@ -48,6 +49,13 @@ const ContributorItemView = memo(
       },
       enabled: !!orcidBody,
     });
+    const isniBody = isIsni ? getIsniBody(contributor.id ?? "") : null;
+    const isniNameQuery = useQuery({
+      queryKey: ["isni-name", isniBody],
+      queryFn: () => fetchIsniName({ isni: isniBody! }),
+      enabled: !!isniBody,
+    });
+    const nameQuery = isIsni ? isniNameQuery : orcidNameQuery;
     const resolvedName = nameQuery.isPending
       ? "Resolving…"
       : nameQuery.isError || !nameQuery.data
@@ -65,11 +73,9 @@ const ContributorItemView = memo(
         )}
 
         <Grid container spacing={2}>
-          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={isIsni ? 6 : 4} />
+          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={4} />
 
-          {!isIsni && (
-            <DisplayItem label="Name" value={resolvedName} width={4} testid="contributor-name-display" />
-          )}
+          <DisplayItem label="Name" value={resolvedName} width={4} testid="contributor-name-display" />
 
           <DisplayItem
             label="Leader"

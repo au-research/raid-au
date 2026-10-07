@@ -1,13 +1,16 @@
 // RAID-920: E2E tests for showing an existing Contributor's identifier and
-// (for ORCID) live-resolved name as a read-only display on both the RAiD
-// View page and Edit page.
+// live-resolved name as a read-only display on both the RAiD View page and
+// Edit page, for both ORCID and ISNI.
 //
-// ISNI name resolution is out of scope for this round (no ISNI public-API
-// client exists yet - see ORCID.tsx's own "no name lookup is performed"
-// comment) - ISNI coverage here is identifier-only, matching RAID-883's
-// existing "RAiD edit page lets the ISNI identifier be made editable..."
-// test in 07-contributor-identifier-inference.spec.ts, which already covers
-// the Edit-page read-only/pencil-toggle behaviour for ISNI.
+// ORCID resolves via its own public API, called directly from the browser.
+// ISNI has no equivalent public, CORS-enabled API (confirmed live during
+// development: isni.oclc.org's Access-Control-Allow-Origin header is a
+// fixed value regardless of the calling origin, so a direct browser call
+// would always be rejected) - ISNI resolution instead goes through a small
+// new backend endpoint (GET /isni/{isni}/name) wrapping the existing,
+// already-tested IsniClient. The Edit-page read-only/pencil-toggle
+// behaviour for ISNI is covered in 07-contributor-identifier-inference.spec.ts
+// (RAID-883's test), not duplicated here.
 
 import { test, expect, type Page } from "@playwright/test";
 import { RaidFormPage } from "../page-objects/RaidFormPage";
@@ -79,6 +82,17 @@ async function failOrcidPublicApiLookups(page: Page) {
   );
 }
 
+// Mirrors failOrcidPublicApiLookups above, but for our own backend's ISNI
+// name endpoint rather than a third-party API - a never-registered ISNI
+// can't be used for this instead, because the backend's own save-time
+// existence check (a separate call, also against the ISNI resolver) would
+// reject the save outright before a RAiD even exists to view/edit.
+async function failIsniNameLookups(page: Page) {
+  await page.route("**/isni/**/name", (route) =>
+    route.fulfill({ status: 404, contentType: "application/json", body: "{}" })
+  );
+}
+
 test.describe("Contributor identifier + name display", { tag: "@local" }, () => {
   test("View page shows an existing ORCID contributor's identifier and resolved name", async ({
     page,
@@ -92,15 +106,30 @@ test.describe("Contributor identifier + name display", { tag: "@local" }, () => 
     await expect(viewPage.contributorNameDisplay(0)).not.toHaveText("Resolving…");
   });
 
-  test("View page shows only the identifier for an existing ISNI contributor (no name lookup yet)", async ({
+  test("View page shows an existing ISNI contributor's identifier and resolved name", async ({
     page,
   }) => {
     const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
     await saveWithIdentifier(page, contributorSection, formPage, MOCKED_ISNI_URL);
 
+    // MOCKED_ISNI_URL resolves to "Taylor Swift" via the local mockserver's
+    // stubbed ISNI SRU response (docker-compose/mockserver/expectations.json).
     const viewPage = new RaidViewPage(page);
     await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
-    await expect(viewPage.contributorNameDisplay(0)).toHaveCount(0);
+    await expect(viewPage.contributorNameDisplay(0)).toHaveText("Taylor Swift", { timeout: 10000 });
+  });
+
+  test("View page falls back to a plain message when the ISNI name lookup fails", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+    await saveWithIdentifier(page, contributorSection, formPage, MOCKED_ISNI_URL);
+    await failIsniNameLookups(page);
+    await page.reload();
+
+    const viewPage = new RaidViewPage(page);
+    await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
+    await expect(viewPage.contributorNameDisplay(0)).toHaveText("Not available", { timeout: 10000 });
   });
 
   test("View page falls back to a plain message when the ORCID public API lookup fails", async ({
@@ -143,6 +172,21 @@ test.describe("Contributor identifier + name display", { tag: "@local" }, () => 
 
     await expect(contributorSection.identifierDisplay(0)).toHaveText(
       `${ORCID_URL} — Not available`,
+      { timeout: 10000 }
+    );
+  });
+
+  test("Edit page still shows the identifier, without crashing, when the ISNI name lookup fails", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+    await failIsniNameLookups(page);
+    const [prefix, suffix] = await saveWithIdentifier(page, contributorSection, formPage, MOCKED_ISNI_URL);
+
+    await formPage.goto(`/raids/${prefix}/${suffix}/edit`);
+
+    await expect(contributorSection.identifierDisplay(0)).toHaveText(
+      `${MOCKED_ISNI_URL} — Not available`,
       { timeout: 10000 }
     );
   });
