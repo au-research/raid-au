@@ -5,7 +5,7 @@
 - **Pull request:** _to be added_
 - **ADR:** [`doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md`](../doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md) (proposed)
 - **Evidence:** [`iam/probe/private-key-jwt/`](../iam/probe/private-key-jwt/README.md); test-environment client `raid-836-signed-jwt-probe` in `iam.test.raid.org.au` realm `raid` (token with `raid-dumper`, `GET /raid/all-public` HTTP 200, 2029 RAiDs; client and service account deleted on 30 September 2026)
-- **Proposal for review:** [Federation Harvest Credentials](https://claude.ai/artifact/NBLPjULMhn5AW5sQvXwtiW), linked from the ticket
+- **Proposal for review:** [`20261007-raid-836-federation-harvest-credentials-proposal.md`](./20261007-raid-836-federation-harvest-credentials-proposal.md)
 - **Date:** 30 September 2026 (first draft 9 September 2026)
 - **Author:** Rob Leney
 
