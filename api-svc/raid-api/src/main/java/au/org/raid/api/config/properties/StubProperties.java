@@ -18,6 +18,7 @@ public class StubProperties {
     private Isni isni;
     private Ror ror;
     private WebArchive webArchive;
+    private Datacite datacite;
 
     @Data
     public static class Doi {
@@ -75,5 +76,12 @@ public class StubProperties {
     public static class WebArchive {
         private boolean enabled;
         private Long delay;
+    }
+
+    @Data
+    public static class Datacite {
+        private boolean enabled;
+        private Long delay;
+        private String prefix;
     }
 }
