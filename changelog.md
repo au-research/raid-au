@@ -1,6 +1,49 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.19.0
+
+## API
+* Added an optional `updatedSince` query parameter to `/raid/all-public` and `/raid/all-embargoed`,
+  so federated consumers can fetch only the RAiDs updated after their last sync rather than
+  re-fetching the whole corpus. The value is an ISO 8601 timestamp and must include a timezone
+  offset (for example `2026-10-01T00:00:00Z`). It filters on the `metadata.updated` value already
+  returned in each RAiD, at one-second granularity. A malformed value returns a structured
+  `400 Bad Request` explaining the problem. Both endpoints are also faster, because they no longer
+  read every historical revision to find the latest one. This release adds database migration
+  `V49`, which creates a supporting index (PR #686).
+* Fixed intermittent `uri not found` errors when saving a RAiD with a genuinely archived
+  `web.archive.org` related object. The Wayback Machine availability API returns the same empty
+  answer for a page that was never archived as it does when its own lookup times out. Web Archive
+  links are now checked by requesting the link itself, so an archived page is accepted, a missing
+  page is rejected, and an archive outage returns `503 Service Unavailable` rather than a
+  validation error. Links containing non-ASCII characters (for example `München`) are now encoded
+  correctly before checking. The unused `raid.uri-validation.web-archive.availability-url`
+  property has been removed (PR #699).
+* Updating a RAiD no longer re-checks related object links that are unchanged from the version
+  being edited. Previously an unrelated edit could fail on a link accepted earlier, and a RAiD
+  with many Web Archive links could be blocked by the archive's own rate limit. Successful checks
+  are also briefly remembered, so retrying a save after a `503` skips links already confirmed
+  (PR #700).
+* Added TIB (Leibniz Information Centre for Science and Technology and University Library) to the
+  Registration Agency
+  register, allocating their Service Point id block (PR #703).
+
+## IAM
+* Added an endpoint to permanently delete a self-serve client credential
+  (`DELETE /realms/raid/client-credential/delete`). Revoking a credential only disables it, so
+  this lets a Service Point Admin or operator remove credentials they no longer need. It is
+  authorised in the same way as revoke and is audit-logged. Test credentials are no longer
+  written to the logs (PR #688).
+* Updated the wording of the sign-in page help text, which now refers to the Australian Access
+  Federation by name.
+* Corrected the role documentation: a Service Point user can read their own Service Point's
+  embargoed RAiDs (PR #704).
+
+## Dependencies
+* Various minor dependency updates in `raid-agency-app` and `raid-agency-app-static`
+  (PRs #690, #693, #694, #695).
+
 # 2.18.0
 
 ## API
