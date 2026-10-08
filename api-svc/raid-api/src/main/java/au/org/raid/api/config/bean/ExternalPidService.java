@@ -4,9 +4,15 @@ import au.org.raid.api.client.contributor.isni.IsniClient;
 import au.org.raid.api.client.contributor.isni.IsniRequestEntityFactory;
 import au.org.raid.api.client.contributor.orcid.OrcidClient;
 import au.org.raid.api.client.contributor.orcid.OrcidRequestEntityFactory;
+import au.org.raid.api.client.repository.DataciteRepositoryClient;
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.client.ror.RorRequestEntityFactory;
+import au.org.raid.api.config.properties.DataciteProperties;
+import au.org.raid.api.config.properties.RepositoryClientProperties;
 import au.org.raid.api.config.properties.StubProperties;
+import au.org.raid.api.factory.HttpEntityFactory;
+import au.org.raid.api.factory.datacite.DataciteRequestFactory;
+import au.org.raid.api.service.datacite.DataciteService;
 import au.org.raid.api.service.doi.DoiService;
 import au.org.raid.api.service.handle.HandleService;
 import au.org.raid.api.service.rrid.RridService;
@@ -16,6 +22,7 @@ import au.org.raid.api.util.Log;
 import au.org.raid.api.validator.GeoNamesUriValidator;
 import au.org.raid.api.validator.OpenStreetMapUriValidator;
 import au.org.raid.idl.raidv2.model.ValidationFailure;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -166,6 +173,52 @@ public class ExternalPidService {
         }
 
         return new OpenStreetMapUriValidator(restTemplate);
+    }
+
+    @Bean
+    @Primary
+    public DataciteService dataciteService(
+            final StubProperties stubProperties,
+            @Value("${raid.environment}") final String environment,
+            final DataciteProperties dataciteProperties,
+            final RestTemplate restTemplate,
+            final DataciteRequestFactory dataciteRequestFactory,
+            final HttpEntityFactory httpEntityFactory,
+            final ObjectMapper objectMapper
+    ) {
+        if (isDataciteStubEnabled(stubProperties, environment)) {
+            log.warn("using the in-memory DataCite service; DOIs will NOT be minted or updated in DataCite");
+            return new DataciteServiceStub(dataciteRequestFactory, objectMapper, stubProperties.getDatacite().getDelay());
+        }
+
+        return new DataciteService(dataciteProperties, restTemplate, dataciteRequestFactory, httpEntityFactory, objectMapper);
+    }
+
+    @Bean
+    @Primary
+    public DataciteRepositoryClient dataciteRepositoryClient(
+            final StubProperties stubProperties,
+            @Value("${raid.environment}") final String environment,
+            final RestTemplate restTemplate,
+            final RepositoryClientProperties repositoryClientProperties,
+            final HttpEntityFactory httpEntityFactory
+    ) {
+        if (isDataciteStubEnabled(stubProperties, environment)) {
+            log.warn("using the in-memory DataCite repository client; repositories will NOT be created in DataCite");
+            return new DataciteRepositoryClientStub(stubProperties.getDatacite().getPrefix());
+        }
+
+        return new DataciteRepositoryClient(restTemplate, repositoryClientProperties, httpEntityFactory);
+    }
+
+    // Unlike the read-only validator stubs, this one silently drops writes, so refuse to start
+    // rather than let a prod instance mint RAiDs with no DOI behind them.
+    private static boolean isDataciteStubEnabled(final StubProperties stubProperties, final String environment) {
+        final var enabled = stubProperties.getDatacite() != null && stubProperties.getDatacite().isEnabled();
+        if (enabled && "prod".equalsIgnoreCase(environment)) {
+            throw new IllegalStateException("raid.stub.datacite.enabled must not be true when raid.environment=prod");
+        }
+        return enabled;
     }
 
     @Bean

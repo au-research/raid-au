@@ -14,13 +14,15 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Wired by {@link au.org.raid.api.config.bean.ExternalPidService}, which substitutes
+ * {@link au.org.raid.api.service.stub.DataciteServiceStub} when raid.stub.datacite.enabled=true.
+ */
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class DataciteService {
     private static final String DOI_PREFIX = "10.";
@@ -31,7 +33,7 @@ public class DataciteService {
     private final HttpEntityFactory httpEntityFactory;
     private final ObjectMapper objectMapper;
 
-    private boolean isDoi(final String handle) {
+    protected boolean isDoi(final String handle) {
         return handle != null && handle.startsWith(DOI_PREFIX);
     }
 
