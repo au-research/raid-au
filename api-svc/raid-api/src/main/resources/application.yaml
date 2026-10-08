@@ -74,6 +74,14 @@ raid:
     web-archive:
       enabled: false
       delay: 150
+    # RAID-892: temporary, for branch environments only, until the RAID-812 mock server.
+    # Refuses to start when raid.environment=prod.
+    datacite:
+      enabled: false
+      delay: 0
+      # 10.5072 was DataCite's former test prefix; nothing is sent to DataCite, so it only
+      # needs to look like a DOI prefix.
+      prefix: 10.5072
   identifier:
     schema-uri: https://raid.org/
     license: Creative Commons CC-0

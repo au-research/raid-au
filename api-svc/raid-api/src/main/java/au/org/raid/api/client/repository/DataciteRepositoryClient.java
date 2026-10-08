@@ -6,10 +6,12 @@ import au.org.raid.api.model.datacite.repository.DataciteRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-@Component
+/**
+ * Wired by {@link au.org.raid.api.config.bean.ExternalPidService}, which substitutes
+ * {@link au.org.raid.api.service.stub.DataciteRepositoryClientStub} when raid.stub.datacite.enabled=true.
+ */
 @RequiredArgsConstructor
 public class DataciteRepositoryClient {
     private final RestTemplate restTemplate;
