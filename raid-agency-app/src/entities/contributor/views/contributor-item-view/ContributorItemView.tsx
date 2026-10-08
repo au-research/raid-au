@@ -4,11 +4,9 @@ import { ContributorRoleItemView } from "@/entities/contributor-role/views/contr
 import { Contributor } from "@/generated/raid";
 import { Divider, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import { memo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { OrcidButton } from "@/components/orcid-button";
-import { fetchFromOrcidPublicApi } from "@/containers/orcid-lookup/ORCID";
-import { fetchIsniName } from "@/services/isni";
-import { getIsniBody, getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
+import { useResolvedContributorName } from "@/hooks/useResolvedContributorName";
+import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 
 interface ContributorWithStatus extends Contributor {
   uuid: string;
@@ -31,36 +29,10 @@ const ContributorItemView = memo(
     // showing them for an ISNI contributor is meaningless/misleading.
     const isIsni = contributor.schemaUri === ISNI_SCHEMA_URI;
 
-    // RAID-920: resolve the contributor's display name live - from ORCID's
-    // own public API for ORCID (the "Name" field below isn't just the dead
-    // orcidData prop; its real fetch is commented out in ContributorsView,
-    // independent of this), and from our own backend's ISNI name endpoint
-    // for ISNI (ISNI's real resolver has no public, CORS-enabled API the
-    // browser can call directly, unlike ORCID's).
-    const orcidBody = !isIsni ? getOrcidBody(contributor.id ?? "") : null;
-    const orcidNameQuery = useQuery({
-      queryKey: ["orcid-name", orcidBody],
-      queryFn: async () => {
-        const person = await fetchFromOrcidPublicApi(orcidBody!);
-        return (
-          person.creditName ||
-          [person.givenName, person.lastName].filter(Boolean).join(" ")
-        );
-      },
-      enabled: !!orcidBody,
-    });
-    const isniBody = isIsni ? getIsniBody(contributor.id ?? "") : null;
-    const isniNameQuery = useQuery({
-      queryKey: ["isni-name", isniBody],
-      queryFn: () => fetchIsniName({ isni: isniBody! }),
-      enabled: !!isniBody,
-    });
-    const nameQuery = isIsni ? isniNameQuery : orcidNameQuery;
-    const resolvedName = nameQuery.isPending
-      ? "Resolving…"
-      : nameQuery.isError || !nameQuery.data
-      ? "Not available"
-      : nameQuery.data;
+    // RAID-920: resolve the contributor's display name live - the "Name"
+    // field below isn't just the dead orcidData prop (its real fetch is
+    // commented out in ContributorsView, independent of this).
+    const resolvedName = useResolvedContributorName(contributor.id, isIsni);
 
     return (
       <Stack gap={2}>

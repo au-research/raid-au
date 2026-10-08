@@ -560,18 +560,13 @@ export default function ORCIDLookup({
     // state, separate from the form's shouldValidate-driven error, so fixing
     // the value never re-validated it - and for a recognised ISNI there's no
     // search button left to re-trigger handleSearch and clear it that way,
-    // so the stale message could persist indefinitely. Re-validate the
-    // syntax on every edit and clear the error once it's corrected.
+    // so the stale message could persist indefinitely. Keep `error` fully in
+    // sync with the current value on every edit (rather than only ever
+    // clearing it conditionally) - otherwise a value that's no longer an
+    // ISNI attempt at all (e.g. the user deletes it and types something
+    // unrelated) left the stale ISNI message showing.
     const liveIdentifierType = detectContributorIdentifierType(value);
-    if (!value.trim() || liveIdentifierType !== 'unrecognised') {
-      setError(null);
-    } else if (looksLikeIsniAttempt(value)) {
-      // RAID-883 follow-up: surface ISNI-specific invalid-format feedback as
-      // soon as the value is recognisably aimed at isni.org, rather than
-      // waiting for an explicit Enter/save to show it (and rather than
-      // leaving the unrelated ORCID helper copy showing in the meantime).
-      setError(isniInvalidFormatMessage);
-    }
+    setError(looksLikeIsniAttempt(value) ? isniInvalidFormatMessage : null);
     // Bug fix: this setValue call previously omitted shouldValidate, so a
     // stale validation error on the id field never cleared as the user
     // typed a corrected value - for ORCID it happened to clear anyway once

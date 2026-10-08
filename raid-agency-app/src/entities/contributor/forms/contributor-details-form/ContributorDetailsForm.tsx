@@ -1,59 +1,32 @@
 import { DisplayItem } from "@/components/display-item";
 import { CheckboxField } from "@/components/fields/CheckboxField";
-import ORCIDLookup, { fetchFromOrcidPublicApi } from "@/containers/orcid-lookup/ORCID";
+import ORCIDLookup from "@/containers/orcid-lookup/ORCID";
 import { Contributor } from "@/generated/raid";
-import { fetchIsniName } from "@/services/isni";
-import { getIsniBody, getOrcidBody, ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
+import { useResolvedContributorName } from "@/hooks/useResolvedContributorName";
+import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 import { Edit as EditIcon, IndeterminateCheckBox } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 function FieldGrid({ index, data }: { index: number; data: Contributor[] }) {
   const { setValue, getValues, formState: { errors } } = useFormContext();
-  // Bug fix: ORCID's authentication status (e.g. AWAITING_AUTHENTICATION)
-  // doesn't apply to ISNI - ISNI has no OAuth authentication flow, so there's
-  // no reason to lock its identifier field once a status happens to exist.
   const isIsni = data?.[index]?.schemaUri === ISNI_SCHEMA_URI;
   // A `status` field is only ever assigned server-side once a Contributor has
   // been saved, so its presence is how a saved row is told apart from one
   // still being drafted in this editing session.
   const isExisting = !!data?.[index] && Object.hasOwn(data[index], "status");
-  // RAID-920: an existing Contributor's identifier starts out read-only
-  // (confirm-who-this-is, not edit-by-default) - the pencil icon below opts
-  // into the same editable widget a brand-new row always shows.
+  // RAID-920: an existing Contributor's identifier (ORCID or ISNI) starts out
+  // read-only (confirm-who-this-is, not edit-by-default) - the pencil icon
+  // below opts into the same editable widget a brand-new row always shows.
   const [isEditingIdentifier, setIsEditingIdentifier] = useState(false);
   const showEditableWidget = !isExisting || isEditingIdentifier;
   const identifierId: string | undefined = getValues(`contributor.${index}.id`);
 
-  // RAID-920: ORCID resolves via its own public API (as elsewhere); ISNI
-  // has no equivalent, so it goes through our own backend's ISNI endpoint.
-  const orcidBody = !isIsni && identifierId ? getOrcidBody(identifierId) : null;
-  const orcidNameQuery = useQuery({
-    queryKey: ["orcid-name", orcidBody],
-    queryFn: async () => {
-      const person = await fetchFromOrcidPublicApi(orcidBody!);
-      return (
-        person.creditName ||
-        [person.givenName, person.lastName].filter(Boolean).join(" ")
-      );
-    },
-    enabled: !!orcidBody && !showEditableWidget,
-  });
-  const isniBody = isIsni && identifierId ? getIsniBody(identifierId) : null;
-  const isniNameQuery = useQuery({
-    queryKey: ["isni-name", isniBody],
-    queryFn: () => fetchIsniName({ isni: isniBody! }),
-    enabled: !!isniBody && !showEditableWidget,
-  });
-  const nameQuery = isIsni ? isniNameQuery : orcidNameQuery;
-  const resolvedName = nameQuery.isPending
-    ? "Resolving…"
-    : nameQuery.isError || !nameQuery.data
-    ? "Not available"
-    : nameQuery.data;
+  // Only resolve while the read-only display is actually showing, not while
+  // the editable widget is.
+  const resolvedName = useResolvedContributorName(identifierId, isIsni, !showEditableWidget);
 
   return (
     <Grid container spacing={2}>
