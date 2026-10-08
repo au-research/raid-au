@@ -9,6 +9,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Element;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @RequiredArgsConstructor
 public class IsniClient implements ContributorClient {
     private final RestTemplate restTemplate;
@@ -54,10 +58,19 @@ public class IsniClient implements ContributorClient {
     }
 
     private String getFullName(final PersonalName personalName) {
-        final var givenName = ((Element)personalName.getForename()).getTextContent();
-        final var familyName = ((Element)personalName.getSurname()).getTextContent();
+        // Some records - e.g. a mononymous pen name, catalogued with only a
+        // surname - have no forename element at all. Join whichever of the
+        // two is actually present rather than assuming both always exist.
+        final var givenName = textContentOrNull(personalName.getForename());
+        final var familyName = textContentOrNull(personalName.getSurname());
 
-        return "%s %s".formatted(givenName, familyName);
+        return Stream.of(givenName, familyName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" "));
+    }
+
+    private String textContentOrNull(final Object nameElement) {
+        return nameElement instanceof Element element ? element.getTextContent() : null;
     }
 
     @Cacheable(value="valid-isni", key="{#isni}")
