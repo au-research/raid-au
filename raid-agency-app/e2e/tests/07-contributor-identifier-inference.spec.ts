@@ -197,12 +197,14 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     // RAID-920: existing identifiers now start read-only (identifier shown,
     // no editable input) with an explicit pencil toggle into the same
     // editable widget RAID-883 fixed - this replaces the "always editable"
-    // behaviour this test originally asserted. MOCKED_ISNI_URL resolves to
-    // "Taylor Swift" via the local mockserver's stubbed ISNI SRU response.
-    await expect(contributorSection.identifierDisplay(0)).toHaveText(
-      `${MOCKED_ISNI_URL} — Taylor Swift`,
-      { timeout: 10000 }
-    );
+    // behaviour this test originally asserted. MOCKED_ISNI_URL resolves via
+    // the local mockserver to "Taylor Swift", but the shared branch-deployed
+    // CI environment resolves ISNI through a different stub (hardcoded "Test
+    // User"), so assert resolution succeeded rather than hardcoding either
+    // exact name.
+    const identifierDisplay = contributorSection.identifierDisplay(0);
+    await expect(identifierDisplay).toContainText(MOCKED_ISNI_URL, { timeout: 10000 });
+    await expect(identifierDisplay).not.toHaveText(`${MOCKED_ISNI_URL} — Not available`);
     await expect(page.locator('#contributor input[aria-label="search orcid"]')).toHaveCount(0);
 
     await contributorSection.clickEditIdentifier(0);
