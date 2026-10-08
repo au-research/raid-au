@@ -264,6 +264,28 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(inlineError).not.toBeVisible({ timeout: 5000 });
   });
 
+  test("inline ISNI-format error also clears when corrected to something that isn't an ISNI attempt at all", async ({
+    page,
+  }) => {
+    const { contributorSection } = await setUpFormWithContributorRow(page);
+    const input = page.locator('#contributor input[aria-label="search orcid"]');
+
+    // Code-review finding: the live-validation branch only ever cleared the
+    // error when the new value became recognised (ORCID/ISNI) or still
+    // looked like an ISNI attempt - typing something that's neither (not
+    // just a corrected ISNI) left the stale message showing, since nothing
+    // applied to clear it in that case.
+    await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
+    await input.press("Enter");
+    const inlineError = page
+      .locator("#contributor")
+      .getByText(/Invalid ISNI format\./);
+    await expect(inlineError).toBeVisible({ timeout: 5000 });
+
+    await contributorSection.fillOrcidId(0, "just some unrelated text");
+    await expect(inlineError).not.toBeVisible({ timeout: 5000 });
+  });
+
   test("malformed ISNI shows ISNI-specific guidance instead of ORCID's, without needing to submit", async ({
     page,
   }) => {
