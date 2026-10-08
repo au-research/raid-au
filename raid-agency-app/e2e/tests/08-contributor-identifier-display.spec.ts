@@ -112,11 +112,16 @@ test.describe("Contributor identifier + name display", { tag: "@local" }, () => 
     const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
     await saveWithIdentifier(page, contributorSection, formPage, MOCKED_ISNI_URL);
 
-    // MOCKED_ISNI_URL resolves to "Taylor Swift" via the local mockserver's
-    // stubbed ISNI SRU response (docker-compose/mockserver/expectations.json).
+    // MOCKED_ISNI_URL resolves via the local mockserver's stubbed ISNI SRU
+    // response (docker-compose/mockserver/expectations.json) to "Taylor
+    // Swift" - but the shared branch-deployed CI environment resolves ISNI
+    // through a different stub (IsniClientStub, hardcoded "Test User"), so
+    // assert resolution succeeded rather than hardcoding either exact name,
+    // mirroring the equivalent ORCID assertion above.
     const viewPage = new RaidViewPage(page);
     await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
-    await expect(viewPage.contributorNameDisplay(0)).toHaveText("Taylor Swift", { timeout: 10000 });
+    await expect(viewPage.contributorNameDisplay(0)).not.toHaveText("Not available", { timeout: 10000 });
+    await expect(viewPage.contributorNameDisplay(0)).not.toHaveText("Resolving…");
   });
 
   test("View page falls back to a plain message when the ISNI name lookup fails", async ({
