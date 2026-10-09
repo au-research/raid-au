@@ -175,7 +175,7 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(page.getByText(MOCKED_ISNI_URL).first()).toBeVisible();
   });
 
-  test("RAiD edit page keeps the ISNI identifier editable instead of showing an ORCID-style status", async ({
+  test("RAiD edit page lets the ISNI identifier be made editable instead of showing an ORCID-style status", async ({
     page,
   }) => {
     const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
@@ -187,12 +187,27 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     const [prefix, suffix] = extractPrefixSuffixFromUrl(page.url());
     await formPage.goto(`/raids/${prefix}/${suffix}/edit`);
 
-    // Bug fix: once a saved contributor has a "status" field, ORCID's
-    // identifier field locks and shows a read-only "Contributor Status"
-    // (e.g. AWAITING_AUTHENTICATION) instead - that status concept doesn't
-    // apply to ISNI (no OAuth flow), so the field must stay editable and
-    // pre-filled with the existing ISNI, with no status text shown.
+    // Bug fix (RAID-883): once a saved contributor has a "status" field,
+    // ORCID's identifier field locks and shows a read-only "Contributor
+    // Status" (e.g. AWAITING_AUTHENTICATION) instead - that status concept
+    // doesn't apply to ISNI (no OAuth flow), so no such status text must
+    // ever appear for it.
     await expect(page.getByText(/AWAITING_AUTHENTICATION|AUTHENTICATED|UNAUTHENTICATED/)).not.toBeVisible();
+
+    // RAID-920: existing identifiers now start read-only (identifier shown,
+    // no editable input) with an explicit pencil toggle into the same
+    // editable widget RAID-883 fixed - this replaces the "always editable"
+    // behaviour this test originally asserted. MOCKED_ISNI_URL resolves via
+    // the local mockserver to "Taylor Swift", but the shared branch-deployed
+    // CI environment resolves ISNI through a different stub (hardcoded "Test
+    // User"), so assert resolution succeeded rather than hardcoding either
+    // exact name.
+    const identifierDisplay = contributorSection.identifierDisplay(0);
+    await expect(identifierDisplay).toContainText(MOCKED_ISNI_URL, { timeout: 10000 });
+    await expect(identifierDisplay).not.toHaveText(`${MOCKED_ISNI_URL} — Not available`);
+    await expect(page.locator('#contributor input[aria-label="search orcid"]')).toHaveCount(0);
+
+    await contributorSection.clickEditIdentifier(0);
     await expect(page.locator('#contributor input[aria-label="search orcid"]')).toHaveValue(MOCKED_ISNI_URL);
   });
 
@@ -220,5 +235,75 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(page.locator("text=Invalid ORCID ID").first()).not.toBeVisible({
       timeout: 5000,
     });
+  });
+
+  test("inline identifier-format error clears on its own once corrected to a valid ISNI", async ({
+    page,
+  }) => {
+    const { contributorSection } = await setUpFormWithContributorRow(page);
+    const input = page.locator('#contributor input[aria-label="search orcid"]');
+
+    // RAID-883 follow-up (Matthias, 2026-09-30): a value matching neither
+    // the ORCID digit pattern nor the ISNI URL pattern (here, an ISNI URL
+    // with an extra "isni/" path segment) surfaces the inline format error
+    // below the field once submitted. It's recognisably aimed at isni.org,
+    // so the error is ISNI-specific rather than the generic fallback.
+    await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
+    await input.press("Enter");
+    // Matches only the red error text ("Invalid ISNI format.<details>"), not
+    // the shorter "Invalid ISNI format" subtitle heading above the field.
+    const inlineError = page
+      .locator("#contributor")
+      .getByText(/Invalid ISNI format\./);
+    await expect(inlineError).toBeVisible({ timeout: 5000 });
+
+    // Correcting the value to a valid, recognised ISNI must clear the stale
+    // error by itself - once isIsni is true, the search button that used to
+    // re-trigger validation is swapped for a static check icon, so there is
+    // no way to re-submit and clear the error other than the field
+    // re-validating as the user types.
+    await contributorSection.fillOrcidId(0, ISNI_URL);
+    await expect(inlineError).not.toBeVisible({ timeout: 5000 });
+  });
+
+  test("inline ISNI-format error also clears when corrected to something that isn't an ISNI attempt at all", async ({
+    page,
+  }) => {
+    const { contributorSection } = await setUpFormWithContributorRow(page);
+    const input = page.locator('#contributor input[aria-label="search orcid"]');
+
+    // Code-review finding: the live-validation branch only ever cleared the
+    // error when the new value became recognised (ORCID/ISNI) or still
+    // looked like an ISNI attempt - typing something that's neither (not
+    // just a corrected ISNI) left the stale message showing, since nothing
+    // applied to clear it in that case.
+    await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
+    await input.press("Enter");
+    const inlineError = page
+      .locator("#contributor")
+      .getByText(/Invalid ISNI format\./);
+    await expect(inlineError).toBeVisible({ timeout: 5000 });
+
+    await contributorSection.fillOrcidId(0, "just some unrelated text");
+    await expect(inlineError).not.toBeVisible({ timeout: 5000 });
+  });
+
+  test("malformed ISNI shows ISNI-specific guidance instead of ORCID's, without needing to submit", async ({
+    page,
+  }) => {
+    const { contributorSection } = await setUpFormWithContributorRow(page);
+
+    // Manual UX review finding (2026-10-06): typing a malformed ISNI used to
+    // leave the unrelated ORCID sandbox helper text showing below the
+    // field, since detectContributorIdentifierType only recognises a fully
+    // well-formed ISNI and the UI silently fell back to ORCID's copy for
+    // anything else. No Enter/submit needed - this is live, as-you-type
+    // feedback.
+    await contributorSection.fillOrcidId(0, "https://isni.org/isni/000000012281955X");
+
+    const card = page.locator("#contributor");
+    await expect(card.getByText(/Use the ORCID sandbox/)).not.toBeVisible();
+    await expect(card.getByText(/Invalid ISNI format/).first()).toBeVisible({ timeout: 5000 });
+    await expect(card.getByText("Invalid ISNI format", { exact: true })).toBeVisible();
   });
 });

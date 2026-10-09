@@ -23,3 +23,40 @@ export function detectContributorIdentifierType(value: string): ContributorIdent
 
   return "unrecognised";
 }
+
+// A looser check than isniRegex - matches anything clearly aimed at the ISNI
+// scheme (the isni.org domain) even if the rest of the value is malformed
+// (wrong digit count, an extra path segment, etc). Used to choose
+// ISNI-specific guidance/error copy for a bad ISNI attempt, instead of
+// silently falling back to ORCID's copy just because the strict format
+// check failed.
+const isniDomainRegex = /^https?:\/\/(www\.)?isni\.org\b/i;
+
+export function looksLikeIsniAttempt(value: string): boolean {
+  const trimmed = value.trim();
+  return !!trimmed && isniDomainRegex.test(trimmed) && detectContributorIdentifierType(trimmed) !== "isni";
+}
+
+/**
+ * Strips a recognised ORCID URL down to its bare id (for public-API calls),
+ * regardless of the current runtime environment - unlike ORCID.tsx's own
+ * normalizeOrcidId, which only strips the prefix matching the current
+ * environment, this always recognises both orcid.org and sandbox.orcid.org.
+ * Returns null when the value isn't a recognised ORCID.
+ */
+export function getOrcidBody(value: string): string | null {
+  const trimmed = value.trim();
+  const orcidBody = trimmed.replace(/^https:\/\/(sandbox\.)?orcid\.org\//, "");
+  return orcidBodyRegex.test(orcidBody) ? orcidBody : null;
+}
+
+/**
+ * Strips a recognised ISNI URL down to its bare 16-character id (for the
+ * name-resolution API call). Returns null when the value isn't a recognised
+ * ISNI.
+ */
+export function getIsniBody(value: string): string | null {
+  const trimmed = value.trim();
+  if (!isniRegex.test(trimmed)) return null;
+  return trimmed.replace(/^https:\/\/isni\.org\//, "");
+}

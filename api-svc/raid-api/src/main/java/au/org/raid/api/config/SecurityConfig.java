@@ -70,6 +70,11 @@ public class SecurityConfig {
         // API paths
         public static final String RAID_API = "/raid";
         public static final String SERVICE_POINT_API = "/service-point";
+        // Review feedback (robleney-ardc, #701): /ui/** marks frontend-helper endpoints
+        // that aren't part of the RAiD API's public registry contract - the agency app
+        // always has a token by the time it shows a contributor, so these require auth
+        // like everything else, rather than being public.
+        public static final String UI_API = "/ui";
     }
 
     private final CorsConfigurationSource corsConfigurationSource;
@@ -95,6 +100,9 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/swagger-ui*/**", "/docs/**", "/actuator/**", "/error").permitAll()
+
+                // Frontend-helper endpoints (not part of the public API contract)
+                .requestMatchers(GET, UI_API + "/**").authenticated()
 
                 // Upgrade endpoints
                 .requestMatchers(GET, "/legacy").hasRole(RAID_UPGRADER_ROLE)

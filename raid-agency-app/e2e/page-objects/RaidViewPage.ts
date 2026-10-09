@@ -17,4 +17,10 @@ export class RaidViewPage {
   currentUrl(): string {
     return this.page.url();
   }
+
+  // RAID-920: the live-resolved ORCID name shown alongside a Contributor's
+  // identifier (ISNI has no name lookup yet, so this only applies to ORCID).
+  contributorNameDisplay(index: number) {
+    return this.page.getByTestId("contributor-name-display").nth(index);
+  }
 }

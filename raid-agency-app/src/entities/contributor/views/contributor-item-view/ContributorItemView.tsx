@@ -5,6 +5,7 @@ import { Contributor } from "@/generated/raid";
 import { Divider, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import { memo } from "react";
 import { OrcidButton } from "@/components/orcid-button";
+import { useResolvedContributorName } from "@/hooks/useResolvedContributorName";
 import { ISNI_SCHEMA_URI } from "@/utils/contributor-utils/contributor-identifier";
 
 interface ContributorWithStatus extends Contributor {
@@ -28,6 +29,11 @@ const ContributorItemView = memo(
     // showing them for an ISNI contributor is meaningless/misleading.
     const isIsni = contributor.schemaUri === ISNI_SCHEMA_URI;
 
+    // RAID-920: resolve the contributor's display name live - the "Name"
+    // field below isn't just the dead orcidData prop (its real fetch is
+    // commented out in ContributorsView, independent of this).
+    const resolvedName = useResolvedContributorName(contributor.id, isIsni);
+
     return (
       <Stack gap={2}>
         <Typography variant="body1">Contributor #{i + 1}</Typography>
@@ -39,7 +45,9 @@ const ContributorItemView = memo(
         )}
 
         <Grid container spacing={2}>
-          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={6} />
+          <DisplayItem label={isIsni ? "ISNI" : "ORCID"} value={contributor.id} width={4} />
+
+          <DisplayItem label="Name" value={resolvedName} width={4} testid="contributor-name-display" />
 
           <DisplayItem
             label="Leader"

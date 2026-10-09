@@ -19,6 +19,16 @@ export class ContributorSection {
     await this.page.locator(`input[name="contributor.${index}.id"]`).fill(value);
   }
 
+  // RAID-920: an existing Contributor's identifier starts out read-only on
+  // the edit page; this reveals the editable widget.
+  async clickEditIdentifier(index: number): Promise<void> {
+    await this.page.getByRole("button", { name: "edit identifier" }).nth(index).click();
+  }
+
+  identifierDisplay(index: number) {
+    return this.page.getByTestId("contributor-identifier-display").nth(index);
+  }
+
   async searchAndSelectOrcid(index: number, orcidId: string): Promise<void> {
     await this.page.locator(`input[name="contributor.${index}.id"]`).fill(orcidId);
     await this.page.locator('[aria-label="directions"]').nth(index).click();

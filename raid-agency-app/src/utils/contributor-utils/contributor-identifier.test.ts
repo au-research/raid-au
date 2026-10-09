@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { detectContributorIdentifierType } from "./contributor-identifier";
+import { detectContributorIdentifierType, getIsniBody, looksLikeIsniAttempt } from "./contributor-identifier";
 
 describe("detectContributorIdentifierType", () => {
   it("recognises bare ORCID digits", () => {
@@ -29,5 +29,41 @@ describe("detectContributorIdentifierType", () => {
 
   it("returns unrecognised for an ISNI URL with the wrong number of characters", () => {
     expect(detectContributorIdentifierType("https://isni.org/000000012103268")).toBe("unrecognised");
+  });
+});
+
+describe("looksLikeIsniAttempt", () => {
+  it("is false for a fully valid ISNI (it's not a bad attempt)", () => {
+    expect(looksLikeIsniAttempt("https://isni.org/0000000121032683")).toBe(false);
+  });
+
+  it("is true for an isni.org URL with the wrong digit count", () => {
+    expect(looksLikeIsniAttempt("https://isni.org/000000012103268")).toBe(true);
+  });
+
+  it("is true for an isni.org URL with an extra path segment", () => {
+    expect(looksLikeIsniAttempt("https://isni.org/isni/000000012281955X")).toBe(true);
+  });
+
+  it("is false for an ORCID URL or unrelated text", () => {
+    expect(looksLikeIsniAttempt("https://orcid.org/0000-0002-1825-0097")).toBe(false);
+    expect(looksLikeIsniAttempt("not-an-identifier")).toBe(false);
+    expect(looksLikeIsniAttempt("")).toBe(false);
+  });
+});
+
+describe("getIsniBody", () => {
+  it("strips the https://isni.org/ prefix from a recognised ISNI", () => {
+    expect(getIsniBody("https://isni.org/0000000121032683")).toBe("0000000121032683");
+  });
+
+  it("returns null for a malformed ISNI", () => {
+    expect(getIsniBody("https://isni.org/isni/000000012281955X")).toBeNull();
+    expect(getIsniBody("https://isni.org/000000012103268")).toBeNull();
+  });
+
+  it("returns null for an ORCID or unrelated value", () => {
+    expect(getIsniBody("https://orcid.org/0000-0002-1825-0097")).toBeNull();
+    expect(getIsniBody("")).toBeNull();
   });
 });
