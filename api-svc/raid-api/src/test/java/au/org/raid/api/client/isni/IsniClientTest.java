@@ -151,6 +151,26 @@ class IsniClientTest {
         assertThat(name, is("First Entry"));
     }
 
+    @Test
+    @DisplayName("getName should return the surname alone when a record has no forename (e.g. a mononymous pen name)")
+    void shouldReturnSurnameOnlyWhenForenameIsAbsent() throws Exception {
+        // Regression test: a real ISNI record (Munshi Premchand, 0000000121441954)
+        // is catalogued with a surname-only personalName and previously threw a
+        // NullPointerException instead of returning "Premchand".
+        final var isni = "https://isni.org/isni/0000000121441954";
+        final var requestEntity = new RequestEntity<Void>(HttpMethod.GET, URI.create("https://localhost"));
+
+        final var searchRetrieveResponse = getResponse("/fixtures/isni-surname-only.xml");
+        final var responseEntity = ResponseEntity.of(Optional.of(searchRetrieveResponse));
+
+        when(requestEntityFactory.create(isni)).thenReturn(requestEntity);
+        when(restTemplate.exchange(requestEntity, SearchRetrieveResponse.class)).thenReturn(responseEntity);
+
+        final var name = isniClient.getName(isni);
+
+        assertThat(name, is("Premchand"));
+    }
+
     private SearchRetrieveResponse getResponse() throws JAXBException {
         return getResponse("/fixtures/valid-isni.xml");
     }
