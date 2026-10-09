@@ -1,6 +1,8 @@
 ---
 // ArdcTopBar.astro
-// Renders the "Explore ARDC" bar above the main navbar.
+// Renders the real, centrally-managed ARDC mega-menu (per ARDC Web
+// Components Developer Documentation) above the main navbar - the same
+// <ardc-megamenu> integration used in raid-agency-app.
 // Only shown when header.topBar.show=true in app-config.json
 import { getSiteConfig } from "@/config";
 
@@ -8,59 +10,90 @@ const { topBar } = getSiteConfig().header;
 ---
 
 {topBar.show && (
-  <div class="top-bar">
-    <div class="top-bar-inner">
-      <a href={topBar.href} class="explore-link" target="_blank" rel="noopener noreferrer">
-        {topBar.label}
-        <svg class="explore-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </a>
-    </div>
+  <!--
+    Wrapping div gives the mega-menu's transparent bottom edge a solid
+    white background to sit on (doc §3.5) - without it, the page's own
+    background shows through as a faint grey seam under the button.
+  -->
+  <div class="ardc-megamenu-wrap">
+    <ardc-megamenu
+      id="ardc-menu"
+      data-host="RAiD"
+      data-content-width="full"
+      style="display: block; opacity: 0; min-height: 20px;"
+    ></ardc-megamenu>
   </div>
+  <script
+    is:inline
+    src="https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/megamenu.min.js"
+    defer
+    data-no-optimize
+    onerror="document.getElementById('ardc-menu').style.display='none'"
+  ></script>
+  <script is:inline>
+    // The trigger button itself (inside the component's shadow root) is
+    // position:absolute; right:0, so it's flush against the true
+    // viewport edge regardless of any padding set on its parents -
+    // padding only affects normal-flow children, not absolutely-
+    // positioned ones. Its own `right` is what needs overriding, and
+    // that content renders asynchronously, so this polls briefly rather
+    // than assuming it exists on page load.
+    //
+    // The component reveals itself (opacity 0 -> 1) as soon as it
+    // initialises, which can happen before this poll has run - visibly
+    // flashing the button flush-right for a moment before it jumps to
+    // its corrected position. An inline opacity:0 override can't
+    // reliably prevent that: the component appears to replace its own
+    // inline `style` attribute wholesale at some point after first
+    // mount, which silently wipes out anything set via host.style,
+    // including an !important inline override. An external stylesheet
+    // rule doesn't live on the element's style attribute at all, so it
+    // survives that replacement - hide via a stylesheet instead.
+    //
+    // Reveal as soon as the position has held for a few consecutive
+    // checks, rather than always waiting a flat safety window: a style
+    // replacement resets `right` back to the component's own value, so
+    // seeing it stay at our override across several ticks is itself the
+    // signal that the component has stopped overwriting it. The flat
+    // window stays only as an upper-bound fallback in case the button
+    // never stabilises (or never appears at all).
+    (function () {
+      var host = document.getElementById("ardc-menu");
+      if (!host) return;
+
+      var hideStyle = document.createElement("style");
+      hideStyle.textContent = "#ardc-menu { opacity: 0 !important; }";
+      document.head.appendChild(hideStyle);
+
+      var tickMs = 50;
+      var maxWaitMs = 800;
+      var stableTicksRequired = 3;
+      var elapsedMs = 0;
+      var stableTicks = 0;
+
+      var interval = setInterval(function () {
+        var btn = host.shadowRoot && host.shadowRoot.querySelector(".ardc-header__explore-btn");
+        var alreadyCorrect = btn && btn.style.getPropertyValue("right") === "24px";
+        // The component's own shadow stylesheet sets `right` with
+        // !important, so a plain inline-style assignment loses -
+        // setProperty with "important" priority is required to win.
+        if (btn) btn.style.setProperty("right", "24px", "important");
+        stableTicks = alreadyCorrect ? stableTicks + 1 : 0;
+
+        elapsedMs += tickMs;
+        if (stableTicks >= stableTicksRequired || elapsedMs >= maxWaitMs) {
+          clearInterval(interval);
+          hideStyle.remove();
+        }
+      }, tickMs);
+    })();
+  </script>
 )}
 
 <style>
-  .top-bar {
+  .ardc-megamenu-wrap {
+    width: 100%;
+    min-height: 40px;
     background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    width: 100%;
-  }
-
-  .top-bar-inner {
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 1.75rem;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .explore-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-family: 'Figtree', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333333;
-    text-decoration: none;
-    padding: 6px 0;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    line-height: 1.5
-  }
-
-  .explore-link:hover {
-    color: #000000;
-  }
-
-  .explore-chevron {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s ease;
   }
 </style>
