@@ -24,8 +24,10 @@ export const API_CONSTANTS = {
   ISNI: {
     // RAID-920: unlike ORCID, ISNI's real resolver has no public,
     // CORS-enabled API the browser can call directly - this goes through
-    // our own backend, which wraps the existing IsniClient.
-    NAME: (isni: string) => `${api()}/isni/${isni}/name`,
+    // our own backend, which wraps the existing IsniClient. Lives under
+    // /ui/ - a frontend-helper endpoint, not part of the public API
+    // contract - and requires auth, like everything else under /ui/.
+    NAME: (isni: string) => `${api()}/ui/isni/${isni}/name`,
   },
   INVITE: {
     get SEND() { return svc().invite ? `${svc().invite}/invite` : undefined; },
