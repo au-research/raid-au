@@ -66,9 +66,16 @@
         // host.style, including an !important inline override. An
         // external stylesheet rule doesn't live on the element's style
         // attribute at all, so it survives that replacement - hide via a
-        // stylesheet instead, and only remove the rule once a fixed
-        // safety window has elapsed with the position fix continuously
-        // re-applied throughout.
+        // stylesheet instead.
+        //
+        // Reveal as soon as the position has held for a few consecutive
+        // checks, rather than always waiting a flat safety window: a
+        // style replacement resets `right` back to the component's own
+        // value, so seeing it stay at our override across several ticks
+        // is itself the signal that the component has stopped
+        // overwriting it. The flat window stays only as an upper-bound
+        // fallback in case the button never stabilises (or never
+        // appears at all).
         (function () {
             var host = document.getElementById('ardc-menu');
             if (!host) return;
@@ -77,23 +84,23 @@
             hideStyle.textContent = '#ardc-menu { opacity: 0 !important; }';
             document.head.appendChild(hideStyle);
 
-            function applyFix() {
+            var tickMs = 50;
+            var maxWaitMs = 800;
+            var stableTicksRequired = 3;
+            var elapsedMs = 0;
+            var stableTicks = 0;
+
+            var interval = setInterval(function () {
                 var btn = host.shadowRoot && host.shadowRoot.querySelector('.ardc-header__explore-btn');
-                if (!btn) return false;
+                var alreadyCorrect = btn && btn.style.getPropertyValue('right') === '24px';
                 // The component's own shadow stylesheet sets `right`
                 // with !important, so a plain inline-style assignment
                 // loses - setProperty with "important" priority wins.
-                btn.style.setProperty('right', '24px', 'important');
-                return true;
-            }
+                if (btn) btn.style.setProperty('right', '24px', 'important');
+                stableTicks = alreadyCorrect ? stableTicks + 1 : 0;
 
-            var elapsedMs = 0;
-            var tickMs = 50;
-            var safetyWindowMs = 800;
-            var interval = setInterval(function () {
-                applyFix();
                 elapsedMs += tickMs;
-                if (elapsedMs >= safetyWindowMs) {
+                if (stableTicks >= stableTicksRequired || elapsedMs >= maxWaitMs) {
                     clearInterval(interval);
                     hideStyle.remove();
                 }

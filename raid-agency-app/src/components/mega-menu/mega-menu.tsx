@@ -24,14 +24,19 @@ export const MegaMenu = () => {
     // flashing the button flush-right for a moment before it jumps to
     // its corrected position. An inline opacity:0 override can't reliably
     // prevent that: the component appears to replace its own inline
-    // `style` attribute wholesale at some point after first mount (not a
-    // fixed delay - likely tied to its data fetch completing), which
+    // `style` attribute wholesale at some point after first mount, which
     // silently wipes out anything we'd set via el.style, including an
     // !important inline override. An external stylesheet rule doesn't
     // live on the element's style attribute at all, so it survives that
-    // replacement - hide via a stylesheet instead, and only remove the
-    // rule once a fixed safety window has elapsed with the position fix
-    // continuously re-applied throughout.
+    // replacement - hide via a stylesheet instead.
+    //
+    // Reveal as soon as the position has held for a few consecutive
+    // checks, rather than always waiting a flat safety window: a style
+    // replacement resets `right` back to the component's own value, so
+    // seeing it stay at our override across several ticks is itself the
+    // signal that the component has stopped overwriting it. The flat
+    // window stays only as an upper-bound fallback in case the button
+    // never stabilises (or never appears at all).
     useEffect(() => {
         const host = document.getElementById("ardc-menu");
         if (!host) return;
@@ -40,23 +45,23 @@ export const MegaMenu = () => {
         hideStyle.textContent = "#ardc-menu { opacity: 0 !important; }";
         document.head.appendChild(hideStyle);
 
-        const applyFix = () => {
+        const tickMs = 50;
+        const maxWaitMs = 800;
+        const stableTicksRequired = 3;
+        let elapsedMs = 0;
+        let stableTicks = 0;
+
+        const interval = setInterval(() => {
             const btn = host.shadowRoot?.querySelector<HTMLElement>(".ardc-header__explore-btn");
-            if (!btn) return false;
+            const alreadyCorrect = btn?.style.getPropertyValue("right") === "24px";
             // The component's own shadow stylesheet sets `right` with
             // !important, so a plain inline-style assignment loses -
             // setProperty with "important" priority is required to win.
-            btn.style.setProperty("right", "24px", "important");
-            return true;
-        };
+            btn?.style.setProperty("right", "24px", "important");
+            stableTicks = alreadyCorrect ? stableTicks + 1 : 0;
 
-        let elapsedMs = 0;
-        const tickMs = 50;
-        const safetyWindowMs = 800;
-        const interval = setInterval(() => {
-            applyFix();
             elapsedMs += tickMs;
-            if (elapsedMs >= safetyWindowMs) {
+            if (stableTicks >= stableTicksRequired || elapsedMs >= maxWaitMs) {
                 clearInterval(interval);
                 hideStyle.remove();
             }
