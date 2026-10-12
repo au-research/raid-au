@@ -26,7 +26,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { CustomStyledTooltip } from '@/components/tooltips/StyledTooltip';
 import { getContributorSchemaUri } from '@/utils/contributor-utils/contributor-schema-uri';
-import { detectContributorIdentifierType, ISNI_SCHEMA_URI } from '@/utils/contributor-utils/contributor-identifier';
+import { detectContributorIdentifierType, looksLikeIsniAttempt, ISNI_SCHEMA_URI } from '@/utils/contributor-utils/contributor-identifier';
 
 // localStorage keys
 const ORCID_CACHE_KEY = 'orcidCache';
@@ -218,7 +218,7 @@ const getErrorMessage = (responseCode: number): string => {
   }
 };
 
-async function fetchFromOrcidPublicApi(orcidId: string) {
+export async function fetchFromOrcidPublicApi(orcidId: string) {
   const base = getRuntimeConfig().environment === 'prod'
     ? 'https://pub.orcid.org'
     : 'https://pub.sandbox.orcid.org';
@@ -406,6 +406,14 @@ export default function ORCIDLookup({
   // no name lookup, so the ORCID copy (Credit Name, visibility settings) is
   // misleading in that state.
   const isniHelpText = 'Enter a valid ISNI URL, e.g. https://isni.org/0000000121032683';
+  // RAID-883 follow-up: a malformed isni.org value (wrong digit count, an
+  // extra path segment, etc) used to silently fall back to ORCID's helper
+  // text/tooltip/error copy, since detectContributorIdentifierType only
+  // recognises a fully well-formed ISNI - confusing, since the user is
+  // clearly not attempting an ORCID iD. Shown instead whenever
+  // looksLikeIsniAttempt() matches but the strict format doesn't.
+  const isniInvalidFormatMessage =
+    'Invalid ISNI format. Must be https://isni.org/ followed by 16 characters (15 digits plus a check digit, 0-9 or X), e.g. https://isni.org/0000000121032683';
   const isniTooltipTitle = 'ISNI Info';
   const isniTooltipContent = (
     <>ISNI (International Standard Name Identifier) is accepted here and is stored
@@ -495,9 +503,18 @@ export default function ORCIDLookup({
     if (mode === 'validation-only' && detectContributorIdentifierType(searchValue) === 'isni') {
       return;
     }
-    // validation-only mode: reject non-ORCID input with a format error
+    // validation-only mode: reject input matching neither recognised scheme.
+    // RAID-883 follow-up: this field accepts ISNI as well as ORCID, so the
+    // ORCID-specific getErrorMessage(400) wording ("Invalid ORCID iD format")
+    // used for genuine ORCID API failures elsewhere is misleading here - and
+    // a value clearly aimed at isni.org gets ISNI-specific wording instead of
+    // the generic fallback.
     if (mode === 'validation-only') {
-      setError(getErrorMessage(400));
+      setError(
+        looksLikeIsniAttempt(searchValue)
+          ? isniInvalidFormatMessage
+          : 'Unrecognised identifier format. Please check your entry and try again.'
+      );
       return;
     }
     // SEARCH MODE - No caching
@@ -538,6 +555,18 @@ export default function ORCIDLookup({
     const value = (event.target as HTMLInputElement).value || '';
     setSearchValue(value);
     setVerifiedORCID(value === '' && false);
+    // RAID-883 follow-up: the format-error message set by handleSearch (e.g.
+    // after pressing Enter on an invalid value) lived in its own `error`
+    // state, separate from the form's shouldValidate-driven error, so fixing
+    // the value never re-validated it - and for a recognised ISNI there's no
+    // search button left to re-trigger handleSearch and clear it that way,
+    // so the stale message could persist indefinitely. Keep `error` fully in
+    // sync with the current value on every edit (rather than only ever
+    // clearing it conditionally) - otherwise a value that's no longer an
+    // ISNI attempt at all (e.g. the user deletes it and types something
+    // unrelated) left the stale ISNI message showing.
+    const liveIdentifierType = detectContributorIdentifierType(value);
+    setError(looksLikeIsniAttempt(value) ? isniInvalidFormatMessage : null);
     // Bug fix: this setValue call previously omitted shouldValidate, so a
     // stale validation error on the id field never cleared as the user
     // typed a corrected value - for ORCID it happened to clear anyway once
@@ -555,11 +584,10 @@ export default function ORCIDLookup({
       // RAID-861: derive the sibling schemaUri field from the recognised
       // identifier shape - only when a type is definitively recognised,
       // mirroring RAID-800's "only set when truthy" precedent.
-      const identifierType = detectContributorIdentifierType(value);
       const schemaUriFieldName = fieldName.replace(/\.id$/, '.schemaUri');
-      if (identifierType === 'isni') {
+      if (liveIdentifierType === 'isni') {
         formMethods?.setValue?.(schemaUriFieldName, ISNI_SCHEMA_URI, { shouldValidate: true });
-      } else if (identifierType === 'orcid') {
+      } else if (liveIdentifierType === 'orcid') {
         formMethods?.setValue?.(schemaUriFieldName, getContributorSchemaUri(), { shouldValidate: true });
       }
     }
@@ -671,6 +699,9 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
   // mode contributor identifiers use).
   const detectedType = mode === 'validation-only' ? detectContributorIdentifierType(searchValue) : 'unrecognised';
   const isIsni = detectedType === 'isni';
+  // RAID-883 follow-up: a malformed isni.org value should keep showing
+  // ISNI-flavoured guidance/tooltip, not silently fall back to ORCID's.
+  const isIsniAttempt = mode === 'validation-only' && looksLikeIsniAttempt(searchValue);
 
   const _errors = formMethods?.formState?.errors as Record<string, unknown> | undefined;
   const helperTextError = Array.isArray((_errors as Record<string, any>)?.contributor) && !!((_errors as Record<string, any>)[path.name]?.message) ?
@@ -681,7 +712,11 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
       <Paper elevation={0} sx={{ p: 1, borderRadius: 2 }}>
         {mode === 'validation-only' && (
           <Typography variant="subtitle2" gutterBottom>
-            {isIsni ? 'The entered ID is an ISNI' : `Name: ${resolvedName ?? '—'}`}
+            {isIsni
+              ? 'The entered ID is an ISNI'
+              : isIsniAttempt
+              ? 'Invalid ISNI format'
+              : `Name: ${resolvedName ?? '—'}`}
           </Typography>
         )}
         <Paper
@@ -766,13 +801,16 @@ const selectOrcid = (item: OrcidData | SearchPerson) => {
         <Box sx={{mt: 1, mb: 1, display: 'flex', alignItems: 'center', width: '400px', justifyContent: 'space-between', minHeight: '50px' }}>
           <FormHelperText sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             {mode === 'validation-only'
-              ? (isIsni ? isniHelpText : (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'))
+              // isIsniAttempt reuses the same example copy as a valid ISNI
+              // (rather than repeating the red error text below) - this slot
+              // is the persistent "here's an example" caption, not the error.
+              ? (isIsni || isIsniAttempt ? isniHelpText : (orcid.helpText || 'Enter a valid ORCID iD, e.g. https://orcid.org/0000-0002-1825-0097'))
               : searchConfig?.genericPlaceholder}
           </FormHelperText>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CustomStyledTooltip
-              title={isIsni ? isniTooltipTitle : "ORCID Lookup Info"}
-              content={isIsni ? isniTooltipContent : searchConfig.tooltipContent}
+              title={isIsni || isIsniAttempt ? isniTooltipTitle : "ORCID Lookup Info"}
+              content={isIsni || isIsniAttempt ? isniTooltipContent : searchConfig.tooltipContent}
               variant="info"
               placement="top"
               tooltipIcon={<InfoOutlinedIcon />}
