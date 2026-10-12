@@ -67,7 +67,14 @@ export async function authenticateAndSaveState({
     () => !window.location.pathname.startsWith("/login"),
     { timeout: 15000 }
   );
-  await page.waitForLoadState("networkidle");
+  // Not networkidle: the authenticated shell now embeds ARDC's real,
+  // centrally-managed mega-menu/footer web components (RAID-860), which
+  // fetch their own content from ardc.edu.au independently of this app -
+  // that traffic doesn't reliably settle within Playwright's idle window,
+  // so waiting on it made every auth setup project time out. Waiting for
+  // the nav bar itself is a concrete, in-our-control readiness signal that
+  // the authenticated shell has actually rendered.
+  await page.waitForSelector('[data-testid="app-nav-bar"]', { timeout: 15000 });
 
   await page.context().storageState({ path: authFilePath });
 }
