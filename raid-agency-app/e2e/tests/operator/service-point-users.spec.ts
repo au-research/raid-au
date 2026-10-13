@@ -118,7 +118,7 @@ test.describe("Service point Users list", () => {
       await expect(page.getByRole("heading", { name: "Users", exact: true })).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Users", exact: true })).toBeVisible();
 
-      await expect(page.getByText("Person", { exact: true })).toBeVisible();
+      await expect(page.getByText("User", { exact: true })).toBeVisible();
       await expect(page.getByText("Actions", { exact: true })).toBeVisible();
     }
   );
@@ -322,7 +322,7 @@ test.describe("Service point Users list", () => {
       // The rows scroll, not the panel around them: one scrollbar, not two.
       expect(await isPanelAroundScrollable(list)).toBe(false);
 
-      const header = page.getByText("Person", { exact: true });
+      const header = page.getByText("User", { exact: true });
       const filters = filterButton(page, "All", 40);
       const headerBefore = await header.boundingBox();
       const filtersBefore = await filters.boundingBox();

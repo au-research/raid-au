@@ -83,6 +83,9 @@ describe("ServicePointUsersList (RAID-919)", () => {
     expect(screen.queryByText(/default-roles-raid/)).not.toBeInTheDocument();
     expect(screen.queryByText(/group-admin/)).not.toBeInTheDocument();
 
+    expect(screen.getByText("User")).toBeInTheDocument();
+    expect(screen.getByText("Actions")).toBeInTheDocument();
+
     const avery = rowFor("Avery Lin");
     expect(within(avery).getByText("Service Point User")).toBeInTheDocument();
     expect(within(avery).getByText("Service Point Admin")).toBeInTheDocument();

@@ -91,7 +91,7 @@ export const ServicePointUsersList = ({
   /**
    * Fill the height of a bounded flex-column parent: the list grows with its
    * content and only its rows scroll once they run out of room, keeping the
-   * filters and the Person / Actions header in view.
+   * filters and the User / Actions header in view.
    */
   fillHeight?: boolean;
 }) => {
@@ -224,7 +224,7 @@ export const ServicePointUsersList = ({
                 borderColor: "divider",
               }}
             >
-              <Typography variant="overline" color="text.secondary">Person</Typography>
+              <Typography variant="overline" color="text.secondary">User</Typography>
               <Typography variant="overline" color="text.secondary">Actions</Typography>
             </Box>
 
