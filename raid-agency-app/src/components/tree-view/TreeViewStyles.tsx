@@ -54,24 +54,19 @@ export const BorderedTreeItem = styled(TreeItem, {
       display: 'none',
     },
     [`& .${treeItemClasses.label}`]: {
-    color:
-      theme.palette.mode === 'dark'
-        ? theme.palette.grey[100]
-            : theme.palette.grey[900],
-      },
-      [`& .${treeItemClasses.checkbox}`]: {
-        color:
-          theme.palette.mode === 'dark'
-            ? alpha(theme.palette.grey[100], 0.7)
-            : alpha(theme.palette.grey[900], 0.7),
-      },
-    }),
+      color: theme.palette.grey[900],
+    },
+    [`& .${treeItemClasses.checkbox}`]: {
+      color: alpha(theme.palette.grey[900], 0.70),
+    },
+  }),
   // Vertical connection border for the children group (independent of node type)
   [`& .${treeItemClasses.groupTransition}`]: {
     marginLeft: 17,
     paddingLeft: 18,
     borderLeft: `1px solid ${alpha(theme.palette.text.primary, 0.6)}`,
   },
+
   // Theme-specific color for all nodes
   ...theme.applyStyles('light', {
     color: theme.palette.grey[800],

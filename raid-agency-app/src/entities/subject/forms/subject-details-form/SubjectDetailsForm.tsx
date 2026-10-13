@@ -1,29 +1,37 @@
+import { TextSelectField } from "@/components/fields/TextSelectField";
+import CustomizedTreeViewWithSelection from "@/components/tree-view/TreeView";
+import subjectMapping from "@/mapping/data/subject-mapping.json";
 import { IndeterminateCheckBox } from "@mui/icons-material";
-import { Grid, IconButton, Stack, Tooltip, Typography, TextField } from "@mui/material";
+import { Grid, IconButton, Stack, Tooltip, Typography, Box } from "@mui/material";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import CustomizedDialogs from "@/components/alert-dialog/alert-dialog";
-import { Check, Delete } from "lucide-react";
 
 function FieldGrid({
   index,
   isRowHighlighted,
-  selectedCode,
 }: {
   index: number;
   isRowHighlighted: boolean;
-  selectedCode?: any;
 }) {
   return (
-    <Grid sx={{width: "100%"}} className={isRowHighlighted ? "remove" : ""}>
-      <TextField
-        value={selectedCode}
+    <Grid container spacing={2} className={isRowHighlighted ? "remove" : ""}>
+      <TextSelectField
+        options={subjectMapping
+          .sort((a, b) => a.value.localeCompare(b.value))
+          .map((subject) => ({
+            label: subject.value,
+            value: subject.definition,
+          }))}
         name={`subject.${index}.id`}
+        label="Type"
         placeholder="Type"
         required={true}
-        fullWidth
-        sx={{ height: "50px" }}        
+        width={12}
       />
+      {/* The Subject Picker is currently disabled until all it's repective functionalities are completed
+      <Box sx={{ width: '100%', mt: 2, ml: 2, overflowY: 'auto', height: 270 }} >
+        <CustomizedTreeViewWithSelection/>
+      </Box> */}
     </Grid>
   );
 }
@@ -31,20 +39,15 @@ function FieldGrid({
 export function SubjectDetailsForm({
   index,
   handleRemoveItem,
-  selectedCode,
-  id
 }: {
   index: number;
-  handleRemoveItem: (id: string, index: number) => void;
-  selectedCode?: any;
-  id: string
+  handleRemoveItem: (index: number) => void;
 }) {
   const key = "subject";
   const label = "Subject";
 
   const [isRowHighlighted, setIsRowHighlighted] = useState(false);
   const { getValues } = useFormContext();
-  const [alertOpen, setAlertOpen] = useState(false);
 
   const handleMouseEnter = () => setIsRowHighlighted(true);
   const handleMouseLeave = () => setIsRowHighlighted(false);
@@ -63,11 +66,7 @@ export function SubjectDetailsForm({
       </Typography>
 
       <Stack direction="row" alignItems="flex-start" gap={1}>
-        <FieldGrid
-          index={index}
-          isRowHighlighted={isRowHighlighted}
-          selectedCode={selectedCode}
-        />
+        <FieldGrid index={index} isRowHighlighted={isRowHighlighted} />
 
         <Tooltip title={`Remove ${label}`} placement="right">
           <IconButton
@@ -76,36 +75,18 @@ export function SubjectDetailsForm({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={() => {
-              setAlertOpen(true);
+              if (
+                window.confirm(
+                  `Are you sure you want to delete ${label} # ${index + 1} ?`
+                )//ShortTerm Fix: Display the title of the item and its corresponding sequence number in the confirmation dialog
+              ) {
+                handleRemoveItem(index);
+              }
             }}
           >
             <IndeterminateCheckBox />
           </IconButton>
         </Tooltip>
-        <CustomizedDialogs
-          modalTitle="Confirm Removal"
-          modalContent={`Deleting this subject will also delete its keywords. Are you sure you want to remove it?`}
-          alertOpen={alertOpen}
-          onClose={() => setAlertOpen(false)}
-          modalAction={true}
-          modalActions={[
-            {
-              label: "Cancel",
-              onClick: () => setAlertOpen(false),
-              icon: Delete,
-              bgColor: "primary.main",
-            },
-            {
-              label: "Yes",  
-              onClick: () => {
-                handleRemoveItem(id, index);
-                setAlertOpen(false);
-              },
-              icon: Check,
-              bgColor: "error.main",
-            }
-          ]}
-        />
       </Stack>
     </Stack>
   );
