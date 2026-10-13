@@ -113,10 +113,27 @@ test.describe("Service point Users list", () => {
       await expect(jordan.getByText("Service Point User", { exact: true })).toBeVisible();
       await expect(jordan.getByText("Service Point Admin", { exact: true })).toHaveCount(0);
 
+      // No "Users" title above the list: the nav shows Users as selected and
+      // the list opens with the service point's name.
+      await expect(page.getByRole("heading", { name: "Users", exact: true })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Users", exact: true })).toBeVisible();
+
       await expect(page.getByText("Person", { exact: true })).toBeVisible();
       await expect(page.getByText("Actions", { exact: true })).toBeVisible();
     }
   );
+
+  test("keeps the title on the other service point tabs", { tag: "@local" }, async ({ page }) => {
+    await mockServicePointMembers(page, PEOPLE);
+    await openUsersTab(page);
+
+    await page.getByRole("button", { name: "Update service point" }).click();
+    await expect(page.getByRole("heading", { name: "Update service point", exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Users", exact: true }).click();
+    await expect(usersList(page)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Users", exact: true })).toHaveCount(0);
+  });
 
   test("does not list or count operators", { tag: "@local" }, async ({ page }) => {
     await mockServicePointMembers(page, PEOPLE);
