@@ -41,6 +41,10 @@ public class RaidRepository {
      * This expression MUST match the V49 index expression (idx_raid_updated_since,
      * see RAID-898) exactly, textually, or Postgres will silently stop using the
      * index and fall back to a full table scan.
+     * <p>
+     * The boundary is inclusive (>=), per RAID-939: timestamps have one-second
+     * resolution, so a strict boundary could miss a RAiD updated in the same second
+     * as the caller's last sync. Callers de-duplicate by identifier.
      */
     private static final Field<BigDecimal> UPDATED_SINCE_EPOCH_SECONDS = DSL.field(
             "coalesce(({0} -> 'metadata' ->> 'updated')::numeric, extract(epoch from {1}))",
@@ -203,7 +207,7 @@ public class RaidRepository {
                 .and(RAID.METADATA_SCHEMA.notIn(Metaschema.legacy_metadata_schema_v1, Metaschema.raido_metadata_schema_v1));
 
         if (updatedSinceEpochSeconds != null) {
-            condition = condition.and(UPDATED_SINCE_EPOCH_SECONDS.gt(updatedSinceEpochSeconds));
+            condition = condition.and(UPDATED_SINCE_EPOCH_SECONDS.ge(updatedSinceEpochSeconds));
         }
 
         return dslContext.selectFrom(RAID)
@@ -216,7 +220,7 @@ public class RaidRepository {
         var condition = RAID.ACCESS_TYPE_ID.eq(5);
 
         if (updatedSinceEpochSeconds != null) {
-            condition = condition.and(UPDATED_SINCE_EPOCH_SECONDS.gt(updatedSinceEpochSeconds));
+            condition = condition.and(UPDATED_SINCE_EPOCH_SECONDS.ge(updatedSinceEpochSeconds));
         }
 
         return dslContext.selectFrom(RAID)

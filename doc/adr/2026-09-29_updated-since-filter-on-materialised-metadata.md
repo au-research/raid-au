@@ -1,6 +1,7 @@
 ### Filter `updatedSince` on the materialised `metadata.updated` value, not a new `raid.updated` column
 
-* Status: final
+* Status: final; the boundary decision is superseded by
+  [2026-10-14 ADR](2026-10-14_updated-since-boundary-is-inclusive.md) (RAID-939)
 * Who: proposed and finalised by RL
 * When: 2026-09-29
 * Related: RAID-739 (epic), RAID-837 (story), RAID-897 (OpenAPI parameter),
@@ -35,7 +36,8 @@ Filter on `metadata.updated` (option 3), via a jOOQ field expression
 Postgres expression index (`V49__updated_since_index.sql`,
 `idx_raid_updated_since`), falling back to `extract(epoch from
 date_created)` for rows with no `metadata.updated` value (legacy rows
-predating the field, or a null-metadata edge case). The boundary is
+predating the field, or a null-metadata edge case). **Superseded by
+RAID-939: the boundary is now inclusive (`>=`).** The original boundary was
 strictly-after (`>`, not `>=`): a RAiD updated at exactly the cursor
 timestamp is excluded, so a client can safely re-poll with its last-seen
 `updated` value as the next `updatedSince` without receiving the same
@@ -97,6 +99,9 @@ meaningfully help performance while the surrounding query still paid for
 a full history cross product per raid.
 
 ### One-second granularity is an accepted limitation
+
+**Superseded by RAID-939:** the inclusive boundary removes the missed-write
+case. Consumers now only de-duplicate; they no longer subtract one second.
 
 `metadata.updated` is whole-second precision. A write landing in the same
 second as a client's cursor value may be missed by that client's next
