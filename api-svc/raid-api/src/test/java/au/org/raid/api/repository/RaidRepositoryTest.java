@@ -123,4 +123,20 @@ class RaidRepositoryTest {
         verify(dslContext).selectFrom(RAID);
     }
 
+    @Test
+    @DisplayName("findAllPublic() applies an inclusive (>=) updatedSince boundary (RAID-939)")
+    void findAllPublicUpdatedSinceIsInclusive() {
+        raidRepository.findAllPublic(BigDecimal.valueOf(1_700_000_000L));
+
+        assertThat(captureWhereCondition()).contains(">= 1700000000").doesNotContain("> 1700000000");
+    }
+
+    @Test
+    @DisplayName("findAllEmbargoed() applies an inclusive (>=) updatedSince boundary (RAID-939)")
+    void findAllEmbargoedUpdatedSinceIsInclusive() {
+        raidRepository.findAllEmbargoed(BigDecimal.valueOf(1_700_000_000L));
+
+        assertThat(captureWhereCondition()).contains(">= 1700000000").doesNotContain("> 1700000000");
+    }
+
 }
