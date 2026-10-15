@@ -43,7 +43,7 @@ identifierType: "DOI"}`. `DataciteRequestFactory` wraps that as `{data: …}`.
 | `doi` | `handle` | verbatim | `DataciteAttributesDtoFactory` |
 | `url` | `handle` | `identifierProperties.landingPrefix + handle` (config-driven) | `DataciteAttributesDtoFactory` |
 | `event` | `access.type.id` | COAR open-access id `…c_abf2` → `"publish"`, else `"register"` | `DataciteAttributesDtoFactory` |
-| `publicationYear` | none | **Hardcoded** `String.valueOf(java.time.Year.now())` — see Known issues | `DataciteAttributesDtoFactory` |
+| `publicationYear` | `date.startDate` | year of the start date (`yyyy`, `yyyy-MM` or `yyyy-MM-dd`), parsed with `DateUtil.parseDate` | `DataciteAttributesDtoFactory` |
 | `types` | none | Constant `{resourceType: "RAiD", resourceTypeGeneral: "Project"}` | `DataciteTypesFactory` |
 | `publisher` | `identifier.owner` | ROR `owner.id` → `publisherIdentifier`; `publisherIdentifierScheme="ROR"`; `schemeUri=owner.schemaUri`; **`name` resolved via live `RorClient.getOrganisationName`** | `DatacitePublisherFactory` |
 | `titles[]` | `title[]` | primary title (`title.type.id …/5`) emitted first with no `titleType`; others mapped via title-type map; `lang` from `title.language.id` | `DataciteTitleFactory` |
@@ -178,16 +178,15 @@ runtime logic or live network I/O and must stay in code:
   (category `…/191` AND type `…/272`).
 - **Conditional constants** derived from data: `event` from access type;
   empty-creator fallback to a single empty object.
-- **`publicationYear`** currently `Year.now()` (not from the record at all).
+- **`publicationYear`** derived from the year of `date.startDate`.
 
 ## Known issues found in the code
 
-1. **`publicationYear` is hardcoded to the current year.** (Raised as
-   [RAID-858](https://ardc.atlassian.net/browse/RAID-858).)
-   `setPublicationYear(String.valueOf(java.time.Year.now()))` in all three
-   overloads, with an inline `// TODO: year of start date`. It should almost
-   certainly derive from `date.startDate`. This means an update in a later year
-   silently rewrites the DOI's publication year.
+1. **`publicationYear` was hardcoded to the current year.** Fixed in
+   [RAID-833](https://ardc.atlassian.net/browse/RAID-833) (duplicate:
+   [RAID-858](https://ardc.atlassian.net/browse/RAID-858)). All three
+   overloads now derive it from the year of `date.startDate`, so an update in a
+   later year no longer rewrites the DOI's publication year.
 
 2. **`rightsList` is never emitted.** (Raised as
    [RAID-859](https://ardc.atlassian.net/browse/RAID-859).)

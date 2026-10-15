@@ -6,6 +6,8 @@ import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,6 +16,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -433,5 +436,77 @@ class DataciteAttributesDtoFactoryTest {
         assertThat(result.getTypes(), is(types));
         assertThat(result.getUrl(), is(landingPrefix + handle));
         assertThat(result.getEvent(), is("register"));
+    }
+
+    private static final String PUBLICATION_YEAR_HANDLE = "10.82841/abc123";
+
+    private static Id publicationYearIdentifier() {
+        return new Id()
+                .registrationAgency(new RegistrationAgency().id("registration-agency-id"))
+                .owner(new Owner().id("owner-id"));
+    }
+
+    private static List<Title> publicationYearTitles() {
+        return List.of(new Title()
+                .text("primary-title")
+                .type(new TitleType().id(TitleTypeIdEnum.HTTPS_VOCABULARY_RAID_ORG_TITLE_TYPE_SCHEMA_5)));
+    }
+
+    private static Access publicationYearAccess() {
+        return new Access()
+                .type(new AccessType().id(AccessTypeIdEnum.HTTPS_VOCABULARIES_COAR_REPOSITORIES_ORG_ACCESS_RIGHTS_C_ABF2_));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2019,2019", "2019-07,2019", "2019-07-15,2019"})
+    @DisplayName("Set publicationYear from the start date year on create")
+    void setsPublicationYearFromStartDateOnCreate(final String startDate, final String expectedYear) {
+        final var request = new RaidCreateRequest()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate(startDate).endDate("2030-01-01"))
+                .contributor(List.of())
+                .access(publicationYearAccess());
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+
+        final var result = attributesDtoFactory.create(request, PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getPublicationYear(), is(expectedYear));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2019,2019", "2019-07,2019", "2019-07-15,2019"})
+    @DisplayName("Set publicationYear from the start date year on update")
+    void setsPublicationYearFromStartDateOnUpdate(final String startDate, final String expectedYear) {
+        final var request = new RaidUpdateRequest()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate(startDate))
+                .contributor(List.of())
+                .access(publicationYearAccess());
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+
+        final var result = attributesDtoFactory.create(request, PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getPublicationYear(), is(expectedYear));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2019,2019", "2019-07,2019", "2019-07-15,2019"})
+    @DisplayName("Set publicationYear from the start date year when posting a stored RAiD to DataCite")
+    void setsPublicationYearFromStartDateForRaidDto(final String startDate, final String expectedYear) {
+        final var raid = new RaidDto()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate(startDate))
+                .access(publicationYearAccess());
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+
+        final var result = attributesDtoFactory.create(raid, PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getPublicationYear(), is(expectedYear));
     }
 }
