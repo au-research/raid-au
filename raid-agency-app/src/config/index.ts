@@ -21,4 +21,13 @@ export {
   getRuntimeConfig,
   RuntimeConfigProvider,
   useRuntimeConfig,
+  ConfigIssuesProvider,
+  useConfigIssues,
 } from "./RuntimeConfigContext";
+export type { ConfigIssues, ConfigErrorReason } from "./ConfigValidation";
+export {
+  ConfigError,
+  hasConfigIssues,
+  isUrlField,
+  NO_CONFIG_ISSUES,
+} from "./ConfigValidation";

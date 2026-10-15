@@ -62,7 +62,6 @@ export const bannerStyles = {
   } as CSSProperties,
 
   iconError: {
-    background: '#fecaca',
     color: '#b91c1c',
   } as CSSProperties,
 
@@ -198,8 +197,58 @@ export const bannerStyleSheet = `
   }
 
   .notification-banner--error .notification-banner__icon {
-    background: #fecaca;
     color: #b91c1c;
+  }
+
+  .notification-banner--align-start {
+    text-align: left;
+  }
+
+  /* Left-aligned text in a block that is only as wide as its content, so the
+     block itself sits centred in the bar like the centred banners. */
+  .notification-banner--align-start .notification-banner__container {
+    width: fit-content;
+  }
+
+  .notification-banner--full-width .notification-banner__container {
+    width: 100%;
+  }
+
+  /* Stacked banners share one centred column (subgrid), so their icons and
+     text line up under each other whatever each message's length. */
+  .notification-banner-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  .notification-banner-stack > .notification-banner {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    text-align: left;
+  }
+
+  .notification-banner-stack > .notification-banner > .notification-banner__container {
+    grid-column: 2;
+    width: auto;
+    margin: 0;
+  }
+
+  .notification-banner__field {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    padding: 0 0.3rem;
+    white-space: nowrap;
+    font-weight: 400;
+  }
+
+  .notification-banner__admin {
+    font-size: 0.8125rem;
+    color: rgba(0, 0, 0, 0.75);
+    margin-top: 0.25rem;
   }
 
   .notification-banner__content {
