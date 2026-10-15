@@ -20,9 +20,10 @@ import { useKeycloak } from '@/contexts/keycloak-context';
 import React from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAppConfig } from "@/config/Appconfigcontext";
-import { useRuntimeConfig } from "@/config";
+import { hasConfigIssues, useConfigIssues, useRuntimeConfig } from "@/config";
 import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
+import { ConfigIssueBanner } from "../config-issue-banner";
 import { ROUTES } from "@/constants/routes";
 import { EXTERNAL_LINKS } from "@/constants/external-links";
 
@@ -136,6 +137,7 @@ export const AppNavBar = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const config = useAppConfig();
   const { environment } = useRuntimeConfig();
+  const configIssues = useConfigIssues();
   const isProduction = environment === 'prod';
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -202,18 +204,23 @@ export const AppNavBar = () => {
         {authenticated && <AuthenticatedNavbarContent /> }
       </Toolbar>
     </AppBar>
-    {authenticated && !isProduction &&
-      (
-        <Banner
-          variant="warning"
-          message={
-            <>
-              This is not a production system. Research organisations can request access to the production system.
-            </>
-          }
-          dismissible={false}
-        />
+    <div className="notification-banner-stack">
+      {authenticated && !isProduction &&
+        (
+          <Banner
+            variant="warning"
+            message={
+              <>
+                This is not a production system. Research organisations can request access to the production system.
+              </>
+            }
+            dismissible={false}
+          />
+        )}
+      {hasConfigIssues(configIssues) && (
+        <ConfigIssueBanner level="warning" issues={configIssues} />
       )}
+    </div>
     </>
   );
 };

@@ -24,11 +24,21 @@ The app is configured at runtime via a single `app-config.json` file fetched on 
     "staticProd": "https://static.prod.example.org",
     "staticBase": "https://static.{env}.example.org"
   },
+  "app": {
+    "orcid": {
+      "placeholder": "Enter ORCID iD or ISNI",
+      "helpText": "Enter a valid ORCID iD e.g. 0000-0002-1825-0097"
+    }
+  },
   "branding": {}
 }
 ```
 
-**Required fields:** `keycloak`, `apiBaseUrl`, `environment`, `supportEmail`, `services.orcid`, `services.staticProd`, `services.staticBase`
+**Required to start the app:** `keycloak.url`, `keycloak.realm`, `keycloak.clientId`, `apiBaseUrl`, `environment`. If any is missing or invalid, the app shows an error banner instead of loading.
+
+**Required for full functionality:** `supportEmail`, `services.orcid`, `services.staticProd`, `services.staticBase`, `app.orcid.placeholder`, `app.orcid.helpText`. If any is missing or invalid, the app still loads and shows a warning banner under the header.
+
+URL fields must be absolute `http` or `https` URLs. See [Troubleshooting configuration banners](#troubleshooting-configuration-banners).
 
 **Optional fields:**
 - `services.invite` — omit if the invite feature is disabled
@@ -320,3 +330,22 @@ Update the file at the external URL — takes effect on next page load, no pod r
 | Docker external URL | Any HTTPS URL | Yes — update file at URL |
 | Kubernetes ConfigMap | ConfigMap + pod volume | Yes — update ConfigMap (auto-propagates ~1 min) |
 | Kubernetes external URL | Any HTTPS URL | Yes — update file at URL |
+
+---
+
+## Troubleshooting configuration banners
+
+The app checks `app-config.json` every time it loads. Banners name the affected fields only, never their values. The browser console logs the full detail.
+
+**Red banner: "This site is not configured correctly"**
+
+The app cannot start. Only a minimal header and the banner are shown, on every page.
+
+- *"its configuration file could not be loaded"*: `/app-config.json` is missing, unreachable or not valid JSON. Behind CloudFront, a missing file returns the app's HTML page, which produces this message. Check with `curl https://app.<env>.<domain>/app-config.json`; it must return JSON.
+- *"Missing: …" or "Invalid: …"*: a field required to start the app is absent, empty, or not a valid URL.
+
+**Amber banner: "Some configuration is missing" (or "invalid")**
+
+The app runs, but the listed features may not work. The banner appears under the header on every page. When signed out, the login page pauses with a **Continue to log in** button so the banner can be read.
+
+**To fix either banner:** correct `app-config.json` for the environment using the steps above for your deployment type, then reload the page. No rebuild is needed.
