@@ -36,6 +36,10 @@ interface Section {
   label: string;
   icon: ReactNode;
   content: ReactNode;
+  /** Fill the panel's height and scroll its own content, rather than the panel scrolling it */
+  fillHeight?: boolean;
+  /** Leave out the panel title, for a section that carries its own heading */
+  hideTitle?: boolean;
 }
 
 export const ServicePoint = () => {
@@ -110,7 +114,11 @@ export const ServicePoint = () => {
       key: "users",
       label: "Users",
       icon: <GroupIcon />,
-      content: <ServicePointUsersList servicePointWithMembers={servicePointQuery.data} />,
+      content: <ServicePointUsersList servicePointWithMembers={servicePointQuery.data} fillHeight />,
+      fillHeight: true,
+      // The list opens with the service point's name, and the nav already
+      // shows Users as selected.
+      hideTitle: true,
     });
   }
   if (canShowCredentials) {
@@ -205,11 +213,35 @@ export const ServicePoint = () => {
                   })}
                 </List>
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3 }, overflowY: { xs: "visible", sm: "auto" } }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  {activeSection?.label}
-                </Typography>
-                {activeSection?.content}
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  p: { xs: 2, sm: 3 },
+                  overflowY: { xs: "visible", sm: "auto" },
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {!activeSection?.hideTitle && (
+                  <Typography variant="h6" sx={{ mb: 2, flexShrink: 0 }}>
+                    {activeSection?.label}
+                  </Typography>
+                )}
+                {/* A section that opts in (the Users list) is passed this
+                    panel's height so it can fill it and scroll its own rows.
+                    Other sections keep their natural height and this panel
+                    scrolls them as before. */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: activeSection?.fillHeight ? 0 : "auto",
+                    flexShrink: activeSection?.fillHeight ? 1 : 0,
+                  }}
+                >
+                  {activeSection?.content}
+                </Box>
               </Box>
             </Box>
           </Card>
