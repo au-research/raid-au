@@ -2,7 +2,8 @@
 
 * Status: proposed (for review with the product owner)
 * Who: proposed by RL
-* When: 2026-09-30
+* When: 2026-09-30; revised 2026-10-19 after product owner review (RAID-836
+  comment 214232): public-only requirement, service point endpoint, signing key
 * Related: RAID-836 (spike), RAID-739 (Federation API epic), RAID-752 (federation
   ingest), RAID-884 and
   [2026-09-11_boot-time-role-provisioning-via-postmigrationevent.md](./2026-09-11_boot-time-role-provisioning-via-postmigrationevent.md)
@@ -25,6 +26,14 @@ For production, the product owner has set three constraints (RAID-836):
 2. It must work on any deployment platform, with no central ARDC-hosted broker
    provisioning on an agency's behalf.
 3. The only accepted manual step is the agency handing the credential to ARDC.
+4. The credential gives access to public information only, and is not attached
+   to a more privileged role (added at review, 2026-10-19). Service point ID, name
+   and owner (a ROR) are public; contact email addresses are not.
+
+`/raid/all-public` returns only public data, but it is authenticated so that
+unrestricted traffic cannot degrade minting and updating. The Federation API and
+the Zenodo dump are the purpose-built public consumers of that data. The harvest
+credential therefore protects the agency's capacity, not confidential data.
 
 The first two are met by the verified `PostMigrationEvent` boot hook (RAID-884):
 logic in `raid-iam.jar` creates the client on every boot if it is absent.
@@ -47,9 +56,21 @@ authenticator), not a client secret.
   Its client ID is a fixed, well-known value compiled into the jar, so ARDC knows
   it without being told. The value is to be settled in the implementation ticket;
   `raid-federation-harvester` is used in the probe as a placeholder only.
+* **Public data only.** The harvester reads `GET /raid/all-public` and a new
+  `GET /service-point/public`, which returns only `id`, `name` and
+  `identifierOwner`. The new endpoint ships in the same release as the boot hook,
+  so every agency ARDC can authenticate to already has it and the harvester needs
+  no fallback to `GET /service-point/`. Its security rule must sit above the
+  existing `GET /service-point/**` rule, because Spring Security applies the first
+  matching rule. Once ARDC's own callers (the federation ingest and both
+  Raid-Dumper copies) have moved to it, `raid-dumper` is removed from
+  `GET /service-point/**`, so the role no longer reaches contact email addresses.
 * **Keys.** The client trusts a JWKS URL published by ARDC for the Federation
   API. The Federation API signs each assertion with a private key held in AWS KMS,
-  which never leaves KMS. The JWKS URL is compiled in as the default and can be
+  which never leaves KMS. One signing key per environment is shared across all
+  agencies; demo and prod use different keys. Because the credential reaches only
+  public data, a compromised key is a load risk rather than a confidentiality one,
+  and per-agency keys would multiply rotation work without protecting any data. The JWKS URL is compiled in as the default and can be
   overridden by an environment variable, read with `System.getenv()` as the SPI's
   other config is.
 * **Which realms.** Following the boot-hook ADR, no realm name is configured. The
@@ -130,12 +151,21 @@ Costs and risks:
   authenticator. The model-layer `addClient()` path used by RAID-827 generates a
   secret only when explicitly asked to, so the boot hook should create none; its
   integration test should assert that.
-* **`raid-dumper` is broader than harvesting.** Besides `GET /raid/all-public`
-  (open-access records only; embargoed records need `raid-access-handler`), the
-  role grants `GET /service-point/**`, whose records include admin and technical
-  contact email addresses. The harvester does not need this. Scope is still no
-  broader than the existing role, as the spike requires, but the grant should be
-  reviewed in its own ticket.
+* **`raid-dumper` currently reaches contact emails.** Besides
+  `GET /raid/all-public` (open-access records only; embargoed records need
+  `raid-access-handler`), the role grants `GET /service-point/**`, whose records
+  include admin and technical contact email addresses. This breaks the public-only
+  requirement until the grant is removed, so removal is part of this work, not a
+  separate review. It must follow the move of ARDC's callers: the Raid-Dumper runs
+  monthly, and a run between the API change and the dumper's redeploy would fail.
+  `ServicePointIntegrationTest` (lines 122 to 137) asserts the current grant and
+  changes to expect HTTP 403. Agencies running their own `raid-dumper` callers on
+  `/service-point/` need a release note.
+* **Other clients still reach contact emails.** `static-page-client` and
+  `raid-access-handler` hold `operator`, so they keep full service point access
+  whatever happens to `raid-dumper` (`iam/doc/keycloak-production-clients.md`,
+  findings 3 and 4). They are not the harvest credential and are handled
+  separately.
 * **The probe used the Admin REST API; the boot hook will not.** RAID-827 found
   that `session.clients().addClient()` leaves `fullScopeAllowed` false and skips
   the realm's default client scopes, which silently strips roles from the token.
@@ -143,8 +173,8 @@ Costs and risks:
   `raid-dumper` appears in `realm_access.roles` of a real issued token.
 * **Default roles.** The issued token also carries the realm's default roles
   (`default-roles-<realm>`, `offline_access`, `uma_authorization`), as every
-  service account does, including today's `raid-dumper` client. Scope is therefore
-  no broader than the existing role, provided an agency has not put API roles into
-  its default composite. The implementation should assert this in the test realm.
+  service account does, including today's `raid-dumper` client. These grant no
+  API access, so the credential stays public-only, provided an agency has not put
+  API roles into its default composite. The implementation should assert this in the test realm.
 * This rests on Keycloak's `client-jwt` authenticator as verified on 26.6.2.
   Re-run the probe on a Keycloak major upgrade.
