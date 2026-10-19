@@ -4,13 +4,18 @@ import { bannerStyleSheet } from './Banner.styles';
 type BannerVariant = 'info' | 'warning' | 'success' | 'error';
 
 interface BannerProps {
-  title?: string;
+  title?: string | React.ReactNode;
   message?: string | React.ReactNode;
   variant?: BannerVariant;
   dismissible?: boolean;
   onDismiss?: () => void;
   action?: () => void;
   actionLabel?: string;
+  role?: React.AriaRole;
+  /** Text alignment inside the banner. */
+  align?: 'center' | 'start';
+  /** Stretch the content across the bar instead of centring it as a block. */
+  fullWidth?: boolean;
 }
 
 const Banner: React.FC<BannerProps> = ({
@@ -21,17 +26,24 @@ const Banner: React.FC<BannerProps> = ({
   onDismiss,
   action,
   actionLabel = "Learn More",
+  role = "banner",
+  align = "center",
+  fullWidth = false,
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(true);
 
   useEffect(() => {
     // Inject styles into the document head
     const styleId = 'banner-styles';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
+    let style = document.getElementById(styleId);
+    if (!style) {
+      style = document.createElement('style');
       style.id = styleId;
-      style.textContent = bannerStyleSheet;
       document.head.appendChild(style);
+    }
+    // Refresh the content too, so a hot reload picks up stylesheet changes.
+    if (style.textContent !== bannerStyleSheet) {
+      style.textContent = bannerStyleSheet;
     }
   }, []);
 
@@ -69,10 +81,11 @@ const Banner: React.FC<BannerProps> = ({
   };
 
   return (
-    <div 
-      className={`notification-banner notification-banner--${variant}`}
-      role="banner"
-      aria-live="polite"
+    <div
+      className={`notification-banner notification-banner--${variant} notification-banner--align-${align}${fullWidth ? " notification-banner--full-width" : ""}`}
+      role={role}
+      // role="alert" is already assertive; a polite live region would contradict it
+      aria-live={role === "alert" ? undefined : "polite"}
     >
         <div className="notification-banner__container">
           <div className="notification-banner__icon">
