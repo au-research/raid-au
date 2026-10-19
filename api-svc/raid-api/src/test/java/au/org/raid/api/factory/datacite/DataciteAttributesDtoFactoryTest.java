@@ -41,6 +41,8 @@ class DataciteAttributesDtoFactoryTest {
     private DataciteRelatedIdentifierFactory relatedIdentifierFactory;
     @Mock
     private DataciteAlternateIdentifierFactory alternateIdentifierFactory;
+    @Mock
+    private DataciteRightFactory rightFactory;
 
     @Mock
     private IdentifierProperties identifierProperties;
@@ -508,5 +510,60 @@ class DataciteAttributesDtoFactoryTest {
         final var result = attributesDtoFactory.create(raid, PUBLICATION_YEAR_HANDLE);
 
         assertThat(result.getPublicationYear(), is(expectedYear));
+    }
+
+    private static final List<DataciteRight> RIGHTS_LIST = List.of(new DataciteRight().setRights("rights"));
+
+    @Test
+    @DisplayName("Set rightsList from the identifier licence on create")
+    void setsRightsListOnCreate() {
+        final var request = new RaidCreateRequest()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate("2019"))
+                .contributor(List.of())
+                .access(publicationYearAccess());
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(rightFactory.create(request.getIdentifier())).thenReturn(RIGHTS_LIST);
+
+        final var result = attributesDtoFactory.create(request, PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getRightsList(), is(RIGHTS_LIST));
+    }
+
+    @Test
+    @DisplayName("Set rightsList from the identifier licence on update")
+    void setsRightsListOnUpdate() {
+        final var request = new RaidUpdateRequest()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate("2019"))
+                .contributor(List.of())
+                .access(publicationYearAccess());
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(rightFactory.create(request.getIdentifier())).thenReturn(RIGHTS_LIST);
+
+        final var result = attributesDtoFactory.create(request, PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getRightsList(), is(RIGHTS_LIST));
+    }
+
+    @Test
+    @DisplayName("Set rightsList from the identifier licence when posting a stored RAiD to DataCite")
+    void setsRightsListForRaidDto() {
+        final var raid = new RaidDto()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate("2019"))
+                .access(publicationYearAccess());
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(rightFactory.create(raid.getIdentifier())).thenReturn(RIGHTS_LIST);
+
+        final var result = attributesDtoFactory.create(raid, PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getRightsList(), is(RIGHTS_LIST));
     }
 }

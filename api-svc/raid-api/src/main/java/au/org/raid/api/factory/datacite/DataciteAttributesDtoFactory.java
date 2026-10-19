@@ -159,6 +159,7 @@ public class DataciteAttributesDtoFactory {
                 .setDescriptions(descriptions)
                 .setRelatedIdentifiers(relatedIdentifiers)
                 .setAlternateIdentifiers(alternateIdentifiers)
+                .setRightsList(dataciteRightFactory.create(request.getIdentifier()))
                 .setFundingReferences(fundingReferences)
                 .setEvent(event)
                 .setUrl(url);
@@ -275,6 +276,7 @@ public class DataciteAttributesDtoFactory {
                 .setDescriptions(descriptions)
                 .setRelatedIdentifiers(relatedIdentifiers)
                 .setAlternateIdentifiers(alternateIdentifiers)
+                .setRightsList(dataciteRightFactory.create(request.getIdentifier()))
                 .setFundingReferences(fundingReferences)
                 .setUrl(url)
                 .setEvent(event);
@@ -393,6 +395,7 @@ public class DataciteAttributesDtoFactory {
                 .setDescriptions(descriptions)
                 .setRelatedIdentifiers(relatedIdentifiers)
                 .setAlternateIdentifiers(alternateIdentifiers)
+                .setRightsList(dataciteRightFactory.create(request.getIdentifier()))
                 .setFundingReferences(fundingReferences)
                 .setUrl(url)
                 .setEvent(event);
