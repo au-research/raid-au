@@ -36,6 +36,21 @@ below).
 Short-term: we're just gonna add logic that fails on startup if you try to run 
 stubs in an `isProd=true` environment.
 
+As of RAID-892 that startup check exists only for the DataCite stub
+(`raid.stub.datacite.enabled`). It is the only stub that drops writes rather
+than standing in for a read-only lookup, so it refuses to start when
+`raid.environment=prod`. The other stubs have no such check.
+
+
+## DataCite stub (RAID-892)
+
+`DataciteServiceStub` and `DataciteRepositoryClientStub` are enabled in the
+test and branch environments, so that they don't create DataCite repositories
+or mint DOIs. Neither action can be undone in DataCite. See "Test environments
+don't create DataCite repositories or mint DOIs" in
+[operational-environment.md](/doc/architecture/environment/operational-environment.md).
+The RAID-812 mock server will replace this stub.
+
 
 ## Why in-memory stubs are not appropriate for load-testing
 
