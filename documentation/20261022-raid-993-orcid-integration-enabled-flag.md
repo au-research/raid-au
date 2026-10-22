@@ -8,8 +8,8 @@
   - [RAID-998](https://ardc.atlassian.net/browse/RAID-998) deployment configuration reference (open)
 - Related: [RAID-994](https://ardc.atlassian.net/browse/RAID-994) (orphan DataCite DOI when a mint fails after DataCite, out of scope)
 - ADR: `doc/adr/2026-10-22_orcid-integration-explicit-enabled-flag.md`
-- PR: story PR from `feature/RAID-993` to `main` (see JIRA)
-- Status: in progress
+- PR: [au-research/raid-au#737](https://github.com/au-research/raid-au/pull/737) (draft, `feature/RAID-993` to `main`)
+- Status: verified in branch environment 2026-10-22; RAID-997, RAID-998 and the 2.20.0 release pending
 
 ## What changed and why
 
@@ -59,6 +59,34 @@ complete, health 200.
   after `RaidIntegrationTest.mintRaid` and `updateRaid`: 0 to `/raid-update`
   and 0 to `/find-contributor-by-orcid` with the integration disabled; 3 and 3
   with it enabled.
+
+## Verification in the branch environment (2026-10-22)
+
+`feature/RAID-993` at `2a5ffc0b` was deployed to `api-raid-993.test.raid.org.au`
+by Branch-Build-Deploy with infrastructure `ef46715e` (RAID-996, so
+`enabled=true`, host `https://orcid.demo.raid.org`). Deploy, Api-Integration-Test
+and E2e-Test passed.
+
+Each check minted a RAiD with two contributors and then updated it (a title
+change): a newly generated ORCID iD and `0000-0002-1825-0097`. Delivery was
+checked in the demo updater's logs (raid-aws-private, `raid-demo`, us-east-1).
+
+| | Integration enabled | Integration disabled |
+|---|---|---|
+| Startup log | `ORCID integration is enabled: host https://orcid.demo.raid.org` | `ORCID integration is disabled: ...` |
+| Mint / update | 201 / 200 (`10.5072/51a506e1`) | 201 / 200 (`10.5072/262ce7a1`) |
+| New contributor status | `AWAITING_AUTHENTICATION` | `UNAUTHENTICATED` |
+| `0000-0002-1825-0097` status | `AWAITING_AUTHENTICATION` | `AWAITING_AUTHENTICATION` (stored status kept) |
+| `FindContributorByOrcid` log entries | 4 | 0 |
+| `RaidListener` log entries | 2 (handle), 2 (ORCID iD) | 0 |
+
+For the disabled check, `BranchApi-raid-993` was redeployed by hand with
+`enabled=false` (same image), then restored to `enabled=true`.
+
+The acceptance scenario expects `0000-0002-1825-0097` to be `UNAUTHENTICATED`.
+That holds only when the iD is new to the database. Here it already existed from
+the enabled run, so its stored status was kept, as decided on RAID-993 on
+2026-10-22.
 
 ## Release
 
