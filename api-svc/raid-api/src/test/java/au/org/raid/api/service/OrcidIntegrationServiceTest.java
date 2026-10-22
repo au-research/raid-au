@@ -1,8 +1,11 @@
 package au.org.raid.api.service;
 
+import au.org.raid.api.config.properties.OrcidIntegrationProperties;
 import au.org.raid.api.dto.ContributorLookupResponse;
 import au.org.raid.api.dto.RaidListenerMessage;
 import au.org.raid.api.factory.RaidListenerMessageFactory;
+import au.org.raid.api.repository.ContributorRepository;
+import au.org.raid.db.jooq.tables.records.ContributorRecord;
 import au.org.raid.idl.raidv2.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -31,6 +35,9 @@ class OrcidIntegrationServiceTest {
     @Mock
     private ServicePointService servicePointService;
 
+    @Mock
+    private ContributorRepository contributorRepository;
+
     private OrcidIntegrationService orcidIntegrationService;
 
     // Use direct executor for testing to avoid async complexity
@@ -38,12 +45,121 @@ class OrcidIntegrationServiceTest {
 
     @BeforeEach
     void setUp() {
-        orcidIntegrationService = new OrcidIntegrationService(
+        orcidIntegrationService = createService(true, "http://localhost:1080");
+    }
+
+    private OrcidIntegrationService createService(final boolean enabled, final String host) {
+        final var properties = new OrcidIntegrationProperties();
+        properties.setEnabled(enabled);
+        properties.setHost(host);
+
+        return new OrcidIntegrationService(
                 orcidIntegrationClient,
                 directExecutor,
                 messageFactory,
-                servicePointService
+                servicePointService,
+                contributorRepository,
+                properties
         );
+    }
+
+    private static RaidDto raidOwnedBy(final long servicePointId) {
+        return new RaidDto()
+                .identifier(new Id()
+                        .id("raid123")
+                        .owner(new Owner().servicePoint(BigDecimal.valueOf(servicePointId))))
+                .contributor(List.of(new Contributor().id("orcid1")));
+    }
+
+    @Test
+    void constructor_shouldDefaultToDisabled_whenPropertiesNotSet() {
+        final var service = new OrcidIntegrationService(
+                orcidIntegrationClient, directExecutor, messageFactory, servicePointService,
+                contributorRepository, new OrcidIntegrationProperties());
+
+        service.updateOrcidRecord(raidOwnedBy(99L));
+
+        verifyNoInteractions(orcidIntegrationClient);
+    }
+
+    @Test
+    void constructor_shouldRefuseToStart_whenEnabledWithoutHost() {
+        final var exception = assertThrows(IllegalStateException.class, () -> createService(true, " "));
+
+        assertThat(exception.getMessage(), containsString("raid.orcid-integration.host"));
+    }
+
+    @Test
+    void constructor_shouldStart_whenDisabledWithoutHost() {
+        createService(false, "");
+    }
+
+    @Test
+    void setContributorStatus_shouldNotCallIntegration_whenDisabled() {
+        final var service = createService(false, "");
+        final var contributors = List.of(new Contributor().id("orcid1"));
+
+        when(contributorRepository.findByPid("orcid1")).thenReturn(Optional.empty());
+
+        service.setContributorStatus(contributors);
+
+        verifyNoInteractions(orcidIntegrationClient);
+    }
+
+    @Test
+    void setContributorStatus_shouldSetUnauthenticated_whenDisabledAndContributorIsNew() {
+        final var service = createService(false, "");
+        final var contributors = List.of(new Contributor().id("orcid1").status("AUTHENTICATED"));
+
+        when(contributorRepository.findByPid("orcid1")).thenReturn(Optional.empty());
+
+        final var result = service.setContributorStatus(contributors);
+
+        assertThat(result.get(0).getStatus(), equalTo("UNAUTHENTICATED"));
+    }
+
+    @Test
+    void setContributorStatus_shouldKeepStoredStatus_whenDisabledAndContributorExists() {
+        final var service = createService(false, "");
+        final var contributors = List.of(new Contributor().id("orcid1"));
+
+        when(contributorRepository.findByPid("orcid1"))
+                .thenReturn(Optional.of(new ContributorRecord().setPid("orcid1").setStatus("AUTHENTICATED")));
+
+        final var result = service.setContributorStatus(contributors);
+
+        assertThat(result.get(0).getStatus(), equalTo("AUTHENTICATED"));
+    }
+
+    @Test
+    void setContributorStatus_shouldSetUnauthenticated_whenDisabledAndStoredStatusIsBlank() {
+        final var service = createService(false, "");
+        final var contributors = List.of(new Contributor().id("orcid1"));
+
+        when(contributorRepository.findByPid("orcid1"))
+                .thenReturn(Optional.of(new ContributorRecord().setPid("orcid1")));
+
+        final var result = service.setContributorStatus(contributors);
+
+        assertThat(result.get(0).getStatus(), equalTo("UNAUTHENTICATED"));
+    }
+
+    @Test
+    void setContributorStatus_shouldNotReadStoredStatus_whenEnabled() {
+        when(orcidIntegrationClient.findByOrcid("orcid1")).thenReturn(Optional.empty());
+
+        orcidIntegrationService.setContributorStatus(List.of(new Contributor().id("orcid1")));
+
+        verifyNoInteractions(contributorRepository);
+    }
+
+    @Test
+    void updateOrcidRecord_shouldNotCallIntegration_whenDisabled() {
+        final var service = createService(false, "");
+
+        service.updateOrcidRecord(raidOwnedBy(99L));
+
+        verifyNoInteractions(orcidIntegrationClient, messageFactory, servicePointService);
     }
 
     @Test
