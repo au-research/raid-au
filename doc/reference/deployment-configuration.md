@@ -28,6 +28,11 @@ show what needs setting.
 > differs, this page describes 2.17.0 and later and says what 2.16.0 and earlier
 > do instead. Check the release being deployed before following the ROR guidance,
 > because the two behave in opposite ways when the property is unset.
+>
+> **2.20.0** added `raid.orcid-integration.enabled`, which defaults to `false`.
+> A deployment that uses the ORCID integration must set it to `true` before
+> upgrading, or the integration is switched off. See
+> [ORCID integration](#orcid-integration).
 
 ## How configuration is supplied
 
@@ -52,16 +57,21 @@ As noted above, several defaults carry RAiD AU values rather than neutral ones.
 Three groups of them cause problems in any other deployment, and two fail quietly
 rather than loudly.
 
-### 1. One default points at a mock server
+### 1. On 2.19.0 and earlier, one default points at a mock server
 
-`raid.orcid-integration.host` defaults to `http://localhost:1080`, the local
-development mock server. Nothing listens there in a deployed environment, so the
-call fails with `Connection refused`.
+On 2.19.0 and earlier, `raid.orcid-integration.host` defaults to
+`http://localhost:1080`, the local development mock server. Nothing listens
+there in a deployed environment, so the call fails with `Connection refused`.
 
-The call currently happens after the DataCite mint but inside the same database
+The call happens after the DataCite mint but inside the same database
 transaction, so a failure mints a real DOI and then rolls the database change
-back. Set this property before minting anything. Both the default and the
-transaction behaviour are being fixed.
+back. On these releases, set this property before minting anything.
+
+From 2.20.0 the integration is off unless `raid.orcid-integration.enabled` is
+`true`, and `host` has no default, so a deployment that sets neither makes no
+call. The transaction behaviour is unchanged when the integration is enabled:
+an unreachable host still fails the save after the DataCite mint. See
+[ORCID integration](#orcid-integration).
 
 ### 2. Some defaults identify RAiD AU as the agency
 
@@ -279,11 +289,36 @@ their own ORCID member credentials for it.
 
 | Property | Description |
 | --- | --- |
-| `raid.orcid-integration.host` | The raid.org ORCID integration host for the relevant environment. |
+| `raid.orcid-integration.enabled` | `true` to use the integration. From 2.20.0 it defaults to `false`. Not present on 2.19.0 and earlier, where the integration is always on. |
+| `raid.orcid-integration.host` | The raid.org ORCID integration host for the relevant environment. Required when `enabled` is `true`. |
 | `raid.orcid-integration.api-key` | The API key issued by raid.org for this deployment. Set it once raid.org has issued one. |
 | `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/`, or `https://sandbox.orcid.org/` for sandbox. |
 | `raid.contributor-validation.orcid.schema-uri` | Must match the url-prefix above. |
 
+The two contributor-validation properties apply whether or not the integration
+is enabled. They control which ORCID iDs a RAiD can contain.
+
+**With the integration enabled**, the API looks up each contributor's status
+from the integration host and sends each saved RAiD to it. If the host is
+unreachable, the mint or update fails.
+
+**With the integration disabled**, the API makes no request to any integration
+host. Mints and updates work without it. Each contributor keeps the status
+already stored for that ORCID iD, and a contributor new to the database is given
+`UNAUTHENTICATED`. Contributors are shared across RAiDs, so a contributor who
+authenticated through an earlier integration keeps that status.
+
+**At startup** the API logs one of these lines at `INFO`:
+
+```
+ORCID integration is enabled: host https://orcid.demo.raid.org
+ORCID integration is disabled: contributor statuses are not looked up and RAiDs are not sent to an ORCID integration host
+```
+
+If `enabled` is `true` and `host` is blank, the API refuses to start with
+`raid.orcid-integration.enabled is true but raid.orcid-integration.host is not set`.
+
+A new agency can launch with the integration disabled and enable it later.
 Contributor status flows back into RAiD records only once the deployment is
 registered with raid.org. Registration requires:
 
@@ -379,6 +414,7 @@ spring.security.oauth2.client.registration.keycloak.client-id = raid-api-2
 
 datacite.endpoint                              = https://api.test.datacite.org/dois
 
+raid.orcid-integration.enabled                 = true
 raid.orcid-integration.host                    = https://orcid.demo.raid.org
 raid.contributor-validation.orcid.url-prefix   = https://sandbox.orcid.org/
 raid.contributor-validation.orcid.schema-uri   = https://sandbox.orcid.org/
@@ -417,6 +453,9 @@ When behaviour is unexpected, two things resolve most questions quickly:
 
 - The startup line reporting the profile, either `No active profile set` or
   `The following 1 profile is active`.
+- From 2.20.0, the startup line reporting whether the ORCID integration is
+  enabled. It is logged at `INFO`, so it is missing if `logging.level.root` is
+  `ERROR` and `logging.level.au.org.raid` is not lowered to `info` or `debug`.
 - The effective configuration, with secrets masked.
 
 Include both when raising an issue.
