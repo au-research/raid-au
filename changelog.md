@@ -1,6 +1,46 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.20.0
+
+## API
+* **Action required for agencies that use an ORCID integration.** Added the
+  `raid.orcid-integration.enabled` setting, which defaults to `false`. To keep sending RAiDs to
+  an ORCID integration and looking up contributor statuses, set
+  `raid.orcid-integration.enabled=true` alongside `raid.orcid-integration.host` before deploying
+  this release. With the integration disabled, the API makes no request to any ORCID integration
+  host, new contributors are given the status `UNAUTHENTICATED`, and existing contributors keep
+  their stored status. This lets a new Registration Agency mint and update RAiDs without an
+  ORCID integration. Previously an unreachable or unset host made every mint and update fail.
+  The startup log states whether the integration is enabled, and the API refuses to start if it
+  is enabled with no host (PR #737).
+* The DataCite `publicationYear` now comes from the year of the RAiD's start date. Previously it
+  was set to the current year on every mint and update, so an update in a later year changed the
+  DOI's publication year (PR #726).
+* The RAiD licence is now sent to DataCite as `rightsList`. Previously no rights metadata reached
+  DataCite. The Creative Commons CC0 licence is sent as the standard SPDX entry `cc0-1.0` with
+  its canonical licence URI (PR #729).
+* The `updatedSince` parameter on `/raid/all-public` and `/raid/all-embargoed` now includes RAiDs
+  updated at exactly the given time, matching the Federation API. Previously a RAiD updated in the
+  same second as a consumer's last sync could be missed (PR #723).
+* Fixed an `Internal Server Error` when saving a RAiD with an ISNI contributor whose ISNI record
+  has a surname but no forename (PR #719).
+* Added a DataCite stub for test environments, turned on with `raid.stub.datacite.enabled`
+  (default `false`). The API refuses to start with the stub on in production (PR #710).
+
+## App-client UI
+* The Contributor section now shows the identifier and resolved name of existing contributors,
+  for both ORCID iDs and ISNIs, on the View and Edit pages (PR #701).
+* Correcting an invalid contributor identifier now clears the error message, and identifiers
+  that look like an ISNI get ISNI-specific guidance (PR #701).
+* Restored the ARDC header and footer, which now load without the earlier delay (PR #717).
+
+## IAM
+* The sign-in page uses the restored ARDC header and footer (PR #717).
+
+## Static Landing Pages
+* Landing pages use the restored ARDC header and footer (PR #717).
+
 # 2.19.0
 
 ## API
