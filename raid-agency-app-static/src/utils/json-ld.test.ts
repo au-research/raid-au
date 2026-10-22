@@ -551,7 +551,11 @@ describe("buildResearchProjectJsonLd", () => {
           name: "DOI",
           value: "https://doi.org/10.1007/s00442-014-2977-8",
         },
-        additionalType: ["https://vocabulary.raid.org/relatedObject.category.id/190"],
+        additionalType: [
+          "https://vocabulary.raid.org/relatedObject.category.id/190",
+          "https://vocabulary.raid.org/relatedObject.type.schema/250",
+          "Journal Article",
+        ],
       },
     ]);
   });
@@ -625,9 +629,13 @@ describe("buildResearchProjectJsonLd", () => {
     ]);
     expect(result.citation?.[0].additionalType).toEqual([
       "https://vocabulary.raid.org/relatedObject.category.id/190",
+      "https://vocabulary.raid.org/relatedObject.type.schema/250",
+      "Journal Article",
     ]);
     expect(result.citation?.[1].additionalType).toEqual([
       "https://vocabulary.raid.org/relatedObject.category.id/191",
+      "https://vocabulary.raid.org/relatedObject.type.schema/269",
+      "Dataset",
     ]);
   });
 
@@ -697,21 +705,133 @@ describe("buildResearchProjectJsonLd", () => {
     expect(result.citation?.[0].additionalType).toEqual([
       "https://vocabulary.raid.org/relatedObject.category.id/190",
       "https://vocabulary.raid.org/relatedObject.category.id/192",
+      "https://vocabulary.raid.org/relatedObject.type.schema/250",
+      "Journal Article",
     ]);
   });
 
-  it("omits additionalType when a related object has no category", () => {
+  it("omits additionalType when a related object has no category or type", () => {
     const raid = minimalRaid();
     raid.relatedObject = [
       {
         id: "https://doi.org/10.1007/no-category",
+        schemaUri: "https://doi.org/",
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0]).not.toHaveProperty("additionalType");
+  });
+
+  it("adds the type URI and resolved label after the category on additionalType", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.71613/86e95be1",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/269", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+      "https://vocabulary.raid.org/relatedObject.type.schema/269",
+      "Dataset",
+    ]);
+  });
+
+  it("carries each related object's own type and no other", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.71613/dataset",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/269", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+      {
+        id: "https://doi.org/10.1007/article",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    const [dataset, article] = result.citation ?? [];
+    expect(dataset.additionalType).toContain("Dataset");
+    expect(dataset.additionalType).not.toContain("Journal Article");
+    expect(dataset.additionalType).not.toContain(
+      "https://vocabulary.raid.org/relatedObject.type.schema/250"
+    );
+    expect(article.additionalType).toContain("Journal Article");
+    expect(article.additionalType).not.toContain("Dataset");
+    expect(article.additionalType).not.toContain(
+      "https://vocabulary.raid.org/relatedObject.type.schema/269"
+    );
+  });
+
+  it("keeps only the category on additionalType when a related object has no type", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/no-type",
+        schemaUri: "https://doi.org/",
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+    ]);
+  });
+
+  it("emits the type URI without a label when the type is not in the vocabulary mapping", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/unknown-type",
+        schemaUri: "https://doi.org/",
+        type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/9999", schemaUri: "" },
+        category: [
+          { id: "https://vocabulary.raid.org/relatedObject.category.id/190", schemaUri: "" },
+        ],
+      },
+    ];
+
+    const result = buildResearchProjectJsonLd(raid);
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.category.id/190",
+      "https://vocabulary.raid.org/relatedObject.type.schema/9999",
+    ]);
+  });
+
+  it("emits the type on additionalType when a related object has a type but no category", () => {
+    const raid = minimalRaid();
+    raid.relatedObject = [
+      {
+        id: "https://doi.org/10.1007/type-only",
         schemaUri: "https://doi.org/",
         type: { id: "https://vocabulary.raid.org/relatedObject.type.schema/250", schemaUri: "" },
       },
     ];
 
     const result = buildResearchProjectJsonLd(raid);
-    expect(result.citation?.[0]).not.toHaveProperty("additionalType");
+    expect(result.citation?.[0].additionalType).toEqual([
+      "https://vocabulary.raid.org/relatedObject.type.schema/250",
+      "Journal Article",
+    ]);
   });
 
   it("skips related objects without an id", () => {
