@@ -1,0 +1,577 @@
+---
+openapi: "3.1.0"
+info:
+  title: "RAiD ORCID updater API"
+  version: "0.1.0"
+  description: |
+    Contract for the per-registration-agency (RA) ORCID updater (RAID-975).
+
+    The updater runs the researcher authentication flow, holds researcher
+    tokens and ORCID put codes, and is the only component that writes to
+    ORCID records. Each RA runs its own instance with its own PostgreSQL
+    database and SMTP server. Nothing depends on AWS.
+
+    Callers and credentials:
+    * RAiD app (minter's browser): `registerInvitation`, with the minter's
+      access token from the RA's Keycloak realm (`userBearer`).
+    * RAiD API: `notifyRaidChanged` and `getContributorStatus`, with the
+      shared API key (`apiKey`).
+    * RA administrators: `/admin/*`, with an access token carrying the
+      `orcid-updater-admin` realm role (`adminBearer`).
+    * Researchers: the invitation and ORCID callback pages. These carry no
+      credential and are protected only by the invitation token and the
+      OAuth state parameter.
+
+    Calls the updater makes to the RAiD API (built in RAID-976), with its
+    own Keycloak client holding the `contributor-writer` role:
+    * `GET /raid/{prefix}/{suffix}` to read the title, owning service point,
+      access type and contributors of a RAiD.
+    * `GET /raid/{prefix}/{suffix}/permissions` with the minter's token, to
+      check the minter can edit the RAiD before sending an invitation.
+    * `GET /raid/?contributor.id={orcid}` to find every RAiD with a
+      contributor, after that contributor's status changes.
+    * `PUT /contributor/status` (new, see `ContributorStatusUpdate`) to set
+      a contributor's status. Status is per person, so one call covers every
+      RAiD the person is on. It does not create a RAiD version, call
+      DataCite or notify the updater.
+
+    Statuses use the RAiD API's existing `ContributorStatus` values
+    (Decision on RAID-974, 2026-10-23). AUTHENTICATION_FAILED is not used.
+  contact:
+    name: "ARDC RAiD team"
+    email: "contact@raid.org"
+servers:
+- url: "http://localhost:8090"
+  description: "Local development."
+tags:
+- name: "invitation"
+  description: "Called by the RAiD app when a minter saves a contributor with an email."
+- name: "api"
+  description: "Called by the RAiD API."
+- name: "researcher"
+  description: "HTML pages for researchers. No credential; protected by the invitation token and OAuth state."
+- name: "admin"
+  description: "Called by RA administrators."
+paths:
+  /invitations:
+    post:
+      tags:
+      - "invitation"
+      operationId: "registerInvitation"
+      summary: "Invite a contributor to authenticate their ORCID iD"
+      description: |
+        Called by the app after the RAiD has been saved. The email is never
+        sent to the RAiD API and is not stored by the updater: it is used to
+        send the invitation and to compute a keyed hash (HMAC-SHA-256).
+
+        The updater checks, in order:
+        1. The caller can edit the RAiD (`write` from the RAiD API's
+           permissions endpoint, called with the caller's token). If not, 403.
+        2. The ORCID iD is a contributor on the saved RAiD. If not, 422.
+        3. A researcher who ticked "Remember me" has the same keyed hash.
+           If so, no email is sent and the response carries their
+           authenticated iD with status AUTHENTICATED.
+        4. An unexpired invitation for this iD is already pending. If so, no
+           new email is sent (one invitation per researcher while the link
+           is valid) and the status is AWAITING_AUTHENTICATION.
+        5. Otherwise, a single-use token is created and the email is sent.
+           Status AWAITING_AUTHENTICATION is pushed to the RAiD API.
+
+        The RAiD title and service point name in the email come from the
+        RAiD API, not from this request.
+      security:
+      - userBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationRequest"
+      responses:
+        200:
+          description: "Invitation sent, already pending, or matched to a researcher who ticked \"Remember me\"."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationResponse"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/RaidNotFound"
+        422:
+          description: "The ORCID iD is not a contributor on the RAiD."
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        502:
+          description: |
+            The invitation email could not be sent (`code` is
+            EMAIL_DELIVERY_FAILED). No pending invitation remains.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /raid-changes:
+    post:
+      tags:
+      - "api"
+      operationId: "notifyRaidChanged"
+      summary: "Tell the updater that a RAiD was minted or saved"
+      description: |
+        Called by the RAiD API after every mint, update and patch. The
+        updater processes it asynchronously: it reads the RAiD from the RAiD
+        API and, for each contributor:
+        * AUTHENTICATED: creates or updates the ORCID entry, unless the RAiD
+          is embargoed (written once the embargo ends).
+        * any other status: makes no ORCID call.
+        Put codes held for this RAiD whose iD is no longer a contributor
+        have their ORCID entry deleted.
+
+        A failure inside the updater never fails the RAiD save. The API
+        logs a failed notification and carries on.
+      security:
+      - apiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RaidChangedNotification"
+      responses:
+        202:
+          description: "Accepted for processing."
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+  /contributors/status:
+    get:
+      tags:
+      - "api"
+      operationId: "getContributorStatus"
+      summary: "Get the authentication status of a contributor"
+      security:
+      - apiKey: []
+      parameters:
+      - name: "id"
+        in: "query"
+        required: true
+        description: "The contributor's ORCID iD as a URL."
+        example: "https://orcid.org/0000-0002-1825-0097"
+        schema:
+          $ref: "#/components/schemas/OrcidIdUrl"
+      responses:
+        200:
+          description: "The status. UNAUTHENTICATED when the updater holds nothing for this iD."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContributorStatusResponse"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+  /invitations/{token}:
+    parameters:
+    - $ref: "#/components/parameters/InvitationToken"
+    get:
+      tags:
+      - "researcher"
+      operationId: "showInvitation"
+      summary: "Landing page for an invitation link"
+      description: |
+        Shows what RAiD is, the RAiD title, the service point name, the RA's
+        ORCID client name, the permission requested and why, an
+        "Authenticate with ORCID" button and an unticked "Remember me for
+        future RAiDs at this RA" choice. No service point contact details.
+        A used, expired or unknown token shows a "link no longer valid"
+        page with status 410 or 404, and never redirects to ORCID.
+      security: []
+      responses:
+        200:
+          $ref: "#/components/responses/HtmlPage"
+        404:
+          $ref: "#/components/responses/HtmlPage"
+        410:
+          $ref: "#/components/responses/HtmlPage"
+    post:
+      tags:
+      - "researcher"
+      operationId: "startAuthentication"
+      summary: "Start ORCID sign-in from the landing page"
+      description: |
+        Records the "Remember me" choice against the pending invitation,
+        creates the OAuth state and redirects to ORCID's authorisation
+        endpoint with the `/activities/update` scope (to be confirmed in
+        RAID-1003).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/StartAuthenticationForm"
+      responses:
+        303:
+          description: "Redirect to ORCID's authorisation endpoint."
+          headers:
+            Location:
+              schema:
+                type: "string"
+                format: "uri"
+        404:
+          $ref: "#/components/responses/HtmlPage"
+        410:
+          $ref: "#/components/responses/HtmlPage"
+  /orcid/callback:
+    get:
+      tags:
+      - "researcher"
+      operationId: "orcidCallback"
+      summary: "ORCID OAuth redirect URI"
+      description: |
+        With `code` and a matching `state`: exchanges the code server-side,
+        stores the token encrypted, marks the iD AUTHENTICATED (the iD ORCID
+        returns replaces the typed one), uses up the invitation token,
+        stores the keyed hash and consent time if "Remember me" was ticked,
+        pushes the status to the RAiD API, writes every non-embargoed RAiD
+        with that iD to ORCID, and shows the confirmation page.
+
+        With `error=access_denied`: stores nothing, the status stays
+        AWAITING_AUTHENTICATION, and shows a "nothing was authorised" page.
+
+        With a `state` that matches no pending authentication: 400 and
+        nothing is stored.
+      security: []
+      parameters:
+      - name: "code"
+        in: "query"
+        schema:
+          type: "string"
+      - name: "state"
+        in: "query"
+        required: true
+        schema:
+          type: "string"
+      - name: "error"
+        in: "query"
+        schema:
+          type: "string"
+      responses:
+        200:
+          $ref: "#/components/responses/HtmlPage"
+        400:
+          $ref: "#/components/responses/HtmlPage"
+  /admin/researcher-deletions:
+    post:
+      tags:
+      - "admin"
+      operationId: "deleteResearcherData"
+      summary: "Delete a researcher's stored data on request"
+      description: |
+        Identify the researcher by email, ORCID iD or both. The updater
+        deletes the RAiD entries it wrote to their ORCID record, revokes its
+        access token at ORCID, then deletes the keyed hash, consent time,
+        token and put codes. A later invitation sends a new email.
+        The email is used only to compute the keyed hash and is not logged.
+      security:
+      - adminBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearcherDeletionRequest"
+      responses:
+        200:
+          description: "Deletion done. Reports what was found and removed."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearcherDeletionResponse"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+  /admin/put-code-imports:
+    post:
+      tags:
+      - "admin"
+      operationId: "importPutCodes"
+      summary: "Import put codes for entries already on ORCID records"
+      description: |
+        CSV with a header row `handle,orcidId,putCode`. Imports put codes
+        written by a previous updater using the same ORCID client, so later
+        writes update those entries instead of duplicating them. Safe to
+        run more than once: an existing row for the same handle and iD is
+        left unchanged and counted as skipped. Access tokens are never
+        imported.
+      security:
+      - adminBearer: []
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: "string"
+      responses:
+        200:
+          description: "Import finished."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutCodeImportResponse"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    userBearer:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+      description: "A minter's access token from the RA's Keycloak realm."
+    adminBearer:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+      description: "An access token from the RA's Keycloak realm with the `orcid-updater-admin` realm role."
+    apiKey:
+      type: "apiKey"
+      in: "header"
+      name: "X-Api-Key"
+      description: "Shared secret configured on both the RAiD API and the updater."
+  parameters:
+    InvitationToken:
+      name: "token"
+      in: "path"
+      required: true
+      description: "Single-use invitation token from the email link."
+      schema:
+        type: "string"
+  responses:
+    HtmlPage:
+      description: "An HTML page for the researcher."
+      content:
+        text/html:
+          schema:
+            type: "string"
+    BadRequest:
+      description: "The request is malformed or fails validation."
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Unauthorized:
+      description: "No valid credential."
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: "The credential is valid but does not allow this request."
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    RaidNotFound:
+      description: "The RAiD API has no RAiD with this handle."
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    OrcidIdUrl:
+      type: "string"
+      description: "An ORCID iD as a URL on the configured ORCID base URL (production or sandbox)."
+      pattern: "^https://(sandbox\\.)?orcid\\.org/\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"
+    Handle:
+      type: "string"
+      description: "RAiD handle as prefix/suffix."
+      pattern: "^[^/\\s]+/[^/\\s]+$"
+      example: "10.82841/86bf1b6c"
+    ContributorStatus:
+      type: "string"
+      description: |
+        A contributor's status, per person. Values are the RAiD API's
+        existing `ContributorStatus` values.
+        * AUTHENTICATED: the researcher authenticated and the updater holds a valid token.
+        * AWAITING_AUTHENTICATION: an invitation is pending.
+        * AUTHENTICATION_REVOKED: ORCID rejected the token; the researcher revoked access.
+        * UNAUTHENTICATED: anything else, including no invitation, an expired invitation and data deleted on request.
+      enum:
+      - "AUTHENTICATED"
+      - "AWAITING_AUTHENTICATION"
+      - "AUTHENTICATION_REVOKED"
+      - "UNAUTHENTICATED"
+    InvitationRequest:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "handle"
+      - "contributorId"
+      - "email"
+      properties:
+        handle:
+          $ref: "#/components/schemas/Handle"
+        contributorId:
+          $ref: "#/components/schemas/OrcidIdUrl"
+        email:
+          type: "string"
+          format: "email"
+          maxLength: 254
+          description: "Trimmed and lowercased before hashing. Never stored or logged."
+    InvitationResponse:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "contributorId"
+      - "status"
+      - "emailSent"
+      properties:
+        contributorId:
+          $ref: "#/components/schemas/OrcidIdUrl"
+          description: |
+            The iD the updater holds for this researcher. Differs from the
+            requested iD when a "Remember me" match returns the researcher's
+            authenticated iD.
+        status:
+          $ref: "#/components/schemas/ContributorStatus"
+        emailSent:
+          type: "boolean"
+        expiresAt:
+          type:
+          - "string"
+          - "null"
+          format: "date-time"
+          description: "When the pending invitation expires. Null unless the status is AWAITING_AUTHENTICATION."
+    RaidChangedNotification:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "handle"
+      properties:
+        handle:
+          $ref: "#/components/schemas/Handle"
+    ContributorStatusResponse:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "id"
+      - "status"
+      properties:
+        id:
+          $ref: "#/components/schemas/OrcidIdUrl"
+        status:
+          $ref: "#/components/schemas/ContributorStatus"
+        authenticatedId:
+          oneOf:
+          - $ref: "#/components/schemas/OrcidIdUrl"
+          - type: "null"
+          description: "The iD ORCID returned at sign-in, when AUTHENTICATED."
+    ContributorStatusUpdate:
+      type: "object"
+      additionalProperties: false
+      description: |
+        Request body for `PUT /contributor/status` on the RAiD API (built in
+        RAID-976, requires the `contributor-writer` role). Sets the status
+        on the shared contributor row. Responds 204, or 404 when the RAiD
+        API has no contributor with this iD.
+      required:
+      - "id"
+      - "status"
+      properties:
+        id:
+          $ref: "#/components/schemas/OrcidIdUrl"
+        status:
+          $ref: "#/components/schemas/ContributorStatus"
+    StartAuthenticationForm:
+      type: "object"
+      properties:
+        rememberMe:
+          type: "boolean"
+          default: false
+    ResearcherDeletionRequest:
+      type: "object"
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          maxLength: 254
+        orcidId:
+          $ref: "#/components/schemas/OrcidIdUrl"
+    ResearcherDeletionResponse:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "found"
+      - "orcidEntriesDeleted"
+      - "tokenRevoked"
+      properties:
+        found:
+          type: "boolean"
+          description: "False when the updater held nothing for this researcher."
+        orcidEntriesDeleted:
+          type: "integer"
+          minimum: 0
+        tokenRevoked:
+          type: "boolean"
+    PutCodeImportResponse:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "imported"
+      - "skipped"
+      - "rejected"
+      properties:
+        imported:
+          type: "integer"
+          minimum: 0
+        skipped:
+          type: "integer"
+          minimum: 0
+        rejected:
+          type: "array"
+          description: "Rows that failed validation, by line number."
+          items:
+            type: "object"
+            additionalProperties: false
+            required:
+            - "line"
+            - "reason"
+            properties:
+              line:
+                type: "integer"
+              reason:
+                type: "string"
+    Problem:
+      type: "object"
+      description: "RFC 9457 problem details. Never contains an email address, token or secret."
+      required:
+      - "title"
+      - "status"
+      properties:
+        type:
+          type: "string"
+          format: "uri"
+        title:
+          type: "string"
+        status:
+          type: "integer"
+        detail:
+          type: "string"
+        code:
+          type: "string"
+          description: "Machine-readable error code, for example EMAIL_DELIVERY_FAILED."
