@@ -1,5 +1,6 @@
 package au.org.raid.orcidupdater.config;
 
+import au.org.raid.orcidupdater.invitation.InvitationService;
 import au.org.raid.orcidupdater.security.ProblemSecurityHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -50,7 +51,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "orcid-updater.mail.from=orcid-updater@example.org",
         "orcid-updater.email-hash-secret=test",
         "orcid-updater.token-encryption-key=test",
-        "orcid-updater.api-key=test-api-key"})
+        "orcid-updater.link-encryption-key=test-link-encryption-key-32-chars",
+        "orcid-updater.api-key=test-api-key",
+        "orcid-updater.public-base-url=http://localhost:8090"})
 @DisplayName("SecurityConfig")
 class SecurityConfigTest {
     private static final String API_KEY_HEADER = "X-Api-Key";
@@ -65,6 +68,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    private InvitationService invitationService;
 
     private static ResultMatcher unauthorizedProblem() {
         return result -> {
@@ -176,9 +182,9 @@ class SecurityConfigTest {
         }
 
         @Test
-        @DisplayName("Register invitation with any valid token: " + NOT_BLOCKED_BY_SECURITY)
+        @DisplayName("Register invitation with any valid token: passes security (400: no body)")
         void invitationWithToken() throws Exception {
-            mockMvc.perform(post("/invitations").with(jwt())).andExpect(status().isNotFound());
+            mockMvc.perform(post("/invitations").with(jwt())).andExpect(status().isBadRequest());
         }
 
         @Test
