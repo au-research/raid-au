@@ -94,6 +94,9 @@ spring-boot-starter-security = { group = "org.springframework.boot", name = "spr
 spring-boot-starter-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client", version.ref = "springboot" }
 spring-cloud-starter-openfeign = { group = "org.springframework.cloud", name = "spring-cloud-starter-openfeign", version.ref = "springcloud" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springboot" }
+spring-boot-starter-jdbc = { group = "org.springframework.boot", name = "spring-boot-starter-jdbc", version.ref = "springboot" }
+spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail", version.ref = "springboot" }
+spring-boot-starter-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation", version.ref = "springboot" }
 springdoc-openapi = { group = 'org.springdoc', name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 spring-security-test = { group = "org.springframework.security", name = "spring-security-test", version.ref = "spring-security-test" }
 
