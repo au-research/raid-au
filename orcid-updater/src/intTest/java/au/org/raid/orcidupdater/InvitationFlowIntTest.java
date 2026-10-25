@@ -232,13 +232,16 @@ class InvitationFlowIntTest {
             start.await();
             return invite(EMAIL);
         };
-        try (var executor = Executors.newFixedThreadPool(2)) {
+        final var executor = Executors.newFixedThreadPool(2);
+        try {
             final var first = executor.submit(save);
             final var second = executor.submit(save);
             start.countDown();
 
             assertThat(List.of(first.get().getStatusCode(), second.get().getStatusCode()))
                     .containsOnly(HttpStatus.OK);
+        } finally {
+            executor.shutdownNow();
         }
 
         verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
