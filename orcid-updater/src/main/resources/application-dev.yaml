@@ -1,0 +1,27 @@
+# Local development against ./gradlew :orcid-updater:dockerComposeUp (PostgreSQL and Mailpit) and
+# the Keycloak started by the RAiD API's compose stack. Placeholder secrets only.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:7433/orcid_updater
+    username: orcid_updater
+    password: supersecret
+
+orcid-updater:
+  orcid:
+    client-id: not-set
+    client-secret: not-set
+    client-name: ARDC RAiD Service (local)
+    base-url: https://sandbox.orcid.org
+    api-url: https://api.sandbox.orcid.org/v3.0
+  raid-api:
+    base-url: http://localhost:8080
+  keycloak:
+    issuer-uri: http://localhost:8001/realms/raid
+  mail:
+    host: localhost
+    port: 1025
+    start-tls: false
+    from: orcid-updater@localhost
+  email-hash-secret: dev-email-hash-secret
+  token-encryption-key: dev-token-encryption-key
+  api-key: dev-api-key

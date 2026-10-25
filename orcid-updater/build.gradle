@@ -1,0 +1,106 @@
+import org.gradle.api.plugins.jvm.JvmTestSuite
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+  id 'java'
+  id 'jvm-test-suite'
+  alias(libs.plugins.spring.boot)
+}
+
+ext {
+  defaultSysProps = [
+    'user.timezone': 'UTC',
+    'file.encoding': 'UTF-8',
+    "user.language":"", "user.country":"", "user.variant":"",
+  ]
+}
+
+version = rootProject.version
+
+// RAID-975: the updater must run without AWS, so nothing here may depend on an AWS SDK.
+dependencies {
+  implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+
+  implementation libs.spring.boot.starter.web
+  implementation libs.spring.boot.starter.security
+  implementation libs.spring.boot.starter.oauth2.resource.server
+  implementation libs.spring.boot.starter.actuator
+  implementation libs.spring.boot.starter.jdbc
+  implementation libs.spring.boot.starter.mail
+  implementation libs.spring.boot.starter.validation
+  implementation libs.flyway.core
+  implementation libs.flyway.postgresql
+  runtimeOnly libs.postgresql
+
+  compileOnly libs.lombok
+  annotationProcessor libs.lombok
+
+  testImplementation libs.spring.boot.starter.test
+  testImplementation libs.spring.security.test
+  testImplementation libs.assertj
+  testCompileOnly libs.lombok
+  testAnnotationProcessor libs.lombok
+}
+
+compileJava {
+  options.compilerArgs << "-parameters" << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+testing {
+  suites {
+    intTest(JvmTestSuite) {
+      dependencies {
+        implementation project()
+        implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+        implementation libs.spring.boot.starter.test
+        implementation libs.spring.boot.starter.web
+        implementation libs.spring.boot.starter.jdbc
+        implementation libs.assertj
+        implementation libs.testcontainers.postgresql
+        implementation libs.testcontainers.junit.jupiter
+        runtimeOnly libs.postgresql
+      }
+    }
+  }
+}
+
+// intTest needs Docker for Testcontainers, so `build` only compiles it, as in api-svc
+tasks.build.dependsOn intTestClasses
+
+tasks.withType(Test).configureEach {
+  useJUnitPlatform()
+  systemProperties defaultSysProps
+  testLogging {
+    events "passed", "skipped", "failed"
+    showExceptions = true
+    exceptionFormat = TestExceptionFormat.FULL
+    showCauses = true
+    showStackTraces = true
+  }
+}
+
+bootJar {
+  archiveFileName = "orcid-updater.jar"
+}
+
+bootBuildImage {
+  imageName = 'orcid-updater-base:latest'
+}
+
+tasks.register('buildDocker', Exec) {
+  dependsOn bootBuildImage
+  def imageName = project.hasProperty('imageName') ? project.imageName : 'orcid-updater:latest'
+  commandLine 'docker', 'build', '-t', imageName, '.'
+}
+
+tasks.register('dockerComposeUp', Exec) {
+  commandLine 'docker', 'compose', 'up', '--wait', '--detach'
+}
+
+tasks.register('dockerComposeDown', Exec) {
+  commandLine 'docker', 'compose', 'down', '-v'
+}
+
+bootRun {
+  systemProperties = System.properties
+}
