@@ -2,6 +2,7 @@ package au.org.raid.orcidupdater.invitation;
 
 import au.org.raid.orcidupdater.config.OrcidUpdaterProperties;
 import au.org.raid.orcidupdater.raidapi.RaidSummary;
+import au.org.raid.orcidupdater.web.DisplayDates;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -9,9 +10,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 /**
  * The invitation email (RAID-975): service point name, RAiD title and the link, and nothing that
@@ -22,8 +20,6 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class InvitationEmailSender {
     static final String SUBJECT = "Confirm your ORCID iD for a research project";
-    private static final DateTimeFormatter EXPIRY_FORMAT =
-            DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("en-AU")).withZone(ZoneOffset.UTC);
 
     private final JavaMailSender mailSender;
     private final OrcidUpdaterProperties properties;
@@ -61,6 +57,6 @@ public class InvitationEmailSender {
                 If you were not expecting this email, you can ignore it. Nothing is added to your \
                 ORCID record unless you sign in to ORCID and give permission.
                 """.formatted(raid.servicePointName(), raid.title(), properties.getOrcid().getClientName(),
-                EXPIRY_FORMAT.format(expiresAt), link);
+                DisplayDates.format(expiresAt), link);
     }
 }

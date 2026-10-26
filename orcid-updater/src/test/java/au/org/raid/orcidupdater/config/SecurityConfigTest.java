@@ -2,6 +2,10 @@ package au.org.raid.orcidupdater.config;
 
 import au.org.raid.orcidupdater.invitation.InvitationService;
 import au.org.raid.orcidupdater.security.ProblemSecurityHandler;
+import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException;
+import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException.Reason;
+import au.org.raid.orcidupdater.signin.InvalidOAuthStateException;
+import au.org.raid.orcidupdater.signin.SignInService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,10 +28,15 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,10 +59,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "orcid-updater.mail.host=localhost",
         "orcid-updater.mail.from=orcid-updater@example.org",
         "orcid-updater.email-hash-secret=test",
-        "orcid-updater.token-encryption-key=test",
+        "orcid-updater.token-encryption-key=test-token-encryption-key-32-chars",
         "orcid-updater.link-encryption-key=test-link-encryption-key-32-chars",
         "orcid-updater.api-key=test-api-key",
-        "orcid-updater.public-base-url=http://localhost:8090"})
+        "orcid-updater.public-base-url=http://localhost:8090",
+        "orcid-updater.contact-email=privacy@example.org"})
 @DisplayName("SecurityConfig")
 class SecurityConfigTest {
     private static final String API_KEY_HEADER = "X-Api-Key";
@@ -71,6 +81,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private InvitationService invitationService;
+
+    @MockitoBean
+    private SignInService signInService;
 
     private static ResultMatcher unauthorizedProblem() {
         return result -> {
@@ -146,16 +159,51 @@ class SecurityConfigTest {
     @DisplayName("Researcher pages (no credential)")
     class Researcher {
         @Test
-        @DisplayName("Invitation landing page and start of sign-in: " + NOT_BLOCKED_BY_SECURITY)
+        @DisplayName("Invitation landing page and start of sign-in: passes security to the page handler")
         void invitationPages() throws Exception {
-            mockMvc.perform(get("/invitations/some-token")).andExpect(status().isNotFound());
-            mockMvc.perform(post("/invitations/some-token")).andExpect(status().isNotFound());
+            when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.UNKNOWN));
+            when(signInService.startSignIn(any(), anyBoolean())).thenThrow(new InvalidInvitationLinkException(Reason.UNKNOWN));
+
+            mockMvc.perform(get("/invitations/some-token")).andExpect(status().isNotFound())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+            mockMvc.perform(post("/invitations/some-token")).andExpect(status().isNotFound())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
         }
 
         @Test
-        @DisplayName("ORCID callback: " + NOT_BLOCKED_BY_SECURITY)
+        @DisplayName("ORCID callback: passes security to the page handler")
         void orcidCallback() throws Exception {
-            mockMvc.perform(get("/orcid/callback").param("state", "s")).andExpect(status().isNotFound());
+            when(signInService.completeSignIn(any(), any(), any())).thenThrow(new InvalidOAuthStateException("test"));
+
+            mockMvc.perform(get("/orcid/callback").param("state", "s")).andExpect(status().isBadRequest())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+        }
+
+        @Test
+        @DisplayName("Stylesheet is served without a credential")
+        void stylesheet() throws Exception {
+            mockMvc.perform(get("/css/updater.css")).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("Researcher pages send no Referer, so the token in the URL can't leak to ORCID")
+        void noReferrer() throws Exception {
+            when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.USED));
+
+            mockMvc.perform(get("/invitations/some-token"))
+                    .andExpect(header().string("Referrer-Policy", "no-referrer"))
+                    .andExpect(header().string("Cache-Control", containsString("no-store")));
+        }
+
+        @Test
+        @DisplayName("Content-Security-Policy: no scripts, forms post only here or to the configured ORCID host")
+        void contentSecurityPolicy() throws Exception {
+            when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.USED));
+
+            mockMvc.perform(get("/invitations/some-token"))
+                    .andExpect(header().string("Content-Security-Policy",
+                            "default-src 'none'; style-src 'self'; img-src 'self'; "
+                                    + "form-action 'self' https://sandbox.orcid.org; frame-ancestors 'none'; base-uri 'none'"));
         }
 
         @Test

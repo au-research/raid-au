@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en-AU" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('ORCID sign-in could not be completed')}"></head>
+<body>
+<main>
+    <h1>ORCID sign-in could not be completed</h1>
+    <p>Something went wrong when we checked your sign-in with ORCID. Nothing was stored.</p>
+    <p>Open the link in your invitation email and try again. If it keeps happening, email
+        <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">contact</a>.</p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

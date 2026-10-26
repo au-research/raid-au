@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en-AU" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title th:text="${title}">Page</title>
+    <link rel="stylesheet" th:href="@{/css/updater.css}">
+</head>
+<body>
+<footer th:fragment="footer">
+    <p>Questions about your data? Contact <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">contact</a>.</p>
+</footer>
+</body>
+</html>

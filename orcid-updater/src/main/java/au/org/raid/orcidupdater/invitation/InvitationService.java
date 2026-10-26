@@ -66,10 +66,9 @@ public class InvitationService {
             final var token = InvitationLinkToken.issue(emailHash, linkCipher);
             final var id = UUID.randomUUID();
             final var expiresAt = now.plus(properties.getInvitation().getExpiry());
-            invitationRepository.insert(id, token.lookupHash(), request.contributorId(), request.handle(),
-                    now, expiresAt);
+            invitationRepository.insert(id, token.lookupHash(), request.contributorId(), raid, now, expiresAt);
 
-            final var link = properties.getPublicBaseUrl().replaceAll("/+$", "") + "/invitations/" + token.encode();
+            final var link = properties.publicUrl("/invitations/" + token.encode());
             emailSender.send(request.email(), raid, link, expiresAt);
 
             log.info("Invitation {} sent for {} on {}, expires {}",

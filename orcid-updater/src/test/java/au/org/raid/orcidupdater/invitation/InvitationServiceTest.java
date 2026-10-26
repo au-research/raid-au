@@ -90,7 +90,7 @@ class InvitationServiceTest {
                 true, expiry));
 
         final var tokenHash = ArgumentCaptor.forClass(byte[].class);
-        verify(invitationRepository).insert(any(UUID.class), tokenHash.capture(), eq(TYPED_ID), eq(HANDLE),
+        verify(invitationRepository).insert(any(UUID.class), tokenHash.capture(), eq(TYPED_ID), eq(RAID),
                 eq(NOW), eq(expiry));
 
         final var link = ArgumentCaptor.forClass(String.class);

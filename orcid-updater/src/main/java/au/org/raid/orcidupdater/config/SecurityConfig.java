@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +32,8 @@ import static org.springframework.http.HttpMethod.POST;
  * <ol>
  *   <li>RAiD API: shared API key.</li>
  *   <li>Researchers: no credential. The invitation token and OAuth state are checked by the
- *       handlers themselves.</li>
+ *       handlers themselves. The landing page form needs no CSRF token because the invitation
+ *       token in its URL is already a secret a forging site can't know.</li>
  *   <li>Minters and RA administrators: Keycloak access tokens. Everything not listed is denied.</li>
  * </ol>
  * All chains are stateless; there is no session or cookie to forge, so CSRF protection is off.
@@ -63,12 +66,18 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain researcherChain(final HttpSecurity http) throws Exception {
         return stateless(http)
-                .securityMatcher("/invitations/*", "/orcid/callback", "/actuator/health", "/actuator/health/**",
-                        "/error")
+                .securityMatcher("/invitations/*", "/orcid/callback", "/css/**", "/actuator/health",
+                        "/actuator/health/**", "/error")
+                .headers(headers -> headers
+                        // the landing page URL carries the invitation token; it must not reach ORCID
+                        // or any linked site in a Referer header
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(researcherPagePolicy())))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(GET, "/invitations/*").permitAll()
                         .requestMatchers(POST, "/invitations/*").permitAll()
                         .requestMatchers(GET, "/orcid/callback").permitAll()
+                        .requestMatchers(GET, "/css/**").permitAll()
                         .requestMatchers(GET, "/actuator/health", "/actuator/health/**").permitAll()
                         // the servlet container forwards every error here; without this, a 404 or
                         // 500 from an already-authorised request would be rewritten to 401
@@ -91,6 +100,17 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole(ADMIN_ROLE)
                         .anyRequest().denyAll())
                 .build();
+    }
+
+    /**
+     * No scripts at all. The landing page form may only post here, and its redirect may only go
+     * to the configured ORCID host (browsers apply form-action to the redirect too).
+     */
+    String researcherPagePolicy() {
+        final var orcid = UriComponentsBuilder.fromUriString(properties.getOrcid().getBaseUrl()).build();
+        final var orcidOrigin = orcid.getScheme() + "://" + orcid.getHost() + (orcid.getPort() == -1 ? "" : ":" + orcid.getPort());
+        return "default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self' " + orcidOrigin
+                + "; frame-ancestors 'none'; base-uri 'none'";
     }
 
     private HttpSecurity stateless(final HttpSecurity http) throws Exception {

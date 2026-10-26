@@ -207,8 +207,8 @@ paths:
       description: |
         Records the "Remember me" choice against the pending invitation,
         creates the OAuth state and redirects to ORCID's authorisation
-        endpoint with the `/activities/update` scope (to be confirmed in
-        RAID-1003).
+        endpoint with the `/read-limited /activities/update` scopes. The
+        state expires after 30 minutes and can be used once.
       security: []
       requestBody:
         required: true

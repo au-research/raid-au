@@ -132,6 +132,16 @@ decision with the app owner (RAID-977) and is pending their agreement.
 * When a researcher authenticates as a different iD from the one the minter
   typed, the RAiD still names the typed iD. Whether the app corrects the
   RAiD, or the updater reports the mismatch, is for RAID-976 and RAID-977.
-* ORCID's current write scope, its token revocation mechanism and the
-  revoke-access steps for researchers are still to be verified (RAID-1003,
-  RAID-1006).
+* Resolved 2026-10-26 (RAID-1003): the updater requests
+  `/read-limited /activities/update`. ORCID's affiliations tutorial says
+  editing memberships needs `/activities/update` and that `/read-limited`
+  should be requested for reading them
+  (https://github.com/ORCID/ORCID-Source/blob/main/orcid-api-web/tutorial/affiliations.md).
+* ORCID documents token revocation as `POST /oauth/revoke` with the client
+  ID, client secret and token
+  (https://info.orcid.org/ufaqs/how-can-i-revoke-tokens/). RAID-1006 still
+  has to confirm it against the sandbox.
+* The exact button wording researchers follow to revoke access is not
+  verified: ORCID's help centre refuses automated requests. The
+  confirmation page therefore links to ORCID's "Trusted organizations"
+  article instead of restating its steps.

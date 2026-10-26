@@ -48,7 +48,7 @@ public class OrcidUpdaterProperties {
     @NotBlank
     private String emailHashSecret;
 
-    /** Key for encrypting researchers' ORCID access tokens at rest. */
+    /** Key for encrypting researchers' ORCID tokens at rest. Length is checked by TokenCipher. */
     @NotBlank
     private String tokenEncryptionKey;
 
@@ -67,6 +67,18 @@ public class OrcidUpdaterProperties {
     /** Where researchers reach this updater, e.g. https://orcid-updater.example.org. Used in email links. */
     @NotBlank
     private String publicBaseUrl;
+
+    /**
+     * Where researchers ask the RA to delete their stored data, shown on the researcher pages
+     * (RAID-975 landing page). The RA's own contact, never a service point's.
+     */
+    @NotBlank
+    private String contactEmail;
+
+    /** A researcher-facing URL on this updater; a trailing slash on the base URL is ignored. */
+    public String publicUrl(final String path) {
+        return publicBaseUrl.replaceAll("/+$", "") + path;
+    }
 
     @Getter
     @Setter

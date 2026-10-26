@@ -48,10 +48,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "orcid-updater.mail.host=localhost",
         "orcid-updater.mail.from=orcid-updater@example.org",
         "orcid-updater.email-hash-secret=test",
-        "orcid-updater.token-encryption-key=test",
+        "orcid-updater.token-encryption-key=test-token-encryption-key-32-chars",
         "orcid-updater.link-encryption-key=test-link-encryption-key-32-chars",
         "orcid-updater.api-key=test-api-key",
-        "orcid-updater.public-base-url=http://localhost:8090"})
+        "orcid-updater.public-base-url=http://localhost:8090",
+        "orcid-updater.contact-email=privacy@example.org"})
 @DisplayName("InvitationController")
 class InvitationControllerTest {
     private static final String HANDLE = "10.82841/86bf1b6c";

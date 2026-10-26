@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-AU" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Confirm your ORCID iD')}"></head>
+<body>
+<main>
+    <h1>Confirm your ORCID iD</h1>
+
+    <p th:if="${invitation.raidTitle != null}">
+        <span th:text="${invitation.servicePointName}">Service point</span> has named you as a contributor on the
+        research project <strong th:text="${invitation.raidTitle}">Title</strong>.
+    </p>
+    <p th:if="${invitation.raidTitle == null}">You have been named as a contributor on a research project.</p>
+
+    <h2>What is a RAiD?</h2>
+    <p>A RAiD (Research Activity Identifier) is a permanent identifier for a research project. It links the
+        project to the people, organisations and outputs involved.</p>
+
+    <h2>What you are agreeing to</h2>
+    <p>If you continue, you sign in to ORCID. ORCID then asks whether <strong th:text="${clientName}">Client</strong>
+        may:</p>
+    <ul>
+        <li>add and update items in the activities sections of your ORCID record</li>
+        <li>read your ORCID record, including items you have shared only with trusted parties</li>
+    </ul>
+    <p><span th:text="${clientName}">Client</span> uses this to add this project to your ORCID record as a
+        membership, and to keep it up to date when the project's record changes. You decide at ORCID whether to
+        allow this.</p>
+
+    <form method="post" th:action="@{/invitations/{token}(token=${token})}">
+        <div class="choice">
+            <input type="checkbox" id="rememberMe" name="rememberMe" value="true">
+            <label for="rememberMe">Remember me for future RAiDs at this RA</label>
+            <p class="hint">Optional. This choice is separate from the permission you give at ORCID. If you tick it,
+                <span th:text="${clientName}">Client</span> keeps a one-way fingerprint of the email address this
+                invitation was sent to, not the address itself. When you are added to another project with the same
+                email address, your ORCID iD is used without sending you another email. To have the fingerprint
+                deleted, email <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">contact</a>.</p>
+        </div>
+        <button type="submit">Authenticate with ORCID</button>
+    </form>
+
+    <p class="hint">This link works until <span th:text="${expires}">date</span>.</p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

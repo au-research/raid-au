@@ -28,6 +28,7 @@ dependencies {
   implementation libs.spring.boot.starter.jdbc
   implementation libs.spring.boot.starter.mail
   implementation libs.spring.boot.starter.validation
+  implementation libs.spring.boot.starter.thymeleaf
   implementation libs.flyway.core
   implementation libs.flyway.postgresql
   runtimeOnly libs.postgresql
@@ -57,6 +58,7 @@ testing {
         implementation libs.spring.boot.starter.jdbc
         implementation libs.spring.boot.starter.mail
         implementation libs.spring.boot.starter.oauth2.resource.server
+        implementation libs.spring.boot.starter.thymeleaf
         implementation libs.assertj
         implementation libs.testcontainers.postgresql
         implementation libs.testcontainers.junit.jupiter

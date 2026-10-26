@@ -50,10 +50,11 @@ class OrcidUpdaterApplicationIntTest {
         registry.add("orcid-updater.mail.host", () -> "localhost");
         registry.add("orcid-updater.mail.from", () -> "orcid-updater@example.org");
         registry.add("orcid-updater.email-hash-secret", () -> "test");
-        registry.add("orcid-updater.token-encryption-key", () -> "test");
+        registry.add("orcid-updater.token-encryption-key", () -> "int-test-token-encryption-key-32-chars");
         registry.add("orcid-updater.link-encryption-key", () -> "int-test-link-encryption-key-32-chars");
         registry.add("orcid-updater.api-key", () -> "int-test-api-key");
         registry.add("orcid-updater.public-base-url", () -> "http://localhost:8090");
+        registry.add("orcid-updater.contact-email", () -> "privacy@example.org");
     }
 
     @Autowired

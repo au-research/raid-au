@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en-AU" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Nothing was authorised')}"></head>
+<body>
+<main>
+    <h1>Nothing was authorised</h1>
+    <p>You did not give <span th:text="${clientName}">Client</span> permission at ORCID, so nothing will be added to
+        your ORCID record.</p>
+    <p>If you change your mind, open the link in your invitation email again before
+        <span th:text="${expires}">date</span>.</p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

@@ -23,7 +23,8 @@ orcid-updater:
     start-tls: false
     from: orcid-updater@localhost
   email-hash-secret: dev-email-hash-secret
-  token-encryption-key: dev-token-encryption-key
+  token-encryption-key: dev-token-encryption-key-32-characters
   link-encryption-key: dev-link-encryption-key-32-characters
   api-key: dev-api-key
   public-base-url: http://localhost:8090
+  contact-email: privacy@example.org
