@@ -90,12 +90,12 @@ class InvitationServiceTest {
                 true, expiry));
 
         final var tokenHash = ArgumentCaptor.forClass(byte[].class);
-        verify(invitationRepository).insert(any(UUID.class), tokenHash.capture(), eq(TYPED_ID), eq(HANDLE),
+        verify(invitationRepository).insert(any(UUID.class), tokenHash.capture(), eq(TYPED_ID), eq(RAID),
                 eq(NOW), eq(expiry));
 
         final var link = ArgumentCaptor.forClass(String.class);
         verify(emailSender).send(eq(EMAIL), eq(RAID), link.capture(), eq(expiry));
-        assertThat(link.getValue()).startsWith("https://orcid-updater.example.org/invitations/");
+        assertThat(link.getValue()).startsWith("https://app.example.org/invitations/");
 
         // the stored hash is of the token in the link, and the link carries the email fingerprint
         final var token = InvitationLinkToken.parse(link.getValue().substring(link.getValue().lastIndexOf('/') + 1))

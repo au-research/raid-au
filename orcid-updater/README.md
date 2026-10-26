@@ -12,7 +12,12 @@ iDs and write RAiDs to their ORCID records with their consent (RAID-975).
   API's login access to it: it holds researchers' ORCID tokens. Migrations
   run automatically on startup into the `orcid_updater` schema.
 * An SMTP server, with a sender address on the RA's own domain.
-* An ORCID member API client.
+* An ORCID member API client, with the RAiD app's callback page registered
+  as a redirect URI: `<ORCID_UPDATER_APP_BASE_URL>/orcid/callback`. ORCID
+  rejects sign-in if it is missing. The updater asks for the
+  `/read-limited /activities/update` scopes.
+* The RAiD app (RAID-977), which shows researchers their pages and calls the
+  updater. The updater serves no pages of its own.
 * The RA's Keycloak realm, which issues minter and administrator tokens.
 
 Nothing needs AWS.
@@ -41,10 +46,11 @@ required setting is missing, and the startup error names each one.
 | `ORCID_UPDATER_MAIL_START_TLS` | no | Default `true` |
 | `ORCID_UPDATER_MAIL_FROM` | yes | Sender on the RA's own domain |
 | `ORCID_UPDATER_EMAIL_HASH_SECRET` | yes | Secret. Keys the email fingerprint kept for "Remember me" |
-| `ORCID_UPDATER_TOKEN_ENCRYPTION_KEY` | yes | Secret. Encrypts ORCID tokens at rest |
+| `ORCID_UPDATER_TOKEN_ENCRYPTION_KEY` | yes | Secret, at least 32 characters. Encrypts ORCID tokens at rest. Changing it makes stored tokens unreadable |
 | `ORCID_UPDATER_LINK_ENCRYPTION_KEY` | yes | Secret, at least 32 characters. Seals the email fingerprint inside invitation links |
 | `ORCID_UPDATER_API_KEY` | yes | Secret. The RAiD API sends it as `X-Api-Key` |
-| `ORCID_UPDATER_PUBLIC_BASE_URL` | yes | Where researchers reach the updater, e.g. `https://orcid-updater.example.org`. Invitation links start with it |
+| `ORCID_UPDATER_APP_BASE_URL` | yes | The RA's RAiD app, e.g. `https://app.example.org`. Invitation links and the ORCID redirect URI point into it, and only its origin may call the updater from a browser (CORS) |
+| `ORCID_UPDATER_CONTACT_EMAIL` | yes | The RA's contact for researchers' privacy and deletion requests, returned to the app for its researcher pages. Not a service point contact |
 | `ORCID_UPDATER_INVITATION_EXPIRY` | no | Default `14d` |
 
 The updater listens on port 8090. `GET /actuator/health` is the health check;

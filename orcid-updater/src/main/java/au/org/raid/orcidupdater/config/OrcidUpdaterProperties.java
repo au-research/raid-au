@@ -48,7 +48,7 @@ public class OrcidUpdaterProperties {
     @NotBlank
     private String emailHashSecret;
 
-    /** Key for encrypting researchers' ORCID access tokens at rest. */
+    /** Key for encrypting researchers' ORCID tokens at rest. Length is checked by TokenCipher. */
     @NotBlank
     private String tokenEncryptionKey;
 
@@ -64,9 +64,25 @@ public class OrcidUpdaterProperties {
     @NotBlank
     private String apiKey;
 
-    /** Where researchers reach this updater, e.g. https://orcid-updater.example.org. Used in email links. */
+    /**
+     * The RAiD app that shows researchers their pages, e.g. https://app.example.org (RAID-977).
+     * Invitation links and the ORCID redirect URI point into it, and it is the only origin
+     * allowed to call the updater from a browser.
+     */
     @NotBlank
-    private String publicBaseUrl;
+    private String appBaseUrl;
+
+    /**
+     * Where researchers ask the RA to delete their stored data, returned with the invitation for
+     * the app's landing page. The RA's own contact, never a service point's.
+     */
+    @NotBlank
+    private String contactEmail;
+
+    /** A URL in the RAiD app; a trailing slash on the base URL is ignored. */
+    public String appUrl(final String path) {
+        return appBaseUrl.replaceAll("/+$", "") + path;
+    }
 
     @Getter
     @Setter

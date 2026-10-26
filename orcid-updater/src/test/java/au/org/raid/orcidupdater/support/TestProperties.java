@@ -19,10 +19,11 @@ public final class TestProperties {
         properties.getMail().setHost("localhost");
         properties.getMail().setFrom("orcid-updater@example.org");
         properties.setEmailHashSecret("email-hash-secret");
-        properties.setTokenEncryptionKey("token-encryption-key");
+        properties.setTokenEncryptionKey("token-encryption-key-of-at-least-32-characters");
         properties.setLinkEncryptionKey("link-encryption-key-of-at-least-32-characters");
         properties.setApiKey("test-api-key");
-        properties.setPublicBaseUrl("https://orcid-updater.example.org/");
+        properties.setAppBaseUrl("https://app.example.org/");
+        properties.setContactEmail("privacy@example.org");
         return properties;
     }
 }

@@ -5,6 +5,9 @@ import au.org.raid.orcidupdater.invitation.EmailDeliveryException;
 import au.org.raid.orcidupdater.raidapi.MinterNotPermittedException;
 import au.org.raid.orcidupdater.raidapi.RaidApiUnavailableException;
 import au.org.raid.orcidupdater.raidapi.RaidNotFoundException;
+import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException;
+import au.org.raid.orcidupdater.signin.InvalidOAuthStateException;
+import au.org.raid.orcidupdater.signin.OrcidSignInFailedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -64,6 +67,28 @@ public class ProblemExceptionHandler {
     public ProblemDetail raidApiUnavailable(final RaidApiUnavailableException e) {
         log.warn(e.getMessage());
         return problem(HttpStatus.BAD_GATEWAY, "RAID_API_UNAVAILABLE", "The RAiD API could not be reached.");
+    }
+
+    @ExceptionHandler(InvalidInvitationLinkException.class)
+    public ProblemDetail invalidLink(final InvalidInvitationLinkException e) {
+        return switch (e.getReason()) {
+            case UNKNOWN -> problem(HttpStatus.NOT_FOUND, "INVITATION_NOT_FOUND", "This invitation link isn't recognised.");
+            case USED -> problem(HttpStatus.GONE, "INVITATION_USED", "This invitation link has already been used.");
+            case EXPIRED -> problem(HttpStatus.GONE, "INVITATION_EXPIRED", "This invitation link has expired.");
+        };
+    }
+
+    @ExceptionHandler(InvalidOAuthStateException.class)
+    public ProblemDetail invalidState(final InvalidOAuthStateException e) {
+        log.warn(e.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "INVALID_SIGN_IN_STATE",
+                "The sign-in matches no sign-in in progress, or has expired. Nothing was stored.");
+    }
+
+    @ExceptionHandler(OrcidSignInFailedException.class)
+    public ProblemDetail signInFailed(final OrcidSignInFailedException e) {
+        log.warn(e.getMessage());
+        return problem(HttpStatus.BAD_GATEWAY, "ORCID_SIGN_IN_FAILED", "ORCID could not complete the sign-in.");
     }
 
     private static ProblemDetail problem(final HttpStatus status, final String code, final String detail) {

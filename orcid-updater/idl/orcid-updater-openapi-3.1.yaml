@@ -18,9 +18,13 @@ info:
       shared API key (`apiKey`).
     * RA administrators: `/admin/*`, with an access token carrying the
       `orcid-updater-admin` realm role (`adminBearer`).
-    * Researchers: the invitation and ORCID callback pages. These carry no
-      credential and are protected only by the invitation token and the
-      OAuth state parameter.
+    * Researchers, through the RAiD app's pages (RAID-977): the invitation
+      and authentication endpoints. These carry no credential and are
+      protected only by the invitation token and the OAuth state parameter.
+      The updater serves no pages.
+
+    Browser calls are allowed only from the origin of
+    `ORCID_UPDATER_APP_BASE_URL` (CORS, without credentials).
 
     Calls the updater makes to the RAiD API (built in RAID-976), with its
     own Keycloak client holding the `contributor-writer` role:
@@ -49,7 +53,7 @@ tags:
 - name: "api"
   description: "Called by the RAiD API."
 - name: "researcher"
-  description: "HTML pages for researchers. No credential; protected by the invitation token and OAuth state."
+  description: "Called by the RAiD app's researcher pages. No credential; protected by the invitation token and OAuth state."
 - name: "admin"
   description: "Called by RA administrators."
 paths:
@@ -182,91 +186,121 @@ paths:
     get:
       tags:
       - "researcher"
-      operationId: "showInvitation"
-      summary: "Landing page for an invitation link"
+      operationId: "getInvitation"
+      summary: "What the app's landing page shows for an invitation link"
       description: |
-        Shows what RAiD is, the RAiD title, the service point name, the RA's
-        ORCID client name, the permission requested and why, an
+        Called by the app when a researcher opens the invitation link, which
+        points into the app (`<ORCID_UPDATER_APP_BASE_URL>/invitations/{token}`).
+        Returns the RAiD title, service point name, the RA's ORCID client
+        name and contact email, and when the link expires. The app shows
+        these with what RAiD is, the permission requested and why, an
         "Authenticate with ORCID" button and an unticked "Remember me for
-        future RAiDs at this RA" choice. No service point contact details.
-        A used, expired or unknown token shows a "link no longer valid"
-        page with status 410 or 404, and never redirects to ORCID.
+        future RAiDs at this RA" choice. Opening the link changes nothing.
+
+        The link token is in the app page's URL, so the app's pages must
+        send `Referrer-Policy: no-referrer`; otherwise the browser sends the
+        token to ORCID in the Referer header.
       security: []
       responses:
         200:
-          $ref: "#/components/responses/HtmlPage"
+          description: "The invitation is pending."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
         404:
-          $ref: "#/components/responses/HtmlPage"
+          $ref: "#/components/responses/InvitationNotFound"
         410:
-          $ref: "#/components/responses/HtmlPage"
+          $ref: "#/components/responses/InvitationGone"
+  /invitations/{token}/authentications:
+    parameters:
+    - $ref: "#/components/parameters/InvitationToken"
     post:
       tags:
       - "researcher"
       operationId: "startAuthentication"
-      summary: "Start ORCID sign-in from the landing page"
+      summary: "Start ORCID sign-in from the app's landing page"
       description: |
-        Records the "Remember me" choice against the pending invitation,
-        creates the OAuth state and redirects to ORCID's authorisation
-        endpoint with the `/activities/update` scope (to be confirmed in
-        RAID-1003).
+        Records the "Remember me" choice, creates the OAuth state and returns
+        ORCID's authorisation URL with the `/read-limited /activities/update`
+        scopes. The app sends the researcher's browser to that URL. The state
+        expires after 30 minutes and can be used once. A body is optional;
+        without one, "Remember me" is off.
       security: []
       requestBody:
-        required: true
+        required: false
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
-              $ref: "#/components/schemas/StartAuthenticationForm"
+              $ref: "#/components/schemas/StartAuthenticationRequest"
       responses:
-        303:
-          description: "Redirect to ORCID's authorisation endpoint."
-          headers:
-            Location:
+        200:
+          description: "Sign-in started."
+          content:
+            application/json:
               schema:
-                type: "string"
-                format: "uri"
+                $ref: "#/components/schemas/AuthenticationStart"
         404:
-          $ref: "#/components/responses/HtmlPage"
+          $ref: "#/components/responses/InvitationNotFound"
         410:
-          $ref: "#/components/responses/HtmlPage"
-  /orcid/callback:
-    get:
+          $ref: "#/components/responses/InvitationGone"
+  /authentications:
+    post:
       tags:
       - "researcher"
-      operationId: "orcidCallback"
-      summary: "ORCID OAuth redirect URI"
+      operationId: "completeAuthentication"
+      summary: "Finish ORCID sign-in after ORCID sends the researcher back to the app"
       description: |
+        ORCID redirects the researcher to the app's redirect URI,
+        `<ORCID_UPDATER_APP_BASE_URL>/orcid/callback`, with `state` and either
+        `code` or `error`. The app passes those query parameters here
+        unchanged and shows the result.
+
         With `code` and a matching `state`: exchanges the code server-side,
         stores the token encrypted, marks the iD AUTHENTICATED (the iD ORCID
         returns replaces the typed one), uses up the invitation token,
         stores the keyed hash and consent time if "Remember me" was ticked,
-        pushes the status to the RAiD API, writes every non-embargoed RAiD
-        with that iD to ORCID, and shows the confirmation page.
+        pushes the status to the RAiD API, and writes every non-embargoed
+        RAiD with that iD to ORCID. Outcome AUTHENTICATED.
 
-        With `error=access_denied`: stores nothing, the status stays
-        AWAITING_AUTHENTICATION, and shows a "nothing was authorised" page.
+        With `error` (for example `access_denied`): stores nothing, the
+        status stays AWAITING_AUTHENTICATION and the invitation link still
+        works. Outcome DECLINED.
 
-        With a `state` that matches no pending authentication: 400 and
-        nothing is stored.
+        The state is used up by this call whatever the result, so it can't
+        be replayed.
       security: []
-      parameters:
-      - name: "code"
-        in: "query"
-        schema:
-          type: "string"
-      - name: "state"
-        in: "query"
+      requestBody:
         required: true
-        schema:
-          type: "string"
-      - name: "error"
-        in: "query"
-        schema:
-          type: "string"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteAuthenticationRequest"
       responses:
         200:
-          $ref: "#/components/responses/HtmlPage"
+          description: "Signed in, or declined at ORCID."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticationResult"
         400:
-          $ref: "#/components/responses/HtmlPage"
+          description: |
+            `code` INVALID_SIGN_IN_STATE: the state matches no sign-in in
+            progress, has expired or has been used, or neither `code` nor
+            `error` was given. MALFORMED_REQUEST: no JSON body. Nothing is
+            stored.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        410:
+          $ref: "#/components/responses/InvitationGone"
+        502:
+          description: "ORCID could not exchange the code (`code` ORCID_SIGN_IN_FAILED). Nothing is stored."
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /admin/researcher-deletions:
     post:
       tags:
@@ -360,12 +394,20 @@ components:
       schema:
         type: "string"
   responses:
-    HtmlPage:
-      description: "An HTML page for the researcher."
+    InvitationNotFound:
+      description: "The link token is malformed, altered or unknown (`code` INVITATION_NOT_FOUND)."
       content:
-        text/html:
+        application/problem+json:
           schema:
-            type: "string"
+            $ref: "#/components/schemas/Problem"
+    InvitationGone:
+      description: |
+        The invitation was already used (`code` INVITATION_USED) or has
+        expired (`code` INVITATION_EXPIRED). Nothing is sent to ORCID.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     BadRequest:
       description: "The request is malformed or fails validation."
       content:
@@ -495,12 +537,104 @@ components:
           $ref: "#/components/schemas/OrcidIdUrl"
         status:
           $ref: "#/components/schemas/ContributorStatus"
-    StartAuthenticationForm:
+    Invitation:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "orcidId"
+      - "clientName"
+      - "contactEmail"
+      - "expiresAt"
+      properties:
+        orcidId:
+          $ref: "#/components/schemas/OrcidIdUrl"
+          description: "The iD the minter entered."
+        raidTitle:
+          type:
+          - "string"
+          - "null"
+        servicePointName:
+          type:
+          - "string"
+          - "null"
+        clientName:
+          type: "string"
+          description: "The RA's ORCID client name, as researchers will see it at ORCID."
+        contactEmail:
+          type: "string"
+          format: "email"
+          description: "Where researchers ask the RA to delete their stored data."
+        expiresAt:
+          type: "string"
+          format: "date-time"
+    StartAuthenticationRequest:
       type: "object"
       properties:
         rememberMe:
           type: "boolean"
           default: false
+    AuthenticationStart:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "authorisationUrl"
+      properties:
+        authorisationUrl:
+          type: "string"
+          format: "uri"
+          description: "ORCID's authorisation URL. The app sends the browser here."
+    CompleteAuthenticationRequest:
+      type: "object"
+      required:
+      - "state"
+      properties:
+        state:
+          type: "string"
+        code:
+          type:
+          - "string"
+          - "null"
+        error:
+          type:
+          - "string"
+          - "null"
+    AuthenticationResult:
+      type: "object"
+      additionalProperties: false
+      required:
+      - "outcome"
+      - "typedOrcidId"
+      - "remembered"
+      - "invitationExpiresAt"
+      properties:
+        outcome:
+          type: "string"
+          enum:
+          - "AUTHENTICATED"
+          - "DECLINED"
+        orcidId:
+          oneOf:
+          - $ref: "#/components/schemas/OrcidIdUrl"
+          - type: "null"
+          description: "The iD the researcher signed in with. Null when declined."
+        typedOrcidId:
+          $ref: "#/components/schemas/OrcidIdUrl"
+          description: "The iD the minter entered. Can differ from `orcidId`."
+        raidTitle:
+          type:
+          - "string"
+          - "null"
+        servicePointName:
+          type:
+          - "string"
+          - "null"
+        remembered:
+          type: "boolean"
+          description: "Whether the email fingerprint was stored (\"Remember me\" was ticked)."
+        invitationExpiresAt:
+          type: "string"
+          format: "date-time"
+          description: "When declined, the link stays usable until then."
     ResearcherDeletionRequest:
       type: "object"
       additionalProperties: false
