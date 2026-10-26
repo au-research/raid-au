@@ -26,5 +26,5 @@ orcid-updater:
   token-encryption-key: dev-token-encryption-key-32-characters
   link-encryption-key: dev-link-encryption-key-32-characters
   api-key: dev-api-key
-  public-base-url: http://localhost:8090
+  app-base-url: http://localhost:7080
   contact-email: privacy@example.org

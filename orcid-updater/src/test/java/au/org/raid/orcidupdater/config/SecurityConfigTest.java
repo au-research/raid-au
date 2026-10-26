@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -41,8 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Caller authentication for each kind of caller in the updater's API contract. No handlers exist
- * yet, so a request that passes security reaches the dispatcher and gets 404; 401 and 403 come
+ * Caller authentication and CORS for each kind of caller in the updater's API contract. Where no
+ * handler exists yet, a request that passes security reaches the dispatcher and gets 404; 401 and 403 come
  * from the security chains.
  */
 @WebMvcTest
@@ -62,7 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "orcid-updater.token-encryption-key=test-token-encryption-key-32-chars",
         "orcid-updater.link-encryption-key=test-link-encryption-key-32-chars",
         "orcid-updater.api-key=test-api-key",
-        "orcid-updater.public-base-url=http://localhost:8090",
+        "orcid-updater.app-base-url=http://localhost:7080",
         "orcid-updater.contact-email=privacy@example.org"})
 @DisplayName("SecurityConfig")
 class SecurityConfigTest {
@@ -156,60 +157,98 @@ class SecurityConfigTest {
     }
 
     @Nested
-    @DisplayName("Researcher pages (no credential)")
+    @DisplayName("Researcher endpoints (no credential)")
     class Researcher {
         @Test
-        @DisplayName("Invitation landing page and start of sign-in: passes security to the page handler")
-        void invitationPages() throws Exception {
+        @DisplayName("Get invitation, start and complete sign-in: pass security to the handler")
+        void signInEndpoints() throws Exception {
             when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.UNKNOWN));
             when(signInService.startSignIn(any(), anyBoolean())).thenThrow(new InvalidInvitationLinkException(Reason.UNKNOWN));
-
-            mockMvc.perform(get("/invitations/some-token")).andExpect(status().isNotFound())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
-            mockMvc.perform(post("/invitations/some-token")).andExpect(status().isNotFound())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
-        }
-
-        @Test
-        @DisplayName("ORCID callback: passes security to the page handler")
-        void orcidCallback() throws Exception {
             when(signInService.completeSignIn(any(), any(), any())).thenThrow(new InvalidOAuthStateException("test"));
 
-            mockMvc.perform(get("/orcid/callback").param("state", "s")).andExpect(status().isBadRequest())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+            mockMvc.perform(get("/invitations/some-token")).andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("INVITATION_NOT_FOUND"));
+            mockMvc.perform(post("/invitations/some-token/authentications")).andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("INVITATION_NOT_FOUND"));
+            mockMvc.perform(post("/authentications").contentType(MediaType.APPLICATION_JSON).content("{\"state\":\"s\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_SIGN_IN_STATE"));
         }
 
         @Test
-        @DisplayName("Stylesheet is served without a credential")
-        void stylesheet() throws Exception {
-            mockMvc.perform(get("/css/updater.css")).andExpect(status().isOk());
+        @DisplayName("Other methods on researcher paths are denied")
+        void otherMethodsDenied() throws Exception {
+            mockMvc.perform(post("/invitations/some-token")).andExpect(unauthorizedProblem());
+            mockMvc.perform(get("/authentications")).andExpect(unauthorizedProblem());
         }
 
         @Test
-        @DisplayName("Researcher pages send no Referer, so the token in the URL can't leak to ORCID")
-        void noReferrer() throws Exception {
+        @DisplayName("Responses are not cached, since they concern a single researcher")
+        void noStore() throws Exception {
             when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.USED));
 
             mockMvc.perform(get("/invitations/some-token"))
-                    .andExpect(header().string("Referrer-Policy", "no-referrer"))
                     .andExpect(header().string("Cache-Control", containsString("no-store")));
-        }
-
-        @Test
-        @DisplayName("Content-Security-Policy: no scripts, forms post only here or to the configured ORCID host")
-        void contentSecurityPolicy() throws Exception {
-            when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.USED));
-
-            mockMvc.perform(get("/invitations/some-token"))
-                    .andExpect(header().string("Content-Security-Policy",
-                            "default-src 'none'; style-src 'self'; img-src 'self'; "
-                                    + "form-action 'self' https://sandbox.orcid.org; frame-ancestors 'none'; base-uri 'none'"));
         }
 
         @Test
         @DisplayName("Health: " + NOT_BLOCKED_BY_SECURITY)
         void health() throws Exception {
             mockMvc.perform(get("/actuator/health")).andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("CORS: only the RAiD app's origin")
+    class Cors {
+        private static final String APP = "http://localhost:7080";
+
+        @Test
+        @DisplayName("Preflight from the app for the researcher and minter endpoints is allowed")
+        void appPreflight() throws Exception {
+            mockMvc.perform(options("/authentications").header("Origin", APP)
+                            .header("Access-Control-Request-Method", "POST")
+                            .header("Access-Control-Request-Headers", "Content-Type"))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Access-Control-Allow-Origin", APP));
+            mockMvc.perform(options("/invitations").header("Origin", APP)
+                            .header("Access-Control-Request-Method", "POST")
+                            .header("Access-Control-Request-Headers", "Authorization, Content-Type"))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Access-Control-Allow-Origin", APP));
+        }
+
+        @Test
+        @DisplayName("Another origin is refused: 403, no Allow-Origin header")
+        void otherOrigin() throws Exception {
+            mockMvc.perform(options("/authentications").header("Origin", "https://evil.example")
+                            .header("Access-Control-Request-Method", "POST"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+        }
+
+        @Test
+        @DisplayName("Actual requests from the app carry the Allow-Origin header, and no credentials flag")
+        void actualRequest() throws Exception {
+            when(signInService.openInvitation(any())).thenThrow(new InvalidInvitationLinkException(Reason.USED));
+
+            mockMvc.perform(get("/invitations/some-token").header("Origin", APP))
+                    .andExpect(header().string("Access-Control-Allow-Origin", APP))
+                    .andExpect(header().doesNotExist("Access-Control-Allow-Credentials"));
+        }
+
+        @Test
+        @DisplayName("The RAiD API's endpoints have no CORS: browsers can't call them")
+        void raidApiNotCors() throws Exception {
+            mockMvc.perform(options("/raid-changes").header("Origin", APP)
+                            .header("Access-Control-Request-Method", "POST"))
+                    .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+        }
+
+        @Test
+        @DisplayName("The origin is taken from the app base URL, without its path")
+        void appOrigin() {
+            assertThat(securityConfig.appOrigin()).isEqualTo(APP);
         }
     }
 

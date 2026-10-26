@@ -39,7 +39,7 @@ class OrcidUpdaterPropertiesTest {
             "orcid-updater.token-encryption-key=encryption-key-value",
             "orcid-updater.link-encryption-key=link-key-value-of-at-least-32-chars",
             "orcid-updater.api-key=api-key-value",
-            "orcid-updater.public-base-url=https://orcid-updater.example.org",
+            "orcid-updater.app-base-url=https://app.example.org",
             "orcid-updater.contact-email=privacy@example.org");
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
@@ -110,7 +110,7 @@ class OrcidUpdaterPropertiesTest {
             assertThat(failureMessage(context.getStartupFailure())).contains(
                     "orcid.clientId", "orcid.clientSecret", "orcid.clientName", "orcid.baseUrl",
                     "orcid.apiUrl", "raidApi.baseUrl", "keycloak.issuerUri", "mail.host", "mail.from",
-                    "emailHashSecret", "tokenEncryptionKey", "linkEncryptionKey", "apiKey", "publicBaseUrl", "contactEmail");
+                    "emailHashSecret", "tokenEncryptionKey", "linkEncryptionKey", "apiKey", "appBaseUrl", "contactEmail");
         });
     }
 

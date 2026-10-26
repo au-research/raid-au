@@ -83,7 +83,7 @@ class InvitationFlowIntTest {
         registry.add("orcid-updater.token-encryption-key", () -> "int-test-token-encryption-key-32-chars");
         registry.add("orcid-updater.link-encryption-key", () -> "int-test-link-encryption-key-32-chars");
         registry.add("orcid-updater.api-key", () -> "int-test-api-key");
-        registry.add("orcid-updater.public-base-url", () -> "https://orcid-updater.example.org");
+        registry.add("orcid-updater.app-base-url", () -> "https://app.example.org");
         registry.add("orcid-updater.contact-email", () -> "privacy@example.org");
     }
 
@@ -133,7 +133,7 @@ class InvitationFlowIntTest {
         final var captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender).send(captor.capture());
         final var text = captor.getValue().getText();
-        final var start = text.indexOf("https://orcid-updater.example.org/invitations/");
+        final var start = text.indexOf("https://app.example.org/invitations/");
         return text.substring(start, text.indexOf('\n', start));
     }
 

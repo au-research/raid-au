@@ -8,6 +8,8 @@ import au.org.raid.orcidupdater.invitation.InvitationRepository;
 import au.org.raid.orcidupdater.raidapi.RaidSummary;
 import au.org.raid.orcidupdater.signin.OrcidOAuthClient;
 import au.org.raid.orcidupdater.signin.OrcidOAuthClient.OrcidSignIn;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -28,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,12 +42,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * RAID-1003 researcher pages and ORCID sign-in against a real PostgreSQL. Only ORCID's token
- * exchange is stubbed; the pages, OAuth state, transactions and encryption are real.
+ * RAID-1003 researcher endpoints and ORCID sign-in against a real PostgreSQL. Only ORCID's token
+ * exchange is stubbed; the endpoints, OAuth state, transactions and encryption are real.
  */
 @Testcontainers
 @SpringBootTest
@@ -78,7 +82,7 @@ class SignInFlowIntTest {
         registry.add("orcid-updater.token-encryption-key", () -> "int-test-token-encryption-key-32-chars");
         registry.add("orcid-updater.link-encryption-key", () -> "int-test-link-encryption-key-32-chars");
         registry.add("orcid-updater.api-key", () -> "int-test-api-key");
-        registry.add("orcid-updater.public-base-url", () -> "https://orcid-updater.example.org");
+        registry.add("orcid-updater.app-base-url", () -> "https://app.example.org");
         registry.add("orcid-updater.contact-email", () -> "privacy@example.org");
     }
 
@@ -94,6 +98,8 @@ class SignInFlowIntTest {
     private LinkCipher linkCipher;
     @Autowired
     private TokenCipher tokenCipher;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoSpyBean
     private OrcidOAuthClient orcidOAuthClient;
@@ -124,22 +130,32 @@ class SignInFlowIntTest {
                 "/read-limited /activities/update")).when(orcidOAuthClient).exchange(anyString());
     }
 
-    /** Clicks the button and returns the state ORCID would send back. */
+    /** The app's "Authenticate with ORCID" call; returns the state ORCID would send back. */
     private String startSignIn(final String token, final boolean rememberMe) throws Exception {
-        final var location = mockMvc.perform(post("/invitations/" + token).param("rememberMe", String.valueOf(rememberMe)))
-                .andExpect(status().isSeeOther())
-                .andReturn().getResponse().getHeader("Location");
-        assertThat(location).startsWith("https://sandbox.orcid.org/oauth/authorize?");
-        return UriComponentsBuilder.fromUriString(location).build().getQueryParams().getFirst("state");
+        final var url = JsonPath.<String>read(mockMvc.perform(post("/invitations/" + token + "/authentications")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"rememberMe\":" + rememberMe + "}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), "$.authorisationUrl");
+        assertThat(url).startsWith("https://sandbox.orcid.org/oauth/authorize?")
+                .contains("redirect_uri=https://app.example.org/orcid/callback");
+        return UriComponentsBuilder.fromUriString(url).build().getQueryParams().getFirst("state");
+    }
+
+    /** The app passing on what ORCID added to its redirect URI. */
+    private String complete(final String state, final String code, final String error, final int expectedStatus)
+            throws Exception {
+        final var body = new LinkedHashMap<String, String>();
+        body.put("state", state);
+        body.put("code", code);
+        body.put("error", error);
+        return mockMvc.perform(post("/authentications").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().is(expectedStatus))
+                .andReturn().getResponse().getContentAsString();
     }
 
     private String callback(final String state, final String code, final int expectedStatus) throws Exception {
-        final var request = get("/orcid/callback").param("state", state);
-        if (code != null) {
-            request.param("code", code);
-        }
-        return mockMvc.perform(request).andExpect(status().is(expectedStatus))
-                .andReturn().getResponse().getContentAsString();
+        return complete(state, code, null, expectedStatus);
     }
 
     private int count(final String table) {
@@ -147,12 +163,12 @@ class SignInFlowIntTest {
     }
 
     @Test
-    @DisplayName("Landing page shows the stored title and service point, without anything being sent to ORCID")
-    void landingPage() throws Exception {
+    @DisplayName("Get invitation returns the stored title and service point, without anything being sent to ORCID")
+    void getInvitation() throws Exception {
         mockMvc.perform(get("/invitations/" + link)).andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.allOf(
-                        org.hamcrest.Matchers.containsString("Coral reef resilience"),
-                        org.hamcrest.Matchers.containsString("Reef Research Institute"))));
+                .andExpect(jsonPath("$.raidTitle").value("Coral reef resilience"))
+                .andExpect(jsonPath("$.servicePointName").value("Reef Research Institute"))
+                .andExpect(jsonPath("$.orcidId").value(TYPED_ID));
         assertThat(count("oauth_state")).isZero();
     }
 
@@ -162,7 +178,11 @@ class SignInFlowIntTest {
         final var state = startSignIn(link, true);
         assertThat(count("oauth_state")).isEqualTo(1);
 
-        assertThat(callback(state, "code-1", 200)).contains("Your ORCID iD is confirmed", TYPED_ID);
+        final var result = callback(state, "code-1", 200);
+        assertThat(JsonPath.<String>read(result, "$.outcome")).isEqualTo("AUTHENTICATED");
+        assertThat(JsonPath.<String>read(result, "$.orcidId")).isEqualTo(TYPED_ID);
+        assertThat(JsonPath.<Boolean>read(result, "$.remembered")).isTrue();
+        assertThat(result).doesNotContain("access-token", "refresh-token");
 
         final var row = jdbcTemplate.queryForMap(
                 "SELECT access_token, refresh_token, scope, email_hash, consented_at FROM orcid_updater.researcher WHERE orcid_id = ?",
@@ -197,7 +217,9 @@ class SignInFlowIntTest {
     void differentId() throws Exception {
         signsInAs(OTHER_ID);
 
-        assertThat(callback(startSignIn(link, true), "code-1", 200)).contains(OTHER_ID, "different iD");
+        final var result = callback(startSignIn(link, true), "code-1", 200);
+        assertThat(JsonPath.<String>read(result, "$.orcidId")).isEqualTo(OTHER_ID);
+        assertThat(JsonPath.<String>read(result, "$.typedOrcidId")).isEqualTo(TYPED_ID);
 
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT authenticated_orcid_id FROM orcid_updater.invitation WHERE orcid_id = ?", String.class, TYPED_ID))
@@ -211,9 +233,7 @@ class SignInFlowIntTest {
     void declined() throws Exception {
         final var state = startSignIn(link, true);
 
-        mockMvc.perform(get("/orcid/callback").param("state", state).param("error", "access_denied"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Nothing was authorised")));
+        assertThat(JsonPath.<String>read(complete(state, null, "access_denied", 200), "$.outcome")).isEqualTo("DECLINED");
 
         verify(orcidOAuthClient, never()).exchange(anyString());
         assertThat(count("researcher")).isZero();
@@ -250,7 +270,7 @@ class SignInFlowIntTest {
         final var second = startSignIn(link, false);
 
         callback(first, "code-1", 200);
-        assertThat(callback(second, "code-2", 410)).contains("already been used");
+        assertThat(JsonPath.<String>read(callback(second, "code-2", 410), "$.code")).isEqualTo("INVITATION_USED");
         assertThat(count("researcher")).isEqualTo(1);
     }
 

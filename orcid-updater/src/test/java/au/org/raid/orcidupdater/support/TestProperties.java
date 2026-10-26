@@ -22,7 +22,7 @@ public final class TestProperties {
         properties.setTokenEncryptionKey("token-encryption-key-of-at-least-32-characters");
         properties.setLinkEncryptionKey("link-encryption-key-of-at-least-32-characters");
         properties.setApiKey("test-api-key");
-        properties.setPublicBaseUrl("https://orcid-updater.example.org/");
+        properties.setAppBaseUrl("https://app.example.org/");
         properties.setContactEmail("privacy@example.org");
         return properties;
     }

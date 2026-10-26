@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 @DisplayName("InvitationEmailSender")
 class InvitationEmailSenderTest {
     private static final String TO = "researcher@example.edu";
-    private static final String LINK = "https://orcid-updater.example.org/invitations/abc.def";
+    private static final String LINK = "https://app.example.org/invitations/abc.def";
     private static final Instant EXPIRES = Instant.parse("2026-11-09T03:00:00Z");
     private static final RaidSummary RAID = new RaidSummary("10.82841/86bf1b6c", "Coral reef resilience",
             "Reef Research Institute", List.of());

@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "orcid-updater.token-encryption-key=test-token-encryption-key-32-chars",
         "orcid-updater.link-encryption-key=test-link-encryption-key-32-chars",
         "orcid-updater.api-key=test-api-key",
-        "orcid-updater.public-base-url=http://localhost:8090",
+        "orcid-updater.app-base-url=http://localhost:7080",
         "orcid-updater.contact-email=privacy@example.org"})
 @DisplayName("InvitationController")
 class InvitationControllerTest {

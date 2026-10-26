@@ -82,7 +82,7 @@ public class SignInService {
     }
 
     /**
-     * ORCID's redirect back to the updater.
+     * Finishes sign-in with the parameters ORCID added when it sent the researcher back to the app.
      *
      * @throws InvalidOAuthStateException     the state matches no sign-in in progress, or there is no code
      * @throws InvalidInvitationLinkException the invitation was used or expired while the researcher was at ORCID
@@ -166,21 +166,23 @@ public class SignInService {
         }
     }
 
-    /** What the researcher sees after coming back from ORCID. */
-    public record SignInResult(boolean authenticated, String orcidId, String typedOrcidId, String raidTitle,
+    public enum Outcome { AUTHENTICATED, DECLINED }
+
+    /**
+     * Contract schema AuthenticationResult: what the app shows after ORCID sends the researcher
+     * back. {@code orcidId} is the iD the researcher signed in with and is null when declined;
+     * it can differ from {@code typedOrcidId}, the iD the minter entered.
+     */
+    public record SignInResult(Outcome outcome, String orcidId, String typedOrcidId, String raidTitle,
                                String servicePointName, boolean remembered, Instant invitationExpiresAt) {
         static SignInResult declined(final Invitation invitation) {
-            return new SignInResult(false, null, invitation.orcidId(), invitation.raidTitle(),
+            return new SignInResult(Outcome.DECLINED, null, invitation.orcidId(), invitation.raidTitle(),
                     invitation.servicePointName(), false, invitation.expiresAt());
         }
 
         static SignInResult authenticated(final Invitation invitation, final String orcidId, final boolean remembered) {
-            return new SignInResult(true, orcidId, invitation.orcidId(), invitation.raidTitle(),
+            return new SignInResult(Outcome.AUTHENTICATED, orcidId, invitation.orcidId(), invitation.raidTitle(),
                     invitation.servicePointName(), remembered, invitation.expiresAt());
-        }
-
-        public boolean differentFromTyped() {
-            return authenticated && !orcidId.equals(typedOrcidId);
         }
     }
 }

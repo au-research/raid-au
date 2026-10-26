@@ -90,17 +90,36 @@ is removed in RAID-976.
 | RAiD app | register invitation | Minter's Keycloak access token |
 | RAiD API | RAiD changed, status | Shared API key (`X-Api-Key`) |
 | RA administrator | data deletion, put code import | Keycloak token with `orcid-updater-admin` |
-| Researcher | invitation and callback pages | Invitation token and OAuth state only |
+| Researcher, through the app | get invitation, start and complete authentication | Invitation token and OAuth state only |
 
 The API uses an API key rather than a Keycloak service account so the API
 needs no token handling for one internal call; both sides read it from
 configuration.
 
-## Researcher pages are hosted by the updater
+## Researcher pages belong to the app; the updater is API only
 
-The landing, invalid-link, decline and confirmation pages are served by the
-updater, so the researcher flow does not depend on the app. This is a joint
-decision with the app owner (RAID-977) and is pending their agreement.
+Decided 2026-10-26 (RAID-1003). The landing, invalid-link, decline and
+confirmation pages are React pages in the RAiD app, built under RAID-977.
+The updater serves no pages: it provides JSON endpoints the app calls.
+
+* Invitation links point into the app, at
+  `<ORCID_UPDATER_APP_BASE_URL>/invitations/{token}`. The app reads what to
+  show from `GET /invitations/{token}`.
+* "Authenticate with ORCID" calls `POST /invitations/{token}/authentications`,
+  which returns ORCID's authorisation URL for the app to send the browser to.
+* ORCID's redirect URI is the app's `<ORCID_UPDATER_APP_BASE_URL>/orcid/callback`
+  page, which passes ORCID's `state` and `code` or `error` to
+  `POST /authentications`. The updater still holds the ORCID client secret
+  and does the code exchange.
+* Only the app's origin may call the updater from a browser (CORS, without
+  credentials).
+* Because the link token is in the app page's URL, the app's pages must send
+  `Referrer-Policy: no-referrer`, so the token never reaches ORCID.
+
+An earlier draft had the updater serve the pages itself, so that the
+researcher flow would not depend on the app. It was rejected (RL,
+2026-10-26): the researcher interface is the app's, built in React under
+RAID-977, and is outside the updater's scope.
 
 ## Other defaults
 
@@ -141,7 +160,6 @@ decision with the app owner (RAID-977) and is pending their agreement.
   ID, client secret and token
   (https://info.orcid.org/ufaqs/how-can-i-revoke-tokens/). RAID-1006 still
   has to confirm it against the sandbox.
-* The exact button wording researchers follow to revoke access is not
-  verified: ORCID's help centre refuses automated requests. The
-  confirmation page therefore links to ORCID's "Trusted organizations"
-  article instead of restating its steps.
+* How the app's confirmation page tells researchers to revoke access at
+  ORCID is for RAID-977. ORCID's help centre refuses automated requests, so
+  the button wording was not verified here.

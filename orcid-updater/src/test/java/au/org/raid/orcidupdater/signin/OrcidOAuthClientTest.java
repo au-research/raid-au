@@ -54,7 +54,7 @@ class OrcidOAuthClientTest {
         assertThat(query.getFirst("state")).isEqualTo("state-value");
         // encoded, and the trailing slash on the public base URL is not doubled
         assertThat(uri.getRawQuery()).contains("scope=/read-limited%20/activities/update")
-                .contains("redirect_uri=https://orcid-updater.example.org/orcid/callback");
+                .contains("redirect_uri=https://app.example.org/orcid/callback");
     }
 
     @Test
@@ -65,7 +65,7 @@ class OrcidOAuthClientTest {
                 .andExpect(header("Accept", MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().formDataContains(java.util.Map.of(
                         "client_id", "APP-TEST", "client_secret", "test", "grant_type", "authorization_code",
-                        "code", "Q70Y3A", "redirect_uri", "https://orcid-updater.example.org/orcid/callback")))
+                        "code", "Q70Y3A", "redirect_uri", "https://app.example.org/orcid/callback")))
                 .andRespond(withSuccess(TOKEN_RESPONSE, MediaType.APPLICATION_JSON));
 
         final var signIn = client.exchange("Q70Y3A");

@@ -10,6 +10,7 @@ import au.org.raid.orcidupdater.researcher.ResearcherRepository;
 import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException.Reason;
 import au.org.raid.orcidupdater.signin.OAuthStateRepository.OAuthState;
 import au.org.raid.orcidupdater.signin.OrcidOAuthClient.OrcidSignIn;
+import au.org.raid.orcidupdater.signin.SignInService.Outcome;
 import au.org.raid.orcidupdater.support.TestProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -198,10 +199,9 @@ class SignInServiceTest {
         void authenticatedWithoutRememberMe() {
             final var result = service.completeSignIn(STATE, CODE, null);
 
-            assertThat(result.authenticated()).isTrue();
+            assertThat(result.outcome()).isEqualTo(Outcome.AUTHENTICATED);
             assertThat(result.orcidId()).isEqualTo(TYPED_ID);
             assertThat(result.remembered()).isFalse();
-            assertThat(result.differentFromTyped()).isFalse();
 
             verify(invitationRepository).lockOrcidId(TYPED_ID);
             verify(invitationRepository).markUsed(pending.id(), TYPED_ID, NOW);
@@ -234,7 +234,6 @@ class SignInServiceTest {
 
             assertThat(result.orcidId()).isEqualTo(OTHER_ID);
             assertThat(result.typedOrcidId()).isEqualTo(TYPED_ID);
-            assertThat(result.differentFromTyped()).isTrue();
             verify(invitationRepository).markUsed(pending.id(), OTHER_ID, NOW);
             verify(researcherRepository).saveAuthentication(eq(OTHER_ID), any(), any(), any(), any());
             verify(researcherRepository).recordConsent(OTHER_ID, emailHash, NOW);
@@ -245,7 +244,8 @@ class SignInServiceTest {
         void declined() {
             final var result = service.completeSignIn(STATE, null, "access_denied");
 
-            assertThat(result.authenticated()).isFalse();
+            assertThat(result.outcome()).isEqualTo(Outcome.DECLINED);
+            assertThat(result.orcidId()).isNull();
             assertThat(result.invitationExpiresAt()).isEqualTo(pending.expiresAt());
             verify(orcidOAuthClient, never()).exchange(any());
             verify(invitationRepository, never()).markUsed(any(), any(), any());

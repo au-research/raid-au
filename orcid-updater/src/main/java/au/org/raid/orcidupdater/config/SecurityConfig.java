@@ -15,11 +15,14 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,9 +34,9 @@ import static org.springframework.http.HttpMethod.POST;
  * (orcid-updater/idl/orcid-updater-openapi-3.1.yaml):
  * <ol>
  *   <li>RAiD API: shared API key.</li>
- *   <li>Researchers: no credential. The invitation token and OAuth state are checked by the
- *       handlers themselves. The landing page form needs no CSRF token because the invitation
- *       token in its URL is already a secret a forging site can't know.</li>
+ *   <li>Researchers, through the RAiD app's pages: no credential. The invitation token and
+ *       OAuth state are checked by the handlers themselves, and are secrets a forging site
+ *       can't know.</li>
  *   <li>Minters and RA administrators: Keycloak access tokens. Everything not listed is denied.</li>
  * </ol>
  * All chains are stateless; there is no session or cookie to forge, so CSRF protection is off.
@@ -66,18 +69,13 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain researcherChain(final HttpSecurity http) throws Exception {
         return stateless(http)
-                .securityMatcher("/invitations/*", "/orcid/callback", "/css/**", "/actuator/health",
-                        "/actuator/health/**", "/error")
-                .headers(headers -> headers
-                        // the landing page URL carries the invitation token; it must not reach ORCID
-                        // or any linked site in a Referer header
-                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER))
-                        .contentSecurityPolicy(csp -> csp.policyDirectives(researcherPagePolicy())))
+                .securityMatcher("/invitations/*", "/invitations/*/authentications", "/authentications",
+                        "/actuator/health", "/actuator/health/**", "/error")
+                .cors(cors -> cors.configurationSource(appCorsConfiguration()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(GET, "/invitations/*").permitAll()
-                        .requestMatchers(POST, "/invitations/*").permitAll()
-                        .requestMatchers(GET, "/orcid/callback").permitAll()
-                        .requestMatchers(GET, "/css/**").permitAll()
+                        .requestMatchers(POST, "/invitations/*/authentications").permitAll()
+                        .requestMatchers(POST, "/authentications").permitAll()
                         .requestMatchers(GET, "/actuator/health", "/actuator/health/**").permitAll()
                         // the servlet container forwards every error here; without this, a 404 or
                         // 500 from an already-authorised request would be rewritten to 401
@@ -90,6 +88,8 @@ public class SecurityConfig {
     @Order(3)
     public SecurityFilterChain keycloakChain(final HttpSecurity http) throws Exception {
         return stateless(http)
+                // the app registers invitations from the minter's browser
+                .cors(cors -> cors.configurationSource(appCorsConfiguration()))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(problemSecurityHandler)
@@ -103,14 +103,22 @@ public class SecurityConfig {
     }
 
     /**
-     * No scripts at all. The landing page form may only post here, and its redirect may only go
-     * to the configured ORCID host (browsers apply form-action to the redirect too).
+     * Only the RAiD app may call the updater from a browser. No credentials mode: the app sends
+     * the minter's token in the Authorization header, never a cookie.
      */
-    String researcherPagePolicy() {
-        final var orcid = UriComponentsBuilder.fromUriString(properties.getOrcid().getBaseUrl()).build();
-        final var orcidOrigin = orcid.getScheme() + "://" + orcid.getHost() + (orcid.getPort() == -1 ? "" : ":" + orcid.getPort());
-        return "default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self' " + orcidOrigin
-                + "; frame-ancestors 'none'; base-uri 'none'";
+    CorsConfigurationSource appCorsConfiguration() {
+        final var configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(appOrigin()));
+        configuration.setAllowedMethods(List.of("GET", "POST"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        final var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    String appOrigin() {
+        final var app = UriComponentsBuilder.fromUriString(properties.getAppBaseUrl()).build();
+        return app.getScheme() + "://" + app.getHost() + (app.getPort() == -1 ? "" : ":" + app.getPort());
     }
 
     private HttpSecurity stateless(final HttpSecurity http) throws Exception {

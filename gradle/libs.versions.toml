@@ -97,7 +97,6 @@ spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-
 spring-boot-starter-jdbc = { group = "org.springframework.boot", name = "spring-boot-starter-jdbc", version.ref = "springboot" }
 spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail", version.ref = "springboot" }
 spring-boot-starter-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation", version.ref = "springboot" }
-spring-boot-starter-thymeleaf = { group = "org.springframework.boot", name = "spring-boot-starter-thymeleaf", version.ref = "springboot" }
 springdoc-openapi = { group = 'org.springdoc', name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 spring-security-test = { group = "org.springframework.security", name = "spring-security-test", version.ref = "spring-security-test" }
 

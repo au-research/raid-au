@@ -68,7 +68,7 @@ public class InvitationService {
             final var expiresAt = now.plus(properties.getInvitation().getExpiry());
             invitationRepository.insert(id, token.lookupHash(), request.contributorId(), raid, now, expiresAt);
 
-            final var link = properties.publicUrl("/invitations/" + token.encode());
+            final var link = properties.appUrl("/invitations/" + token.encode());
             emailSender.send(request.email(), raid, link, expiresAt);
 
             log.info("Invitation {} sent for {} on {}, expires {}",

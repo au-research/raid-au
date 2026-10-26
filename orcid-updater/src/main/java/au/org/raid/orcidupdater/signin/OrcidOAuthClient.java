@@ -52,7 +52,7 @@ public class OrcidOAuthClient {
 
     /** Must be registered as a redirect URI on the RA's ORCID client (see README). */
     String redirectUri() {
-        return properties.publicUrl(CALLBACK_PATH);
+        return properties.appUrl(CALLBACK_PATH);
     }
 
     /**
