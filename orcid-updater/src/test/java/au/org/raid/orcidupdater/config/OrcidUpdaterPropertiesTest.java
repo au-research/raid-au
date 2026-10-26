@@ -37,7 +37,9 @@ class OrcidUpdaterPropertiesTest {
             "orcid-updater.mail.from=orcid-updater@example.org",
             "orcid-updater.email-hash-secret=hash-secret-value",
             "orcid-updater.token-encryption-key=encryption-key-value",
-            "orcid-updater.api-key=api-key-value");
+            "orcid-updater.link-encryption-key=link-key-value-of-at-least-32-chars",
+            "orcid-updater.api-key=api-key-value",
+            "orcid-updater.public-base-url=https://orcid-updater.example.org");
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
@@ -107,7 +109,7 @@ class OrcidUpdaterPropertiesTest {
             assertThat(failureMessage(context.getStartupFailure())).contains(
                     "orcid.clientId", "orcid.clientSecret", "orcid.clientName", "orcid.baseUrl",
                     "orcid.apiUrl", "raidApi.baseUrl", "keycloak.issuerUri", "mail.host", "mail.from",
-                    "emailHashSecret", "tokenEncryptionKey", "apiKey");
+                    "emailHashSecret", "tokenEncryptionKey", "linkEncryptionKey", "apiKey", "publicBaseUrl");
         });
     }
 
@@ -128,7 +130,7 @@ class OrcidUpdaterPropertiesTest {
         runner.withPropertyValues(completeExcept("orcid-updater.mail.host")).run(context -> {
             assertThat(context).hasFailed();
             assertThat(failureMessage(context.getStartupFailure())).doesNotContain(
-                    "orcid-secret-value", "hash-secret-value", "encryption-key-value", "api-key-value");
+                    "orcid-secret-value", "hash-secret-value", "encryption-key-value", "link-key-value", "api-key-value");
         });
     }
 

@@ -42,7 +42,9 @@ required setting is missing, and the startup error names each one.
 | `ORCID_UPDATER_MAIL_FROM` | yes | Sender on the RA's own domain |
 | `ORCID_UPDATER_EMAIL_HASH_SECRET` | yes | Secret. Keys the email fingerprint kept for "Remember me" |
 | `ORCID_UPDATER_TOKEN_ENCRYPTION_KEY` | yes | Secret. Encrypts ORCID tokens at rest |
+| `ORCID_UPDATER_LINK_ENCRYPTION_KEY` | yes | Secret, at least 32 characters. Seals the email fingerprint inside invitation links |
 | `ORCID_UPDATER_API_KEY` | yes | Secret. The RAiD API sends it as `X-Api-Key` |
+| `ORCID_UPDATER_PUBLIC_BASE_URL` | yes | Where researchers reach the updater, e.g. `https://orcid-updater.example.org`. Invitation links start with it |
 | `ORCID_UPDATER_INVITATION_EXPIRY` | no | Default `14d` |
 
 The updater listens on port 8090. `GET /actuator/health` is the health check;

@@ -52,9 +52,21 @@ public class OrcidUpdaterProperties {
     @NotBlank
     private String tokenEncryptionKey;
 
+    /**
+     * Key for encrypting the email fingerprint carried in an invitation link, so the fingerprint
+     * is stored only if the researcher consents (RAID-1002). Length is checked by LinkCipher,
+     * which can report it without echoing the value.
+     */
+    @NotBlank
+    private String linkEncryptionKey;
+
     /** Shared secret the RAiD API presents in the X-Api-Key header. */
     @NotBlank
     private String apiKey;
+
+    /** Where researchers reach this updater, e.g. https://orcid-updater.example.org. Used in email links. */
+    @NotBlank
+    private String publicBaseUrl;
 
     @Getter
     @Setter

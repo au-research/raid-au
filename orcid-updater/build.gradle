@@ -55,6 +55,8 @@ testing {
         implementation libs.spring.boot.starter.test
         implementation libs.spring.boot.starter.web
         implementation libs.spring.boot.starter.jdbc
+        implementation libs.spring.boot.starter.mail
+        implementation libs.spring.boot.starter.oauth2.resource.server
         implementation libs.assertj
         implementation libs.testcontainers.postgresql
         implementation libs.testcontainers.junit.jupiter
