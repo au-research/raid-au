@@ -3,7 +3,7 @@
 - JIRA: [RAID-1003](https://ardc.atlassian.net/browse/RAID-1003), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-tasks: [RAID-1000](https://ardc.atlassian.net/browse/RAID-1000) (PR #741), [RAID-1001](https://ardc.atlassian.net/browse/RAID-1001) (PR #744), [RAID-1002](https://ardc.atlassian.net/browse/RAID-1002) (PR #745)
 - Related: [RAID-1010](https://ardc.atlassian.net/browse/RAID-1010) (CI skips the updater's integration tests)
-- PR: see the PR linked on RAID-1003 (targets `feature/RAID-975`)
+- PR: [#746](https://github.com/au-research/raid-au/pull/746) (targets `feature/RAID-975`)
 - Status: PR open
 
 ## What changed and why
