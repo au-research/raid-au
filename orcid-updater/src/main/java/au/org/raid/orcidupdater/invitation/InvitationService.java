@@ -7,6 +7,7 @@ import au.org.raid.orcidupdater.crypto.LinkCipher;
 import au.org.raid.orcidupdater.raidapi.RaidApiClient;
 import au.org.raid.orcidupdater.researcher.ResearcherRepository;
 import au.org.raid.orcidupdater.status.ContributorStatus;
+import au.org.raid.orcidupdater.work.WorkQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class InvitationService {
     private final EmailHasher emailHasher;
     private final LinkCipher linkCipher;
     private final OrcidUpdaterProperties properties;
+    private final WorkQueue workQueue;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
 
@@ -51,6 +53,8 @@ public class InvitationService {
             if (remembered.isPresent()) {
                 log.info("Invitation for {} on {} matched a researcher who chose Remember me; no email sent",
                         request.contributorId(), request.handle());
+                // the researcher is already authenticated, so the RAiD can be written straight away
+                workQueue.requestRaidSync(request.handle());
                 return new InvitationResponse(remembered.get(), ContributorStatus.AUTHENTICATED, false, null);
             }
 
@@ -67,6 +71,7 @@ public class InvitationService {
             final var id = UUID.randomUUID();
             final var expiresAt = now.plus(properties.getInvitation().getExpiry());
             invitationRepository.insert(id, token.lookupHash(), request.contributorId(), raid, now, expiresAt);
+            workQueue.requestStatus(request.contributorId());
 
             final var link = properties.appUrl("/invitations/" + token.encode());
             emailSender.send(request.email(), raid, link, expiresAt);

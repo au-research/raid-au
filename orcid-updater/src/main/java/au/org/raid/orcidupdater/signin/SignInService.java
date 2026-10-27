@@ -7,6 +7,7 @@ import au.org.raid.orcidupdater.invitation.Invitation;
 import au.org.raid.orcidupdater.invitation.InvitationRepository;
 import au.org.raid.orcidupdater.researcher.ResearcherRepository;
 import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException.Reason;
+import au.org.raid.orcidupdater.work.WorkQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class SignInService {
     private final OrcidOAuthClient orcidOAuthClient;
     private final LinkCipher linkCipher;
     private final TokenCipher tokenCipher;
+    private final WorkQueue workQueue;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
 
@@ -134,9 +136,15 @@ public class SignInService {
             if (remembered) {
                 researcherRepository.recordConsent(orcidId, attempt.emailHash(), now);
             }
+            // the worker pushes AUTHENTICATED to the RAiD API and writes this person's RAiDs to ORCID
+            workQueue.requestStatus(orcidId);
+            if (!orcidId.equals(invitation.orcidId())) {
+                // the typed iD's invitation is used up, so it may no longer be awaiting authentication
+                workQueue.requestStatus(invitation.orcidId());
+            }
+            workQueue.requestRaidSync(invitation.raidHandle());
         });
 
-        // IMPROVE: RAID-1005 pushes AUTHENTICATED to the RAiD API and RAID-1004 writes the RAiD to ORCID here
         log.info("Invitation {}: authenticated as {} (typed {}), remember me {}",
                 invitation.id(), orcidId, invitation.orcidId(), remembered);
         return SignInResult.authenticated(invitation, orcidId, remembered);

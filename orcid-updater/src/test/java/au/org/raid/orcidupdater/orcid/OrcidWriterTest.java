@@ -11,6 +11,7 @@ import au.org.raid.orcidupdater.orcid.OrcidWriter.EntryOutcome;
 import au.org.raid.orcidupdater.orcid.OrcidWriter.Outcome;
 import au.org.raid.orcidupdater.researcher.ResearcherRepository;
 import au.org.raid.orcidupdater.support.TestProperties;
+import au.org.raid.orcidupdater.work.WorkQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,6 +60,7 @@ class OrcidWriterTest {
     private final OrcidEntryRepository entryRepository = mock(OrcidEntryRepository.class);
     private final ResearcherRepository researcherRepository = mock(ResearcherRepository.class);
     private final InvitationRepository invitationRepository = mock(InvitationRepository.class);
+    private final WorkQueue workQueue = mock(WorkQueue.class);
     private final TokenCipher tokenCipher = new TokenCipher(TestProperties.complete());
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
 
@@ -83,7 +85,7 @@ class OrcidWriterTest {
         final var properties = TestProperties.complete();
         properties.getOrcidWrite().setInitialBackoff(Duration.ZERO);
         writer = new OrcidWriter(orcid, new MembershipFactory(clock), rorClient, entryRepository, researcherRepository,
-                invitationRepository, tokenCipher, new TransactionTemplate(mock(PlatformTransactionManager.class)),
+                invitationRepository, tokenCipher, workQueue, new TransactionTemplate(mock(PlatformTransactionManager.class)),
                 properties, clock);
         when(entryRepository.find(anyString(), anyString())).thenReturn(Optional.empty());
         when(entryRepository.findByRaidHandle(HANDLE)).thenReturn(List.of());
@@ -206,6 +208,8 @@ class OrcidWriterTest {
             verify(orcid, times(1)).create(any(), any(), any());
             verify(researcherRepository).markRevoked(ID, NOW);
             verify(entryRepository).recordFailure(eq(ID), eq(HANDLE), contains("access revoked"), eq(NOW));
+            // the worker pushes AUTHENTICATION_REVOKED to the RAiD API
+            verify(workQueue).requestStatus(ID);
         }
 
         @Test

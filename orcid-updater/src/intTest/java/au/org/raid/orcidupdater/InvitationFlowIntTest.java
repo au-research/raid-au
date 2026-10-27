@@ -85,6 +85,8 @@ class InvitationFlowIntTest {
         registry.add("orcid-updater.api-key", () -> "int-test-api-key");
         registry.add("orcid-updater.app-base-url", () -> "https://app.example.org");
         registry.add("orcid-updater.contact-email", () -> "privacy@example.org");
+        // these tests drive the work queue themselves, or not at all
+        registry.add("orcid-updater.work.enabled", () -> "false");
     }
 
     @Autowired
@@ -106,6 +108,7 @@ class InvitationFlowIntTest {
     @BeforeEach
     void setUp() {
         jdbcTemplate.update("DELETE FROM orcid_updater.invitation");
+        jdbcTemplate.update("DELETE FROM orcid_updater.work_item");
         jdbcTemplate.update("DELETE FROM orcid_updater.researcher");
         reset(mailSender);
         when(jwtDecoder.decode(anyString())).thenAnswer(call -> Jwt.withTokenValue(call.getArgument(0))
@@ -152,6 +155,9 @@ class InvitationFlowIntTest {
                 "SELECT token_hash FROM orcid_updater.invitation WHERE orcid_id = ?", byte[].class, ORCID_ID);
         assertThat(stored).isEqualTo(token.lookupHash());
         assertThat(linkCipher.decrypt(token.sealedEmailHash(), token.random())).contains(emailHasher.hash(EMAIL));
+        // the worker pushes AWAITING_AUTHENTICATION to the RAiD API
+        assertThat(jdbcTemplate.queryForList("SELECT kind || ':' || item_key FROM orcid_updater.work_item", String.class))
+                .containsExactly("STATUS:" + ORCID_ID);
     }
 
     @Test

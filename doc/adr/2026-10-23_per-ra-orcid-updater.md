@@ -91,10 +91,25 @@ is removed in RAID-976.
 | RAiD API | RAiD changed, status | Shared API key (`X-Api-Key`) |
 | RA administrator | data deletion, put code import | Keycloak token with `orcid-updater-admin` |
 | Researcher, through the app | get invitation, start and complete authentication | Invitation token and OAuth state only |
+| RA's Keycloak | the updater's public signing key (JWKS) | None |
 
 The API uses an API key rather than a Keycloak service account so the API
 needs no token handling for one internal call; both sides read it from
 configuration.
+
+In the other direction the updater calls the RAiD API with its own Keycloak
+client, `orcid-updater`, and authenticates with `private_key_jwt`
+(RFC 7523) instead of a client secret (decided 2026-10-27, RAID-1005 and
+RAID-1011; client credentials must be created without manual steps). The
+updater creates an RSA key pair on first start, keeps the private half in
+its database encrypted with the token encryption key, and publishes the
+public half at `/.well-known/jwks.json`. RAID-1011 creates the Keycloak
+client at boot pointing at that URL, so no secret is ever generated, copied
+or stored in two places. A secret created by Keycloak would have had to
+reach the updater somehow, which is a manual step or a shared store that
+agencies off AWS don't have. The cost is that Keycloak must be able to reach
+the updater. If the token encryption key changes, the updater makes a new
+key pair and Keycloak picks it up from the JWKS URL.
 
 ## Researcher pages belong to the app; the updater is API only
 
@@ -173,14 +188,50 @@ How writes behave:
 * Each researcher's write holds that iD's advisory lock, so two saves of
   the same RAiD can't both create an entry.
 
+## Background work and status propagation
+
+Decided 2026-10-27 (RAID-1005).
+
+* **Embargo:** a RAiD that isn't open access is held back. Nothing is
+  written and nothing is scheduled. It is written when the RAiD API saves it
+  as open, which RAiD AU's access handler does when the embargo ends, and
+  that save notifies the updater like any other. The updater has no timer of
+  its own for embargoes.
+* **Work queue:** "RAiD changed" notifications and status changes are queued
+  in the `work_item` table and answered at once (202). Every instance polls
+  the table, taking items with `FOR UPDATE SKIP LOCKED` and a claim timeout,
+  so instances can be added or restarted without losing work. Requests for
+  the same RAiD or iD are merged. A database table was chosen over a message
+  broker because RAs already provide PostgreSQL and nothing else.
+* **Status propagation:** the updater sets statuses in the RAiD API when an
+  invitation is sent (AWAITING_AUTHENTICATION), a researcher signs in
+  (AUTHENTICATED), ORCID rejects a token (AUTHENTICATION_REVOKED) and an
+  invitation expires unused (UNAUTHENTICATED, found by a sweep on each
+  poll). The worker works the status out from what the updater holds rather
+  than sending the event's value, so a late or repeated item never
+  downgrades someone: a stored token wins, then a pending invitation, then
+  a revocation. On sign-in, every RAiD that names the researcher is queued
+  for writing.
+* **Retries:** when the RAiD API or Keycloak can't be reached, an item is
+  tried again with back-off (5 attempts from 30 seconds by default), then
+  kept with `failed_at` for operators until it is requested again. This is
+  about reaching the RAiD API. ORCID writes are still not retried in the
+  background (see "How writes behave"): a failed write is recorded on its
+  entry and the next save tries again.
+* **Typed iD differs from the signed-in iD:** `GET /contributors/status`
+  for the typed iD returns AUTHENTICATED with `authenticatedId` set to the
+  iD the researcher signed in as, so the RAiD API can replace it (RAID-976).
+  The updater never marks the typed iD itself as authenticated.
+
 ## Other defaults
 
 * Invitations expire after 14 days (configurable) and fall back to
   UNAUTHENTICATED. At most one invitation per researcher while a link is
   valid.
-* Failed writes are retried with back-off up to a configured limit, then
-  recorded for operators. There are no background retries; the next status
-  change or save tries again.
+* Failed ORCID writes are retried with back-off up to a configured limit,
+  then recorded for operators. There are no background retries of ORCID
+  writes; the next status change or save tries again. Calls to the RAiD API
+  are retried in the background (see above).
 * A deletion request removes the entries the updater wrote, revokes the
   token at ORCID, then deletes the hash, consent time, token and put codes.
 * RAiD AU keeps its existing ORCID client, so put codes from the central
@@ -196,6 +247,8 @@ How writes behave:
   Keycloak clients or roles. RAID-886 documents the settings.
 * The updater depends on the RAiD API being reachable to send invitations
   and to write; the API does not depend on the updater to save.
+* The RA's Keycloak must be able to reach the updater's JWKS URL.
+  RAID-1011 creates the updater's client from it.
 
 
 # Open questions

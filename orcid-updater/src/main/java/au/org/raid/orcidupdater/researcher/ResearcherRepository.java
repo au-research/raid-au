@@ -36,6 +36,15 @@ public class ResearcherRepository {
                 .optional();
     }
 
+    /** Whether ORCID rejected this researcher's token and they haven't signed in since. */
+    public boolean isRevoked(final String orcidId) {
+        return jdbcClient.sql("SELECT revoked_at IS NOT NULL FROM researcher WHERE orcid_id = :orcidId")
+                .param("orcidId", orcidId)
+                .query(Boolean.class)
+                .optional()
+                .orElse(false);
+    }
+
     /** ORCID rejected the token. No more writes for this iD until the researcher signs in again. */
     public void markRevoked(final String orcidId, final Instant revokedAt) {
         jdbcClient.sql("UPDATE researcher SET revoked_at = :revokedAt WHERE orcid_id = :orcidId AND revoked_at IS NULL")

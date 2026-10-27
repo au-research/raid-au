@@ -53,6 +53,10 @@ public class OrcidUpdaterProperties {
     @NotNull
     private Ror ror = new Ror();
 
+    @Valid
+    @NotNull
+    private Work work = new Work();
+
     /** HMAC-SHA-256 key for the email fingerprint kept when a researcher ticks "Remember me". */
     @NotBlank
     private String emailHashSecret;
@@ -116,6 +120,12 @@ public class OrcidUpdaterProperties {
     public static class RaidApi {
         @NotBlank
         private String baseUrl;
+        /**
+         * The updater's own Keycloak client, which holds contributor-writer. It authenticates with
+         * private_key_jwt, so there is no secret to configure (RAID-1011 provisions it).
+         */
+        @NotBlank
+        private String clientId = "orcid-updater";
     }
 
     @Getter
@@ -168,5 +178,29 @@ public class OrcidUpdaterProperties {
         /** ROR's API, for the RAiD owner's organisation named on every ORCID entry. */
         @NotBlank
         private String apiUrl = "https://api.ror.org/v2";
+    }
+
+    /**
+     * The background worker that pushes status changes and syncs RAiDs (RAID-1005). Only reaching
+     * the RAiD API is retried here; ORCID write failures are recorded per entry (OrcidWrite).
+     */
+    @Getter
+    @Setter
+    public static class Work {
+        /** Off only in tests that drive the worker themselves. */
+        private boolean enabled = true;
+        @NotNull
+        private Duration pollInterval = Duration.ofSeconds(5);
+        @Min(1)
+        private int batchSize = 20;
+        /** Attempts to reach the RAiD API for one item before it is recorded as failed. */
+        @Min(1)
+        private int maxAttempts = 5;
+        /** Wait before the second attempt, doubled before each later one. */
+        @NotNull
+        private Duration initialBackoff = Duration.ofSeconds(30);
+        /** How long an instance may hold an item before another may take it over. */
+        @NotNull
+        private Duration claimTimeout = Duration.ofMinutes(5);
     }
 }

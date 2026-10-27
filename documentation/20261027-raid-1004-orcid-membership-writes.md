@@ -4,7 +4,7 @@
 - Earlier sub-tasks: [RAID-1000](https://ardc.atlassian.net/browse/RAID-1000) (PR #741), [RAID-1001](https://ardc.atlassian.net/browse/RAID-1001) (PR #744), [RAID-1002](https://ardc.atlassian.net/browse/RAID-1002) (PR #745), [RAID-1003](https://ardc.atlassian.net/browse/RAID-1003) (PR #746)
 - Next: [RAID-1005](https://ardc.atlassian.net/browse/RAID-1005) calls the writer when a RAiD or a contributor's status changes, and holds back embargoed RAiDs
 - PR: [#747](https://github.com/au-research/raid-au/pull/747) (targets `feature/RAID-975`)
-- Status: PR open
+- Status: merged into `feature/RAID-975` 2026-10-27 (Dev Complete)
 
 ## What changed and why
 

@@ -22,6 +22,9 @@ info:
       and authentication endpoints. These carry no credential and are
       protected only by the invitation token and the OAuth state parameter.
       The updater serves no pages.
+    * The RA's Keycloak: `getJwks`, no credential. Keycloak reads the
+      public key the updater signs its own token requests with
+      (`private_key_jwt`, RFC 7523), so the updater's client has no secret.
 
     Browser calls are allowed only from the origin of
     `ORCID_UPDATER_APP_BASE_URL` (CORS, without credentials).
@@ -56,6 +59,8 @@ tags:
   description: "Called by the RAiD app's researcher pages. No credential; protected by the invitation token and OAuth state."
 - name: "admin"
   description: "Called by RA administrators."
+- name: "keycloak"
+  description: "Called by the RA's Keycloak."
 paths:
   /invitations:
     post:
@@ -128,10 +133,12 @@ paths:
       summary: "Tell the updater that a RAiD was minted or saved"
       description: |
         Called by the RAiD API after every mint, update and patch. The
-        updater processes it asynchronously: it reads the RAiD from the RAiD
-        API and, for each contributor:
+        updater queues it and answers straight away. In the background it
+        reads the RAiD from the RAiD API and, for each contributor:
         * AUTHENTICATED: creates or updates the ORCID entry, unless the RAiD
-          is embargoed (written once the embargo ends).
+          is not open access (embargoed). It is written once the embargo
+          ends, when the RAiD API saves the RAiD as open and calls this
+          again.
         * any other status: makes no ORCID call.
         Put codes held for this RAiD whose iD is no longer a contributor
         have their ORCID entry deleted.
@@ -148,7 +155,7 @@ paths:
               $ref: "#/components/schemas/RaidChangedNotification"
       responses:
         202:
-          description: "Accepted for processing."
+          description: "Queued. Notifications for the same RAiD that arrive before it is processed are merged."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -368,6 +375,27 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         403:
           $ref: "#/components/responses/Forbidden"
+  /.well-known/jwks.json:
+    get:
+      tags:
+      - "keycloak"
+      operationId: "getJwks"
+      summary: "The public key the updater signs its token requests with"
+      description: |
+        A JSON Web Key Set (RFC 7517) with one RSA signing key. The updater
+        creates the key pair on first start and keeps the private half,
+        encrypted, in its database; it is never returned. The RA's Keycloak
+        is configured with this URL for the updater's client (RAID-1011) and
+        checks the client assertion in the updater's client credentials
+        requests against it.
+      security: []
+      responses:
+        200:
+          description: "The key set."
+          content:
+            application/jwk-set+json:
+              schema:
+                $ref: "#/components/schemas/JwkSet"
 components:
   securitySchemes:
     userBearer:
@@ -505,6 +533,34 @@ components:
       properties:
         handle:
           $ref: "#/components/schemas/Handle"
+    JwkSet:
+      type: "object"
+      required:
+      - "keys"
+      properties:
+        keys:
+          type: "array"
+          items:
+            type: "object"
+            description: "An RSA public key: kty, e, n, kid, use (sig) and alg (RS256)."
+            required:
+            - "kty"
+            - "kid"
+            - "n"
+            - "e"
+            properties:
+              kty:
+                const: "RSA"
+              kid:
+                type: "string"
+              use:
+                const: "sig"
+              alg:
+                const: "RS256"
+              n:
+                type: "string"
+              e:
+                type: "string"
     ContributorStatusResponse:
       type: "object"
       additionalProperties: false

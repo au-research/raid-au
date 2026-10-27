@@ -69,8 +69,8 @@ public class OrcidMemberClient {
                 .toBodilessEntity());
     }
 
-    /** The member API takes the bare iD, e.g. 0000-0002-1825-0097, not the iD URL. */
-    static String bareId(final String orcidId) {
+    /** The bare iD, e.g. 0000-0002-1825-0097, as ORCID's member API and the RAiD API's search take it. */
+    public static String bareId(final String orcidId) {
         return orcidId.substring(orcidId.lastIndexOf('/') + 1);
     }
 

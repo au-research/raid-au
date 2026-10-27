@@ -5,7 +5,11 @@ import au.org.raid.orcidupdater.security.ProblemSecurityHandler;
 import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException;
 import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException.Reason;
 import au.org.raid.orcidupdater.signin.InvalidOAuthStateException;
+import au.org.raid.orcidupdater.serviceauth.ServiceKeyStore;
 import au.org.raid.orcidupdater.signin.SignInService;
+import au.org.raid.orcidupdater.status.ContributorStatusService;
+import au.org.raid.orcidupdater.work.WorkQueue;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -86,6 +90,15 @@ class SecurityConfigTest {
     @MockitoBean
     private SignInService signInService;
 
+    @MockitoBean
+    private ContributorStatusService contributorStatusService;
+
+    @MockitoBean
+    private WorkQueue workQueue;
+
+    @MockitoBean
+    private ServiceKeyStore serviceKeyStore;
+
     private static ResultMatcher unauthorizedProblem() {
         return result -> {
             status().isUnauthorized().match(result);
@@ -138,12 +151,14 @@ class SecurityConfigTest {
         }
 
         @Test
-        @DisplayName("Correct key: " + NOT_BLOCKED_BY_SECURITY)
+        @DisplayName("Correct key: passes security to the handler, which rejects the empty request")
         void correctKey() throws Exception {
             mockMvc.perform(post("/raid-changes").header(API_KEY_HEADER, "test-api-key"))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
             mockMvc.perform(get("/contributors/status").header(API_KEY_HEADER, "test-api-key"))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
         }
 
         @Test
@@ -189,6 +204,18 @@ class SecurityConfigTest {
 
             mockMvc.perform(get("/invitations/some-token"))
                     .andExpect(header().string("Cache-Control", containsString("no-store")));
+        }
+
+        @Test
+        @DisplayName("The updater's public signing key is readable by anyone, for Keycloak")
+        void jwks() throws Exception {
+            when(serviceKeyStore.publicJwk()).thenReturn(new RSAKeyGenerator(2048).keyID("k1").generate().toPublicJWK());
+
+            mockMvc.perform(get("/.well-known/jwks.json"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.keys[0].kid").value("k1"))
+                    .andExpect(jsonPath("$.keys[0].d").doesNotExist());
+            mockMvc.perform(post("/.well-known/jwks.json")).andExpect(unauthorizedProblem());
         }
 
         @Test

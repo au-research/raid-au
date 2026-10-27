@@ -107,16 +107,19 @@ class OrcidUpdaterApplicationIntTest {
     }
 
     @Test
-    @DisplayName("RAiD API endpoint with the key: not rewritten to 401 by the error forward (404 until RAID-1005)")
+    @DisplayName("RAiD API endpoint with the key: 202 when valid, and a 400 isn't rewritten to 401")
     void raidChangesWithKeyKeepsItsStatus() {
         final var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-Api-Key", "int-test-api-key");
 
-        final var response = restTemplate.exchange("/raid-changes", HttpMethod.POST,
+        final var accepted = restTemplate.exchange("/raid-changes", HttpMethod.POST,
                 new HttpEntity<>("{\"handle\":\"10.1/abc\"}", headers), String.class);
+        final var invalid = restTemplate.exchange("/raid-changes", HttpMethod.POST,
+                new HttpEntity<>("{\"handle\":\"not a handle\"}", headers), String.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(accepted.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(invalid.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test

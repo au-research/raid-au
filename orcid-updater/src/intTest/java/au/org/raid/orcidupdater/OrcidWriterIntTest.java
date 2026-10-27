@@ -86,6 +86,8 @@ class OrcidWriterIntTest {
         registry.add("orcid-updater.api-key", () -> "int-test-api-key");
         registry.add("orcid-updater.app-base-url", () -> "https://app.example.org");
         registry.add("orcid-updater.contact-email", () -> "privacy@example.org");
+        // these tests drive the work queue themselves, or not at all
+        registry.add("orcid-updater.work.enabled", () -> "false");
     }
 
     @Autowired

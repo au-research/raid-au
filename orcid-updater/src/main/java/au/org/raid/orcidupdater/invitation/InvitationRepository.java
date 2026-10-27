@@ -46,6 +46,22 @@ public class InvitationRepository {
                 .map(OffsetDateTime::toInstant);
     }
 
+    /**
+     * The iD the researcher most recently signed in as from an invitation sent to {@code typedOrcidId},
+     * when that was a different iD.
+     */
+    public Optional<String> findOtherAuthenticatedOrcidId(final String typedOrcidId) {
+        return jdbcClient.sql("""
+                        SELECT authenticated_orcid_id FROM invitation
+                        WHERE orcid_id = :orcidId AND used_at IS NOT NULL AND authenticated_orcid_id <> orcid_id
+                        ORDER BY used_at DESC
+                        LIMIT 1
+                        """)
+                .param("orcidId", typedOrcidId)
+                .query(String.class)
+                .optional();
+    }
+
     public void insert(final UUID id, final byte[] tokenHash, final String orcidId, final RaidSummary raid,
                        final Instant createdAt, final Instant expiresAt) {
         jdbcClient.sql("""

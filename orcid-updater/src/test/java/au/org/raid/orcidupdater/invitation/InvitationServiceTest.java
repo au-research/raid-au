@@ -10,6 +10,7 @@ import au.org.raid.orcidupdater.raidapi.RaidSummary;
 import au.org.raid.orcidupdater.researcher.ResearcherRepository;
 import au.org.raid.orcidupdater.status.ContributorStatus;
 import au.org.raid.orcidupdater.support.TestProperties;
+import au.org.raid.orcidupdater.work.WorkQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,7 @@ class InvitationServiceTest {
     private final InvitationRepository invitationRepository = mock(InvitationRepository.class);
     private final ResearcherRepository researcherRepository = mock(ResearcherRepository.class);
     private final InvitationEmailSender emailSender = mock(InvitationEmailSender.class);
+    private final WorkQueue workQueue = mock(WorkQueue.class);
     private final PlatformTransactionManager transactionManager = mock(PlatformTransactionManager.class);
     private final OrcidUpdaterProperties properties = TestProperties.complete();
     private final EmailHasher emailHasher = new EmailHasher(properties);
@@ -69,7 +71,7 @@ class InvitationServiceTest {
     @BeforeEach
     void setUp() {
         service = new InvitationService(raidApiClient, invitationRepository, researcherRepository, emailSender,
-                emailHasher, linkCipher, properties, new TransactionTemplate(transactionManager),
+                emailHasher, linkCipher, properties, workQueue, new TransactionTemplate(transactionManager),
                 Clock.fixed(NOW, ZoneOffset.UTC));
         when(raidApiClient.findEditableRaid(HANDLE, MINTER_TOKEN)).thenReturn(RAID);
         when(researcherRepository.findOrcidIdByConsentedEmailHash(any())).thenReturn(Optional.empty());
@@ -96,6 +98,8 @@ class InvitationServiceTest {
         final var link = ArgumentCaptor.forClass(String.class);
         verify(emailSender).send(eq(EMAIL), eq(RAID), link.capture(), eq(expiry));
         assertThat(link.getValue()).startsWith("https://app.example.org/invitations/");
+        // the worker pushes AWAITING_AUTHENTICATION to the RAiD API
+        verify(workQueue).requestStatus(TYPED_ID);
 
         // the stored hash is of the token in the link, and the link carries the email fingerprint
         final var token = InvitationLinkToken.parse(link.getValue().substring(link.getValue().lastIndexOf('/') + 1))
@@ -126,6 +130,8 @@ class InvitationServiceTest {
 
         assertThat(response).isEqualTo(new InvitationResponse(OTHER_ID, ContributorStatus.AUTHENTICATED, false, null));
         verifyNoInteractions(emailSender);
+        // already authenticated, so the RAiD is written without waiting for a sign-in
+        verify(workQueue).requestRaidSync(HANDLE);
         verify(invitationRepository, never()).insert(any(), any(), any(), any(), any(), any());
     }
 
@@ -139,7 +145,7 @@ class InvitationServiceTest {
 
         assertThat(response).isEqualTo(new InvitationResponse(TYPED_ID, ContributorStatus.AWAITING_AUTHENTICATION,
                 false, existing));
-        verifyNoInteractions(emailSender);
+        verifyNoInteractions(emailSender, workQueue);
         verify(invitationRepository, never()).insert(any(), any(), any(), any(), any(), any());
     }
 
