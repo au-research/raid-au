@@ -2,8 +2,8 @@
 
 - JIRA: [RAID-1011](https://ardc.atlassian.net/browse/RAID-1011), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-task: [RAID-1005](https://ardc.atlassian.net/browse/RAID-1005) (PR [#748](https://github.com/au-research/raid-au/pull/748)), which gave the updater its signing key and JWKS URL
-- PR: to be opened (targets `feature/RAID-975`)
-- Status: built and tested locally, not yet committed
+- PR: [#749](https://github.com/au-research/raid-au/pull/749) (targets `feature/RAID-975`)
+- Status: PR open
 
 ## What changed and why
 
