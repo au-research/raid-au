@@ -24,7 +24,10 @@ iDs and write RAiDs to their ORCID records with their consent (RAID-975).
   role. It authenticates with a key it creates itself, not a secret:
   Keycloak reads the public half from
   `<updater URL>/.well-known/jwks.json`, so Keycloak must be able to reach
-  the updater. RAID-1011 creates this client automatically.
+  the updater. Set that URL as `RAID_ORCID_UPDATER_JWKS_URL` in Keycloak's
+  environment and Keycloak creates the client, with the role, on its next
+  start (RAID-1011). See
+  [Keycloak configuration](../iam/doc/keycloak-configuration.md#orcid-updater-confidential-signed-jwt-created-at-boot).
 * Outbound HTTPS to the ORCID API and to the ROR API (`api.ror.org`).
 
 Nothing needs AWS.

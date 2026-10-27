@@ -271,6 +271,17 @@ I could not verify the Registration Authority prod account's deployment state �
 have no AWS profile for `531195466715`. The configuration above is what the
 repository specifies, not a confirmed running deployment.
 
+### `orcid-updater` — per-RA ORCID updater (not yet deployed)
+
+The ORCID updater (RAID-975) calls the RAiD API as this client. It is
+separate from the `contributor-writer` client above, which the shared ORCID
+Integration service uses, though its service account holds the same
+`contributor-writer` role. Keycloak creates it at startup when
+`RAID_ORCID_UPDATER_JWKS_URL` is set (RAID-1011); it authenticates with a
+signed JWT from the updater's JWKS URL and holds no secret anyone copies. See
+[Keycloak configuration](keycloak-configuration.md#orcid-updater-confidential-signed-jwt-created-at-boot).
+Not set in any ARDC environment as of 2026-10-28.
+
 ### `invite-client` — contributor invites
 
 The only client in production with a description: *"Used for the invite feature in

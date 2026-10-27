@@ -111,6 +111,15 @@ agencies off AWS don't have. The cost is that Keycloak must be able to reach
 the updater. If the token encryption key changes, the updater makes a new
 key pair and Keycloak picks it up from the JWKS URL.
 
+The RA turns the client on by setting `RAID_ORCID_UPDATER_JWKS_URL` in
+Keycloak's environment (RAID-1011). A boot hook in the IAM SPI jar, on the
+same `PostMigrationEvent` as the RAID-884 role backfill, then creates the
+client, or puts it right if it has drifted, in every realm that holds
+`service-point-user`, and grants its service account `contributor-writer`,
+creating that role if the realm lacks it. It runs on every boot and leaves
+the client's enabled flag alone, so an operator can still switch it off.
+Unset, it does nothing, since the updater is optional for an RA.
+
 ## Researcher pages belong to the app; the updater is API only
 
 Decided 2026-10-26 (RAID-1003). The landing, invalid-link, decline and
@@ -247,8 +256,9 @@ Decided 2026-10-27 (RAID-1005).
   Keycloak clients or roles. RAID-886 documents the settings.
 * The updater depends on the RAiD API being reachable to send invitations
   and to write; the API does not depend on the updater to save.
-* The RA's Keycloak must be able to reach the updater's JWKS URL.
-  RAID-1011 creates the updater's client from it.
+* The RA's Keycloak must be able to reach the updater's JWKS URL, and the
+  RA sets that URL as `RAID_ORCID_UPDATER_JWKS_URL` for Keycloak. RAID-1011
+  creates the updater's client from it at boot.
 
 
 # Open questions

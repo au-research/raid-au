@@ -12,6 +12,8 @@ services:
     depends_on:
       - raid-iam-db
     build: .
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     ports:
       - 8001:8080
       - 9443:8443
@@ -37,6 +39,8 @@ services:
       KC_DB_URL_HOST: raid-iam-db
       KC_DB_URL_PORT: 5432
       KC_DB_SCHEMA: public
+      # RAID-1011: creates the ORCID updater's client at boot; the updater runs on the host (bootRun)
+      RAID_ORCID_UPDATER_JWKS_URL: http://host.docker.internal:8090/.well-known/jwks.json
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
       KC_LOG_LEVEL: info,au.org.raid.iam:debug,org.keycloak.services:debug,org.keycloak.adapters:debug
