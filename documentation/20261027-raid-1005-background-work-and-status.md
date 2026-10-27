@@ -4,7 +4,7 @@
 - Earlier sub-tasks: [RAID-1000](https://ardc.atlassian.net/browse/RAID-1000) (PR #741), [RAID-1001](https://ardc.atlassian.net/browse/RAID-1001) (PR #744), [RAID-1002](https://ardc.atlassian.net/browse/RAID-1002) (PR #745), [RAID-1003](https://ardc.atlassian.net/browse/RAID-1003) (PR #746), [RAID-1004](https://ardc.atlassian.net/browse/RAID-1004) (PR #747)
 - Related: [RAID-1011](https://ardc.atlassian.net/browse/RAID-1011) creates the updater's Keycloak client at boot; [RAID-976](https://ardc.atlassian.net/browse/RAID-976) builds `PUT /contributor/status` and the "RAiD changed" call in the RAiD API
 - PR: [#748](https://github.com/au-research/raid-au/pull/748) (targets `feature/RAID-975`)
-- Status: PR open
+- Status: merged into `feature/RAID-975` on 2026-10-27; RAID-1005 Dev Complete
 
 ## What changed and why
 
@@ -60,9 +60,10 @@ them.
 - `PUT /contributor/status`, `GET /raid/?contributor.id=` access for the
   updater's client, and the "RAiD changed" call are RAID-976. The updater is
   built against the agreed contract and tested with the RAiD API stubbed.
-- The Keycloak client is RAID-1011. Until then a deployed updater gets
-  `invalid_client` from Keycloak and its work items retry, then fail for
-  operators.
+- The Keycloak client is RAID-1011 (see
+  `20261028-raid-1011-orcid-updater-keycloak-client.md`). Without it a
+  deployed updater gets `invalid_client` from Keycloak and its work items
+  retry, then fail for operators.
 
 ## Testing
 

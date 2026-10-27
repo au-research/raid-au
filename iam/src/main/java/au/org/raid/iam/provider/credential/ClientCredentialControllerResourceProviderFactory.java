@@ -1,5 +1,6 @@
 package au.org.raid.iam.provider.credential;
 
+import au.org.raid.iam.provider.orcidupdater.OrcidUpdaterClientBootstrapper;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -26,7 +27,7 @@ public class ClientCredentialControllerResourceProviderFactory implements RealmR
 
     @Override
     public void postInit(final KeycloakSessionFactory factory) {
-
+        OrcidUpdaterClientBootstrapper.register(factory);
     }
 
     @Override
