@@ -3,8 +3,8 @@
 - JIRA: [RAID-1005](https://ardc.atlassian.net/browse/RAID-1005), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-tasks: [RAID-1000](https://ardc.atlassian.net/browse/RAID-1000) (PR #741), [RAID-1001](https://ardc.atlassian.net/browse/RAID-1001) (PR #744), [RAID-1002](https://ardc.atlassian.net/browse/RAID-1002) (PR #745), [RAID-1003](https://ardc.atlassian.net/browse/RAID-1003) (PR #746), [RAID-1004](https://ardc.atlassian.net/browse/RAID-1004) (PR #747)
 - Related: [RAID-1011](https://ardc.atlassian.net/browse/RAID-1011) creates the updater's Keycloak client at boot; [RAID-976](https://ardc.atlassian.net/browse/RAID-976) builds `PUT /contributor/status` and the "RAiD changed" call in the RAiD API
-- PR: not opened yet (will target `feature/RAID-975`)
-- Status: built and tested locally
+- PR: [#748](https://github.com/au-research/raid-au/pull/748) (targets `feature/RAID-975`)
+- Status: PR open
 
 ## What changed and why
 
