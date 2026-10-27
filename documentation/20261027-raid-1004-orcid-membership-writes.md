@@ -3,8 +3,8 @@
 - JIRA: [RAID-1004](https://ardc.atlassian.net/browse/RAID-1004), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-tasks: [RAID-1000](https://ardc.atlassian.net/browse/RAID-1000) (PR #741), [RAID-1001](https://ardc.atlassian.net/browse/RAID-1001) (PR #744), [RAID-1002](https://ardc.atlassian.net/browse/RAID-1002) (PR #745), [RAID-1003](https://ardc.atlassian.net/browse/RAID-1003) (PR #746)
 - Next: [RAID-1005](https://ardc.atlassian.net/browse/RAID-1005) calls the writer when a RAiD or a contributor's status changes, and holds back embargoed RAiDs
-- PR: to be opened (targets `feature/RAID-975`)
-- Status: built and tested locally, not yet committed
+- PR: [#747](https://github.com/au-research/raid-au/pull/747) (targets `feature/RAID-975`)
+- Status: PR open
 
 ## What changed and why
 
