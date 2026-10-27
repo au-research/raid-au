@@ -1,6 +1,7 @@
 package au.org.raid.orcidupdater.config;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -43,6 +44,14 @@ public class OrcidUpdaterProperties {
     @Valid
     @NotNull
     private Invitation invitation = new Invitation();
+
+    @Valid
+    @NotNull
+    private OrcidWrite orcidWrite = new OrcidWrite();
+
+    @Valid
+    @NotNull
+    private Ror ror = new Ror();
 
     /** HMAC-SHA-256 key for the email fingerprint kept when a researcher ticks "Remember me". */
     @NotBlank
@@ -137,5 +146,27 @@ public class OrcidUpdaterProperties {
     public static class Invitation {
         @NotNull
         private Duration expiry = Duration.ofDays(14);
+    }
+
+    /**
+     * Retries for a write ORCID couldn't take (5xx, 429, no response). After the last attempt the
+     * failure is recorded and the next save of the RAiD tries again (Decision 2026-10-23, Q6).
+     */
+    @Getter
+    @Setter
+    public static class OrcidWrite {
+        @Min(1)
+        private int maxAttempts = 3;
+        /** Wait before the second attempt, doubled before each later one. */
+        @NotNull
+        private Duration initialBackoff = Duration.ofSeconds(2);
+    }
+
+    @Getter
+    @Setter
+    public static class Ror {
+        /** ROR's API, for the RAiD owner's organisation named on every ORCID entry. */
+        @NotBlank
+        private String apiUrl = "https://api.ror.org/v2";
     }
 }
