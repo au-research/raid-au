@@ -74,6 +74,10 @@ class OrcidUpdaterPropertiesTest {
             final var properties = context.getBean(OrcidUpdaterProperties.class);
             assertThat(properties.getInvitation().getExpiry()).isEqualTo(Duration.ofDays(14));
             assertThat(properties.getMail().getPort()).isEqualTo(587);
+            assertThat(properties.getRaidApi().getClientId()).isEqualTo("orcid-updater");
+            assertThat(properties.getWork().isEnabled()).isTrue();
+            assertThat(properties.getWork().getMaxAttempts()).isEqualTo(5);
+            assertThat(properties.getWork().getInitialBackoff()).isEqualTo(Duration.ofSeconds(30));
         });
     }
 
@@ -144,6 +148,13 @@ class OrcidUpdaterPropertiesTest {
             environment.put(parts[0].replace('.', '_').replace('-', '_').toUpperCase(), parts[1]);
         });
         environment.put("ORCID_UPDATER_INVITATION_EXPIRY", "7d");
+        environment.put("ORCID_UPDATER_RAID_API_CLIENT_ID", "orcid-updater-raid-au");
+        environment.put("ORCID_UPDATER_WORK_ENABLED", "false");
+        environment.put("ORCID_UPDATER_WORK_POLL_INTERVAL", "10s");
+        environment.put("ORCID_UPDATER_WORK_BATCH_SIZE", "50");
+        environment.put("ORCID_UPDATER_WORK_MAX_ATTEMPTS", "8");
+        environment.put("ORCID_UPDATER_WORK_INITIAL_BACKOFF", "1m");
+        environment.put("ORCID_UPDATER_WORK_CLAIM_TIMEOUT", "10m");
 
         runner.withInitializer(context -> context.getEnvironment().getPropertySources().addFirst(
                         new SystemEnvironmentPropertySource("systemEnvironment", environment)))
@@ -153,6 +164,14 @@ class OrcidUpdaterPropertiesTest {
                     assertThat(properties.getOrcid().getClientId()).isEqualTo("APP-TEST");
                     assertThat(properties.getEmailHashSecret()).isEqualTo("hash-secret-value");
                     assertThat(properties.getInvitation().getExpiry()).isEqualTo(Duration.ofDays(7));
+                    assertThat(properties.getRaidApi().getClientId()).isEqualTo("orcid-updater-raid-au");
+                    final var work = properties.getWork();
+                    assertThat(work.isEnabled()).isFalse();
+                    assertThat(work.getPollInterval()).isEqualTo(Duration.ofSeconds(10));
+                    assertThat(work.getBatchSize()).isEqualTo(50);
+                    assertThat(work.getMaxAttempts()).isEqualTo(8);
+                    assertThat(work.getInitialBackoff()).isEqualTo(Duration.ofMinutes(1));
+                    assertThat(work.getClaimTimeout()).isEqualTo(Duration.ofMinutes(10));
                 });
     }
 

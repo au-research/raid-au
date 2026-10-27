@@ -12,6 +12,7 @@ import au.org.raid.orcidupdater.signin.OAuthStateRepository.OAuthState;
 import au.org.raid.orcidupdater.signin.OrcidOAuthClient.OrcidSignIn;
 import au.org.raid.orcidupdater.signin.SignInService.Outcome;
 import au.org.raid.orcidupdater.support.TestProperties;
+import au.org.raid.orcidupdater.work.WorkQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,6 +60,7 @@ class SignInServiceTest {
     private final OAuthStateRepository oauthStateRepository = mock(OAuthStateRepository.class);
     private final ResearcherRepository researcherRepository = mock(ResearcherRepository.class);
     private final OrcidOAuthClient orcidOAuthClient = mock(OrcidOAuthClient.class);
+    private final WorkQueue workQueue = mock(WorkQueue.class);
     private final PlatformTransactionManager transactionManager = mock(PlatformTransactionManager.class);
     private final LinkCipher linkCipher = new LinkCipher(TestProperties.complete());
     private final TokenCipher tokenCipher = new TokenCipher(TestProperties.complete());
@@ -80,7 +82,7 @@ class SignInServiceTest {
     @BeforeEach
     void setUp() {
         service = new SignInService(invitationRepository, oauthStateRepository, researcherRepository, orcidOAuthClient,
-                linkCipher, tokenCipher, new TransactionTemplate(transactionManager), Clock.fixed(NOW, ZoneOffset.UTC));
+                linkCipher, tokenCipher, workQueue, new TransactionTemplate(transactionManager), Clock.fixed(NOW, ZoneOffset.UTC));
         when(invitationRepository.findByTokenHash(linkToken.lookupHash())).thenReturn(Optional.of(pending));
         when(invitationRepository.findById(pending.id())).thenReturn(Optional.of(pending));
         when(orcidOAuthClient.authorisationUri(anyString())).thenReturn(ORCID_AUTHORISE);
@@ -212,6 +214,10 @@ class SignInServiceTest {
             assertThat(tokenCipher.decrypt(access.getValue(), TYPED_ID)).isEqualTo("access-token-value");
             assertThat(tokenCipher.decrypt(refresh.getValue(), TYPED_ID)).isEqualTo("refresh-token-value");
             verify(researcherRepository, never()).recordConsent(any(), any(), any());
+            // the worker pushes AUTHENTICATED and writes this RAiD
+            verify(workQueue).requestStatus(TYPED_ID);
+            verify(workQueue).requestRaidSync(pending.raidHandle());
+            verify(workQueue, never()).requestStatus(OTHER_ID);
         }
 
         @Test
@@ -237,6 +243,9 @@ class SignInServiceTest {
             verify(invitationRepository).markUsed(pending.id(), OTHER_ID, NOW);
             verify(researcherRepository).saveAuthentication(eq(OTHER_ID), any(), any(), any(), any());
             verify(researcherRepository).recordConsent(OTHER_ID, emailHash, NOW);
+            // both: the typed iD's invitation is used up as well
+            verify(workQueue).requestStatus(OTHER_ID);
+            verify(workQueue).requestStatus(TYPED_ID);
         }
 
         @Test
@@ -249,7 +258,7 @@ class SignInServiceTest {
             assertThat(result.invitationExpiresAt()).isEqualTo(pending.expiresAt());
             verify(orcidOAuthClient, never()).exchange(any());
             verify(invitationRepository, never()).markUsed(any(), any(), any());
-            verifyNoInteractions(researcherRepository, transactionManager);
+            verifyNoInteractions(researcherRepository, transactionManager, workQueue);
         }
 
         @Test

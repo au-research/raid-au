@@ -84,6 +84,8 @@ class SignInFlowIntTest {
         registry.add("orcid-updater.api-key", () -> "int-test-api-key");
         registry.add("orcid-updater.app-base-url", () -> "https://app.example.org");
         registry.add("orcid-updater.contact-email", () -> "privacy@example.org");
+        // these tests drive the work queue themselves, or not at all
+        registry.add("orcid-updater.work.enabled", () -> "false");
     }
 
     @Autowired
@@ -111,6 +113,7 @@ class SignInFlowIntTest {
     @BeforeEach
     void setUp() {
         jdbcTemplate.update("DELETE FROM orcid_updater.oauth_state");
+        jdbcTemplate.update("DELETE FROM orcid_updater.work_item");
         jdbcTemplate.update("DELETE FROM orcid_updater.invitation");
         jdbcTemplate.update("DELETE FROM orcid_updater.researcher");
         link = invite(TYPED_ID, EMAIL);
@@ -158,6 +161,11 @@ class SignInFlowIntTest {
         return complete(state, code, null, expectedStatus);
     }
 
+    /** What the sign-in asked the background worker to do, as kind:key. */
+    private List<String> queued() {
+        return jdbcTemplate.queryForList("SELECT kind || ':' || item_key FROM orcid_updater.work_item", String.class);
+    }
+
     private int count(final String table) {
         return jdbcTemplate.queryForObject("SELECT count(*) FROM orcid_updater." + table, Integer.class);
     }
@@ -196,6 +204,8 @@ class SignInFlowIntTest {
                 "SELECT authenticated_orcid_id FROM orcid_updater.invitation WHERE used_at IS NOT NULL", String.class))
                 .isEqualTo(TYPED_ID);
         assertThat(count("oauth_state")).isZero();
+        // the worker pushes AUTHENTICATED and writes the RAiD
+        assertThat(queued()).containsExactlyInAnyOrder("STATUS:" + TYPED_ID, "RAID_SYNC:" + RAID.handle());
 
         // the link is used up, and the callback can't be replayed
         mockMvc.perform(get("/invitations/" + link)).andExpect(status().isGone());
@@ -226,6 +236,14 @@ class SignInFlowIntTest {
                 .isEqualTo(OTHER_ID);
         assertThat(jdbcTemplate.queryForList("SELECT orcid_id FROM orcid_updater.researcher", String.class))
                 .containsExactly(OTHER_ID);
+        assertThat(queued()).containsExactlyInAnyOrder(
+                "STATUS:" + OTHER_ID, "STATUS:" + TYPED_ID, "RAID_SYNC:" + RAID.handle());
+
+        // the RAiD API learns which iD to put in place of the typed one
+        mockMvc.perform(get("/contributors/status").param("id", TYPED_ID).header("X-Api-Key", "int-test-api-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("AUTHENTICATED"))
+                .andExpect(jsonPath("$.authenticatedId").value(OTHER_ID));
     }
 
     @Test
@@ -238,6 +256,7 @@ class SignInFlowIntTest {
         verify(orcidOAuthClient, never()).exchange(anyString());
         assertThat(count("researcher")).isZero();
         assertThat(count("oauth_state")).isZero();
+        assertThat(queued()).isEmpty();
         mockMvc.perform(get("/invitations/" + link)).andExpect(status().isOk());
     }
 

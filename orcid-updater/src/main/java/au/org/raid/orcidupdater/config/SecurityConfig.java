@@ -2,6 +2,7 @@ package au.org.raid.orcidupdater.config;
 
 import au.org.raid.orcidupdater.security.ApiKeyAuthenticationFilter;
 import au.org.raid.orcidupdater.security.ProblemSecurityHandler;
+import au.org.raid.orcidupdater.serviceauth.JwksController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,10 +71,12 @@ public class SecurityConfig {
     public SecurityFilterChain researcherChain(final HttpSecurity http) throws Exception {
         return stateless(http)
                 .securityMatcher("/invitations/*", "/invitations/*/authentications", "/authentications",
-                        "/actuator/health", "/actuator/health/**", "/error")
+                        JwksController.PATH, "/actuator/health", "/actuator/health/**", "/error")
                 .cors(cors -> cors.configurationSource(appCorsConfiguration()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(GET, "/invitations/*").permitAll()
+                        // the public half of the updater's signing key, read by Keycloak (RAID-1011)
+                        .requestMatchers(GET, JwksController.PATH).permitAll()
                         .requestMatchers(POST, "/invitations/*/authentications").permitAll()
                         .requestMatchers(POST, "/authentications").permitAll()
                         .requestMatchers(GET, "/actuator/health", "/actuator/health/**").permitAll()

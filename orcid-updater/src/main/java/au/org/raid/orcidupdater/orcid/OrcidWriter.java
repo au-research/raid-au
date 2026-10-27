@@ -7,6 +7,7 @@ import au.org.raid.orcidupdater.orcid.OrcidEntryRepository.OrcidEntry;
 import au.org.raid.orcidupdater.orcid.OrcidRaid.Contributor;
 import au.org.raid.orcidupdater.orcid.OrcidWriteException.Kind;
 import au.org.raid.orcidupdater.researcher.ResearcherRepository;
+import au.org.raid.orcidupdater.work.WorkQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,11 +52,12 @@ public class OrcidWriter {
     private final ResearcherRepository researcherRepository;
     private final InvitationRepository invitationRepository;
     private final TokenCipher tokenCipher;
+    private final WorkQueue workQueue;
     private final TransactionTemplate transactionTemplate;
     private final OrcidUpdaterProperties properties;
     private final Clock clock;
 
-    // IMPROVE: RAID-1005 holds back embargoed RAiDs before calling this
+    /** Embargoed RAiDs must not get here: the work processor holds them back (RAID-1005). */
     public List<EntryOutcome> sync(final OrcidRaid raid) {
         final var outcomes = new ArrayList<EntryOutcome>();
         // looked up once: every entry names it
@@ -181,6 +183,7 @@ public class OrcidWriter {
         final var now = clock.instant();
         if (e.getKind() == Kind.TOKEN_REJECTED) {
             researcherRepository.markRevoked(orcidId, now);
+            workQueue.requestStatus(orcidId);
             entryRepository.recordFailure(orcidId, raidHandle,
                     "ORCID rejected the researcher's token (access revoked): " + e.getMessage(), now);
             log.warn("RAiD {}: ORCID rejected the token for {}; marked revoked", raidHandle, orcidId);

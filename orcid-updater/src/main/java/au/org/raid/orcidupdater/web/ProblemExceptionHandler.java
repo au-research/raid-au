@@ -13,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.stream.Collectors;
 
@@ -34,6 +36,22 @@ public class ProblemExceptionHandler {
                 .sorted()
                 .collect(Collectors.joining("; "));
         return problem(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", detail);
+    }
+
+    /** A query parameter failed its constraint, e.g. GET /contributors/status?id=. */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ProblemDetail invalidParameter(final HandlerMethodValidationException e) {
+        final var detail = e.getParameterValidationResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream()
+                        .map(error -> result.getMethodParameter().getParameterName() + " " + error.getDefaultMessage()))
+                .sorted()
+                .collect(Collectors.joining("; "));
+        return problem(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", detail);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail missingParameter(final MissingServletRequestParameterException e) {
+        return problem(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", e.getParameterName() + " is required");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
