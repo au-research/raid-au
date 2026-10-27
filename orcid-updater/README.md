@@ -19,8 +19,21 @@ iDs and write RAiDs to their ORCID records with their consent (RAID-975).
 * The RAiD app (RAID-977), which shows researchers their pages and calls the
   updater. The updater serves no pages of its own.
 * The RA's Keycloak realm, which issues minter and administrator tokens.
+* Outbound HTTPS to the ORCID API and to the ROR API (`api.ror.org`).
 
 Nothing needs AWS.
+
+## What it writes to ORCID
+
+Each authenticated contributor gets one membership entry per RAiD, in
+ORCID's JSON format. ORCID's id for it (the put code) is kept in
+`orcid_entry`, so a later save of the RAiD updates the same entry, and the
+entry is deleted when the contributor is removed from the RAiD. A failed
+write is recorded on that row (`failure`) for operators; the next save of
+the RAiD tries again. If ORCID rejects a researcher's token, the researcher
+is marked revoked and nothing more is written until they authenticate again.
+Every entry names the organisation that owns the RAiD, because ORCID
+requires one; see the ADR.
 
 ## Settings
 
@@ -52,6 +65,9 @@ required setting is missing, and the startup error names each one.
 | `ORCID_UPDATER_APP_BASE_URL` | yes | The RA's RAiD app, e.g. `https://app.example.org`. Invitation links and the ORCID redirect URI point into it, and only its origin may call the updater from a browser (CORS) |
 | `ORCID_UPDATER_CONTACT_EMAIL` | yes | The RA's contact for researchers' privacy and deletion requests, returned to the app for its researcher pages. Not a service point contact |
 | `ORCID_UPDATER_INVITATION_EXPIRY` | no | Default `14d` |
+| `ORCID_UPDATER_ORCID_WRITE_MAX_ATTEMPTS` | no | Default `3`. Attempts per ORCID write when ORCID returns 5xx or 429, or doesn't respond |
+| `ORCID_UPDATER_ORCID_WRITE_INITIAL_BACKOFF` | no | Default `2s`. Wait before the second attempt, doubled before each later one |
+| `ORCID_UPDATER_ROR_API_URL` | no | Default `https://api.ror.org/v2`. Looks up the RAiD owner's organisation, which ORCID requires on every entry |
 
 The updater listens on port 8090. `GET /actuator/health` is the health check;
 inside the container run `java -cp /opt Status http://localhost:8090/actuator/health`.

@@ -18,17 +18,36 @@ public class ResearcherRepository {
      * with consent carry a fingerprint (enforced by the researcher_consent_recorded constraint).
      */
     public Optional<String> findOrcidIdByConsentedEmailHash(final byte[] emailHash) {
-        // IMPROVE: RAID-1004 must also skip researchers whose access ORCID has revoked
-        return jdbcClient.sql("SELECT orcid_id FROM researcher WHERE email_hash = :emailHash")
+        // a researcher who revoked access at ORCID must be invited again, not matched
+        return jdbcClient.sql("SELECT orcid_id FROM researcher WHERE email_hash = :emailHash AND revoked_at IS NULL")
                 .param("emailHash", emailHash)
                 .query(String.class)
                 .optional();
     }
 
+    /** The encrypted access token, when the researcher has authenticated and not revoked access. */
+    public Optional<byte[]> findAccessToken(final String orcidId) {
+        return jdbcClient.sql("""
+                        SELECT access_token FROM researcher
+                        WHERE orcid_id = :orcidId AND access_token IS NOT NULL AND revoked_at IS NULL
+                        """)
+                .param("orcidId", orcidId)
+                .query(byte[].class)
+                .optional();
+    }
+
+    /** ORCID rejected the token. No more writes for this iD until the researcher signs in again. */
+    public void markRevoked(final String orcidId, final Instant revokedAt) {
+        jdbcClient.sql("UPDATE researcher SET revoked_at = :revokedAt WHERE orcid_id = :orcidId AND revoked_at IS NULL")
+                .param("revokedAt", revokedAt.atOffset(ZoneOffset.UTC))
+                .param("orcidId", orcidId)
+                .update();
+    }
+
     /**
-     * Stores the tokens from an ORCID sign-in, replacing any earlier ones for this iD. An earlier
-     * "Remember me" consent is left as it is: signing in again without ticking the box is not a
-     * request to delete it (that is RAID-1006).
+     * Stores the tokens from an ORCID sign-in, replacing any earlier ones for this iD and clearing
+     * a revocation. An earlier "Remember me" consent is left as it is: signing in again without
+     * ticking the box is not a request to delete it (that is RAID-1006).
      */
     public void saveAuthentication(final String orcidId, final byte[] accessToken, final byte[] refreshToken,
                                    final String scope, final Instant authenticatedAt) {
@@ -38,7 +57,8 @@ public class ResearcherRepository {
                         ON CONFLICT (orcid_id) DO UPDATE SET access_token = excluded.access_token,
                                                              refresh_token = excluded.refresh_token,
                                                              scope = excluded.scope,
-                                                             authenticated_at = excluded.authenticated_at
+                                                             authenticated_at = excluded.authenticated_at,
+                                                             revoked_at = NULL
                         """)
                 .param("orcidId", orcidId)
                 .param("accessToken", accessToken)

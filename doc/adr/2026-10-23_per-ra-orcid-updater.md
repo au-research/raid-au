@@ -121,6 +121,58 @@ researcher flow would not depend on the app. It was rejected (RL,
 2026-10-26): the researcher interface is the app's, built in React under
 RAID-977, and is outside the updater's scope.
 
+## What each ORCID entry says
+
+Decided 2026-10-27 (RAID-1004). Each authenticated contributor gets one
+membership entry per RAiD, sent as ORCID JSON (`application/vnd.orcid+json`).
+The fields follow the central updater (raid-aws-private
+`handler/orcid-writer`) so RAiD AU's existing entries keep their shape:
+
+* department-name: the current primary title, else any current title.
+* role-title: the label of the contributor's position with the latest start
+  date, with that position's start and end dates.
+* organization: the organisation that owns the RAiD (`identifier.owner.id`),
+  looked up in ROR.
+* url and an external id of type `raid`, relationship `self`: the RAiD URL.
+
+**Every entry names the RAiD owner's organisation, because ORCID requires
+one.** The RAiD schema has no affiliation for a contributor, so for a
+contributor from another organisation the entry names an organisation they
+may not belong to. We first decided to name it only on a principal
+investigator's entry and leave it off the others. The ORCID sandbox
+rejected a membership without an organisation
+(`400 Bad request: organization must be present and valid`, 2026-10-27),
+even though ORCID's affiliations tutorial says it is optional when an
+external id is given. Naming the owner organisation on every entry is what
+the central updater already does (RL, 2026-10-27).
+
+If ROR can't find the owner organisation, the write is recorded as failed
+without calling ORCID, and the next save of the RAiD tries again.
+
+Revisit if the RAiD schema gains a contributor affiliation, or if ORCID
+offers a section that fits a RAiD without an organisation.
+
+How writes behave:
+
+* The put code ORCID returns is kept per researcher and RAiD
+  (`orcid_entry`), so later saves update the same entry.
+* If ORCID says the stored put code no longer exists, the entry is created
+  again, as RAID-975 requires. This also restores an entry the researcher
+  deleted at ORCID while they are still on the RAiD; revoking access is how
+  a researcher stops the updater writing.
+* Entries of contributors removed from the RAiD are deleted at ORCID. If the
+  researcher is no longer authenticated, the row is kept with a failure
+  recorded, since the entry can't be deleted without their token.
+* A 401 from ORCID means the researcher revoked access: they are marked
+  revoked, nothing more is written for them, and their email fingerprint no
+  longer matches new invitations, until they authenticate again.
+* 5xx, 429 and no response are retried with back-off (3 attempts from 2
+  seconds by default). Other errors are recorded straight away. The last
+  failure is kept on the `orcid_entry` row with ORCID's message, never a
+  token.
+* Each researcher's write holds that iD's advisory lock, so two saves of
+  the same RAiD can't both create an entry.
+
 ## Other defaults
 
 * Invitations expire after 14 days (configurable) and fall back to
