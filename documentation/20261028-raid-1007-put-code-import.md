@@ -3,8 +3,8 @@
 - JIRA: [RAID-1007](https://ardc.atlassian.net/browse/RAID-1007), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-task: [RAID-1006](https://ardc.atlassian.net/browse/RAID-1006) (PR [#750](https://github.com/au-research/raid-au/pull/750))
 - Related: [RAID-978](https://ardc.atlassian.net/browse/RAID-978) exports the file and runs the import
-- PR: not yet opened (will target `feature/RAID-975`)
-- Status: built and tested locally
+- PR: [#751](https://github.com/au-research/raid-au/pull/751) (targets `feature/RAID-975`)
+- Status: PR open
 
 ## What changed and why
 
