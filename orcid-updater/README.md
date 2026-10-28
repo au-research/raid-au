@@ -62,6 +62,22 @@ is marked revoked and nothing more is written until they authenticate again.
 Every entry names the organisation that owns the RAiD, because ORCID
 requires one; see the ADR.
 
+## Deleting a researcher's data
+
+When a researcher asks for their data to be deleted, an RA administrator
+(realm role `orcid-updater-admin`) sends their email, ORCID iD or both to
+`POST /admin/researcher-deletions`. The updater removes the entries it wrote
+to their ORCID record, revokes its token at ORCID (`POST /oauth/revoke`,
+which also revokes the refresh token), then deletes the keyed hash, consent
+time, token, put codes and the researcher's invitations, and tells the RAiD
+API the researcher is UNAUTHENTICATED.
+
+If ORCID fails or refuses, nothing is deleted and the response is 502; send
+the request again. If the researcher has already revoked access at ORCID,
+their entries can't be removed: the data held here is still deleted, and
+`orcidEntriesLeft` in the response says how many entries they can remove on
+ORCID themselves. See the [contract](idl/orcid-updater-openapi-3.1.yaml).
+
 ## Settings
 
 Set these as environment variables. The updater will not start if any

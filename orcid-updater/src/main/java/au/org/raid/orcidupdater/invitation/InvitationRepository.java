@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -108,6 +109,20 @@ public class InvitationRepository {
                 .param("authenticatedOrcidId", authenticatedOrcidId)
                 .param("usedAt", utc(usedAt))
                 .update() == 1;
+    }
+
+    /**
+     * Deletes every invitation sent to this iD or used to sign in as it, with any sign-in in
+     * progress from them (RAID-1006). @return the iDs those invitations were sent to
+     */
+    public List<String> deleteForOrcidId(final String orcidId) {
+        return jdbcClient.sql("""
+                        DELETE FROM invitation WHERE orcid_id = :orcidId OR authenticated_orcid_id = :orcidId
+                        RETURNING orcid_id
+                        """)
+                .param("orcidId", orcidId)
+                .query(String.class)
+                .list();
     }
 
     private static Invitation invitation(final ResultSet rs, final int row) throws SQLException {

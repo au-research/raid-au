@@ -48,6 +48,13 @@ public class OAuthStateRepository {
                 .optional();
     }
 
+    /** Drops sign-ins in progress that carry this email fingerprint (RAID-1006). @return how many */
+    public int deleteByEmailHash(final byte[] emailHash) {
+        return jdbcClient.sql("DELETE FROM oauth_state WHERE email_hash = :emailHash")
+                .param("emailHash", emailHash)
+                .update();
+    }
+
     private static OffsetDateTime utc(final Instant instant) {
         return instant.atOffset(ZoneOffset.UTC);
     }

@@ -1,5 +1,6 @@
 package au.org.raid.orcidupdater.config;
 
+import au.org.raid.orcidupdater.deletion.ResearcherDeletionService;
 import au.org.raid.orcidupdater.invitation.InvitationService;
 import au.org.raid.orcidupdater.security.ProblemSecurityHandler;
 import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException;
@@ -98,6 +99,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private ServiceKeyStore serviceKeyStore;
+
+    @MockitoBean
+    private ResearcherDeletionService researcherDeletionService;
 
     private static ResultMatcher unauthorizedProblem() {
         return result -> {
@@ -316,10 +320,10 @@ class SecurityConfigTest {
         }
 
         @Test
-        @DisplayName("Admin endpoints with the admin role: " + NOT_BLOCKED_BY_SECURITY)
+        @DisplayName("Admin endpoints with the admin role: pass security (400 without a body, 404 with no handler yet)")
         void adminWithRole() throws Exception {
             mockMvc.perform(post("/admin/researcher-deletions").with(jwt().authorities(new SimpleGrantedAuthority(ADMIN))))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isBadRequest());
             mockMvc.perform(post("/admin/put-code-imports").with(jwt().authorities(new SimpleGrantedAuthority(ADMIN))))
                     .andExpect(status().isNotFound());
         }

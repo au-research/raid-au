@@ -1,5 +1,7 @@
 package au.org.raid.orcidupdater.web;
 
+import au.org.raid.orcidupdater.deletion.OrcidUnavailableException;
+import au.org.raid.orcidupdater.deletion.ResearcherMismatchException;
 import au.org.raid.orcidupdater.invitation.ContributorNotOnRaidException;
 import au.org.raid.orcidupdater.invitation.EmailDeliveryException;
 import au.org.raid.orcidupdater.raidapi.MinterNotPermittedException;
@@ -107,6 +109,19 @@ public class ProblemExceptionHandler {
     public ProblemDetail signInFailed(final OrcidSignInFailedException e) {
         log.warn(e.getMessage());
         return problem(HttpStatus.BAD_GATEWAY, "ORCID_SIGN_IN_FAILED", "ORCID could not complete the sign-in.");
+    }
+
+    @ExceptionHandler(ResearcherMismatchException.class)
+    public ProblemDetail researcherMismatch(final ResearcherMismatchException e) {
+        return problem(HttpStatus.BAD_REQUEST, "RESEARCHER_MISMATCH",
+                "The email belongs to a different researcher from the ORCID iD. Nothing was deleted.");
+    }
+
+    @ExceptionHandler(OrcidUnavailableException.class)
+    public ProblemDetail orcidUnavailable(final OrcidUnavailableException e) {
+        log.warn(e.getMessage());
+        return problem(HttpStatus.BAD_GATEWAY, "ORCID_UNAVAILABLE",
+                "ORCID could not remove the entries or revoke the token. Nothing was deleted here; try again.");
     }
 
     private static ProblemDetail problem(final HttpStatus status, final String code, final String detail) {

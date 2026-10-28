@@ -25,6 +25,21 @@ public class ResearcherRepository {
                 .optional();
     }
 
+    /** The researcher who consented with this email fingerprint, revoked or not (RAID-1006). */
+    public Optional<String> findOrcidIdByEmailHash(final byte[] emailHash) {
+        return jdbcClient.sql("SELECT orcid_id FROM researcher WHERE email_hash = :emailHash")
+                .param("emailHash", emailHash)
+                .query(String.class)
+                .optional();
+    }
+
+    /** Deletes the tokens, consent and email fingerprint. @return whether there was a row */
+    public boolean delete(final String orcidId) {
+        return jdbcClient.sql("DELETE FROM researcher WHERE orcid_id = :orcidId")
+                .param("orcidId", orcidId)
+                .update() > 0;
+    }
+
     /** The encrypted access token, when the researcher has authenticated and not revoked access. */
     public Optional<byte[]> findAccessToken(final String orcidId) {
         return jdbcClient.sql("""
@@ -56,7 +71,7 @@ public class ResearcherRepository {
     /**
      * Stores the tokens from an ORCID sign-in, replacing any earlier ones for this iD and clearing
      * a revocation. An earlier "Remember me" consent is left as it is: signing in again without
-     * ticking the box is not a request to delete it (that is RAID-1006).
+     * ticking the box is not a request to delete it (that is {@link #delete}).
      */
     public void saveAuthentication(final String orcidId, final byte[] accessToken, final byte[] refreshToken,
                                    final String scope, final Instant authenticatedAt) {

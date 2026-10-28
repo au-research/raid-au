@@ -1,8 +1,11 @@
 package au.org.raid.orcidupdater.signin;
 
 import au.org.raid.orcidupdater.config.OrcidUpdaterProperties;
+import au.org.raid.orcidupdater.orcid.OrcidWriteException;
+import au.org.raid.orcidupdater.orcid.OrcidWriteException.Kind;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -90,6 +93,37 @@ public class OrcidOAuthClient {
         }
         return new OrcidSignIn(properties.getOrcid().getBaseUrl().replaceAll("/+$", "") + "/" + response.orcid(),
                 response.accessToken(), response.refreshToken(), response.scope());
+    }
+
+    /**
+     * Revokes a token at ORCID, with its refresh token (ORCID-Source tutorial revoke.md: POST
+     * /oauth/revoke with the client credentials and either token).
+     *
+     * @throws OrcidWriteException RETRYABLE when ORCID fails or can't be reached, REJECTED when it
+     *                             refuses the request
+     */
+    public void revoke(final String accessToken) {
+        final var form = new LinkedMultiValueMap<String, String>();
+        form.add("client_id", properties.getOrcid().getClientId());
+        form.add("client_secret", properties.getOrcid().getClientSecret());
+        form.add("token", accessToken);
+        try {
+            restClient.post()
+                    .uri("/oauth/revoke")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(form)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (final HttpStatusCodeException e) {
+            // the body is not kept: it can echo the request
+            final var status = e.getStatusCode();
+            final var message = "ORCID token revocation returned " + status.value();
+            throw new OrcidWriteException(status.is5xxServerError() || status.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)
+                    ? Kind.RETRYABLE : Kind.REJECTED, message);
+        } catch (final ResourceAccessException e) {
+            throw new OrcidWriteException(Kind.RETRYABLE, "ORCID token revocation failed: " + e.getClass().getSimpleName());
+        }
     }
 
     private static boolean isBlank(final String value) {

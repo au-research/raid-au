@@ -1,5 +1,7 @@
 package au.org.raid.orcidupdater.signin;
 
+import au.org.raid.orcidupdater.orcid.OrcidWriteException;
+import au.org.raid.orcidupdater.orcid.OrcidWriteException.Kind;
 import au.org.raid.orcidupdater.support.TestProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @DisplayName("OrcidOAuthClient")
 class OrcidOAuthClientTest {
     private static final String TOKEN_URL = "https://sandbox.orcid.org/oauth/token";
+    private static final String REVOKE_URL = "https://sandbox.orcid.org/oauth/revoke";
     private static final String TOKEN_RESPONSE = """
             {"access_token": "access-token-value", "token_type": "bearer", "refresh_token": "refresh-token-value",
              "expires_in": 631138518, "scope": "/read-limited /activities/update", "name": "Josiah Carberry",
@@ -107,6 +110,49 @@ class OrcidOAuthClientTest {
         server.reset();
         server.expect(requestTo(TOKEN_URL)).andRespond(withException(new IOException("connection reset")));
         assertThatThrownBy(() -> client.exchange("code")).isInstanceOf(OrcidSignInFailedException.class);
+    }
+
+    @Test
+    @DisplayName("Revoke: posts the token with the client credentials to ORCID's revoke endpoint")
+    void revoke() {
+        server.expect(requestTo("https://sandbox.orcid.org/oauth/revoke"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Accept", MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(content().formDataContains(java.util.Map.of(
+                        "client_id", "APP-TEST", "client_secret", "test", "token", "access-token-value")))
+                .andRespond(withSuccess());
+
+        client.revoke("access-token-value");
+
+        server.verify();
+    }
+
+    @Test
+    @DisplayName("Revoke fails: retryable for 5xx, 429 or no response, rejected otherwise, never with the token")
+    void revokeFails() {
+        server.expect(requestTo(REVOKE_URL)).andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
+        assertThatThrownBy(() -> client.revoke("access-token-value"))
+                .isInstanceOfSatisfying(OrcidWriteException.class, e -> assertThat(e.getKind()).isEqualTo(Kind.RETRYABLE))
+                .hasMessageContaining("503");
+
+        server.reset();
+        server.expect(requestTo(REVOKE_URL)).andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS));
+        assertThatThrownBy(() -> client.revoke("access-token-value"))
+                .isInstanceOfSatisfying(OrcidWriteException.class, e -> assertThat(e.getKind()).isEqualTo(Kind.RETRYABLE));
+
+        server.reset();
+        server.expect(requestTo(REVOKE_URL)).andRespond(withException(new IOException("connection reset")));
+        assertThatThrownBy(() -> client.revoke("access-token-value"))
+                .isInstanceOfSatisfying(OrcidWriteException.class, e -> assertThat(e.getKind()).isEqualTo(Kind.RETRYABLE));
+
+        server.reset();
+        server.expect(requestTo(REVOKE_URL)).andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"error\":\"invalid_client\",\"token\":\"access-token-value\"}"));
+        assertThatThrownBy(() -> client.revoke("access-token-value"))
+                .isInstanceOfSatisfying(OrcidWriteException.class, e -> assertThat(e.getKind()).isEqualTo(Kind.REJECTED))
+                .hasMessageContaining("401")
+                .hasMessageNotContaining("access-token-value");
     }
 
     @Test

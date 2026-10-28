@@ -243,6 +243,12 @@ Decided 2026-10-27 (RAID-1005).
   are retried in the background (see above).
 * A deletion request removes the entries the updater wrote, revokes the
   token at ORCID, then deletes the hash, consent time, token and put codes.
+  ORCID revokes a token with `POST /oauth/revoke` (client credentials and
+  the token, form encoded); revoking either the access or refresh token
+  revokes both. If ORCID fails, nothing is deleted locally, so the request
+  can be repeated. If the researcher already revoked access at ORCID, the
+  entries can't be removed and the response says how many are left
+  (RAID-1006).
 * RAiD AU keeps its existing ORCID client, so put codes from the central
   updater are imported (from a CSV file, so the updater needs no AWS access)
   and existing entries are updated, not duplicated. Other RAs start empty.
