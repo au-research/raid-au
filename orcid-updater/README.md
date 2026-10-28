@@ -78,6 +78,25 @@ their entries can't be removed: the data held here is still deleted, and
 `orcidEntriesLeft` in the response says how many entries they can remove on
 ORCID themselves. See the [contract](idl/orcid-updater-openapi-3.1.yaml).
 
+## Importing put codes
+
+An RA that already wrote entries to ORCID with the same ORCID client (RAiD
+AU's central updater) imports their put codes, so the updater updates those
+entries instead of adding duplicates. An administrator sends a CSV file to
+`POST /admin/put-code-imports`:
+
+```
+handle,orcidId,putCode
+10.82841/86bf1b6c,0000-0002-1825-0097,1234567
+```
+
+The iD can be bare or a URL, but must be on the ORCID the updater is
+configured for. An entry that already has a put code is left alone, so the
+import can be run again. Invalid rows are reported by line number and the
+rest are imported. Nothing is written to ORCID until the researcher
+authenticates; access tokens are never imported, so every researcher
+authenticates again.
+
 ## Settings
 
 Set these as environment variables. The updater will not start if any

@@ -4,6 +4,7 @@ import au.org.raid.orcidupdater.deletion.OrcidUnavailableException;
 import au.org.raid.orcidupdater.deletion.ResearcherMismatchException;
 import au.org.raid.orcidupdater.invitation.ContributorNotOnRaidException;
 import au.org.raid.orcidupdater.invitation.EmailDeliveryException;
+import au.org.raid.orcidupdater.putcode.InvalidImportFileException;
 import au.org.raid.orcidupdater.raidapi.MinterNotPermittedException;
 import au.org.raid.orcidupdater.raidapi.RaidApiUnavailableException;
 import au.org.raid.orcidupdater.raidapi.RaidNotFoundException;
@@ -122,6 +123,11 @@ public class ProblemExceptionHandler {
         log.warn(e.getMessage());
         return problem(HttpStatus.BAD_GATEWAY, "ORCID_UNAVAILABLE",
                 "ORCID could not remove the entries or revoke the token. Nothing was deleted here; try again.");
+    }
+
+    @ExceptionHandler(InvalidImportFileException.class)
+    public ProblemDetail invalidImportFile(final InvalidImportFileException e) {
+        return problem(HttpStatus.BAD_REQUEST, "INVALID_IMPORT_FILE", e.getMessage() + " Nothing was imported.");
     }
 
     private static ProblemDetail problem(final HttpStatus status, final String code, final String detail) {
