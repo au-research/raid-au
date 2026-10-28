@@ -26,6 +26,8 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class DataciteService {
     private static final String DOI_PREFIX = "10.";
+    private static final String REGISTER_EVENT = "register";
+    private static final String HIDE_EVENT = "hide";
 
     private final DataciteProperties properties;
     private final RestTemplate restTemplate;
@@ -35,6 +37,20 @@ public class DataciteService {
 
     protected boolean isDoi(final String handle) {
         return handle != null && handle.startsWith(DOI_PREFIX);
+    }
+
+    /**
+     * An update to a non-open RAiD must hide its DOI. DataCite ignores "register" on a findable DOI,
+     * so a RAiD changed from open to embargoed would otherwise stay findable. "hide" moves a findable
+     * DOI to registered. See RAID-1012.
+     */
+    private void hideNonOpenDoi(final DataciteRequest dataciteRequest) {
+        final var data = dataciteRequest.getData();
+
+        if (data != null && data.getAttributes() != null
+                && REGISTER_EVENT.equals(data.getAttributes().getEvent())) {
+            data.getAttributes().setEvent(HIDE_EVENT);
+        }
     }
 
     @SneakyThrows
@@ -84,6 +100,7 @@ public class DataciteService {
         final var endpoint = "%s/%s".formatted(properties.getEndpoint(), handle);
 
         final DataciteRequest dataciteRequest = dataciteRequestFactory.create(request, handle);
+        hideNonOpenDoi(dataciteRequest);
 
         log.debug("PUTting Datacite request: {}", objectMapper.writeValueAsString(dataciteRequest));
 
@@ -108,6 +125,7 @@ public class DataciteService {
         final var endpoint = "%s/%s".formatted(properties.getEndpoint(), handle);
 
         final DataciteRequest dataciteRequest = dataciteRequestFactory.create(request, handle);
+        hideNonOpenDoi(dataciteRequest);
         final HttpEntity<DataciteRequest> entity = httpEntityFactory.create(dataciteRequest, repositoryId, password);
 
         try {
