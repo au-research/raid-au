@@ -239,7 +239,7 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
 // project loosely, consistent with how harvesters consume the output. The
 // category (Input/Output/Internal) is preserved on `additionalType` rather
 // than split across distinct schema.org properties (see RAID-757). It is always
-// emitted as an array (omitted when there is no category) so the output matches
+// emitted as an array (omitted when there is no category or type) so the output matches
 // the multivalued `additionalType` in the LinkML CreativeWork schema; harvesters
 // treat a single-element array and a scalar identically after JSON-LD expansion
 // (RAID-782).
@@ -248,6 +248,11 @@ function buildRelatedRaidProperties(relatedRaids: RelatedRaid[]): Pick<ResearchP
 // fetch-raids build step, and shown on the landing page) is carried on `name`
 // when present, so harvesters get the same human-readable reference the page
 // displays rather than a bare identifier.
+//
+// The related-object type (Dataset, Journal Article, ...) follows the category
+// on `additionalType`: its URI, then its resolved label when the vocabulary
+// mapping has one, so RDA can file the object without a vocabulary lookup
+// (RAID-981).
 function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]): CreativeWorkReference[] {
   const citations: CreativeWorkReference[] = [];
 
@@ -262,6 +267,16 @@ function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]
     const categoryIds = (related.category ?? [])
       .map((c) => c.id)
       .filter((id): id is string => Boolean(id));
+
+    const additionalTypes = [...categoryIds];
+    const typeId = related.type?.id;
+    if (typeId) {
+      additionalTypes.push(typeId);
+      const typeLabel = lookupVocabLabel(typeId);
+      if (typeLabel) {
+        additionalTypes.push(typeLabel);
+      }
+    }
 
     const citation: CreativeWorkReference = {
       "@type": "CreativeWork",
@@ -279,8 +294,8 @@ function buildRelatedObjectCitations(relatedObjects: RelatedObjectWithCitation[]
       citation.name = citationText;
     }
 
-    if (categoryIds.length > 0) {
-      citation.additionalType = categoryIds;
+    if (additionalTypes.length > 0) {
+      citation.additionalType = additionalTypes;
     }
 
     citations.push(citation);
