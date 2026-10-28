@@ -2,8 +2,8 @@
 
 - JIRA: [RAID-1006](https://ardc.atlassian.net/browse/RAID-1006), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-task: [RAID-1011](https://ardc.atlassian.net/browse/RAID-1011) (PR [#749](https://github.com/au-research/raid-au/pull/749))
-- PR: not yet opened (will target `feature/RAID-975`)
-- Status: built and tested locally
+- PR: [#750](https://github.com/au-research/raid-au/pull/750) (targets `feature/RAID-975`)
+- Status: PR open
 
 ## What changed and why
 
