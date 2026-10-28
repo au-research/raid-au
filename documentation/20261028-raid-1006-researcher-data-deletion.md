@@ -3,7 +3,7 @@
 - JIRA: [RAID-1006](https://ardc.atlassian.net/browse/RAID-1006), sub-task of [RAID-975](https://ardc.atlassian.net/browse/RAID-975) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Earlier sub-task: [RAID-1011](https://ardc.atlassian.net/browse/RAID-1011) (PR [#749](https://github.com/au-research/raid-au/pull/749))
 - PR: [#750](https://github.com/au-research/raid-au/pull/750) (targets `feature/RAID-975`)
-- Status: PR open
+- Status: merged into `feature/RAID-975` on 2026-10-28 (Dev Complete)
 
 ## What changed and why
 

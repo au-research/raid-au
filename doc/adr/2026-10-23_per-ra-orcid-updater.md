@@ -252,6 +252,10 @@ Decided 2026-10-27 (RAID-1005).
 * RAiD AU keeps its existing ORCID client, so put codes from the central
   updater are imported (from a CSV file, so the updater needs no AWS access)
   and existing entries are updated, not duplicated. Other RAs start empty.
+  The file holds handle, iD and put code; an entry that already has a put
+  code is kept, so the import can be repeated (RAID-1007). Exporting the
+  file from the central updater's `ContributorRaid` table, where the put
+  code is the last segment of `location`, is a RAID-978 step.
 
 
 # Consequences

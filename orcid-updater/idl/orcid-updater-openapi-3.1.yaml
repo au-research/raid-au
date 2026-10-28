@@ -380,10 +380,24 @@ paths:
       description: |
         CSV with a header row `handle,orcidId,putCode`. Imports put codes
         written by a previous updater using the same ORCID client, so later
-        writes update those entries instead of duplicating them. Safe to
-        run more than once: an existing row for the same handle and iD is
-        left unchanged and counted as skipped. Access tokens are never
-        imported.
+        writes update those entries instead of duplicating them. Nothing is
+        written to ORCID: the put codes are used when the researcher next
+        authenticates. Access tokens are never imported.
+
+        * `handle`: the RAiD handle as prefix/suffix, e.g. `10.82841/86bf1b6c`.
+        * `orcidId`: the iD, bare (`0000-0002-1825-0097`, as the central
+          updater keeps it) or as a URL. It must be an iD on the ORCID the
+          updater is configured for, so a sandbox export can't be imported
+          into production.
+        * `putCode`: ORCID's id for the entry, a positive whole number.
+
+        Spaces and double quotes around fields, a byte order mark, CRLF line
+        endings and blank lines are allowed.
+
+        Safe to run more than once: an entry that already has a put code is
+        left unchanged and counted as skipped. An entry without one (the
+        updater's own write was never accepted) takes the imported put code.
+        Invalid rows are listed in `rejected` and the others are imported.
       security:
       - adminBearer: []
       requestBody:
@@ -392,6 +406,9 @@ paths:
           text/csv:
             schema:
               type: "string"
+            example: |
+              handle,orcidId,putCode
+              10.82841/86bf1b6c,0000-0002-1825-0097,1234567
       responses:
         200:
           description: "Import finished."
@@ -400,11 +417,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/PutCodeImportResponse"
         400:
-          $ref: "#/components/responses/BadRequest"
+          description: |
+            The file is empty or its first row is not the header (`code`
+            INVALID_IMPORT_FILE). Nothing is imported.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
         401:
           $ref: "#/components/responses/Unauthorized"
         403:
           $ref: "#/components/responses/Forbidden"
+        415:
+          description: "The request is not sent as `text/csv`."
   /.well-known/jwks.json:
     get:
       tags:
@@ -769,12 +794,14 @@ components:
         imported:
           type: "integer"
           minimum: 0
+          description: "Rows whose put code is now held."
         skipped:
           type: "integer"
           minimum: 0
+          description: "Rows for an entry that already had a put code, left unchanged."
         rejected:
           type: "array"
-          description: "Rows that failed validation, by line number."
+          description: "Rows that failed validation, by line number. The reason never repeats the row."
           items:
             type: "object"
             additionalProperties: false
@@ -784,6 +811,7 @@ components:
             properties:
               line:
                 type: "integer"
+                description: "The line in the file, counting the header and blank lines from 1."
               reason:
                 type: "string"
     Problem:

@@ -72,6 +72,27 @@ public class OrcidEntryRepository {
                 .update();
     }
 
+    /**
+     * Holds a put code imported from a previous updater (RAID-1007). An entry that already has a put
+     * code is left unchanged; one without (no write accepted yet) takes the imported code. The import
+     * time stands in for the last attempt, which the table requires.
+     *
+     * @return true when the put code is now held, false when the entry was left unchanged
+     */
+    public boolean importPutCode(final String orcidId, final String raidHandle, final long putCode, final Instant at) {
+        return jdbcClient.sql("""
+                        INSERT INTO orcid_entry (orcid_id, raid_handle, put_code, last_attempt_at)
+                        VALUES (:orcidId, :raidHandle, :putCode, :at)
+                        ON CONFLICT (orcid_id, raid_handle) DO UPDATE SET put_code = excluded.put_code
+                        WHERE orcid_entry.put_code IS NULL
+                        """)
+                .param("orcidId", orcidId)
+                .param("raidHandle", raidHandle)
+                .param("putCode", putCode)
+                .param("at", at.atOffset(ZoneOffset.UTC))
+                .update() == 1;
+    }
+
     public void delete(final String orcidId, final String raidHandle) {
         jdbcClient.sql("DELETE FROM orcid_entry WHERE orcid_id = :orcidId AND raid_handle = :raidHandle")
                 .param("orcidId", orcidId)
