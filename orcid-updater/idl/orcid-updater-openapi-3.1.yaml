@@ -318,7 +318,20 @@ paths:
         Identify the researcher by email, ORCID iD or both. The updater
         deletes the RAiD entries it wrote to their ORCID record, revokes its
         access token at ORCID, then deletes the keyed hash, consent time,
-        token and put codes. A later invitation sends a new email.
+        token and put codes, the invitations sent to or used to sign in as
+        the iD, and sign-ins in progress carrying the keyed hash. The RAiD API
+        is then told the researcher is UNAUTHENTICATED. A later invitation
+        sends a new email.
+
+        An email finds the researcher only if they ticked "Remember me".
+
+        If ORCID fails, or refuses to revoke the token, nothing is deleted
+        here (502) and the request can simply be sent again. If ORCID no
+        longer accepts the token because the researcher revoked access
+        there, the entries can't be removed: the data held here is still
+        deleted, and `orcidEntriesLeft` says how many entries the researcher
+        can remove on ORCID themselves.
+
         The email is used only to compute the keyed hash and is not logged.
       security:
       - adminBearer: []
@@ -336,11 +349,28 @@ paths:
               schema:
                 $ref: "#/components/schemas/ResearcherDeletionResponse"
         400:
-          $ref: "#/components/responses/BadRequest"
+          description: |
+            The request is malformed or fails validation (`code`
+            VALIDATION_FAILED or MALFORMED_REQUEST), or the email belongs to a
+            different researcher from the iD (`code` RESEARCHER_MISMATCH).
+            Nothing is deleted.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
         401:
           $ref: "#/components/responses/Unauthorized"
         403:
           $ref: "#/components/responses/Forbidden"
+        502:
+          description: |
+            ORCID failed while removing the entries, or refused or failed to
+            revoke the token (`code` ORCID_UNAVAILABLE). Nothing is deleted
+            here; send the request again.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /admin/put-code-imports:
     post:
       tags:
@@ -708,6 +738,7 @@ components:
       required:
       - "found"
       - "orcidEntriesDeleted"
+      - "orcidEntriesLeft"
       - "tokenRevoked"
       properties:
         found:
@@ -716,8 +747,17 @@ components:
         orcidEntriesDeleted:
           type: "integer"
           minimum: 0
+          description: "Entries removed from the ORCID record, including ones already gone there."
+        orcidEntriesLeft:
+          type: "integer"
+          minimum: 0
+          description: |
+            Entries still on the ORCID record because ORCID no longer accepts
+            the updater's token, or refused to remove them. The researcher can
+            remove them on ORCID.
         tokenRevoked:
           type: "boolean"
+          description: "False when there was no usable token to revoke, e.g. the researcher had revoked access at ORCID."
     PutCodeImportResponse:
       type: "object"
       additionalProperties: false

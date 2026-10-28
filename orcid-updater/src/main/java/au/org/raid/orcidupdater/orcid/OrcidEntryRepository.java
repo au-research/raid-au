@@ -34,6 +34,13 @@ public class OrcidEntryRepository {
                 .list();
     }
 
+    public List<OrcidEntry> findByOrcidId(final String orcidId) {
+        return jdbcClient.sql("SELECT orcid_id, raid_handle, put_code FROM orcid_entry WHERE orcid_id = :orcidId ORDER BY raid_handle")
+                .param("orcidId", orcidId)
+                .query(OrcidEntry.class)
+                .list();
+    }
+
     public void recordSuccess(final String orcidId, final String raidHandle, final long putCode, final Instant at) {
         jdbcClient.sql("""
                         INSERT INTO orcid_entry (orcid_id, raid_handle, put_code, last_attempt_at, last_success_at, failure)
@@ -69,6 +76,13 @@ public class OrcidEntryRepository {
         jdbcClient.sql("DELETE FROM orcid_entry WHERE orcid_id = :orcidId AND raid_handle = :raidHandle")
                 .param("orcidId", orcidId)
                 .param("raidHandle", raidHandle)
+                .update();
+    }
+
+    /** Forgets every entry and put code for this iD (RAID-1006). */
+    public void deleteByOrcidId(final String orcidId) {
+        jdbcClient.sql("DELETE FROM orcid_entry WHERE orcid_id = :orcidId")
+                .param("orcidId", orcidId)
                 .update();
     }
 }
