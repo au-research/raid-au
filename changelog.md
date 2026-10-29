@@ -1,6 +1,22 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.20.1
+
+## API
+* Updating a RAiD that is not open now hides its DOI in DataCite. Previously a RAiD changed from
+  open to embargoed kept a Findable DOI, so its metadata stayed publicly visible in DataCite.
+  Minting is unchanged. A DOI that is already Findable is corrected the next time its RAiD is
+  updated (PR #758).
+
+## Static Landing Pages
+* Each related object in the schema.org JSON-LD now carries its type (for example Dataset or
+  Journal Article) in `additionalType`, after the existing category. Existing values are
+  unchanged (PR #752).
+
+## Dependencies
+* Minor dependency updates in `raid-agency-app` and `raid-agency-app-static`
+
 # 2.20.0
 
 ## API
