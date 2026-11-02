@@ -63,3 +63,12 @@ These are outside the ticket and are raised separately:
 - JIRA: [RAID-1020](https://ardc.atlassian.net/browse/RAID-1020)
 - PR (public reference): https://github.com/au-research/raid-au/pull/763
 - PR (per-environment values): https://github.com/au-research/raido-v2-aws-private/pull/71
+- PR (descriptions follow-up): https://github.com/au-research/raid-au/pull/764 and https://github.com/au-research/raido-v2-aws-private/pull/72
+
+## Follow-up: property descriptions
+
+Both pages now describe what each property does. The public **All properties**
+tables have a **What it does** column. The private per-environment page has a
+short *What these do* list under each table and a **Used for** column on the
+secrets table. Each description was checked against the code that reads the
+property.
