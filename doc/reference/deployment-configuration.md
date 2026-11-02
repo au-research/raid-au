@@ -495,105 +495,105 @@ says what a deployed environment should do:
 - **Check:** the default suits some environments and not others.
 - **Leave:** keep the default.
 
-Properties marked as Spring's own are standard Spring Boot settings; the
+Properties marked as Spring's own are standard Spring Boot settings. The
 [Spring Boot reference](https://docs.spring.io/spring-boot/appendix/application-properties/index.html)
-describes them in full.
+describes them in full; the description here says how the RAiD API uses them.
 
 ### Environment and database
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.environment` | `not-set` | Required | Selects `db/env/<value>` migrations and the default hostnames below. `demo` or `prod`. See trap 3. |
-| `raid.db.host` | none | Required | PostgreSQL hostname. |
-| `raid.db.port` | none | Required | PostgreSQL port. |
-| `raid.db.name` | `raido` | Leave | Database name. |
-| `raid.db.user` | none | Required | Application database user. |
-| `raid.db.password` | none | Secret | Application database password. |
-| `raid.db.encryption-key` | none | Secret | Encrypts service point DataCite passwords at rest. Never change it on an existing database. |
-| `raid.db.repair-token` | `RAID-878-v47` | Leave | One-shot Flyway checksum repair. Each token runs once per database and is recorded in `db_repair_log`. |
-| `spring.flyway.locations` | `classpath:db/env/api_user,classpath:db/migration,classpath:db/env/${raid.environment}` | Leave | Spring's own. Follows `raid.environment`. |
-| `spring.flyway.user`, `spring.flyway.password` | the datasource user | Secret | Spring's own. A more privileged migration user. |
-| `spring.flyway.default-schema` | `api_svc` | Leave | Spring's own. Also used as `currentSchema` on the datasource URL. |
-| `spring.datasource.url` | built from `raid.db.*` | Leave | Spring's own. If overridden, keep `?currentSchema=api_svc`. |
+| `raid.environment` | `not-set` | Required | Names the environment the instance is running as. It picks the folder of environment-specific migrations (`db/env/<value>`), fills the RAiD AU hostnames in the default `raid.iam.realm-uri` and `raid.identifier.landing-prefix`, and switches on the check that stops the DataCite stub running when the value is `prod`. Use `demo` or `prod`. See trap 3. |
+| `raid.db.host` | none | Required | Hostname of the PostgreSQL server. Combined with the port and name into `spring.datasource.url`. |
+| `raid.db.port` | none | Required | Port of the PostgreSQL server, normally `5432`. |
+| `raid.db.name` | `raido` | Leave | Name of the PostgreSQL database. The API's tables live in its `api_svc` schema. |
+| `raid.db.user` | none | Required | Database user the API connects as for normal reads and writes. |
+| `raid.db.password` | none | Secret | Password for `raid.db.user`. |
+| `raid.db.encryption-key` | none | Secret | Key used to encrypt each service point's DataCite repository password before it is stored, and to decrypt it when the API mints. Changing it on an existing database makes every stored password unreadable, so no service point can mint until each password is re-entered. |
+| `raid.db.repair-token` | `RAID-878-v47` | Leave | Triggers a one-off Flyway `repair`, which rewrites stored migration checksums, before migrations run. Each token value runs once per database and is recorded in `db_repair_log`, so leaving a used token in place is harmless. A new value is only needed when a release deliberately ships a new repair. |
+| `spring.flyway.locations` | `classpath:db/env/api_user,classpath:db/migration,classpath:db/env/${raid.environment}` | Leave | Spring's own. The folders Flyway reads migrations from at startup: the shared schema migrations plus the environment folder chosen by `raid.environment`. |
+| `spring.flyway.user`, `spring.flyway.password` | the datasource user | Secret | Spring's own. Database account Flyway uses to run migrations at startup. Usually more privileged than `raid.db.user`, because migrations create and alter tables. |
+| `spring.flyway.default-schema` | `api_svc` | Leave | Spring's own. Schema Flyway migrates. It is also appended to the datasource URL as `currentSchema`, which is how unqualified table names in the API's queries find their tables. |
+| `spring.datasource.url` | built from `raid.db.*` | Leave | Spring's own. JDBC URL for the database. If overridden by hand, keep `?currentSchema=api_svc` or every query fails with `relation "raid" does not exist`. |
 
 ### Identity
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.identifier.registration-agency-identifier` | none (from 2.17.0) | Required | The agency's ROR. Must have a Service Point ID block. |
-| `raid.identifier.landing-prefix` | `https://static.${raid.environment}.raid.org.au/raids/` | Required | Prefix of the landing page URLs. A RAiD AU hostname by default. |
-| `raid.identifier.name-prefix` | `https://raid.org/` | Leave | Prefix of every RAiD identifier. Federation-wide. |
-| `raid.identifier.schema-uri` | `https://raid.org/` | Leave | Identifier schema URI. Federation-wide. |
-| `raid.identifier.license` | `Creative Commons CC-0` | Leave | Licence stated on the identifier. |
-| `datacite.registration-agency-name` | `Australian Research Data Commons` | Required | Agency name sent to DataCite. RAiD AU's name by default. |
+| `raid.identifier.registration-agency-identifier` | none (from 2.17.0) | Required | ROR of the registration agency running the instance. It is published as `identifier.registrationAgency.id` on every RAiD minted, and at startup the API uses it to look up its Service Point ID block in `registration-agencies.yaml`. The API refuses to start if it is unset or has no block. |
+| `raid.identifier.landing-prefix` | `https://static.${raid.environment}.raid.org.au/raids/` | Required | Start of each RAiD's landing page URL; the RAiD's handle is appended. The result is published as `identifier.raidAgencyUrl` and registered with DataCite as the URL the DOI resolves to. The default is a RAiD AU hostname. |
+| `raid.identifier.name-prefix` | `https://raid.org/` | Leave | Start of each RAiD's identifier; the handle is appended to form `identifier.id`, for example `https://raid.org/10.xxxx/yyyy`. It is the same for every agency in the federation. |
+| `raid.identifier.schema-uri` | `https://raid.org/` | Leave | Published as `identifier.schemaUri`. Must be one of the values the RAiD metadata schema allows, so leave it as it is. |
+| `raid.identifier.license` | `Creative Commons CC-0` | Leave | Licence published as `identifier.license` on each new RAiD, which states the licence the RAiD's metadata is released under. |
+| `datacite.registration-agency-name` | `Australian Research Data Commons` | Required | Name of the registration agency, sent to DataCite as a contributor on every record. The default is RAiD AU's name. |
 
 ### Authentication and CORS
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.iam.realm-uri` | `https://iam.${raid.environment}.raid.org.au/realms/raid` | Required | Keycloak realm. Feeds both issuer URIs below. A RAiD AU hostname by default. |
-| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `${raid.iam.realm-uri}` | Leave | Spring's own. |
-| `spring.security.oauth2.client.provider.keycloak.issuer-uri` | `${raid.iam.realm-uri}` | Leave | Spring's own. |
-| `spring.security.oauth2.client.registration.keycloak.client-id` | `raid-api-2` | Check | API OIDC client. |
-| `spring.security.oauth2.client.registration.keycloak.client-secret` | none | Secret | Secret for the above. |
-| `raid.raid-permissions.client-id` | none | Required | Keycloak client the API uses to manage RAiD permissions. RAiD AU uses `raid-permissions-admin`. |
-| `raid.raid-permissions.client-secret` | none | Secret | Secret for the above. |
-| `raid.cors.origins` | `http://localhost:7080` | Required | Comma-separated origins allowed to call the API. |
+| `raid.iam.realm-uri` | `https://iam.${raid.environment}.raid.org.au/realms/raid` | Required | URI of the Keycloak realm that issues tokens for the deployment. Both Spring issuer URIs below default to it, so this one setting tells the API whose tokens to trust. The default is a RAiD AU hostname. |
+| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `${raid.iam.realm-uri}` | Leave | Spring's own. Issuer the API checks on every bearer token it receives. Spring fetches the realm's signing keys from it. |
+| `spring.security.oauth2.client.provider.keycloak.issuer-uri` | `${raid.iam.realm-uri}` | Leave | Spring's own. Issuer for the browser sign-in described in the next row. |
+| `spring.security.oauth2.client.registration.keycloak.client-id` | `raid-api-2` | Check | Spring's own. Keycloak client the API uses when a person signs in to the API directly in a browser, for example to try requests in the Swagger UI. The realm must contain a client with this ID. |
+| `spring.security.oauth2.client.registration.keycloak.client-secret` | none | Secret | Spring's own. Secret for the client above. |
+| `raid.raid-permissions.client-id` | none | Required | Confidential Keycloak client the API authenticates as, using the client credentials grant, to read a user's RAiD permissions and to give the user who mints a RAiD admin rights over it. RAiD AU uses `raid-permissions-admin`. |
+| `raid.raid-permissions.client-secret` | none | Secret | Secret for the client above. |
+| `raid.cors.origins` | `http://localhost:7080` | Required | Browser origins allowed to call the API, comma-separated. Normally the agency app's URL, for example `https://app.demo.example.org`. A browser on any other origin is refused. The default is the local development app. |
 
 ### DataCite
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `datacite.endpoint` | `https://api.test.datacite.org/dois` | Check | DOI endpoint. Production uses `https://api.datacite.org/dois`. |
-| `raid.repository-client.url` | `https://api.test.datacite.org/repositories` | Check | Repository management endpoint. Production uses `https://api.datacite.org/repositories`. |
-| `raid.repository-client.username` | `not-set` | Secret | DataCite account that creates repositories for service points. |
-| `raid.repository-client.password` | `not-set` | Secret | Password for the above. |
-| `raid.repository-client.email` | `not-set` | Secret | Contact email for the above. |
-| `raid.datacite.resync.enabled` | `false` | Check | Background worker that re-sends records flagged for DataCite re-sync. |
-| `raid.datacite.resync.batch-size` | `50` | Leave | Records per pass. |
-| `raid.datacite.resync.throttle-millis` | `1000` | Leave | Pause between records. |
-| `raid.datacite.resync.poll-delay-millis` | `60000` | Leave | Pause between passes. |
+| `datacite.endpoint` | `https://api.test.datacite.org/dois` | Check | DataCite DOI API the API mints and updates DOIs through. The default is DataCite's test system, whose DOIs do not resolve publicly; production uses `https://api.datacite.org/dois`. |
+| `raid.repository-client.url` | `https://api.test.datacite.org/repositories` | Check | DataCite repositories API. When a service point is created, the API creates a DataCite repository for it here, and the service point mints into that repository. Production uses `https://api.datacite.org/repositories`. |
+| `raid.repository-client.username` | `not-set` | Secret | DataCite account, with permission to create repositories, that the API uses to create one for each new service point. |
+| `raid.repository-client.password` | `not-set` | Secret | Password for the account above. |
+| `raid.repository-client.email` | `not-set` | Secret | Contact email recorded as the system email on each repository the API creates. |
+| `raid.datacite.resync.enabled` | `false` | Check | Turns on a background worker that re-sends RAiDs flagged as needing a DataCite update, sending each one's full record again. Flags are set by migrations that change how records are sent to DataCite, so an environment with this off keeps the old DataCite metadata for existing RAiDs. |
+| `raid.datacite.resync.batch-size` | `50` | Leave | Number of flagged RAiDs the worker takes in each pass. |
+| `raid.datacite.resync.throttle-millis` | `1000` | Leave | Pause between RAiDs within a pass, in milliseconds, so the worker stays well inside DataCite's rate limits. |
+| `raid.datacite.resync.poll-delay-millis` | `60000` | Leave | Pause between passes, in milliseconds. |
 
 ### ORCID
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.orcid-integration.enabled` | `false` (from 2.20.0) | Check | Use the raid.org ORCID integration. See trap 1. |
-| `raid.orcid-integration.host` | empty | Check | Integration host. Required when enabled. |
-| `raid.orcid-integration.api-key` | `not-set` | Secret | Sent as `X-API-Key`. |
-| `raid.orcid-integration.raid-listener.uri` | `${raid.orcid-integration.host}/raid-update` | Leave | Where saved RAiDs are sent. |
-| `raid.orcid-integration.contributor-id-lookup.uri` | `${raid.orcid-integration.host}/find-contributor-by-orcid` | Leave | Where contributor status is looked up. |
-| `raid.orcid-client.base-url` | `https://api.sandbox.orcid.org/v3.0/` | Check | ORCID API for contributor validation. Production uses `https://api.orcid.org/v3.0/`. |
-| `raid.orcid-client.access-token` | `not-set` | Secret | ORCID API token. |
-| `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/` | Check | Accepted ORCID iD prefix. `https://sandbox.orcid.org/` for a demo environment. |
-| `raid.contributor-validation.orcid.schema-uri` | `https://orcid.org/` | Check | Must match the prefix above. |
-| `raid.contributor-validation.isni.url-prefix` | `https://isni.org/` | Leave | Accepted ISNI prefix. |
-| `raid.contributor-validation.isni.schema-uri` | `https://isni.org/` | Leave | ISNI schema URI. |
+| `raid.orcid-integration.enabled` | `false` (from 2.20.0) | Check | Whether the API uses raid.org's ORCID integration. When on, the API looks up each contributor's status there, and sends each saved RAiD so it can be written to contributors' ORCID records. When off, neither happens and stored statuses are kept. See trap 1. |
+| `raid.orcid-integration.host` | empty | Check | Base URL of the ORCID integration for the environment, issued by raid.org. Required when the integration is enabled. |
+| `raid.orcid-integration.api-key` | `not-set` | Secret | Key sent as the `X-API-Key` header on every call to the ORCID integration. Issued by raid.org. |
+| `raid.orcid-integration.raid-listener.uri` | `${raid.orcid-integration.host}/raid-update` | Leave | Endpoint each saved RAiD is posted to. |
+| `raid.orcid-integration.contributor-id-lookup.uri` | `${raid.orcid-integration.host}/find-contributor-by-orcid` | Leave | Endpoint used to look up a contributor's status by ORCID iD. |
+| `raid.orcid-client.base-url` | `https://api.sandbox.orcid.org/v3.0/` | Check | ORCID public API used to check that a contributor's ORCID iD exists and to read the person's public details. The default is the ORCID sandbox; production uses `https://api.orcid.org/v3.0/`. Must match the ORCID system in `raid.contributor-validation.orcid.url-prefix`. |
+| `raid.orcid-client.access-token` | `not-set` | Secret | Bearer token for the ORCID API above, from an ORCID public API client. |
+| `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/` | Check | Prefix every contributor's ORCID iD must start with. A RAiD whose contributor iD has a different prefix fails validation. Set `https://sandbox.orcid.org/` for an environment that uses the ORCID sandbox. |
+| `raid.contributor-validation.orcid.schema-uri` | `https://orcid.org/` | Check | Schema URI that ORCID contributors must declare. Must match the prefix above, and must also exist as an active row in the `contributor_schema` table. See [Sandbox ORCID contributors](#sandbox-orcid-contributors). |
+| `raid.contributor-validation.isni.url-prefix` | `https://isni.org/` | Leave | Prefix every contributor's ISNI must start with. |
+| `raid.contributor-validation.isni.schema-uri` | `https://isni.org/` | Leave | Schema URI that ISNI contributors must declare. |
 
 ### Other external services
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.ror-client.base-url` | `https://api.ror.org/v2/` | Leave | ROR API. |
-| `raid.ror-client.client-id` | a RAiD AU client ID | Check | ROR API client ID. Obtain one for the agency. |
-| `raid.isni-client.url-format` | the OCLC SRU query URL | Leave | ISNI lookup. `__ISNI__` is replaced with the iD. |
-| `raid.validation.geonames.username` | `geonames` | Secret | GeoNames account for spatial coverage validation. |
-| `raid.spatial-coverage.schema-uri.geonames` | `https://www.geonames.org/` | Leave | Spatial coverage schema URI. |
-| `raid.spatial-coverage.schema-uri.openstreetmap` | `https://www.openstreetmap.org/` | Leave | Spatial coverage schema URI. |
-| `raid.uri-validation.connect-timeout` | `5s` | Leave | Connect timeout when checking a related object's URI. |
-| `raid.uri-validation.read-timeout` | `10s` | Leave | Read timeout for the same. |
-| `raid.uri-validation.success-cache.expire-after-write` | `30m` | Leave | How long a successful URI check is remembered. `0s` turns the cache off. |
-| `raid.uri-validation.success-cache.maximum-size` | `10000` | Leave | Entries in the same cache. `0` turns it off. |
+| `raid.ror-client.base-url` | `https://api.ror.org/v2/` | Leave | ROR API used to check that each organisation's ROR exists. |
+| `raid.ror-client.client-id` | a RAiD AU client ID | Check | Sent as the `Client-Id` header on ROR requests, which identifies the caller to ROR. Register a client ID with ROR for the agency rather than using RAiD AU's. |
+| `raid.isni-client.url-format` | the OCLC SRU query URL | Leave | URL template for looking up an ISNI in the OCLC ISNI database. `__ISNI__` is replaced with the iD being checked. |
+| `raid.validation.geonames.username` | `geonames` | Secret | GeoNames account the API uses to check that a GeoNames spatial coverage URI exists. GeoNames requires a registered account, so set the agency's own. |
+| `raid.spatial-coverage.schema-uri.geonames` | `https://www.geonames.org/` | Leave | Spatial coverage schema URI that marks a place as a GeoNames place, so it is checked against GeoNames. |
+| `raid.spatial-coverage.schema-uri.openstreetmap` | `https://www.openstreetmap.org/` | Leave | Spatial coverage schema URI that marks a place as an OpenStreetMap place, so it is checked against OpenStreetMap. |
+| `raid.uri-validation.connect-timeout` | `5s` | Leave | How long the API waits to connect when checking that a related object's URI resolves, for example a DOI or Handle. A slow resolver then produces a validation error instead of holding the request open. |
+| `raid.uri-validation.read-timeout` | `10s` | Leave | How long the API waits for a response from the same checks. |
+| `raid.uri-validation.success-cache.expire-after-write` | `30m` | Leave | How long a URI that resolved successfully is remembered, so saving the same RAiD again does not check it again. Failures are never remembered. `0s` turns the cache off. |
+| `raid.uri-validation.success-cache.maximum-size` | `10000` | Leave | Most URIs the cache above holds per API instance. `0` turns it off. |
 
 ### Stubs, history and logging
 
-| Property | Default | Set it? | Purpose |
+| Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.stub.<name>.enabled` | `false` | Leave | In-memory stand-in for one external service. See [Optional](#optional) for the names. |
-| `raid.stub.<name>.delay` | `150` (`0` for `datacite`) | Leave | Simulated latency in milliseconds. |
-| `raid.stub.datacite.prefix` | `10.5072` | Leave | DOI prefix the DataCite stub issues. |
-| `raid.history.baseline-interval` | `50` | Leave | A full baseline is written to RAiD history every this many changes. |
-| `logging.level.root`, `logging.level.<package>` | `info` | Check | Spring's own. The ORCID integration startup line needs `au.org.raid` at `info` or lower. |
+| `raid.stub.<name>.enabled` | `false` | Leave | Replaces one external service with an in-memory stand-in that answers without a network call, for local development and automated tests. See [Optional](#optional) for the names. Leave them all off in a deployed environment. |
+| `raid.stub.<name>.delay` | `150` (`0` for `datacite`) | Leave | Milliseconds the stub waits before answering, to imitate network latency. |
+| `raid.stub.datacite.prefix` | `10.5072` | Leave | DOI prefix the DataCite stub gives the repositories it pretends to create. Nothing reaches DataCite, so it only needs to look like a prefix. |
+| `raid.history.baseline-interval` | `50` | Leave | RAiD history stores each change as a difference from the previous version. Every this many versions, it stores the whole record instead, so rebuilding an old version never needs more than this many differences. |
+| `logging.level.root`, `logging.level.<package>` | `info` | Check | Spring's own. How much the API logs, overall or for one package. The API's own code is under `au.org.raid`. The ORCID integration startup line is logged at `info`, so it disappears if `au.org.raid` is set higher. |
 
 ### Fixed by the application
 
