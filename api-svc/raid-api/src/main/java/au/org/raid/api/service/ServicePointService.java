@@ -3,6 +3,7 @@ package au.org.raid.api.service;
 import au.org.raid.api.factory.ServicePointFactory;
 import au.org.raid.api.factory.record.ServicePointRecordFactory;
 import au.org.raid.api.repository.ServicePointRepository;
+import au.org.raid.idl.raidv2.model.PublicServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointCreateRequest;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
@@ -51,6 +52,12 @@ public class ServicePointService {
     public List<ServicePoint> findAll() {
         return servicePointRepository.findAll().stream()
                 .map(servicePointFactory::create)
+                .toList();
+    }
+
+    public List<PublicServicePoint> findAllPublic() {
+        return servicePointRepository.findAll().stream()
+                .map(servicePointFactory::createPublic)
                 .toList();
     }
 
