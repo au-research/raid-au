@@ -8,6 +8,7 @@ import { test as setup } from "@playwright/test";
 import { fileURLToPath } from "url";
 import path from "path";
 import { authenticateAndSaveState } from "./authenticate";
+import { assertUnapprovedAdmin } from "./unapproved-admin-precondition";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,7 +40,7 @@ setup("authenticate as unapproved group-admin", async ({ page, baseURL }) => {
     );
   }
 
-  await authenticateAndSaveState({
+  const accessToken = await authenticateAndSaveState({
     page,
     baseURL,
     username,
@@ -49,4 +50,8 @@ setup("authenticate as unapproved group-admin", async ({ page, baseURL }) => {
     clientId,
     authFilePath: authFile,
   });
+
+  // The fixture lives in a shared realm and can be approved by mistake.
+  // Fail here, saying what to fix, rather than as a timeout in the spec.
+  assertUnapprovedAdmin(accessToken, username);
 });
