@@ -305,6 +305,10 @@ their own ORCID member credentials for it.
 The two contributor-validation properties apply whether or not the integration
 is enabled. They control which ORCID iDs a RAiD can contain.
 
+Disabling the integration does not stop the API calling ORCID. The API still
+checks every contributor's ORCID iD against ORCID's own API, using
+`raid.orcid-client.*`. See [ORCID iD lookups](#orcid-id-lookups).
+
 **With the integration enabled**, the API looks up each contributor's status
 from the integration host and sends each saved RAiD to it. If the host is
 unreachable, the mint or update fails.
@@ -340,13 +344,61 @@ contributor and patches contributor status. The `contributor-writer` role grants
 exactly that and nothing wider. Send the client secret through a one-time link
 rather than email.
 
+### ORCID iD lookups
+
+Separately from the integration, the API calls ORCID directly in two places:
+
+- When a RAiD is minted or updated, it checks that each contributor's ORCID iD
+  exists.
+- When it sends a RAiD to DataCite, it reads each contributor's public name.
+
+Both use `raid.orcid-client.base-url` and `raid.orcid-client.access-token`, and
+both happen whether or not the ORCID integration is enabled. The default
+`base-url` is the ORCID sandbox, so **a production deployment must set it**, even
+with the integration disabled. If it is left at the default, every RAiD with a
+production ORCID iD fails with:
+
+```
+External resolver(s) unavailable: contributor[0].id -> ORCID(401)
+```
+
+ORCID runs two APIs. Choose the one that matches the credentials the agency has:
+
+| ORCID credentials | `raid.orcid-client.base-url` | `raid.orcid-client.access-token` |
+| --- | --- | --- |
+| None | `https://pub.orcid.org/v3.0/` | Leave unset |
+| Public API credentials | `https://pub.orcid.org/v3.0/` | A `/read-public` token |
+| ORCID member credentials | `https://api.orcid.org/v3.0/` | A `/read-public` token |
+| None, sandbox environment | `https://pub.sandbox.orcid.org/v3.0/` | Leave unset |
+
+The public API (`pub.orcid.org`) accepts anonymous reads. ORCID allows 25,000
+anonymous reads a day per IP address, and 100,000 a day with registered public
+API credentials. Public API credentials are free from **Developer Tools** on
+orcid.org, and the `/read-public` token they issue lasts about 20 years. ORCID's
+public API terms limit its use to non-commercial purposes, so check that they
+fit the agency's service. See ORCID's
+[API limits](https://info.orcid.org/ufaqs/what-are-the-api-limits/) and
+[public client terms](https://info.orcid.org/public-client-terms-of-service/).
+
+The member API (`api.orcid.org`) refuses anonymous requests, so it needs a token
+from member credentials.
+
+Successful lookups are cached, so the daily volume is much lower than the number
+of saves.
+
+**Releases up to 2.20.1 send an `Authorization` header whatever the token is.**
+ORCID rejects the placeholder default `not-set` with 401, even on the public API.
+On these releases, set `raid.orcid-client.access-token` to an empty value for
+anonymous access rather than leaving it unset. Later releases send no
+`Authorization` header when the token is unset, empty or `not-set`.
+
 ### External resolvers
 
 These all have workable defaults. Override them only where noted.
 
 | Property | Description |
 | --- | --- |
-| `raid.orcid-client.base-url` | ORCID API. Defaults to the sandbox, so a production deployment must override it. |
+| `raid.orcid-client.base-url` | ORCID API used to check contributors' ORCID iDs. Defaults to the sandbox, so a production deployment must override it. See [ORCID iD lookups](#orcid-id-lookups). |
 | `raid.ror-client.base-url` | ROR API. The default is current. |
 | `raid.ror-client.client-id` | ROR API client ID. A RAiD AU value ships as the default; obtain a separate one. |
 | `raid.isni-client.url-format` | ISNI SRU query URL. The default is current. |
@@ -391,7 +443,7 @@ from the non-secret environment.
 | `raid.repository-client.email` | Contact email for the above. |
 | `spring.security.oauth2.client.registration.keycloak.client-secret` | API OIDC client secret. |
 | `raid.raid-permissions.client-secret` | Permissions admin client secret. |
-| `raid.orcid-client.access-token` | ORCID API access token. |
+| `raid.orcid-client.access-token` | ORCID `/read-public` token. Optional with the public API. See [ORCID iD lookups](#orcid-id-lookups). |
 | `raid.validation.geonames.username` | GeoNames account used for spatial coverage validation. |
 | `raid.orcid-integration.api-key` | Sent as `X-API-Key` to the ORCID integration host, once raid.org has issued one. |
 
@@ -563,8 +615,8 @@ describes them in full; the description here says how the RAiD API uses them.
 | `raid.orcid-integration.api-key` | `not-set` | Secret | Key sent as the `X-API-Key` header on every call to the ORCID integration. Issued by raid.org. |
 | `raid.orcid-integration.raid-listener.uri` | `${raid.orcid-integration.host}/raid-update` | Leave | Endpoint each saved RAiD is posted to. |
 | `raid.orcid-integration.contributor-id-lookup.uri` | `${raid.orcid-integration.host}/find-contributor-by-orcid` | Leave | Endpoint used to look up a contributor's status by ORCID iD. |
-| `raid.orcid-client.base-url` | `https://api.sandbox.orcid.org/v3.0/` | Check | ORCID public API used to check that a contributor's ORCID iD exists and to read the person's public details. The default is the ORCID sandbox; production uses `https://api.orcid.org/v3.0/`. Must match the ORCID system in `raid.contributor-validation.orcid.url-prefix`. |
-| `raid.orcid-client.access-token` | `not-set` | Secret | Bearer token for the ORCID API above, from an ORCID public API client. |
+| `raid.orcid-client.base-url` | `https://api.sandbox.orcid.org/v3.0/` | Required | ORCID API used to check that a contributor's ORCID iD exists and to read the person's public name for DataCite. Used whether or not the ORCID integration is enabled. The default is the ORCID sandbox member API. Production uses the public API, `https://pub.orcid.org/v3.0/`, or with ORCID member credentials the member API, `https://api.orcid.org/v3.0/`. Must match the ORCID system in `raid.contributor-validation.orcid.url-prefix`. See [ORCID iD lookups](#orcid-id-lookups). |
+| `raid.orcid-client.access-token` | `not-set` | Check | `/read-public` token for the ORCID API above, sent as a bearer token. Required for the member API. Optional for the public API, which accepts anonymous reads. When unset, empty or `not-set`, no `Authorization` header is sent; up to 2.20.1 the header is always sent, so set it to empty for anonymous access. Supply a real token from a secret store. |
 | `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/` | Check | Prefix every contributor's ORCID iD must start with. A RAiD whose contributor iD has a different prefix fails validation. Set `https://sandbox.orcid.org/` for an environment that uses the ORCID sandbox. |
 | `raid.contributor-validation.orcid.schema-uri` | `https://orcid.org/` | Check | Schema URI that ORCID contributors must declare. Must match the prefix above, and must also exist as an active row in the `contributor_schema` table. See [Sandbox ORCID contributors](#sandbox-orcid-contributors). |
 | `raid.contributor-validation.isni.url-prefix` | `https://isni.org/` | Leave | Prefix every contributor's ISNI must start with. |
