@@ -369,7 +369,6 @@ ORCID runs two APIs. Choose the one that matches the credentials the agency has:
 | None | `https://pub.orcid.org/v3.0/` | Leave unset |
 | Public API credentials | `https://pub.orcid.org/v3.0/` | A `/read-public` token |
 | ORCID member credentials | `https://api.orcid.org/v3.0/` | A `/read-public` token |
-| None, sandbox environment | `https://pub.sandbox.orcid.org/v3.0/` | Leave unset |
 
 The public API (`pub.orcid.org`) accepts anonymous reads. ORCID allows 25,000
 anonymous reads a day per IP address, and 100,000 a day with registered public
