@@ -3,7 +3,7 @@
 - JIRA: [RAID-1037](https://ardc.atlassian.net/browse/RAID-1037) (Spike)
 - Related: companion tickets on the landing page links and the `landing-prefix` default (raised with RAID-1037)
 - Status: findings for review, 6 November 2026
-- PR: to be added
+- PR: [#775](https://github.com/au-research/raid-au/pull/775)
 
 Labels used below: **Verified** means checked on 6 November 2026 against
 `origin/main` at `be3b6ece`, a live public endpoint, or one of the two probes
