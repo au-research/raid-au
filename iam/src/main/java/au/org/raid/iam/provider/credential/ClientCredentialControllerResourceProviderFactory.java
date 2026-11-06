@@ -1,5 +1,6 @@
 package au.org.raid.iam.provider.credential;
 
+import au.org.raid.iam.provider.federation.FederationHarvestClientBootstrapper;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -26,7 +27,8 @@ public class ClientCredentialControllerResourceProviderFactory implements RealmR
 
     @Override
     public void postInit(final KeycloakSessionFactory factory) {
-
+        // RAID-982: create the federation harvest client at every boot.
+        FederationHarvestClientBootstrapper.register(factory);
     }
 
     @Override
