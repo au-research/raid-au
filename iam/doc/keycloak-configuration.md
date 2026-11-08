@@ -125,6 +125,42 @@ Used by the API backend to manage per-RAiD permissions in Keycloak via the custo
 | Service accounts             | Yes          |
 | Default client scopes        | `acr`, `roles`, `basic` |
 
+### raid-federation-harvester (created at boot, signed JWT)
+
+Lets the RAiD Registration Authority's Federation API harvest this instance's public RAiDs
+(`GET /raid/all-public`). It is not in `raid-realm.json`: `raid-iam.jar` creates it at every
+Keycloak boot in any realm that has a `raid-dumper` role, and puts its settings back if they have
+drifted. The client has no secret. The Federation API signs a JWT assertion with a key
+held by ARDC, and Keycloak checks it against the Registration Authority's public keys.
+
+| Setting                      | Value        |
+|------------------------------|--------------|
+| Public client                | No           |
+| Service accounts             | Yes (only flow enabled) |
+| Client authenticator         | Signed JWT (`client-jwt`), RS256 |
+| Keys                         | JWKS URL (default `https://keys.raid.org/federation/jwks.json`) or the key set embedded in `raid-iam.jar` |
+| Access token lifespan        | 300 seconds |
+| Full scope allowed           | Yes |
+| Default client scopes        | The realm's defaults |
+| Service account roles        | `raid-dumper` and the realm's default role only; any other role or group is removed at boot |
+
+An agency stops harvesting by **disabling** the client; the boot hook never re-enables it.
+Deleting the client does not work, because the next boot recreates it.
+
+Environment variables read by `raid-iam.jar`:
+
+| Variable | Default | Effect |
+|---|---|---|
+| `RAID_FEDERATION_HARVEST_JWKS_URL` | `https://keys.raid.org/federation/jwks.json` | The JWKS URL to trust. The default is the **production** key set, so non-production instances must set this. An invalid value is logged and nothing is provisioned. |
+| `RAID_FEDERATION_HARVEST_USE_JWKS_URL` | `true` | `false` uses the key set embedded in `raid-iam.jar` instead of the URL, for instances that cannot make outbound HTTPS calls. The embedded set is empty until a release ships the Registration Authority's keys. |
+| `RAID_FEDERATION_HARVEST_ALLOW_HTTP_JWKS_URL` | `false` | `true` accepts a plain `http` JWKS URL. For local and test rigs only; a warning is logged at every boot. |
+
+At boot, Keycloak checks in the background that the JWKS URL can be fetched and logs a warning
+naming it if not. Until ARDC publishes the key set at `keys.raid.org`, every instance using the default URL
+logs this warning.
+
+Design: [`doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md`](../../doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md).
+
 ## Client Scopes
 
 ![Client scopes](images/admin-console/client-scopes.png)
