@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-/** RAID-982: the harvest client is provisioned unattended at boot, in every RAiD realm. */
+/** The harvest client is provisioned unattended at boot, in every RAiD realm. */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FederationHarvestClientBootstrapperTest {

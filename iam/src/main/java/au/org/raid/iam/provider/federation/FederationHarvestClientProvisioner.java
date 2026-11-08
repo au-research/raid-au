@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Creates or reconciles the federation harvest client in one realm (RAID-982).
+ * Creates or reconciles the federation harvest client in one realm.
  *
  * <p>The Registration Authority's Federation API harvests each agency's public RAiDs as the client
  * {@value #CLIENT_ID}. It authenticates with {@code private_key_jwt}: it signs an assertion with a
@@ -74,7 +74,7 @@ public final class FederationHarvestClientProvisioner {
             client = session.clients().addClient(realm, CLIENT_ID);
             client.setName("RAiD federation harvester");
             client.setDescription("Lets the RAiD Registration Authority harvest this agency's public RAiDs " +
-                    "(created at boot by raid-iam.jar, RAID-982). Disable it to stop harvesting.");
+                    "(created at boot by raid-iam.jar). Disable it to stop harvesting.");
             client.setEnabled(true);
             // addClient() is a raw model-layer create and skips the realm's default client scopes,
             // so without these the token has no roles scope and realm_access.roles is empty.

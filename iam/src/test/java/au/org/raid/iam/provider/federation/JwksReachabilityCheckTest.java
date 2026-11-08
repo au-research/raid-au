@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-/** RAID-982: a JWKS Keycloak may not reach is reported at boot as a warning naming the URL, never a failure. */
+/** A JWKS Keycloak may not reach is reported at boot as a warning naming the URL, never a failure. */
 class JwksReachabilityCheckTest {
 
     private static final String URL = "https://keys.raid.org/federation/jwks.json";
@@ -43,7 +43,7 @@ class JwksReachabilityCheckTest {
 
     @Test
     void doesNotSuggestTheEmbeddedKeySetWhileItIsEmpty() {
-        // Until RAID-983 ships keys, following that advice would switch harvesting off.
+        // Until a release ships embedded keys, following that advice would switch harvesting off.
         run(url -> new Fetched(404, "not found"), false);
 
         assertThat(warnings.get(0), not(containsString("RAID_FEDERATION_HARVEST_USE_JWKS_URL")));

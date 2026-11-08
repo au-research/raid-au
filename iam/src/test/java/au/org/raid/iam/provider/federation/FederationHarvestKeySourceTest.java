@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** RAID-982: where the harvest client's keys come from, resolved from the environment. */
+/** Where the harvest client's keys come from, resolved from the environment. */
 class FederationHarvestKeySourceTest {
 
     private static final String TWO_KEYS = """
@@ -104,7 +104,7 @@ class FederationHarvestKeySourceTest {
 
     @Test
     void bundledKeySetShipsEmptyUntilRaid983() {
-        // RAID-1042 decision: the RAID-982 release ships the mechanism with no keys.
+        // Recorded in the ADR: the first release ships the mechanism with no keys.
         var resolution = FederationHarvestKeySource.resolve(
                 env(Map.of("RAID_FEDERATION_HARVEST_USE_JWKS_URL", "false")));
 

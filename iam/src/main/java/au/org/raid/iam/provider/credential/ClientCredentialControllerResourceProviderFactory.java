@@ -27,7 +27,7 @@ public class ClientCredentialControllerResourceProviderFactory implements RealmR
 
     @Override
     public void postInit(final KeycloakSessionFactory factory) {
-        // RAID-982: create the federation harvest client at every boot.
+        // Create the federation harvest client at every boot.
         FederationHarvestClientBootstrapper.register(factory);
     }
 

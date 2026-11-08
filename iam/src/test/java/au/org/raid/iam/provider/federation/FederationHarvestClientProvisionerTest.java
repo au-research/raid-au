@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * RAID-982: the federation harvest client is created, and reconciled on every boot, entirely through
+ * The federation harvest client is created, and reconciled on every boot, entirely through
  * the model layer.
  */
 @ExtendWith(MockitoExtension.class)
@@ -155,7 +155,7 @@ class FederationHarvestClientProvisionerTest {
             FederationHarvestClientProvisioner.provision(session, realm, URL_KEYS);
         }
 
-        // The real-Keycloak suite (RAID-1044) confirms the stored client has no secret; here the
+        // A real-Keycloak test confirms the stored client has no secret; here the
         // provisioner must never set one.
         verify(client, never()).setSecret(argThat(secret -> secret != null));
     }

@@ -10,7 +10,7 @@ import org.keycloak.util.JsonSerialization;
 import java.util.function.Consumer;
 
 /**
- * Warns at boot when this Keycloak may be unable to fetch the Registration Authority's JWKS (RAID-982).
+ * Warns at boot when this Keycloak may be unable to fetch the Registration Authority's JWKS.
  *
  * <p>Keycloak only fetches the JWKS lazily, on the first token request. Without this check an agency
  * that blocks outbound HTTPS deploys cleanly and finds out only when ARDC first harvests.
@@ -60,7 +60,7 @@ final class JwksReachabilityCheck {
             problem = "it could not be fetched (" + rootMessage(e) + ")";
         }
         if (problem == null) {
-            log.debug("RAID-982 federation harvest JWKS {} is reachable", jwksUrl);
+            log.debug("Federation harvest: JWKS {} is reachable", jwksUrl);
             return;
         }
         try {
@@ -110,7 +110,7 @@ final class JwksReachabilityCheck {
                   FederationHarvestKeySource.USE_JWKS_URL_ENV_VAR + "=false to use the key set embedded in raid-iam.jar."
                 : "Allow outbound HTTPS to it (check any egress proxy), or set " +
                   FederationHarvestKeySource.JWKS_URL_ENV_VAR + " if this instance should trust a different key set.";
-        return "RAID-982 the federation harvest JWKS " + jwksUrl + " may be unreachable: " + problem +
+        return "Federation harvest: the JWKS " + jwksUrl + " may be unreachable: " + problem +
                 ". Keycloak has started and the harvest client exists, but the Registration Authority's harvest " +
                 "will fail if this Keycloak cannot fetch that URL when harvesting. " + remedy;
     }

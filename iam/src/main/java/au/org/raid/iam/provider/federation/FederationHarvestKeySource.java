@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
- * Where the federation harvest client gets the Registration Authority's public keys from (RAID-982).
+ * Where the federation harvest client gets the Registration Authority's public keys from.
  *
  * <p>Exactly one of {@link #jwksUrl()} and {@link #jwksString()} is set:
  * <ul>
@@ -23,8 +23,8 @@ import java.util.function.UnaryOperator;
  *   {@value #ALLOW_HTTP_JWKS_URL_ENV_VAR}{@code =true}, for local and test rigs.</li>
  *   <li>Embedded mode ({@value #USE_JWKS_URL_ENV_VAR}{@code =false}): the client holds the key set
  *   bundled in this jar ({@value #EMBEDDED_JWKS_RESOURCE}, next to this class), for agencies whose
- *   Keycloak cannot make outbound HTTPS calls. The bundled set is empty until RAID-983 creates the
- *   KMS keys.</li>
+ *   Keycloak cannot make outbound HTTPS calls. The bundled set is empty until a release ships
+ *   the Registration Authority's keys.</li>
  * </ul>
  *
  * <p>Decisions recorded in {@code doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md}.

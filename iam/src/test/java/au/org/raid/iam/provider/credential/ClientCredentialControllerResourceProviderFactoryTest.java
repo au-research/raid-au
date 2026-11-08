@@ -23,9 +23,9 @@ class ClientCredentialControllerResourceProviderFactoryTest {
 
     @Test
     void postInit_registersTheFederationHarvestBootHook() {
-        // RAID-982: without this registration the harvest client is never created at boot.
+        // Without this registration the harvest client is never created at boot.
         // Asserts on this hook specifically, so other boot hooks registered from the same postInit
-        // (RAID-1011's ORCID updater client) neither break nor satisfy this test.
+        // (such as the ORCID updater client's) neither break nor satisfy this test.
         var sessionFactory = mock(KeycloakSessionFactory.class);
 
         try (var bootstrapper = mockStatic(FederationHarvestClientBootstrapper.class)) {
