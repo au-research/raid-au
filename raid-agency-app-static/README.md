@@ -137,6 +137,8 @@ Copy `app-config.template.json` to `public/app-config.json` and fill in your val
 
 This file is also served at `/app-config.json` at runtime. Google Analytics IDs are loaded from it client-side, so they can be updated without rebuilding.
 
+`raidUrl` is the global RAiD resolver. The landing page shows it above the title and copies it to the clipboard, joined with the handle (for example `https://raid.org/10.83338/831b5565`). Set it to `https://raid.org/` for every agency, because `raid.org` redirects each handle to the agency's own landing page. The trailing slash is optional. If `raidUrl` is omitted, it defaults to `https://raid.org/`. Like `raidEnv` and `siteUrl`, it is baked into the static HTML, so changing it needs a rebuild.
+
 ### `.env` (secrets only)
 
 ```env

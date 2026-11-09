@@ -1,4 +1,5 @@
 import { getSiteConfig } from "@/config";
+import { buildRaidUrl } from "@/utils/raid-url";
 
 export function getRaidAppUrl(): string {
   const localWebAppPort = 7080;
@@ -25,4 +26,6 @@ export function getRaidAppUrl(): string {
   return `https://app.${environment}.raid.org.au`;
 }
 
-export const getRAIDUrl: string = getSiteConfig().raidUrl ?? 'https://raid.org/';
+export function getRaidUrl(id: string): string {
+  return buildRaidUrl(getSiteConfig().raidUrl, id);
+}
