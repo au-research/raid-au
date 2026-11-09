@@ -160,6 +160,8 @@ naming it if not. Until ARDC publishes the key set at `keys.raid.org`, every ins
 logs this warning.
 
 Design: [`doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md`](../../doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md).
+Agency guidance (onboarding, default roles, non-production setup, disabling harvesting):
+[`doc/reference/federation-harvest-client.md`](../../doc/reference/federation-harvest-client.md).
 
 ## Client Scopes
 
