@@ -111,6 +111,7 @@ Config is loaded by `scripts/loadAppConfig.js`, which reads `public/app-config.j
   "iamClientId": "your-client-id",
   "raidDumperClientId": "your-dumper-client-id",
   "raidEnv": "prod",
+  "appUrl": "https://app.your-env.raid.org.au",
   "caching": { "enabled": true, "ttlMs": 432000000 }
 }
 ```

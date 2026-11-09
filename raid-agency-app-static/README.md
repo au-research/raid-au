@@ -124,6 +124,7 @@ Copy `app-config.template.json` to `public/app-config.json` and fill in your val
   "iamClientId": "your-iam-client-id",
   "raidDumperClientId": "your-dumper-client-id",
   "raidEnv": "prod",
+  "appUrl": "https://app.your-env.raid.org.au",
   "siteUrl": "https://static.your-env.raid.org.au",
   "raidUrl": "https://raid.org/",
   "analytics": {
@@ -134,6 +135,8 @@ Copy `app-config.template.json` to `public/app-config.json` and fill in your val
   "footer": { "show": false, ... }
 }
 ```
+
+`appUrl` is **required**. It is the base URL of your RAiD web app (for ARDC environments, for example `https://app.prod.raid.org.au`). The landing pages use it for the "Show in RAiD App", "Edit in RAiD App" and "new RAiD" links, so each agency's links go to its own app. A trailing slash is optional. It can only be set in `public/app-config.json`, not as an environment variable, and `npm run build` and `npm run dev` stop with an error if it is missing. Like `raidEnv` and `siteUrl`, it is baked into the static HTML, so changing it needs a rebuild.
 
 This file is also served at `/app-config.json` at runtime. Google Analytics IDs are loaded from it client-side, so they can be updated without rebuilding.
 

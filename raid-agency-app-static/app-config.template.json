@@ -6,6 +6,7 @@
   "iamClientId": "your-iam-client-id",
   "raidDumperClientId": "your-dumper-client-id",
   "raidEnv": "prod",
+  "appUrl": "https://app.your-env.raid.org.au",
   "siteUrl": "https://static.your-env.raid.org.au",
   "raidUrl": "https://raid.org/",
 
