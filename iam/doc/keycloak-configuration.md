@@ -151,7 +151,7 @@ Environment variables read by `raid-iam.jar`:
 
 | Variable | Default | Effect |
 |---|---|---|
-| `RAID_FEDERATION_HARVEST_JWKS_URL` | `https://keys.raid.org/federation/jwks.json` | The JWKS URL to trust. The default is the **production** key set, so non-production instances must set this. An invalid value is logged and nothing is provisioned. |
+| `RAID_FEDERATION_HARVEST_JWKS_URL` | `https://keys.raid.org/federation/jwks.json` | The JWKS URL to trust. The default is the **production** key set, so non-production instances must set this. An invalid value is logged and nothing is provisioned. Log messages show the URL without its query string, fragment or user info, which may hold credentials; the client stores the full URL. |
 | `RAID_FEDERATION_HARVEST_USE_JWKS_URL` | `true` | `false` uses the key set embedded in `raid-iam.jar` instead of the URL, for instances that cannot make outbound HTTPS calls. The embedded set is empty until a release ships the Registration Authority's keys. |
 | `RAID_FEDERATION_HARVEST_ALLOW_HTTP_JWKS_URL` | `false` | `true` accepts a plain `http` JWKS URL. For local and test rigs only; a warning is logged at every boot. |
 

@@ -1,6 +1,7 @@
 package au.org.raid.iam.inttest.federation;
 
 import au.org.raid.iam.inttest.EmbeddedKeysJar;
+import au.org.raid.iam.inttest.JwksServer;
 import au.org.raid.iam.inttest.KeycloakNode;
 import au.org.raid.iam.inttest.SigningKey;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,27 @@ class HarvestClientKeySourceIntegrationTest {
             assertThat(warning, allOf(containsString("WARN"), containsString(unreachable)));
             // The shipped embedded key set is empty, so the warning must not suggest switching to it.
             assertThat(warning, not(containsString("RAID_FEDERATION_HARVEST_USE_JWKS_URL")));
+        }
+    }
+
+    @Test
+    void aJwksUrlQueryStringIsUsedButNeverLogged() {
+        // A presigned or token-bearing URL carries its credential in the query string.
+        final var secret = "SECRET-QUERY-" + java.util.UUID.randomUUID();
+        final var key = SigningKey.generate("query-key");
+        try (var jwks = JwksServer.start()) {
+            jwks.publish(key);
+            final var url = jwks.urlForContainers() + "?token=" + secret;
+            try (var keycloak = KeycloakNode.builder().jwksServer(jwks)
+                    .env("RAID_FEDERATION_HARVEST_JWKS_URL", url).start()) {
+                assertThat(keycloak.harvestClient().get("attributes").get("jwks.url").asText(), is(url));
+                assertThat(keycloak.harvestToken(key.assertion(HARVEST_CLIENT_ID, keycloak.issuer())).status(), is(200));
+
+                final var logs = keycloak.logs();
+                assertThat(logs, containsString("client 'raid-federation-harvester' created"));
+                assertThat(logs, containsString("/jwks.json?…"));
+                assertThat(logs, not(containsString(secret)));
+            }
         }
     }
 

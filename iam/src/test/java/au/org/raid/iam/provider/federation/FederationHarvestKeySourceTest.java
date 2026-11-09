@@ -103,7 +103,7 @@ class FederationHarvestKeySourceTest {
     }
 
     @Test
-    void bundledKeySetShipsEmptyUntilRaid983() {
+    void bundledKeySetShipsEmptyUntilRealKeysExist() {
         // Recorded in the ADR: the first release ships the mechanism with no keys.
         var resolution = FederationHarvestKeySource.resolve(
                 env(Map.of("RAID_FEDERATION_HARVEST_USE_JWKS_URL", "false")));
@@ -152,5 +152,52 @@ class FederationHarvestKeySourceTest {
 
         assertThat(resolution.keySource().usesUrl(), is(true));
         assertThat(resolution.bundledKeyCount(), is(2));
+    }
+
+    // --- logging the URL ------------------------------------------------------------------
+
+    private static final String PRESIGNED = "https://bucket.s3.ap-southeast-2.amazonaws.com/keys/jwks.json"
+            + "?X-Amz-Credential=ASIAEXAMPLE&X-Amz-Security-Token=SESSIONTOKEN&X-Amz-Signature=deadbeef";
+
+    @Test
+    void loggableUrlWithoutAQueryIsUnchanged() {
+        assertThat(FederationHarvestKeySource.loggable("https://keys.raid.org/federation/jwks.json"),
+                is("https://keys.raid.org/federation/jwks.json"));
+        assertThat(FederationHarvestKeySource.loggable("http://jwks:8080/jwks.json"), is("http://jwks:8080/jwks.json"));
+    }
+
+    @Test
+    void loggableUrlHidesTheQueryString() {
+        final var logged = FederationHarvestKeySource.loggable(PRESIGNED);
+
+        assertThat(logged, is("https://bucket.s3.ap-southeast-2.amazonaws.com/keys/jwks.json?…"));
+        assertThat(logged, not(anyOf(containsString("SESSIONTOKEN"), containsString("deadbeef"),
+                containsString("ASIAEXAMPLE"))));
+    }
+
+    @Test
+    void loggableUrlHidesUserInfoAndFragment() {
+        final var logged = FederationHarvestKeySource.loggable("https://user:hunter2@keys.example.org/jwks.json#token=abc");
+
+        assertThat(logged, is("https://keys.example.org/jwks.json#…"));
+        assertThat(logged, not(anyOf(containsString("hunter2"), containsString("token=abc"))));
+    }
+
+    @Test
+    void loggableNeverEchoesAnUnparseableUrl() {
+        assertThat(FederationHarvestKeySource.loggable("https://bad host/jwks.json?secret=1"), is("<unparseable URL>"));
+        assertThat(FederationHarvestKeySource.loggable("not a url ?secret=1"), is("<unparseable URL>"));
+        assertThat(FederationHarvestKeySource.loggable(null), is("<none>"));
+    }
+
+    @Test
+    void withoutSecretsScrubsTheUrlAndItsQueryFromFreeText() {
+        final var message = "ClientProtocolException: GET " + PRESIGNED + " failed; query was "
+                + PRESIGNED.substring(PRESIGNED.indexOf('?') + 1);
+
+        final var scrubbed = FederationHarvestKeySource.withoutSecrets(message, PRESIGNED);
+
+        assertThat(scrubbed, containsString("https://bucket.s3.ap-southeast-2.amazonaws.com/keys/jwks.json?…"));
+        assertThat(scrubbed, not(anyOf(containsString("SESSIONTOKEN"), containsString("deadbeef"))));
     }
 }
