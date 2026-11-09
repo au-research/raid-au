@@ -163,8 +163,13 @@ Costs and risks:
   cached key set, and the retired key is then rejected (T11b to T11d). Without
   that, Keycloak 26.6.2 drops cached keys after an hour unused
   (`KEYS_CACHE_MAX_IDLE_SECONDS = 3600`). Rotation therefore ends with one
-  eviction request per agency. Each Keycloak node keeps its own cache, so a
-  multi-node agency needs the request to reach every node; this is unverified.
+  eviction request per agency node. Each Keycloak node keeps its own key cache,
+  even when nodes form an Infinispan cluster: an eviction request to one node
+  left the retired key accepted on the other until that node got its own request
+  (verified on two clustered 26.6.2 nodes by
+  `HarvestClientTwoNodeEvictionIntegrationTest` in `iam/src/intTest`). Behind a
+  load balancer the Registration Authority cannot target a node, so it must
+  repeat the request until every node has refetched, or wait out the idle expiry.
 * **Issued tokens outlive revocation.** The RAiD API validates access tokens
   locally (Spring resource server with the realm's signing keys), so a token stays
   usable until it expires. The realm default is 24 hours in test. Keycloak honours
