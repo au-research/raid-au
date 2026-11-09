@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * configuration and does not warn about a JWKS Keycloak can in fact reach.
  *
  * <p>It runs on a daemon thread and never blocks or fails boot: any problem is logged as a warning
- * naming the URL, and nothing else changes.
+ * naming the URL (without its query string, which may hold credentials), and nothing else changes.
  */
 @Slf4j
 final class JwksReachabilityCheck {
@@ -57,10 +57,11 @@ final class JwksReachabilityCheck {
             final var fetched = fetcher.fetch(jwksUrl);
             problem = problemWith(fetched);
         } catch (Exception e) {
-            problem = "it could not be fetched (" + rootMessage(e) + ")";
+            // An HTTP client's exception message can quote the request URL.
+            problem = "it could not be fetched (" + FederationHarvestKeySource.withoutSecrets(rootMessage(e), jwksUrl) + ")";
         }
         if (problem == null) {
-            log.debug("Federation harvest: JWKS {} is reachable", jwksUrl);
+            log.debug("Federation harvest: JWKS {} is reachable", FederationHarvestKeySource.loggable(jwksUrl));
             return;
         }
         try {
@@ -110,7 +111,7 @@ final class JwksReachabilityCheck {
                   FederationHarvestKeySource.USE_JWKS_URL_ENV_VAR + "=false to use the key set embedded in raid-iam.jar."
                 : "Allow outbound HTTPS to it (check any egress proxy), or set " +
                   FederationHarvestKeySource.JWKS_URL_ENV_VAR + " if this instance should trust a different key set.";
-        return "Federation harvest: the JWKS " + jwksUrl + " may be unreachable: " + problem +
+        return "Federation harvest: the JWKS " + FederationHarvestKeySource.loggable(jwksUrl) + " may be unreachable: " + problem +
                 ". Keycloak has started and the harvest client exists, but the Registration Authority's harvest " +
                 "will fail if this Keycloak cannot fetch that URL when harvesting. " + remedy;
     }

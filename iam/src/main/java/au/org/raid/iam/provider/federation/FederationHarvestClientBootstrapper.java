@@ -66,7 +66,8 @@ public final class FederationHarvestClientBootstrapper {
         if (resolution.insecureHttp()) {
             log.warn("Federation harvest: the harvest client trusts keys fetched over plain http from {} because " +
                     "{}=true. Anyone who can tamper with that fetch can obtain harvest tokens. Use this only on " +
-                    "local and test rigs.", keySource.jwksUrl(), FederationHarvestKeySource.ALLOW_HTTP_JWKS_URL_ENV_VAR);
+                    "local and test rigs.", FederationHarvestKeySource.loggable(keySource.jwksUrl()),
+                    FederationHarvestKeySource.ALLOW_HTTP_JWKS_URL_ENV_VAR);
         }
         if (!keySource.usesUrl() && resolution.bundledKeyCount() == 0) {
             log.warn("Federation harvest: {}=false but the key set bundled in raid-iam.jar holds no keys, so the " +
@@ -116,7 +117,9 @@ public final class FederationHarvestClientBootstrapper {
         session.getContext().setRealm(realm);
 
         final var outcome = FederationHarvestClientProvisioner.provision(session, realm, keySource);
-        final var keys = keySource.usesUrl() ? "JWKS URL " + keySource.jwksUrl() : "the embedded key set";
+        final var keys = keySource.usesUrl()
+                ? "JWKS URL " + FederationHarvestKeySource.loggable(keySource.jwksUrl())
+                : "the embedded key set";
         switch (outcome) {
             case NOT_A_RAID_REALM -> log.debug("Federation harvest: realm '{}' has no {} role; no harvest client",
                     realm.getName(), FederationHarvestClientProvisioner.RAID_DUMPER_ROLE);

@@ -127,6 +127,59 @@ public record FederationHarvestKeySource(String jwksUrl, String jwksString) {
         return value != null && value.trim().toLowerCase(Locale.ROOT).equals("true");
     }
 
+    /**
+     * The JWKS URL as it may appear in a log: scheme, host, port and path only. A query string or
+     * fragment is replaced by {@code ?…} / {@code #…}, and any user info is dropped, because these
+     * can carry credentials (a presigned URL's signature and session token, an access token, a
+     * password). An unparseable URL is never echoed.
+     */
+    static String loggable(final String jwksUrl) {
+        if (jwksUrl == null) {
+            return "<none>";
+        }
+        try {
+            final var uri = new URI(jwksUrl);
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return "<unparseable URL>";
+            }
+            final var out = new StringBuilder(uri.getScheme()).append("://").append(uri.getHost());
+            if (uri.getPort() != -1) {
+                out.append(':').append(uri.getPort());
+            }
+            if (uri.getRawPath() != null) {
+                out.append(uri.getRawPath());
+            }
+            if (uri.getRawQuery() != null) {
+                out.append("?…");
+            }
+            if (uri.getRawFragment() != null) {
+                out.append("#…");
+            }
+            return out.toString();
+        } catch (Exception e) {
+            return "<unparseable URL>";
+        }
+    }
+
+    /** Replaces every occurrence of the raw URL, and of its query string, in {@code text}. */
+    static String withoutSecrets(final String text, final String jwksUrl) {
+        if (text == null || jwksUrl == null) {
+            return text;
+        }
+        var scrubbed = text.replace(jwksUrl, loggable(jwksUrl));
+        try {
+            final var uri = new URI(jwksUrl);
+            for (final var part : new String[]{uri.getRawQuery(), uri.getRawUserInfo(), uri.getRawFragment()}) {
+                if (part != null && !part.isEmpty()) {
+                    scrubbed = scrubbed.replace(part, "…");
+                }
+            }
+        } catch (Exception e) {
+            // Unparseable: the whole-URL replacement above is all that can be done.
+        }
+        return scrubbed;
+    }
+
     /** Returns null when the URL is acceptable, otherwise why not. */
     static String invalidJwksUrlReason(final String jwksUrl, final boolean allowHttp) {
         try {

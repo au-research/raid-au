@@ -42,6 +42,18 @@ class JwksReachabilityCheckTest {
     }
 
     @Test
+    void warningNeverContainsTheQueryStringOfTheUrl() {
+        final var presigned = "https://bucket.s3.amazonaws.com/jwks.json?X-Amz-Security-Token=SESSIONTOKEN&X-Amz-Signature=deadbeef";
+        JwksReachabilityCheck.run(presigned, url -> {
+            throw new RuntimeException("wrapped", new IllegalStateException("GET " + url + " failed"));
+        }, false, warnings::add);
+
+        assertThat(warnings, hasSize(1));
+        assertThat(warnings.get(0), containsString("https://bucket.s3.amazonaws.com/jwks.json?…"));
+        assertThat(warnings.get(0), not(anyOf(containsString("SESSIONTOKEN"), containsString("deadbeef"))));
+    }
+
+    @Test
     void doesNotSuggestTheEmbeddedKeySetWhileItIsEmpty() {
         // Until a release ships embedded keys, following that advice would switch harvesting off.
         run(url -> new Fetched(404, "not found"), false);
