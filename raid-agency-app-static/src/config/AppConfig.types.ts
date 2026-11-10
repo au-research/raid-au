@@ -68,6 +68,14 @@ export interface AppConfig {
   raidDumperClientId?: string;
   /** Environment name: prod | demo | test | dev */
   raidEnv?: string;
+  /**
+   * Base URL of this agency's RAiD web app, e.g. https://app.demo.raid.org.au.
+   * Used for the Show in RAiD App, Edit in RAiD App and new RAiD links. A
+   * trailing slash is tolerated. Required: the data fetch script stops the
+   * build if it is missing from public/app-config.json. Typed as optional
+   * only because the type also describes the config before validation.
+   */
+  appUrl?: string;
   /** Public URL this site is served from (used for the sitemap) */
   siteUrl?: string;
   /**

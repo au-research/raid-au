@@ -176,6 +176,7 @@ Non-secret configuration lives in `public/app-config.json`. This file is read by
 | `iamClientId` | OAuth client ID for public data fetching |
 | `raidDumperClientId` | OAuth client ID for embargoed data |
 | `raidEnv` | Environment name: `prod` \| `demo` \| `test` \| `dev` |
+| `appUrl` | **Required.** Base URL of the agency's RAiD web app, used for the Show, Edit and new RAiD links (for example `https://app.prod.raid.org.au` for ARDC prod). File only, not an environment variable; the build stops if it is missing. Baked into the static HTML, so changing it needs a rebuild |
 | `siteUrl` | Public URL the site is served from (used for sitemap) |
 | `raidResolverUrl` | Global RAiD resolver shown above the title and copied to the clipboard. Should be `https://raid.org/` for every agency (a trailing slash is optional), which is the default, so it can normally be omitted; `raid.org` redirects each handle to the agency's landing page. Replaces the old `raidUrl` key, which is ignored. Baked into the static HTML, so changing it needs a rebuild |
 | `analytics.gaMeasurementId` | Google Analytics ID for prod |

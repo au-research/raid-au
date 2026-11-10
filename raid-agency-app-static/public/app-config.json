@@ -4,6 +4,7 @@
   "iamClientId": "static-page-client",
   "raidDumperClientId": "raid-access-handler",
   "raidEnv": "demo",
+  "appUrl": "https://app.demo.raid.org.au",
   "siteUrl": "https://static.demo.raid.org.au",
   "raidResolverUrl": "https://raid.org/",
   "analytics": {
