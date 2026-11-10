@@ -306,4 +306,40 @@ test.describe("Contributor identifier auto-detect", { tag: "@local" }, () => {
     await expect(card.getByText(/Invalid ISNI format/).first()).toBeVisible({ timeout: 5000 });
     await expect(card.getByText("Invalid ISNI format", { exact: true })).toBeVisible();
   });
+
+  // RAID-973 regression guard: every other ISNI test in this file either adds
+  // the identifier on the create-RAiD form (/raids/new) or only displays an
+  // already-saved one on the Edit page - none of them cover adding a *new*
+  // ISNI contributor to an *already-saved* RAiD via the Edit page, which is
+  // RAID-973's exact reported scenario (schemaUri was reported stuck on the
+  // ORCID default and rejected by validation). Uses MOCKED_ISNI_URL (not
+  // ISNI_URL) so the save can actually succeed end-to-end here, rather than
+  // only asserting the outgoing payload as the create-flow test above does.
+  test("adding an ISNI contributor to an existing RAiD on the Edit page saves successfully with the correct schemaUri", async ({
+    page,
+  }) => {
+    const { formPage, contributorSection } = await setUpFormWithContributorRow(page);
+    await contributorSection.fillOrcidId(0, ORCID_URL);
+    await formPage.save();
+    await formPage.waitForSuccessfulSave();
+    const [prefix, suffix] = extractPrefixSuffixFromUrl(page.url());
+
+    await formPage.goto(`/raids/${prefix}/${suffix}/edit`);
+    await contributorSection.addItem();
+    await contributorSection.fillOrcidId(1, MOCKED_ISNI_URL);
+    await expect(page.getByText("The entered ID is an ISNI")).toBeVisible();
+
+    const [request] = await Promise.all([
+      page.waitForRequest(
+        (req) => req.method() === "PUT" && /\/raid\/[^/]+\/[^/]+$/.test(new URL(req.url()).pathname)
+      ),
+      formPage.save(),
+    ]);
+    await formPage.waitForSuccessfulSave();
+
+    const body = request.postDataJSON() as ContributorPayload;
+    const newContributor = body.contributor?.[1];
+    expect(newContributor?.schemaUri).toBe("https://isni.org/");
+    expect(newContributor?.id).toBe(MOCKED_ISNI_URL);
+  });
 });

@@ -434,6 +434,27 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ServicePoint'
+  /service-point/public:
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - service-point
+      summary: List service points (public fields only)
+      description: |
+        Returns every service point with only its id, name and identifierOwner.
+        Contact details and other fields are never included.
+        Requires the raid-dumper, service-point-user or operator role.
+      operationId: findAllPublicServicePoints
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicServicePoint'
   /service-point/{id}:
     parameters:
       - name: id
@@ -1033,6 +1054,14 @@ components:
           format: int64
           description: The name of the service point
           example: Australian Research Data Commons
+    PublicServicePoint:
+      description: The public view of a service point. Contains no contact details.
+      type: object
+      required: [ id, name, identifierOwner ]
+      properties:
+        id: { $ref: '#/components/schemas/SurrogateKey' }
+        name: { type: string }
+        identifierOwner: { type: string }
     ServicePoint:
       description: The response for all service point requests
       type: object

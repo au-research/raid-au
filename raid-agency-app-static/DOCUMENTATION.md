@@ -102,7 +102,7 @@ The application integrates with the RAiD API:
 
 1. Authentication via OAuth 2.0 client credentials flow (machine-to-machine — no user session)
 2. Tokens are managed by `TokenManager`, which automatically re-fetches a new token when the current one is within 60 seconds of expiry — this ensures long-running build scripts (30+ minutes) never fail due to an expired token
-3. Bearer token used for authenticated API requests (`/raid/all-public`, `/service-point/`, `/raid/all-embargoed`)
+3. Bearer token used for authenticated API requests (`/raid/all-public`, `/service-point/public`, `/raid/all-embargoed`)
 4. Responses processed and transformed into site content
 
 ## Data Mapping System
@@ -176,8 +176,9 @@ Non-secret configuration lives in `public/app-config.json`. This file is read by
 | `iamClientId` | OAuth client ID for public data fetching |
 | `raidDumperClientId` | OAuth client ID for embargoed data |
 | `raidEnv` | Environment name: `prod` \| `demo` \| `test` \| `dev` |
+| `appUrl` | **Required.** Base URL of the agency's RAiD web app, used for the Show, Edit and new RAiD links (for example `https://app.prod.raid.org.au` for ARDC prod). File only, not an environment variable; the build stops if it is missing. Baked into the static HTML, so changing it needs a rebuild |
 | `siteUrl` | Public URL the site is served from (used for sitemap) |
-| `raidUrl` | Base URL for resolving RAiD handles |
+| `raidResolverUrl` | Global RAiD resolver shown above the title and copied to the clipboard. Should be `https://raid.org/` for every agency (a trailing slash is optional), which is the default, so it can normally be omitted; `raid.org` redirects each handle to the agency's landing page. Replaces the old `raidUrl` key, which is ignored. Baked into the static HTML, so changing it needs a rebuild |
 | `analytics.gaMeasurementId` | Google Analytics ID for prod |
 | `analytics.gaMeasurementIdDemo` | Google Analytics ID for demo |
 | `caching.enabled` | Enable citation caching |

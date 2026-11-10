@@ -118,15 +118,19 @@ each related object:
   with the scheme URI as `propertyID`.
 - `name` carries the formatted citation text (the APA-style reference shown on
   the landing page) when it is available.
-- `additionalType` carries the related-object **category** URI (Input, Output or
-  Internal), or an array of URIs when there is more than one category. It is
-  omitted when the object has no category.
+- `additionalType` is an array holding, in order:
+  1. the related-object **category** URI or URIs (Input, Output or Internal)
+  2. the related-object **type** URI (for example
+     `relatedObject.type.schema/269`)
+  3. the type's resolved label (for example `Dataset`), the same label shown on
+     the landing page
 
-Two points to note:
+  Each part is left out when the object has no category or no type, and the
+  label is left out when the type URI is not in the vocabulary mapping. The
+  property is omitted when the object has neither a category nor a type.
 
-- `additionalType` holds the raw category URI, not a resolved label. See the
-  [category reference](#related-object-categories) below.
-- The related-object *type* (for example Journal Article) is not emitted.
+The category is emitted as a URI only, without a label. See the
+[category reference](#related-object-categories) below.
 
 ### Related RAiDs
 
@@ -159,13 +163,14 @@ harvesters receive readable values rather than bare URIs:
 | CRediT contributor role (`Role.roleName`) | Derived from the role URI slug |
 | Subject (`DefinedTerm.name`) | ANZSRC subject mapping |
 | `isRelatedTo` relationship (`relationshipTypeName`) | RAiD general vocabulary mapping |
+| Related object type (`citation.additionalType`) | RAiD general vocabulary mapping |
 
 When a URI is not found in the mapping, the output falls back to the raw URI (or,
-for the subject `name`, omits the label).
+for the subject `name` and the related object type label, omits the label).
 
 ### Related object categories
 
-`citation.additionalType` holds the category URI. The current categories are:
+`citation.additionalType` starts with the category URI. The current categories are:
 
 | Category URI | Meaning |
 | --- | --- |
@@ -302,7 +307,11 @@ produces this JSON-LD:
         "name": "DOI",
         "value": "https://doi.org/10.1007/s00442-014-2977-8"
       },
-      "additionalType": "https://vocabulary.raid.org/relatedObject.category.id/190"
+      "additionalType": [
+        "https://vocabulary.raid.org/relatedObject.category.id/190",
+        "https://vocabulary.raid.org/relatedObject.type.schema/250",
+        "Journal Article"
+      ]
     }
   ],
   "isPartOf": [

@@ -41,6 +41,9 @@ export function loadAppConfig() {
     iamClientId:        fileConfig.iamClientId       ?? process.env.IAM_CLIENT_ID,
     raidDumperClientId: fileConfig.raidDumperClientId ?? process.env.RAID_DUMPER_CLIENT_ID,
     raidEnv:            fileConfig.raidEnv           ?? process.env.RAID_ENV,
+    // File only: the Astro pages read appUrl from public/app-config.json, so an
+    // env var would pass validation without ever reaching the landing pages.
+    appUrl:             fileConfig.appUrl,
 
     // Secrets: env var ONLY — never stored in the JSON file
     iamClientSecret:        process.env.IAM_CLIENT_SECRET,

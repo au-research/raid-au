@@ -2,6 +2,7 @@ package au.org.raid.api.controller;
 
 import au.org.raid.api.service.ServicePointService;
 import au.org.raid.idl.raidv2.api.ServicePointApi;
+import au.org.raid.idl.raidv2.model.PublicServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointCreateRequest;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
@@ -25,6 +26,10 @@ public class ServicePointController implements ServicePointApi {
 
     public ResponseEntity<List<ServicePoint>> findAllServicePoints() {
         return ResponseEntity.ok(servicePointService.findAll());
+    }
+
+    public ResponseEntity<List<PublicServicePoint>> findAllPublicServicePoints() {
+        return ResponseEntity.ok(servicePointService.findAllPublic());
     }
 
     public ResponseEntity<ServicePoint> createServicePoint(

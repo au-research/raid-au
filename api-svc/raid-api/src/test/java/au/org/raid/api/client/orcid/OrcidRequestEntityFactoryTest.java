@@ -2,41 +2,80 @@ package au.org.raid.api.client.orcid;
 
 import au.org.raid.api.client.contributor.orcid.OrcidRequestEntityFactory;
 import au.org.raid.api.config.properties.OrcidClientProperties;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 import java.net.URI;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(MockitoExtension.class)
 class OrcidRequestEntityFactoryTest {
-    @Mock
+    private static final String BASE_URL = "https://localhost/";
+    private static final String ORCID = "https://orcid.org/0009-0002-5128-5184";
+
     private OrcidClientProperties properties;
-    @InjectMocks
     private OrcidRequestEntityFactory requestEntityFactory;
 
+    @BeforeEach
+    void setUp() {
+        properties = new OrcidClientProperties();
+        properties.setBaseUrl(BASE_URL);
+        requestEntityFactory = new OrcidRequestEntityFactory(properties);
+    }
+
     @Test
-    @DisplayName("Should return RequestEntity with valid input")
-    void returnsRequestEntity() {
-        final var baseUrl = "https://localhost/";
-        final var accessToken = "_access-token";
-        final var orcid = "https://orcid.org/0009-0002-5128-5184";
+    @DisplayName("GET personal-details carries the bearer token when one is configured")
+    void personalDetailsRequestWithToken() {
+        properties.setAccessToken("_access-token");
 
-        when(properties.getBaseUrl()).thenReturn(baseUrl);
-        when(properties.getAccessToken()).thenReturn(accessToken);
+        final var request = requestEntityFactory.createGetPersonalDetailsRequest(ORCID);
 
-        final var request = requestEntityFactory.createGetPersonalDetailsRequest(orcid);
+        assertThat(request.getMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(request.getUrl()).isEqualTo(URI.create("https://localhost/0009-0002-5128-5184/personal-details"));
+        assertThat(request.getHeaders().get(HttpHeaders.AUTHORIZATION)).containsExactly("Bearer _access-token");
+    }
 
-        assertThat(request.getMethod(), is(HttpMethod.GET));
-        assertThat(request.getHeaders().get("Authorization").get(0), is("Bearer %s".formatted(accessToken)));
-        assertThat(request.getUrl(), is(URI.create("https://localhost/0009-0002-5128-5184/personal-details")));
+    @Test
+    @DisplayName("HEAD carries the bearer token when one is configured")
+    void headRequestWithToken() {
+        properties.setAccessToken("_access-token");
+
+        final var request = requestEntityFactory.createHeadRequest(ORCID);
+
+        assertThat(request.getMethod()).isEqualTo(HttpMethod.HEAD);
+        assertThat(request.getUrl()).isEqualTo(URI.create("https://localhost/0009-0002-5128-5184"));
+        assertThat(request.getHeaders().get(HttpHeaders.AUTHORIZATION)).containsExactly("Bearer _access-token");
+    }
+
+    @ParameterizedTest(name = "token [{0}]")
+    @NullSource
+    @ValueSource(strings = {"", "   ", "not-set", " not-set "})
+    @DisplayName("GET personal-details is anonymous when no token is configured")
+    void personalDetailsRequestWithoutToken(final String token) {
+        properties.setAccessToken(token);
+
+        final var request = requestEntityFactory.createGetPersonalDetailsRequest(ORCID);
+
+        assertThat(request.getUrl()).isEqualTo(URI.create("https://localhost/0009-0002-5128-5184/personal-details"));
+        assertThat(request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)).isFalse();
+    }
+
+    @ParameterizedTest(name = "token [{0}]")
+    @NullSource
+    @ValueSource(strings = {"", "   ", "not-set", " not-set "})
+    @DisplayName("HEAD is anonymous when no token is configured")
+    void headRequestWithoutToken(final String token) {
+        properties.setAccessToken(token);
+
+        final var request = requestEntityFactory.createHeadRequest(ORCID);
+
+        assertThat(request.getUrl()).isEqualTo(URI.create("https://localhost/0009-0002-5128-5184"));
+        assertThat(request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)).isFalse();
     }
 }

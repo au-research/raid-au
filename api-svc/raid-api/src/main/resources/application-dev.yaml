@@ -13,6 +13,9 @@ raid:
   ror-client:
     client-id: 08VB3D1YYHC63CQ8QHP0TBD0I6RULCHQ
     base-url: http://localhost:1080/v2/
+  orcid-integration:
+    enabled: true
+    host: http://localhost:1080
   db:
     user: postgres
     password: supersecret

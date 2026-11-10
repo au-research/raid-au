@@ -1,6 +1,7 @@
 package au.org.raid.api.factory.datacite;
 
 import au.org.raid.api.config.properties.IdentifierProperties;
+import au.org.raid.api.util.DateUtil;
 import au.org.raid.api.model.datacite.doi.*;
 import au.org.raid.idl.raidv2.model.*;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,10 @@ public class DataciteAttributesDtoFactory {
 
         return creators.isEmpty() ? List.of(new DataciteCreator()) : creators;
 
+    }
+
+    private String publicationYear(final Date date) {
+        return String.valueOf(DateUtil.parseDate(date.getStartDate()).getYear());
     }
 
     @SneakyThrows
@@ -145,7 +150,7 @@ public class DataciteAttributesDtoFactory {
                 .setPrefix(prefix)
                 .setDoi(handle)
                 .setPublisher(publisher) // $.identifier.registrationAgency
-                .setPublicationYear(String.valueOf(java.time.Year.now())) // TODO: year of start date
+                .setPublicationYear(publicationYear(request.getDate()))
                 .setTypes(dataciteTypes)
                 .setTitles(titles)
                 .setCreators(creators)
@@ -154,6 +159,7 @@ public class DataciteAttributesDtoFactory {
                 .setDescriptions(descriptions)
                 .setRelatedIdentifiers(relatedIdentifiers)
                 .setAlternateIdentifiers(alternateIdentifiers)
+                .setRightsList(dataciteRightFactory.create(request.getIdentifier()))
                 .setFundingReferences(fundingReferences)
                 .setEvent(event)
                 .setUrl(url);
@@ -261,7 +267,7 @@ public class DataciteAttributesDtoFactory {
                 .setPrefix(prefix)
                 .setDoi(handle)
                 .setPublisher(publisher) // $.identifier.registrationAgency
-                .setPublicationYear(String.valueOf(java.time.Year.now())) // TODO: year of start date
+                .setPublicationYear(publicationYear(request.getDate()))
                 .setTypes(dataciteTypes)
                 .setTitles(titles)
                 .setCreators(creators)
@@ -270,6 +276,7 @@ public class DataciteAttributesDtoFactory {
                 .setDescriptions(descriptions)
                 .setRelatedIdentifiers(relatedIdentifiers)
                 .setAlternateIdentifiers(alternateIdentifiers)
+                .setRightsList(dataciteRightFactory.create(request.getIdentifier()))
                 .setFundingReferences(fundingReferences)
                 .setUrl(url)
                 .setEvent(event);
@@ -379,7 +386,7 @@ public class DataciteAttributesDtoFactory {
                 .setPrefix(prefix)
                 .setDoi(handle)
                 .setPublisher(publisher) // $.identifier.registrationAgency
-                .setPublicationYear(String.valueOf(java.time.Year.now())) // TODO: year of start date
+                .setPublicationYear(publicationYear(request.getDate()))
                 .setTypes(dataciteTypes)
                 .setTitles(titles)
                 .setCreators(creators)
@@ -388,6 +395,7 @@ public class DataciteAttributesDtoFactory {
                 .setDescriptions(descriptions)
                 .setRelatedIdentifiers(relatedIdentifiers)
                 .setAlternateIdentifiers(alternateIdentifiers)
+                .setRightsList(dataciteRightFactory.create(request.getIdentifier()))
                 .setFundingReferences(fundingReferences)
                 .setUrl(url)
                 .setEvent(event);

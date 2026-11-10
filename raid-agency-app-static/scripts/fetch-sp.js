@@ -4,7 +4,8 @@
  * Fetches all service points in a single API call and adds the name
  * to the identifier.owner object of each RAID record.
  *
- * API: GET <apiEndpoint>/service-point
+ * API: GET <apiEndpoint>/service-point/public
+ * Returns only id, name and identifierOwner, so no contact details reach the build.
  */
 
 import { readFile, writeFile } from 'fs/promises';
@@ -19,7 +20,7 @@ import path from 'path';
  * @returns {Promise<Map<string, string>>} Map of servicePointId -> name
  */
 export async function fetchAllServicePoints({ makeRequestWithRetry, config }) {
-  const url = `${config.apiEndpoint}/service-point/`;
+  const url = `${config.apiEndpoint}/service-point/public`;
 
   const response = await makeRequestWithRetry(url, {
     method: 'GET',

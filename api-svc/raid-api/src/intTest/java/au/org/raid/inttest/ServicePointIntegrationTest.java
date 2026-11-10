@@ -8,11 +8,23 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 public class ServicePointIntegrationTest extends AbstractIntegrationTest {
+
+    @Value("${raid.test.api.url}")
+    private String apiUrl;
 
     private UserContext operatorContext;
     private ServicePointApi operatorServicePointApi;
@@ -149,5 +161,87 @@ public class ServicePointIntegrationTest extends AbstractIntegrationTest {
         } finally {
             userService.deleteUser(unauthorisedContext.getId());
         }
+    }
+
+    // ---- GET /service-point/public (RAID-1021) ----
+
+    @ParameterizedTest(name = "Public service points: {0} gets 200")
+    @ValueSource(strings = {"raid-dumper", "service-point-user", "operator"})
+    void publicServicePointsAllowedRoles(final String role) {
+        final var context = userService.createUser("raid-au", role);
+        try {
+            final var response = testClient.servicePointApi(context.getToken()).findAllPublicServicePoints();
+
+            assertThat(response.getStatusCode().value()).isEqualTo(200);
+            assertThat(response.getBody()).isNotEmpty();
+        } finally {
+            userService.deleteUser(context.getId());
+        }
+    }
+
+    @Test
+    @DisplayName("Public service points: no token returns 401")
+    void publicServicePointsUnauthenticated() throws Exception {
+        final var response = rawGet("/service-point/public", null);
+
+        assertThat(response.statusCode()).isEqualTo(401);
+    }
+
+    @Test
+    @DisplayName("Public service points: caller without an allowed role gets 403")
+    void publicServicePointsInsufficientRole() {
+        final var context = userService.createUser("raid-au", "raid-user");
+
+        try {
+            testClient.servicePointApi(context.getToken()).findAllPublicServicePoints();
+            fail("Expected 403");
+        } catch (FeignException e) {
+            assertThat(e.status()).isEqualTo(403);
+        } finally {
+            userService.deleteUser(context.getId());
+        }
+    }
+
+    @Test
+    @DisplayName("Public service points: items contain only id, name and identifierOwner, with no contact details")
+    void publicServicePointsContainOnlyPublicFields() throws Exception {
+        final var context = userService.createUser("raid-au", "raid-dumper");
+
+        try {
+            final var response = rawGet("/service-point/public", context.getToken());
+
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.body()).doesNotContain("adminEmail").doesNotContain("techEmail");
+
+            final var items = objectMapper.readTree(response.body());
+            assertThat(items.isArray()).isTrue();
+            assertThat(items).isNotEmpty();
+            for (final var item : items) {
+                final var fieldNames = new java.util.HashSet<String>();
+                item.fieldNames().forEachRemaining(fieldNames::add);
+                assertThat(fieldNames).isEqualTo(Set.of("id", "name", "identifierOwner"));
+            }
+        } finally {
+            userService.deleteUser(context.getId());
+        }
+    }
+
+    @Test
+    @DisplayName("GET /service-point/{id} still routes to findServicePointById for a real id")
+    void findByIdStillRoutesAfterPublicEndpoint() {
+        final var response = operatorServicePointApi.findServicePointById(raidAuRegistry2ServicePointId());
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(raidAuRegistry2ServicePointId());
+        assertThat(response.getBody().getAdminEmail()).isNotNull();
+    }
+
+    private HttpResponse<String> rawGet(final String path, final String token) throws Exception {
+        final var builder = HttpRequest.newBuilder(URI.create(apiUrl + path)).GET();
+        if (token != null) {
+            builder.header("Authorization", "Bearer " + token);
+        }
+        return HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString());
     }
 }

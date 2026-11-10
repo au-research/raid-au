@@ -114,12 +114,16 @@ function validateConfig() {
     iamClientId: config.iamClientId,
     iamClientSecret: config.iamClientSecret,
     raidEnv: config.raidEnv,
+    appUrl: config.appUrl,
   };
   const missing = Object.entries(required).filter(([, v]) => !v).map(([k]) => k);
   if (missing.length > 0) {
     console.error('Error: The following required config values are not set:');
     missing.forEach(key => console.error(`  - ${key}`));
     console.error('Set them in public/app-config.json or as environment variables.');
+    if (missing.includes('appUrl')) {
+      console.error('appUrl (base URL of your RAiD web app, used for the Show, Edit and new RAiD links) can only be set in public/app-config.json.');
+    }
     console.error('Secrets (iamClientSecret) must always be environment variables.');
     process.exit(1);
   }
