@@ -54,7 +54,13 @@ clean {
  so that a class is no longer needed, it will be deleted during generate */
 openApiGenerate {
   generatorName = "spring"
-  inputSpec = raidV2SpecFile.path
+  // openapi-generator tries to parse inputSpec as a URI to detect a
+  // remote (http/https) spec before falling back to the filesystem; a raw
+  // Windows path's drive letter ("C:\...") is misread as a URI scheme,
+  // crashing spec validation on Windows-local builds. Forward slashes are
+  // accepted as a path on every OS this project builds on (Windows/Linux
+  // CI), so normalise rather than special-case.
+  inputSpec = raidV2SpecFile.path.replace('\\', '/')
   outputDir = file(generateDirName).path
 
   validateSpec =  true
@@ -148,9 +154,14 @@ tasks.openApiGenerate{
 
   // make sure task is re-run if templates are changed
 //  inputs.files templateDirName
-  /* make sure task is re-run if reference files are changed, it appears 
+  /* make sure task is re-run if reference files are changed, it appears
   the task only looks at the base file. */
-  inputs.files fileTree("src/**/*.yaml")
+  // The single-String overload of fileTree() treats its whole argument as a
+  // literal base directory, not a glob - "src/**/*.yaml" was being resolved
+  // as a literal path containing "**", which is silently ignored on Linux
+  // (where CI runs) but is an illegal Windows path, crashing this task for
+  // every Windows-based local dev build. Use the dir+include form instead.
+  inputs.files fileTree("src") { include "**/*.yaml" }
 }
 
 /* tell Gradle to generate the openapi code before compiling it (without this,
