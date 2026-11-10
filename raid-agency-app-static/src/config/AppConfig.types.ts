@@ -78,8 +78,14 @@ export interface AppConfig {
   appUrl?: string;
   /** Public URL this site is served from (used for the sitemap) */
   siteUrl?: string;
-  /** Base URL for resolving RAiD handles, e.g. https://raid.org/ */
-  raidUrl?: string;
+  /**
+   * Base URL of the global RAiD resolver, shown above the title and copied to
+   * the clipboard. Should be https://raid.org/ for every agency, as raid.org
+   * redirects each handle to the agency's landing page. A missing trailing
+   * slash is tolerated. Defaults to https://raid.org/. Replaces the old
+   * `raidUrl` key, which is now ignored.
+   */
+  raidResolverUrl?: string;
   /** Google Analytics measurement IDs */
   analytics?: AnalyticsConfig;
   /** Citation-cache settings for the data-fetch scripts */

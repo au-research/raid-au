@@ -8,7 +8,7 @@
   "raidEnv": "prod",
   "appUrl": "https://app.your-env.raid.org.au",
   "siteUrl": "https://static.your-env.raid.org.au",
-  "raidUrl": "https://raid.org/",
+  "raidResolverUrl": "https://raid.org/",
 
   "analytics": {
     "gaMeasurementId": "G-XXXXXXXXXX",
