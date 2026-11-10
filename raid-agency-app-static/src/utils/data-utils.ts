@@ -27,5 +27,5 @@ export function getRaidAppUrl(): string {
 }
 
 export function getRaidUrl(id: string): string {
-  return buildRaidUrl(getSiteConfig().raidUrl, id);
+  return buildRaidUrl(getSiteConfig().raidResolverUrl, id);
 }

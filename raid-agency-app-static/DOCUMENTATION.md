@@ -177,7 +177,7 @@ Non-secret configuration lives in `public/app-config.json`. This file is read by
 | `raidDumperClientId` | OAuth client ID for embargoed data |
 | `raidEnv` | Environment name: `prod` \| `demo` \| `test` \| `dev` |
 | `siteUrl` | Public URL the site is served from (used for sitemap) |
-| `raidUrl` | Global RAiD resolver shown above the title and copied to the clipboard. Set to `https://raid.org/` for every agency (a trailing slash is optional); `raid.org` redirects each handle to the agency's landing page. Defaults to `https://raid.org/`. Baked into the static HTML, so changing it needs a rebuild |
+| `raidResolverUrl` | Global RAiD resolver shown above the title and copied to the clipboard. Should be `https://raid.org/` for every agency (a trailing slash is optional), which is the default, so it can normally be omitted; `raid.org` redirects each handle to the agency's landing page. Replaces the old `raidUrl` key, which is ignored. Baked into the static HTML, so changing it needs a rebuild |
 | `analytics.gaMeasurementId` | Google Analytics ID for prod |
 | `analytics.gaMeasurementIdDemo` | Google Analytics ID for demo |
 | `caching.enabled` | Enable citation caching |

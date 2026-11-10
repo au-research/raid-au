@@ -18,6 +18,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { AppConfig } from "./AppConfig.types";
 import defaultConfig from "./defaultConfig";
+import { findLegacyKeys } from "./legacyKeys";
+import { DEFAULT_RAID_URL } from "@/utils/raid-url";
 
 function deepMerge<T extends Record<string, any>>(
   target: T,
@@ -54,6 +56,11 @@ function loadConfig(): AppConfig {
     const configPath = resolve("public", "app-config.json");
     const raw = readFileSync(configPath, "utf-8");
     const customConfig = JSON.parse(raw) as Partial<AppConfig>;
+    for (const { oldKey, newKey } of findLegacyKeys(customConfig)) {
+      console.warn(
+        `[appConfig] "${oldKey}" is no longer used and is ignored. Use "${newKey}" instead (defaults to ${DEFAULT_RAID_URL}).`
+      );
+    }
     return deepMerge(defaultConfig, customConfig);
   } catch (error) {
     console.warn(

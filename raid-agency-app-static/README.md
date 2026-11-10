@@ -125,7 +125,7 @@ Copy `app-config.template.json` to `public/app-config.json` and fill in your val
   "raidDumperClientId": "your-dumper-client-id",
   "raidEnv": "prod",
   "siteUrl": "https://static.your-env.raid.org.au",
-  "raidUrl": "https://raid.org/",
+  "raidResolverUrl": "https://raid.org/",
   "analytics": {
     "gaMeasurementId": "G-XXXXXXXXXX"
   },
@@ -137,7 +137,7 @@ Copy `app-config.template.json` to `public/app-config.json` and fill in your val
 
 This file is also served at `/app-config.json` at runtime. Google Analytics IDs are loaded from it client-side, so they can be updated without rebuilding.
 
-`raidUrl` is the global RAiD resolver. The landing page shows it above the title and copies it to the clipboard, joined with the handle (for example `https://raid.org/10.83338/831b5565`). Set it to `https://raid.org/` for every agency, because `raid.org` redirects each handle to the agency's own landing page. The trailing slash is optional. If `raidUrl` is omitted, it defaults to `https://raid.org/`. Like `raidEnv` and `siteUrl`, it is baked into the static HTML, so changing it needs a rebuild.
+`raidResolverUrl` is the global RAiD resolver. The landing page shows it above the title and copies it to the clipboard, joined with the handle (for example `https://raid.org/10.83338/831b5565`). It should be `https://raid.org/` for every agency, because `raid.org` redirects each handle to the agency's own landing page, so you can normally leave it out: if `raidResolverUrl` is omitted, it defaults to `https://raid.org/`. The trailing slash is optional. This key replaces the old `raidUrl`, which is now ignored (the build prints a notice if it is still in your file, and you can delete it). Like `raidEnv` and `siteUrl`, it is baked into the static HTML, so changing it needs a rebuild.
 
 ### `.env` (secrets only)
 

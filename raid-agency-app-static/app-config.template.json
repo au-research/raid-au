@@ -7,7 +7,7 @@
   "raidDumperClientId": "your-dumper-client-id",
   "raidEnv": "prod",
   "siteUrl": "https://static.your-env.raid.org.au",
-  "raidUrl": "https://raid.org/",
+  "raidResolverUrl": "https://raid.org/",
 
   "analytics": {
     "gaMeasurementId": "G-XXXXXXXXXX",
