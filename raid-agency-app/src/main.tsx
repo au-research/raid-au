@@ -15,10 +15,13 @@ import {
   loadConfig,
   AppConfigProvider,
   buildMuiTheme,
+  ConfigIssuesProvider,
+  defaultConfig,
   setRuntimeConfig,
   RuntimeConfigProvider,
 } from "./config";
 import { initKeycloakInstance } from "./auth/keycloak";
+import { ConfigErrorScreen } from "./components/config-issue-banner";
 
 const router = createBrowserRouter([
   {
@@ -37,28 +40,42 @@ const router = createBrowserRouter([
   },
 ]);
 
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
+
 async function bootstrap() {
-  const { runtime, app } = await loadConfig();
+  const { runtime, app, issues } = await loadConfig();
 
   setRuntimeConfig(runtime);
   initKeycloakInstance(runtime.keycloak);
 
   const theme = buildMuiTheme(app.theme);
 
-  const root = ReactDOM.createRoot(
-    document.getElementById("root") as HTMLElement
-  );
-
   root.render(
     <RuntimeConfigProvider config={runtime}>
-      <AppConfigProvider config={app}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </AppConfigProvider>
+      <ConfigIssuesProvider issues={issues}>
+        <AppConfigProvider config={app}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </AppConfigProvider>
+      </ConfigIssuesProvider>
     </RuntimeConfigProvider>
   );
 }
 
-bootstrap();
+// RAID-941: never leave a blank page. Show what is wrong under a minimal
+// header; the full error stays in the console for operators.
+function renderStartupError(error: unknown) {
+  console.error(error);
+  root.render(
+    <ThemeProvider theme={buildMuiTheme(defaultConfig.theme)}>
+      <CssBaseline />
+      <ConfigErrorScreen error={error} />
+    </ThemeProvider>
+  );
+}
+
+bootstrap().catch(renderStartupError);

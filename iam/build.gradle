@@ -50,3 +50,37 @@ tasks.named('test') {
 jar {
     archiveBaseName = 'raid-iam'
 }
+
+// Integration tests: boot the built raid-iam.jar inside a real Keycloak (Testcontainers) and
+// assert on real clients and issued tokens. Needs Docker, so it is kept out of `./gradlew build`;
+// CI runs it through the root `./gradlew intTest` in the PR integration test workflow.
+testing {
+    suites {
+        intTest(JvmTestSuite) {
+            useJUnitJupiter()
+            dependencies {
+                implementation libs.keycloak.core
+                implementation libs.testcontainers.junit.jupiter
+                implementation libs.testcontainers.postgresql
+                implementation libs.hamcrest
+                runtimeOnly libs.slf4j.simple
+            }
+        }
+    }
+}
+
+// The Keycloak image the suite runs, read from the Dockerfile so the two cannot drift apart.
+def keycloakImage = (file('Dockerfile').text =~ /FROM\s+(quay\.io\/keycloak\/keycloak:\S+)/)[0][1]
+
+tasks.named('intTest') {
+    dependsOn tasks.named('jar')
+    shouldRunAfter tasks.named('test')
+    systemProperty 'raid.iam.jar', tasks.named('jar').get().archiveFile.get().asFile.absolutePath
+    systemProperty 'raid.iam.realmDir', file('realms').absolutePath
+    systemProperty 'raid.iam.keycloakImage', keycloakImage
+    systemProperty 'raid.iam.workDir', layout.buildDirectory.dir('intTest-work').get().asFile.absolutePath
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+    }
+}

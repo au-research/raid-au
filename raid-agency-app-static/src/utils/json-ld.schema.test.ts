@@ -324,6 +324,8 @@ describe("buildResearchProjectJsonLd conforms to the LinkML researchproject sche
     const output = buildResearchProjectJsonLd(raid);
     expect(output.citation?.[0].additionalType).toEqual([
       "https://vocabulary.raid.org/relatedObject.category.id/190",
+      "https://vocabulary.raid.org/relatedObject.type.schema/250",
+      "Journal Article",
     ]);
     expectValid(output);
   });

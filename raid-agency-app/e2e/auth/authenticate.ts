@@ -23,7 +23,7 @@ export async function authenticateAndSaveState({
   realm: string;
   clientId: string;
   authFilePath: string;
-}): Promise<void> {
+}): Promise<string> {
   const tokenResponse = await page.request.post(
     `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`,
     {
@@ -77,4 +77,7 @@ export async function authenticateAndSaveState({
   await page.waitForSelector('[data-testid="app-nav-bar"]', { timeout: 15000 });
 
   await page.context().storageState({ path: authFilePath });
+
+  // Returned so a setup project can check the user's roles before its specs run.
+  return tokens.access_token;
 }

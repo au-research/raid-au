@@ -36,8 +36,11 @@ raid:
       url-prefix: https://isni.org/
       schema-uri: https://isni.org/
   orcid-integration:
+    # RAID-993: when false the API makes no call to the ORCID integration host. Deployments
+    # that run an integration set enabled=true and host; the dev profile points at the mock.
+    enabled: false
     orcid-url-prefix: https://sandbox.orcid.org/
-    host: http://localhost:1080
+    host: ""
     raid-listener:
       uri: ${raid.orcid-integration.host}/raid-update
     contributor-id-lookup:

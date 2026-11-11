@@ -2,8 +2,11 @@
 
 * Status: proposed (for review with the product owner)
 * Who: proposed by RL
-* When: 2026-09-30
-* Related: RAID-836 (spike), RAID-739 (Federation API epic), RAID-752 (federation
+* When: 2026-09-30; revised 2026-10-19 after product owner review (RAID-836
+  comment 214232): public-only requirement, service point endpoint, signing key;
+  implementation decisions added 2026-11-05 (RAID-982, RAID-1042)
+* Related: RAID-836 (spike), RAID-982 (implementation), RAID-983 (Registration
+  Authority keys), RAID-739 (Federation API epic), RAID-752 (federation
   ingest), RAID-884 and
   [2026-09-11_boot-time-role-provisioning-via-postmigrationevent.md](./2026-09-11_boot-time-role-provisioning-via-postmigrationevent.md)
   (the boot hook this builds on), RAID-827 (in-process client creation reference)
@@ -25,6 +28,14 @@ For production, the product owner has set three constraints (RAID-836):
 2. It must work on any deployment platform, with no central ARDC-hosted broker
    provisioning on an agency's behalf.
 3. The only accepted manual step is the agency handing the credential to ARDC.
+4. The credential gives access to public information only, and is not attached
+   to a more privileged role (added at review, 2026-10-19). Service point ID, name
+   and owner (a ROR) are public; contact email addresses are not.
+
+`/raid/all-public` returns only public data, but it is authenticated so that
+unrestricted traffic cannot degrade minting and updating. The Federation API and
+the Zenodo dump are the purpose-built public consumers of that data. The harvest
+credential therefore protects the agency's capacity, not confidential data.
 
 The first two are met by the verified `PostMigrationEvent` boot hook (RAID-884):
 logic in `raid-iam.jar` creates the client on every boot if it is absent.
@@ -45,13 +56,28 @@ authenticator), not a client secret.
 * **Client.** A dedicated client, separate from any existing `raid-dumper` client
   an agency uses for Zenodo archiving, holding only the `raid-dumper` realm role.
   Its client ID is a fixed, well-known value compiled into the jar, so ARDC knows
-  it without being told. The value is to be settled in the implementation ticket;
-  `raid-federation-harvester` is used in the probe as a placeholder only.
+  it without being told: `raid-federation-harvester` (see
+  [Implementation decisions](#implementation-decisions-raid-982)).
+* **Public data only.** The harvester reads `GET /raid/all-public` and a new
+  `GET /service-point/public`, which returns only `id`, `name` and
+  `identifierOwner`. The new endpoint ships in the same release as the boot hook,
+  so every agency ARDC can authenticate to already has it and the harvester needs
+  no fallback to `GET /service-point/`. Its security rule must sit above the
+  existing `GET /service-point/**` rule, because Spring Security applies the first
+  matching rule. Once ARDC's own callers (the federation ingest and both
+  Raid-Dumper copies) have moved to it, `raid-dumper` is removed from
+  `GET /service-point/**`, so the role no longer reaches contact email addresses.
 * **Keys.** The client trusts a JWKS URL published by ARDC for the Federation
   API. The Federation API signs each assertion with a private key held in AWS KMS,
-  which never leaves KMS. The JWKS URL is compiled in as the default and can be
-  overridden by an environment variable, read with `System.getenv()` as the SPI's
-  other config is.
+  which never leaves KMS. One signing key per environment is shared across all
+  agencies; demo and prod use different keys. Because the credential reaches only
+  public data, a compromised key is a load risk rather than a confidentiality one,
+  and per-agency keys would multiply rotation work without protecting any data. The
+  JWKS URL is compiled in as the default and can be overridden by an environment
+  variable, read with `System.getenv()` as the SPI's other config is. The default
+  is the production key set, so ARDC's demo instance and every agency's non-production
+  instance must set the override (see
+  [Implementation decisions](#implementation-decisions-raid-982)).
 * **Which realms.** Following the boot-hook ADR, no realm name is configured. The
   client is created in any realm that has a `raid-dumper` role; other realms,
   including `master`, are left alone.
@@ -66,6 +92,34 @@ client-credentials token was issued from a JWKS-URL client and carried
 wrongly-signed assertions were rejected. So were `client_secret` and
 unauthenticated requests. A key added to the JWKS was picked up without a restart,
 and disabling the client stopped token issue immediately.
+
+
+# Implementation decisions (RAID-982)
+
+Settled for the implementation ticket
+([RAID-982](https://ardc.atlassian.net/browse/RAID-982), recorded under
+[RAID-1042](https://ardc.atlassian.net/browse/RAID-1042)). The client ID, token
+lifespan, default JWKS URL and empty embedded key set were decided by RL on
+2026-11-05. The two environment variable names and the rule for disabled clients
+were proposed in RAID-1042 and are confirmed by the review of its pull request.
+
+| Decision | Value | Reason |
+|---|---|---|
+| Harvest client ID | `raid-federation-harvester` | Already used by the probe, the proposal and this ADR, and it says what the client does when an agency reads its client list. |
+| Access token lifespan | 300 seconds, set on the client (`access.token.lifespan`) | The value the probe verified Keycloak honours (T16). The API validates tokens locally, so this bounds how long a leaked token stays usable. The ingest handler requests a new token per harvest run, or when one expires. The realm default is unchanged. |
+| Default JWKS URL | `https://keys.raid.org/federation/jwks.json` | The production Registration Authority key set. A dedicated host on S3 and CloudFront, so key publishing does not depend on the API stack. RAID-983 creates the host, with its DNS record in Cloudflare (authoritative for raid.org). |
+| JWKS URL override | Environment variable `RAID_FEDERATION_HARVEST_JWKS_URL` | Named in the style of the SPI's existing `RAID_FLAT_GROUP_ADMIN_FALLBACK`. Unset or blank means the default. |
+| Using the embedded key set instead | Environment variable `RAID_FEDERATION_HARVEST_USE_JWKS_URL=false` | A separate switch rather than a sentinel URL value, so a typo in the URL cannot silently select the fallback. When false, the client holds the bundled key set in `jwks.string` and fetches nothing. Any other value, or unset, uses the URL. |
+| Plain-http JWKS URLs | Refused unless `RAID_FEDERATION_HARVEST_ALLOW_HTTP_JWKS_URL=true` (proposed in RAID-1043, confirmed by its PR review) | Whoever can tamper with the JWKS fetch can mint harvest tokens, so the URL must be https. Local and test rigs serve the JWKS over http, so they opt in explicitly; Keycloak logs a warning at every boot while it is set. |
+| Embedded key set contents | Empty in the RAID-982 release | The Registration Authority's KMS keys do not exist until RAID-983, which this story blocks. RAID-982 ships and tests the mechanism with generated test keys. RAID-983 adds the real current and next keys in a later release. Until then, an agency that disables the URL has no working harvest client, which is the same as having no client. |
+| Disabled clients on reboot | Never re-enabled | The boot hook reconciles the attributes it manages on every boot, but the enabled flag is the agency's lever for cutting off harvesting, so the hook leaves it as the agency set it. |
+
+**Non-production instances must override the JWKS URL.** Demo and production use
+different signing keys, but the jar compiles in one default, the production key
+set. Without the override, a non-production instance would trust the production
+Federation API rather than the demo one. ARDC's demo instance sets the override in
+CDK. Agency guidance (RAID-1046) tells agencies to do the same for their own
+non-production instances.
 
 
 # Alternatives considered
@@ -109,8 +163,13 @@ Costs and risks:
   cached key set, and the retired key is then rejected (T11b to T11d). Without
   that, Keycloak 26.6.2 drops cached keys after an hour unused
   (`KEYS_CACHE_MAX_IDLE_SECONDS = 3600`). Rotation therefore ends with one
-  eviction request per agency. Each Keycloak node keeps its own cache, so a
-  multi-node agency needs the request to reach every node; this is unverified.
+  eviction request per agency node. Each Keycloak node keeps its own key cache,
+  even when nodes form an Infinispan cluster: an eviction request to one node
+  left the retired key accepted on the other until that node got its own request
+  (verified on two clustered 26.6.2 nodes by
+  `HarvestClientTwoNodeEvictionIntegrationTest` in `iam/src/intTest`). Behind a
+  load balancer the Registration Authority cannot target a node, so it must
+  repeat the request until every node has refetched, or wait out the idle expiry.
 * **Issued tokens outlive revocation.** The RAiD API validates access tokens
   locally (Spring resource server with the realm's signing keys), so a token stays
   usable until it expires. The realm default is 24 hours in test. Keycloak honours
@@ -130,12 +189,21 @@ Costs and risks:
   authenticator. The model-layer `addClient()` path used by RAID-827 generates a
   secret only when explicitly asked to, so the boot hook should create none; its
   integration test should assert that.
-* **`raid-dumper` is broader than harvesting.** Besides `GET /raid/all-public`
-  (open-access records only; embargoed records need `raid-access-handler`), the
-  role grants `GET /service-point/**`, whose records include admin and technical
-  contact email addresses. The harvester does not need this. Scope is still no
-  broader than the existing role, as the spike requires, but the grant should be
-  reviewed in its own ticket.
+* **`raid-dumper` currently reaches contact emails.** Besides
+  `GET /raid/all-public` (open-access records only; embargoed records need
+  `raid-access-handler`), the role grants `GET /service-point/**`, whose records
+  include admin and technical contact email addresses. This breaks the public-only
+  requirement until the grant is removed, so removal is part of this work, not a
+  separate review. It must follow the move of ARDC's callers: the Raid-Dumper runs
+  monthly, and a run between the API change and the dumper's redeploy would fail.
+  `ServicePointIntegrationTest` (lines 122 to 137) asserts the current grant and
+  changes to expect HTTP 403. Agencies running their own `raid-dumper` callers on
+  `/service-point/` need a release note.
+* **Other clients still reach contact emails.** `static-page-client` and
+  `raid-access-handler` hold `operator`, so they keep full service point access
+  whatever happens to `raid-dumper` (`iam/doc/keycloak-production-clients.md`,
+  findings 3 and 4). They are not the harvest credential and are handled
+  separately.
 * **The probe used the Admin REST API; the boot hook will not.** RAID-827 found
   that `session.clients().addClient()` leaves `fullScopeAllowed` false and skips
   the realm's default client scopes, which silently strips roles from the token.
@@ -143,8 +211,8 @@ Costs and risks:
   `raid-dumper` appears in `realm_access.roles` of a real issued token.
 * **Default roles.** The issued token also carries the realm's default roles
   (`default-roles-<realm>`, `offline_access`, `uma_authorization`), as every
-  service account does, including today's `raid-dumper` client. Scope is therefore
-  no broader than the existing role, provided an agency has not put API roles into
-  its default composite. The implementation should assert this in the test realm.
+  service account does, including today's `raid-dumper` client. These grant no
+  API access, so the credential stays public-only, provided an agency has not put
+  API roles into its default composite. The implementation should assert this in the test realm.
 * This rests on Keycloak's `client-jwt` authenticator as verified on 26.6.2.
   Re-run the probe on a Keycloak major upgrade.

@@ -53,6 +53,12 @@ export default defineConfig({
       testMatch: /auth\/setup-unapproved-admin\.ts/,
     },
 
+    // Unit tests of the e2e helpers themselves: no browser, no login.
+    {
+      name: "helpers",
+      testMatch: /auth[\\/].*\.test\.ts/,
+    },
+
     {
       name: "chromium",
       use: {
@@ -62,8 +68,13 @@ export default defineConfig({
       dependencies: ["setup"],
       // Role-specific suites run under their own project below, against
       // their own storageState - excluded here so they don't also run
-      // against the default service-point-user session.
-      testIgnore: [/tests[\\/]operator[\\/]/, /tests[\\/]unapproved-admin[\\/]/],
+      // against the default service-point-user session. Helper unit tests
+      // run under "helpers".
+      testIgnore: [
+        /tests[\\/]operator[\\/]/,
+        /tests[\\/]unapproved-admin[\\/]/,
+        /auth[\\/].*\.test\.ts/,
+      ],
     },
 
     // RAID-659 / RAID-480: tests that require the `operator` role to see the

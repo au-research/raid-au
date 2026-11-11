@@ -43,7 +43,7 @@ identifierType: "DOI"}`. `DataciteRequestFactory` wraps that as `{data: …}`.
 | `doi` | `handle` | verbatim | `DataciteAttributesDtoFactory` |
 | `url` | `handle` | `identifierProperties.landingPrefix + handle` (config-driven) | `DataciteAttributesDtoFactory` |
 | `event` | `access.type.id` | COAR open-access id `…c_abf2` → `"publish"`, else `"register"` | `DataciteAttributesDtoFactory` |
-| `publicationYear` | none | **Hardcoded** `String.valueOf(java.time.Year.now())` — see Known issues | `DataciteAttributesDtoFactory` |
+| `publicationYear` | `date.startDate` | year of the start date (`yyyy`, `yyyy-MM` or `yyyy-MM-dd`), parsed with `DateUtil.parseDate` | `DataciteAttributesDtoFactory` |
 | `types` | none | Constant `{resourceType: "RAiD", resourceTypeGeneral: "Project"}` | `DataciteTypesFactory` |
 | `publisher` | `identifier.owner` | ROR `owner.id` → `publisherIdentifier`; `publisherIdentifierScheme="ROR"`; `schemeUri=owner.schemaUri`; **`name` resolved via live `RorClient.getOrganisationName`** | `DatacitePublisherFactory` |
 | `titles[]` | `title[]` | primary title (`title.type.id …/5`) emitted first with no `titleType`; others mapped via title-type map; `lang` from `title.language.id` | `DataciteTitleFactory` |
@@ -58,7 +58,7 @@ identifierType: "DOI"}`. `DataciteRequestFactory` wraps that as `{data: …}`.
 | `relatedIdentifiers[]` (related RAiDs) | `relatedRaid[]` | `relatedIdentifier=id`; type **`RAiD`** (constant, native 4.7 type — RAID-797); relationType via RAiD-relation map; resourceTypeGeneral `Project` (constant) | `DataciteRelatedIdentifierFactory` (RelatedRaid overload) |
 | `alternateIdentifiers[]` (agency URL) | `identifier.raidAgencyUrl` | `alternateIdentifier=raidAgencyUrl`; `alternateIdentifierType="RaidAgencyUrl"` (constant, always added first) | `DataciteAlternateIdentifierFactory` (Id overload) |
 | `alternateIdentifiers[]` (RAiD alt ids) | `alternateIdentifier[]` | `alternateIdentifier=id`; `alternateIdentifierType="URL"` (**constant — RAiD's own `alternateIdentifier.type` free-text is discarded**) | `DataciteAlternateIdentifierFactory` (AlternateIdentifier overload) |
-| `rightsList` | — | **Never populated. See Known issues.** | (`DataciteRightFactory` exists but is unwired) |
+| `rightsList` | `identifier.license` | CC0 (free text, e.g. "Creative Commons CC-0") → `rights="Creative Commons Zero v1.0 Universal"`, `rightsUri=…/publicdomain/zero/1.0/legalcode`, `rightsIdentifier="cc0-1.0"`, `rightsIdentifierScheme="SPDX"`, `schemeUri="https://spdx.org/licenses/"`; any other licence → `rights` text only; blank → empty list (RAID-834) | `DataciteRightFactory` |
 
 ### Fields present in the RAiD model but not emitted
 
@@ -178,27 +178,28 @@ runtime logic or live network I/O and must stay in code:
   (category `…/191` AND type `…/272`).
 - **Conditional constants** derived from data: `event` from access type;
   empty-creator fallback to a single empty object.
-- **`publicationYear`** currently `Year.now()` (not from the record at all).
+- **`publicationYear`** derived from the year of `date.startDate`.
+- **`rightsList`** recognises a free-text CC0 licence and expands it to a
+  canonical SPDX entry; other licences pass through as text.
 
 ## Known issues found in the code
 
-1. **`publicationYear` is hardcoded to the current year.** (Raised as
-   [RAID-858](https://ardc.atlassian.net/browse/RAID-858).)
-   `setPublicationYear(String.valueOf(java.time.Year.now()))` in all three
-   overloads, with an inline `// TODO: year of start date`. It should almost
-   certainly derive from `date.startDate`. This means an update in a later year
-   silently rewrites the DOI's publication year.
+1. **`publicationYear` was hardcoded to the current year.** Fixed in
+   [RAID-833](https://ardc.atlassian.net/browse/RAID-833) (duplicate:
+   [RAID-858](https://ardc.atlassian.net/browse/RAID-858)). All three
+   overloads now derive it from the year of `date.startDate`, so an update in a
+   later year no longer rewrites the DOI's publication year.
 
-2. **`rightsList` is never emitted.** (Raised as
-   [RAID-859](https://ardc.atlassian.net/browse/RAID-859).)
-   `DataciteAttributesDto` has a `rightsList`
-   field and `DataciteRightFactory.create(Access, Id)` exists and is even
-   injected into `DataciteAttributesDtoFactory` (`private final
-   DataciteRightFactory dataciteRightFactory;`), but it is **never called** and
-   `setRightsList(...)` is never invoked. RAiD's CC-0 licence (`identifier.license`)
-   therefore does not reach DataCite. (Also, `DataciteRight` serialises
-   `rightsURI` as JSON key `rightsUri`, which differs from DataCite's
-   `rightsUri`/`rightsURI` expectations — moot while unwired, but worth noting.)
+2. **`rightsList` was never emitted.** Fixed in
+   [RAID-834](https://ardc.atlassian.net/browse/RAID-834) (duplicate:
+   [RAID-859](https://ardc.atlassian.net/browse/RAID-859)).
+   `DataciteRightFactory` was injected into `DataciteAttributesDtoFactory` but
+   never called, so RAiD's CC-0 licence (`identifier.license`) never reached
+   DataCite. All three overloads now set `rightsList`. The factory previously
+   copied the free-text licence into `rightsUri` as well, which is not a URI; it
+   now maps CC0 to the canonical SPDX entry and passes any other licence through
+   as `rights` text only. The suspected JSON key mismatch was not real: the
+   DataCite REST API uses `rightsUri`, which `DataciteRight` already emitted.
 
 3. **`relatedRaid` was emitted with `relatedIdentifierType = "DOI"`; fixed by
    RAID-797, now merged.** RAiDs are handles. Until 4.6 the DataCite
@@ -529,8 +530,7 @@ with `:unav` can be re-pushed once resolution succeeds.
 Independently of the declarative question, the mapping currently drops metadata
 DataCite has homes for: `subject` → `subjects` (needs FoR/SEO label resolution),
 `spatialCoverage` → `geoLocations` (needs GeoNames/OSM place-name resolution),
-`identifier.license` → `rightsList` (the factory exists but is unwired — see
-Known issues), and `access.statement`/`access.embargoExpiry`, which have no clean
+and `access.statement`/`access.embargoExpiry`, which have no clean
 DataCite equivalent and are reasonable to keep dropping. These are ordinary
 mapping work under either execution model; they do not depend on the LinkML
 decision.

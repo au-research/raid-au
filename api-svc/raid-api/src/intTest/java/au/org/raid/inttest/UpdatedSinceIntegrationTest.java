@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * RAID-902: integration coverage for the "updatedSince" incremental-sync filter added across
  * RAID-897 (spec), RAID-898 (index), RAID-899 (filtering), RAID-900 (400 on malformed input) and
- * RAID-901 (raid-access-handler role for /raid/all-embargoed).
+ * RAID-901 (raid-access-handler role for /raid/all-embargoed). RAID-939 made the boundary inclusive (>=).
  */
 @Slf4j
 public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
@@ -50,31 +50,31 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("findAllPublicRaids(updatedSince) returns only raids updated after the cursor")
+    @DisplayName("findAllPublicRaids(updatedSince) excludes raids updated before the cursor")
     void filteringOnAllPublic() {
         final var dumperContext = userService.createUser("raid-au", "raid-dumper");
 
         try {
             final var raidA = mintOpenAccessRaid();
             final var handleA = new Handle(raidA.getIdentifier().getId());
-            final var cursorA = readUpdated(handleA);
 
             sleepPastSecondBoundary();
 
             final var raidB = mintOpenAccessRaid();
             final var handleB = new Handle(raidB.getIdentifier().getId());
+            final var cursorB = readUpdated(handleB);
 
             final var dumperApi = testClient.raidApi(dumperContext.getToken());
-            final var results = dumperApi.findAllPublicRaids(toOffsetDateTime(cursorA)).getBody();
+            final var results = dumperApi.findAllPublicRaids(toOffsetDateTime(cursorB)).getBody();
             assertThat(results).isNotNull();
 
             final var handles = handlesOf(results);
 
             assertThat(handles)
-                    .as("filtering by raid A's updated cursor should include raid B, minted after it")
+                    .as("filtering by raid B's updated cursor should include raid B itself (inclusive boundary)")
                     .contains(handleB.toString());
             assertThat(handles)
-                    .as("filtering by raid A's own updated cursor should exclude raid A itself")
+                    .as("filtering by raid B's updated cursor should exclude raid A, updated in an earlier second")
                     .doesNotContain(handleA.toString());
         } finally {
             userService.deleteUser(dumperContext.getId());
@@ -82,8 +82,8 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("findAllPublicRaids(updatedSince) is strictly-after: an exact match on the cursor is excluded")
-    void filteringOnAllPublicExcludesExactBoundaryMatch() {
+    @DisplayName("findAllPublicRaids(updatedSince) is inclusive: an exact match on the cursor is included (RAID-939)")
+    void filteringOnAllPublicIncludesExactBoundaryMatch() {
         final var dumperContext = userService.createUser("raid-au", "raid-dumper");
 
         try {
@@ -96,10 +96,9 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
             assertThat(results).isNotNull();
 
             assertThat(handlesOf(results))
-                    .as("updatedSince filter is strictly-after (gt), so a raid whose metadata.updated "
-                            + "exactly equals the supplied cursor must NOT be returned - this is the "
-                            + "crux acceptance criterion of RAID-899's filtering behaviour")
-                    .doesNotContain(handle.toString());
+                    .as("updatedSince filter is inclusive (ge), so a raid whose metadata.updated "
+                            + "exactly equals the supplied cursor must be returned (RAID-939)")
+                    .contains(handle.toString());
         } finally {
             userService.deleteUser(dumperContext.getId());
         }
@@ -224,6 +223,12 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
                 failOnError(e);
             }
 
+            // With an inclusive boundary (RAID-939) the raid would match the cursor even if
+            // metadata.updated had not moved, so assert the bump directly.
+            assertThat(readUpdated(handle))
+                    .as("an access-type-only change must bump metadata.updated past the pre-update value")
+                    .isGreaterThan(cursor);
+
             final var dumperApi = testClient.raidApi(dumperContext.getToken());
             final var results = dumperApi.findAllPublicRaids(toOffsetDateTime(cursor)).getBody();
             assertThat(results).isNotNull();
@@ -242,7 +247,7 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /raid/all-embargoed?updatedSince filters to raids updated after the cursor")
+    @DisplayName("GET /raid/all-embargoed?updatedSince excludes raids updated before the cursor")
     void filteringOnAllEmbargoed() {
         final var accessHandlerContext = userService.createUser("raid-au", "raid-access-handler");
 
@@ -251,21 +256,21 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
             final var raidA = raidApi.mintRaid(createRequest).getBody();
             assertThat(raidA).isNotNull();
             final var handleA = new Handle(raidA.getIdentifier().getId());
-            final var cursorA = readUpdated(handleA);
 
             sleepPastSecondBoundary();
 
             final var raidB = raidApi.mintRaid(createRequest).getBody();
             assertThat(raidB).isNotNull();
             final var handleB = new Handle(raidB.getIdentifier().getId());
+            final var cursorB = readUpdated(handleB);
 
-            final var handles = fetchAllEmbargoedHandles(accessHandlerContext, cursorA);
+            final var handles = fetchAllEmbargoedHandles(accessHandlerContext, cursorB);
 
             assertThat(handles)
-                    .as("filtering by raid A's updated cursor should include raid B, minted after it")
+                    .as("filtering by raid B's updated cursor should include raid B itself (inclusive boundary)")
                     .contains(handleB.toString());
             assertThat(handles)
-                    .as("filtering by raid A's own updated cursor should exclude raid A itself")
+                    .as("filtering by raid B's updated cursor should exclude raid A, updated in an earlier second")
                     .doesNotContain(handleA.toString());
         } finally {
             userService.deleteUser(accessHandlerContext.getId());
@@ -273,8 +278,8 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /raid/all-embargoed?updatedSince is strictly-after: an exact match on the cursor is excluded")
-    void filteringOnAllEmbargoedExcludesExactBoundaryMatch() {
+    @DisplayName("GET /raid/all-embargoed?updatedSince is inclusive: an exact match on the cursor is included (RAID-939)")
+    void filteringOnAllEmbargoedIncludesExactBoundaryMatch() {
         final var accessHandlerContext = userService.createUser("raid-au", "raid-access-handler");
 
         try {
@@ -286,8 +291,8 @@ public class UpdatedSinceIntegrationTest extends AbstractIntegrationTest {
             final var handles = fetchAllEmbargoedHandles(accessHandlerContext, cursor);
 
             assertThat(handles)
-                    .as("updatedSince filter is strictly-after (gt), so an exact match on the cursor must be excluded")
-                    .doesNotContain(handle.toString());
+                    .as("updatedSince filter is inclusive (ge), so an exact match on the cursor must be included (RAID-939)")
+                    .contains(handle.toString());
         } finally {
             userService.deleteUser(accessHandlerContext.getId());
         }

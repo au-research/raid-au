@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "raid.orcid-integration")
 public class OrcidIntegrationProperties {
+    // RAID-993: off unless a deployment opts in, so a new registration agency can run without an updater.
+    private boolean enabled = false;
+    private String host;
     private String orcidUrlPrefix;
     private String apiKey;
     private RaidListener raidListener;
