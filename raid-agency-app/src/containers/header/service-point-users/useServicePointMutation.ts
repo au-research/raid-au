@@ -11,7 +11,7 @@ import {
  * 
  * @param {Object} config - Configuration object
  * @param {Function} config.mutationFn - The mutation function to execute
- * @param {string} config.successMessage - Success message to display (can include {variables} placeholder)
+ * @param {string|Function} config.successMessage - Success message to display (can include {variables} placeholder), or a function of the variables
  * @param {string[]} [config.invalidateQueries] - Array of query keys to invalidate (defaults to ["servicePoints"])
  * @param {Function} [config.onError] - Optional custom error handler
  * @param {Function} [config.onSuccess] - Optional custom success handler (called after default)
@@ -21,7 +21,7 @@ import {
  */
 type UseServicePointMutationConfig<TVariables = Record<string, unknown>, TData = unknown, TContext = unknown> = {
   mutationFn: (variables: TVariables) => Promise<TData>;
-  successMessage: string;
+  successMessage: string | ((variables: TVariables) => string);
   invalidateQueries?: (string | unknown[])[];
   onError?: (error: unknown) => void;
   onSuccess?: (data: TData, variables: TVariables, context: TContext) => void;
@@ -63,11 +63,13 @@ export const useServicePointMutation = <TVariables = Record<string, unknown>, TD
       // Show success notification
       if (snackbar) {
         // Replace all {variables.*} placeholders with corresponding variable values if present
-        const message = successMessage.replace(/\{variables\.([^}]+)\}/g, (_, key) => {
-          const value = (variables as Record<string, unknown>)?.[key];
-          const stringValue = String(value);
-          return value !== undefined ? JSON.stringify(value).replace(/"/g, '').charAt(0).toUpperCase() + stringValue.slice(1) : '';
-        });
+        const message = typeof successMessage === "function"
+          ? successMessage(variables)
+          : successMessage.replace(/\{variables\.([^}]+)\}/g, (_, key) => {
+              const value = (variables as Record<string, unknown>)?.[key];
+              const stringValue = String(value);
+              return value !== undefined ? JSON.stringify(value).replace(/"/g, '').charAt(0).toUpperCase() + stringValue.slice(1) : '';
+            });
         snackbar.openSnackbar(message, snackbarDuration, snackbarSeverity);
       }
 
@@ -81,7 +83,8 @@ export const useServicePointMutation = <TVariables = Record<string, unknown>, TD
 export const useModifyUserAccess = (snackbar: { openSnackbar: (message: string, duration?: number, severity?: string) => void }) => {
   return useServicePointMutation({
     mutationFn: updateUserServicePointUserRole,
-    successMessage: '{variables.operation} user role service-point-user',
+    successMessage: ({ operation }: { operation: "grant" | "revoke" }) =>
+      operation === "grant" ? "Approved as Service Point User" : "Revoked Service Point User",
     snackbar,
   });
 };
@@ -99,7 +102,7 @@ export const useRemoveUserFromServicePoint = (snackbar: { openSnackbar: (message
 export const useRemoveUserFromGroupAdmins = (snackbar: { openSnackbar: (message: string, duration?: number, severity?: string) => void }) => {
   return useServicePointMutation({
     mutationFn: removeUserFromGroupAdmins,
-    successMessage: 'Removed user from group admins',
+    successMessage: 'Removed Service Point Admin',
     snackbar,
   });
 };
@@ -108,7 +111,7 @@ export const useRemoveUserFromGroupAdmins = (snackbar: { openSnackbar: (message:
 export const useAddUserToGroupAdmins = (snackbar: { openSnackbar: (message: string, duration?: number, severity?: string) => void }) => {
   return useServicePointMutation({
     mutationFn: addUserToGroupAdmins,
-    successMessage: 'Added user to group admins',
+    successMessage: 'Made Service Point Admin',
     snackbar,
   });
 };
