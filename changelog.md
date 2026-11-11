@@ -1,6 +1,62 @@
 See the [Changelog audience](#changelog-audience) section for info about
  the expected audience and content of the changelog.
 
+# 2.21.0
+
+## API
+* Added `GET /service-point/public`, which lists every service point with only its `id`, `name`
+  and `identifierOwner`. Contact details and other fields are never included. It requires the
+  `raid-dumper`, `service-point-user` or `operator` role. Harvesters and the static site can use
+  it in place of `GET /service-point/`, which stays available and unchanged (PR #769).
+* ORCID lookups no longer send an `Authorization` header when no ORCID client token is
+  configured (the token is unset, blank or `not-set`). Previously the API sent
+  `Bearer not-set`, which ORCID's public API rejects, so every mint or update with an ORCID
+  contributor failed with `ORCID(401)`. Agencies without ORCID member API credentials can now
+  validate ORCID iDs against the public API at `pub.orcid.org` (PR #771).
+
+## IAM
+* Keycloak now creates the `raid-federation-harvester` client at startup in any realm with a
+  `raid-dumper` role. The RAiD Registration Authority uses it to harvest public RAiDs into the
+  Federation API. It authenticates with a signed JWT, so no secret is exchanged, and it can read
+  only public RAiDs and public service point details. Non-production instances must set
+  `RAID_FEDERATION_HARVEST_JWKS_URL`. To stop harvesting, disable the client; do not delete it.
+  Until the Registration Authority publishes its keys, Keycloak logs a warning at startup that
+  the JWKS at `keys.raid.org` may be unreachable; this does not affect anything else. See
+  `doc/reference/federation-harvest-client.md` (PR #780).
+
+## App-client UI
+* The service point **Users** list now shows each person's status for that service point only,
+  as Service Point User, Pending approval or Service Point Admin, instead of a list of role
+  names. Previously anyone who administered another service point appeared to be an admin of
+  this one, and "Grant admin rights" was wrongly disabled for them. The list has filters with
+  counts, shows pending requests first, and replaces the row of icon buttons with a single menu
+  of the actions that apply. Removing someone from a service point now asks for confirmation
+  (PR #720).
+* When `app-config.json` is missing, cannot be loaded or has an invalid field, the app shows a
+  banner under the header naming the affected fields, instead of a blank page. Missing required
+  fields (Keycloak settings, `apiBaseUrl`, `environment`) block the app and offer a **Reload**
+  button. Missing optional fields show a warning and the app loads normally (PR #725).
+
+## Static Landing Pages
+* **Action required for every deployment.** Added the required `appUrl` setting to
+  `app-config.json`. The "Show in RAiD App", "Edit in RAiD App" and "new RAiD" links now use it.
+  Previously these links were built from a fixed ARDC mapping, so other agencies' landing pages
+  linked to the ARDC app. Set `appUrl` to your own RAiD app URL (for example
+  `https://app.prod.raid.org.au`) before building this release, or `npm run build` stops with an
+  error naming the missing setting (PR #782).
+* Fixed the RAiD URL shown above the title when the resolver URL had no trailing slash (for
+  example `https://raid.surf.nl10.83338/...`). The setting is renamed from `raidUrl` to
+  `raidResolverUrl` and defaults to `https://raid.org/`, the correct value for every agency, so
+  it can normally be omitted. The old `raidUrl` key is no longer read; the build prints a notice
+  if it is still present (PR #781).
+
+## Documentation
+* `doc/reference/deployment-configuration.md` now lists every property the API reads, with its
+  default, what it does and whether a deployment should set it. It also lists settings that have
+  no effect (PR #763, PR #764).
+* Corrected the ORCID client documentation: `api.orcid.org` is the member API and
+  `pub.orcid.org` is the public API (PR #771).
+
 # 2.20.1
 
 ## API
