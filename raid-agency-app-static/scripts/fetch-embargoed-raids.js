@@ -11,7 +11,7 @@
  *   - Embargo expiry date (access.embargoExpiry)
  *   - Access statement (access.statement.text)
  *   - Registration agency ROR + name (identifier.registrationAgency.id → ROR API)
- *   - Service point name (identifier.owner.servicePoint → /service-point/public)
+ *   - Service point name (identifier.owner.servicePoint → /service-point/)
  *   - Owning organisation ROR + name (identifier.owner.id → ROR API)
  *
  * Output: src/raw-data/embargoed-raids.json
