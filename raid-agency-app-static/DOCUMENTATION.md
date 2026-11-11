@@ -102,7 +102,7 @@ The application integrates with the RAiD API:
 
 1. Authentication via OAuth 2.0 client credentials flow (machine-to-machine — no user session)
 2. Tokens are managed by `TokenManager`, which automatically re-fetches a new token when the current one is within 60 seconds of expiry — this ensures long-running build scripts (30+ minutes) never fail due to an expired token
-3. Bearer token used for authenticated API requests (`/raid/all-public`, `/service-point/public`, `/raid/all-embargoed`)
+3. Bearer token used for authenticated API requests (`/raid/all-public`, `/service-point/`, `/raid/all-embargoed`)
 4. Responses processed and transformed into site content
 
 ## Data Mapping System
