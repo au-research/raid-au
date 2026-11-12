@@ -1,14 +1,15 @@
 package au.org.raid.iam.provider.credential;
 
+import au.org.raid.iam.provider.federation.FederationHarvestClientBootstrapper;
+import au.org.raid.iam.provider.orcidupdater.OrcidUpdaterClientBootstrapper;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mockStatic;
 
 class ClientCredentialControllerResourceProviderFactoryTest {
 
@@ -22,22 +23,35 @@ class ClientCredentialControllerResourceProviderFactoryTest {
     }
 
     @Test
+    void postInit_registersTheFederationHarvestBootHook() {
+        // Without this registration the harvest client is never created at boot.
+        // Asserts on this hook specifically, so other boot hooks registered from the same postInit
+        // (such as the ORCID updater client's) neither break nor satisfy this test.
+        var sessionFactory = mock(KeycloakSessionFactory.class);
+
+        try (var bootstrapper = mockStatic(FederationHarvestClientBootstrapper.class)) {
+            factory.postInit(sessionFactory);
+
+            bootstrapper.verify(() -> FederationHarvestClientBootstrapper.register(sessionFactory));
+        }
+    }
+
+    @Test
     void create_returnsResourceProvider() {
         var session = mock(KeycloakSession.class);
         var provider = factory.create(session);
         assertThat(provider, is(notNullValue()));
     }
 
-    /**
-     * RAID-1011: postInit must register the boot-time ORCID updater client provisioning, or an RA
-     * would have to create the client by hand.
-     */
     @Test
-    void postInit_registersOrcidUpdaterClientBootstrapper() {
+    void postInit_registersTheOrcidUpdaterBootHook() {
+        // Without this registration an RA would have to create the ORCID updater's client by hand.
         var sessionFactory = mock(KeycloakSessionFactory.class);
 
-        factory.postInit(sessionFactory);
+        try (var bootstrapper = mockStatic(OrcidUpdaterClientBootstrapper.class)) {
+            factory.postInit(sessionFactory);
 
-        verify(sessionFactory).register(notNull());
+            bootstrapper.verify(() -> OrcidUpdaterClientBootstrapper.register(sessionFactory));
+        }
     }
 }

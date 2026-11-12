@@ -5,6 +5,7 @@ import au.org.raid.api.factory.record.ServicePointRecordFactory;
 import au.org.raid.api.model.datacite.repository.*;
 import au.org.raid.api.repository.ServicePointRepository;
 import au.org.raid.db.jooq.tables.records.ServicePointRecord;
+import au.org.raid.idl.raidv2.model.PublicServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePoint;
 import au.org.raid.idl.raidv2.model.ServicePointCreateRequest;
 import au.org.raid.idl.raidv2.model.ServicePointUpdateRequest;
@@ -139,6 +140,28 @@ class ServicePointServiceTest {
     void findAllReturnsEmptyList() {
         when(servicePointRepository.findAll()).thenReturn(Collections.emptyList());
         assertThat(servicePointService.findAll(), is(Collections.emptyList()));
+        verifyNoInteractions(servicePointFactory);
+    }
+
+    @Test
+    @DisplayName("findAllPublic() maps every record with the public factory method")
+    void findAllPublic() {
+        final var record = new ServicePointRecord();
+        final var publicServicePoint = new PublicServicePoint();
+
+        when(servicePointRepository.findAll()).thenReturn(List.of(record));
+        when(servicePointFactory.createPublic(record)).thenReturn(publicServicePoint);
+
+        assertThat(servicePointService.findAllPublic(), is(List.of(publicServicePoint)));
+        verify(servicePointFactory, never()).create(any(ServicePointRecord.class));
+    }
+
+    @Test
+    @DisplayName("findAllPublic() returns empty list")
+    void findAllPublicReturnsEmptyList() {
+        when(servicePointRepository.findAll()).thenReturn(Collections.emptyList());
+
+        assertThat(servicePointService.findAllPublic(), is(Collections.emptyList()));
         verifyNoInteractions(servicePointFactory);
     }
 }

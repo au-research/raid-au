@@ -14,7 +14,7 @@ export const API_CONSTANTS = {
     HISTORY: (handle: string) => `${api()}/raid/${handle}/history`,
     get GET_ENV_FOR_HANDLE() { return `${svc().staticProd}/api/all-handles.json`; },
     RELATED_RAID_TITLE: (handle: string, environment: string) =>
-      `${svc().staticBase.replace("{env}", environment)}/raids/${handle}.json`,
+      `${(svc().staticBase ?? "").replace("{env}", environment)}/raids/${handle}.json`,
     HISTORY_DETAIL: (handle: string, version: string) =>
       `${api()}/raid/${handle}/${version}`,
   },

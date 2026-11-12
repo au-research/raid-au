@@ -124,6 +124,8 @@ public class SecurityConfig {
                 // Service Point API endpoints
                 .requestMatchers(PUT, SERVICE_POINT_API + "/**").hasRole(OPERATOR_ROLE)
                 .requestMatchers(POST, SERVICE_POINT_API + "/**").hasRole(OPERATOR_ROLE)
+                // /public must stay above the /** rule below: Spring Security uses the first match
+                .requestMatchers(GET, SERVICE_POINT_API + "/public").hasAnyRole(RAID_DUMPER_ROLE, SERVICE_POINT_USER_ROLE, OPERATOR_ROLE)
                 .requestMatchers(GET, SERVICE_POINT_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, OPERATOR_ROLE, RAID_DUMPER_ROLE)
 
                 // Admin endpoints

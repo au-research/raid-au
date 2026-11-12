@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { loadConfig } from "./Configloader";
+import { ConfigError } from "./ConfigValidation";
 
 const mockValidConfig = {
   keycloak: { url: "http://localhost:8001", realm: "raid", clientId: "raid-api" },
@@ -12,6 +13,9 @@ const mockValidConfig = {
     staticProd: "https://static.prod.raid.org.au",
     staticBase: "https://static.{env}.raid.org.au",
   },
+  app: {
+    orcid: { placeholder: "Enter ORCID iD", helpText: "e.g. 0000-0002-1825-0097" },
+  },
 };
 
 const mockFetch = (body: unknown, ok = true, status = 200) =>
@@ -22,9 +26,20 @@ const mockFetch = (body: unknown, ok = true, status = 200) =>
     json: () => Promise.resolve(body),
   });
 
+const loadError = async (): Promise<ConfigError> => {
+  try {
+    await loadConfig();
+  } catch (error) {
+    if (error instanceof ConfigError) return error;
+    throw error;
+  }
+  throw new Error("expected loadConfig() to throw");
+};
+
 describe("loadConfig", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   describe("fetch behaviour", () => {
@@ -39,12 +54,39 @@ describe("loadConfig", () => {
       });
     });
 
-    it("throws when the file cannot be fetched", async () => {
+    it("throws a load-failed ConfigError when the file cannot be fetched", async () => {
       vi.stubGlobal("fetch", mockFetch({}, false, 404));
 
-      await expect(loadConfig()).rejects.toThrow(
-        "[Config] Failed to load /app-config.json: 404"
+      const error = await loadError();
+
+      expect(error.reason).toBe("load-failed");
+      expect(error.message).toContain("[Config] Failed to load /app-config.json: 404");
+    });
+
+    it("throws a load-failed ConfigError on a network error", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+
+      expect((await loadError()).reason).toBe("load-failed");
+    });
+
+    it("throws a load-failed ConfigError when the body is not JSON (CloudFront index.html fallback)", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: () => Promise.reject(new SyntaxError("Unexpected token '<'")),
+        })
       );
+
+      expect((await loadError()).reason).toBe("load-failed");
+    });
+
+    it.each([null, [], "text", 42])("throws a load-failed ConfigError when the JSON is %j", async (body) => {
+      vi.stubGlobal("fetch", mockFetch(body));
+
+      expect((await loadError()).reason).toBe("load-failed");
     });
   });
 
@@ -52,7 +94,7 @@ describe("loadConfig", () => {
     it("extracts all runtime fields correctly", async () => {
       vi.stubGlobal("fetch", mockFetch(mockValidConfig));
 
-      const { runtime } = await loadConfig();
+      const { runtime, issues } = await loadConfig();
 
       expect(runtime.keycloak).toEqual(mockValidConfig.keycloak);
       expect(runtime.apiBaseUrl).toBe("http://localhost:8080");
@@ -60,6 +102,8 @@ describe("loadConfig", () => {
       expect(runtime.supportEmail).toBe("contact@raid.org");
       expect(runtime.services).toEqual(mockValidConfig.services);
       expect(runtime.googleAnalytics).toEqual(mockValidConfig.googleAnalytics);
+      expect(runtime.app.orcid).toEqual(mockValidConfig.app.orcid);
+      expect(issues).toEqual({ missing: [], invalid: [] });
     });
 
     it("defaults googleAnalytics to empty object when absent", async () => {
@@ -70,34 +114,97 @@ describe("loadConfig", () => {
 
       expect(runtime.googleAnalytics).toEqual({});
     });
+
+    it("defaults missing services and app.orcid blocks to empty objects", async () => {
+      const { services: _s, app: _a, ...configWithoutBlocks } = mockValidConfig;
+      vi.stubGlobal("fetch", mockFetch(configWithoutBlocks));
+
+      const { runtime } = await loadConfig();
+
+      expect(runtime.services).toEqual({});
+      expect(runtime.app.orcid).toEqual({});
+    });
   });
 
-  describe("validation", () => {
-    it("throws when multiple required fields are missing", async () => {
+  describe("blocking fields", () => {
+    it.each(["keycloak.url", "keycloak.realm", "keycloak.clientId", "apiBaseUrl", "environment"])(
+      "throws an invalid-fields ConfigError naming %s when it is missing",
+      async (path) => {
+        const config = structuredClone(mockValidConfig) as Record<string, any>;
+        const keys = path.split(".");
+        const parent = keys.slice(0, -1).reduce((node, key) => node[key], config);
+        delete parent[keys[keys.length - 1]];
+        vi.stubGlobal("fetch", mockFetch(config));
+
+        const error = await loadError();
+
+        expect(error.reason).toBe("invalid-fields");
+        expect(error.issues.missing).toEqual([path]);
+      }
+    );
+
+    it("lists every missing blocking field", async () => {
       vi.stubGlobal("fetch", mockFetch({ environment: "dev" }));
 
-      await expect(loadConfig()).rejects.toThrow(
-        "[Config] Missing required fields in app-config.json"
+      const error = await loadError();
+
+      expect(error.issues.missing).toEqual([
+        "keycloak.url",
+        "keycloak.realm",
+        "keycloak.clientId",
+        "apiBaseUrl",
+      ]);
+    });
+
+    it("reports a blocking URL that is not a valid URL as invalid", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, apiBaseUrl: "localhost:8080" }));
+
+      const error = await loadError();
+
+      expect(error.issues).toEqual({ missing: [], invalid: ["apiBaseUrl"] });
+    });
+
+    it("never includes field values in the error message", async () => {
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({ ...mockValidConfig, apiBaseUrl: "not-a-url-secret-value" })
       );
+
+      const error = await loadError();
+
+      expect(error.message).toContain("apiBaseUrl");
+      expect(error.message).not.toContain("not-a-url-secret-value");
     });
+  });
 
-    it("lists all missing fields in the error", async () => {
-      vi.stubGlobal("fetch", mockFetch({ environment: "dev" }));
-
-      await expect(loadConfig()).rejects.toThrow("keycloak.url");
-    });
-
-    it("throws when keycloak sub-fields are missing", async () => {
-      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, keycloak: { url: "http://localhost:8001" } }));
-
-      await expect(loadConfig()).rejects.toThrow("keycloak.realm");
-    });
-
-    it("throws when a services sub-field is missing", async () => {
+  describe("warning fields", () => {
+    it("returns missing warning fields instead of throwing", async () => {
       const { services: { orcid: _, ...servicesWithoutOrcid }, ...rest } = mockValidConfig;
       vi.stubGlobal("fetch", mockFetch({ ...rest, services: servicesWithoutOrcid }));
 
-      await expect(loadConfig()).rejects.toThrow("services.orcid");
+      const { issues } = await loadConfig();
+
+      expect(issues).toEqual({ missing: ["services.orcid"], invalid: [] });
+    });
+
+    it("returns missing ORCID text fields when the app block is absent", async () => {
+      const { app: _, ...configWithoutApp } = mockValidConfig;
+      vi.stubGlobal("fetch", mockFetch(configWithoutApp));
+
+      const { issues } = await loadConfig();
+
+      expect(issues.missing).toEqual(["app.orcid.placeholder", "app.orcid.helpText"]);
+    });
+
+    it("returns invalid warning URLs", async () => {
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({ ...mockValidConfig, services: { ...mockValidConfig.services, staticProd: "ftp://x" } })
+      );
+
+      const { issues } = await loadConfig();
+
+      expect(issues).toEqual({ missing: [], invalid: ["services.staticProd"] });
     });
   });
 

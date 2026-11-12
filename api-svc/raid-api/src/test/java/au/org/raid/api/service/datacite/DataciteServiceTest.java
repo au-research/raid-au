@@ -3,6 +3,8 @@ package au.org.raid.api.service.datacite;
 import au.org.raid.api.config.properties.DataciteProperties;
 import au.org.raid.api.factory.HttpEntityFactory;
 import au.org.raid.api.factory.datacite.DataciteRequestFactory;
+import au.org.raid.api.model.datacite.doi.DataciteAttributesDto;
+import au.org.raid.api.model.datacite.doi.DataciteDto;
 import au.org.raid.api.model.datacite.doi.DataciteRequest;
 import au.org.raid.idl.raidv2.model.RaidCreateRequest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +27,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -131,6 +134,121 @@ public class DataciteServiceTest {
         dataciteService.update(new RaidDto(), "10378.1/1700205", "repo", "pass");
 
         verifyNoInteractions(restTemplate);
+    }
+
+    private static DataciteRequest dataciteRequestWithEvent(final String event) {
+        return new DataciteRequest()
+                .setData(new DataciteDto().setAttributes(new DataciteAttributesDto().setEvent(event)));
+    }
+
+    @Test
+    @DisplayName("Keeps 'register' event on mint for a non-open RAiD")
+    void mintKeepsRegisterEvent() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var raidRequest = new RaidCreateRequest();
+
+        final var dataciteRequest = dataciteRequestWithEvent("register");
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(raidRequest, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.mint(raidRequest, handle, repositoryId, password);
+
+        assertThat(dataciteRequest.getData().getAttributes().getEvent()).isEqualTo("register");
+        verify(restTemplate).exchange(endpoint, HttpMethod.POST, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Sends 'hide' event on update (RaidUpdateRequest) for a non-open RAiD")
+    void updateRaidUpdateRequestHidesNonOpenDoi() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidUpdateRequest();
+
+        final var dataciteRequest = dataciteRequestWithEvent("register");
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.update(request, handle, repositoryId, password);
+
+        assertThat(dataciteRequest.getData().getAttributes().getEvent()).isEqualTo("hide");
+        verify(restTemplate).exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Keeps 'publish' event on update (RaidUpdateRequest) for an open RAiD")
+    void updateRaidUpdateRequestKeepsPublishEvent() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidUpdateRequest();
+
+        final var dataciteRequest = dataciteRequestWithEvent("publish");
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.update(request, handle, repositoryId, password);
+
+        assertThat(dataciteRequest.getData().getAttributes().getEvent()).isEqualTo("publish");
+        verify(restTemplate).exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Sends 'hide' event on update (RaidDto) for a non-open RAiD")
+    void updateRaidDtoHidesNonOpenDoi() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidDto();
+
+        final var dataciteRequest = dataciteRequestWithEvent("register");
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.update(request, handle, repositoryId, password);
+
+        assertThat(dataciteRequest.getData().getAttributes().getEvent()).isEqualTo("hide");
+        verify(restTemplate).exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class);
+    }
+
+    @Test
+    @DisplayName("Keeps 'publish' event on update (RaidDto) for an open RAiD")
+    void updateRaidDtoKeepsPublishEvent() {
+        final var repositoryId = "repository-id";
+        final var password = "_password";
+        final var handle = "10.12345/abcde";
+        final var endpoint = "_endpoint";
+        final var request = new RaidDto();
+
+        final var dataciteRequest = dataciteRequestWithEvent("publish");
+        final var entity = new HttpEntity<>(dataciteRequest, new HttpHeaders());
+
+        when(dataciteRequestFactory.create(request, handle)).thenReturn(dataciteRequest);
+        when(httpEntityFactory.create(dataciteRequest, repositoryId, password)).thenReturn(entity);
+        when(properties.getEndpoint()).thenReturn(endpoint);
+
+        dataciteService.update(request, handle, repositoryId, password);
+
+        assertThat(dataciteRequest.getData().getAttributes().getEvent()).isEqualTo("publish");
+        verify(restTemplate).exchange("%s/%s".formatted(endpoint, handle), HttpMethod.PUT, entity, JsonNode.class);
     }
 
     @Test

@@ -68,10 +68,24 @@ export interface AppConfig {
   raidDumperClientId?: string;
   /** Environment name: prod | demo | test | dev */
   raidEnv?: string;
+  /**
+   * Base URL of this agency's RAiD web app, e.g. https://app.demo.raid.org.au.
+   * Used for the Show in RAiD App, Edit in RAiD App and new RAiD links. A
+   * trailing slash is tolerated. Required: the data fetch script stops the
+   * build if it is missing from public/app-config.json. Typed as optional
+   * only because the type also describes the config before validation.
+   */
+  appUrl?: string;
   /** Public URL this site is served from (used for the sitemap) */
   siteUrl?: string;
-  /** Base URL for resolving RAiD handles, e.g. https://raid.org/ */
-  raidUrl?: string;
+  /**
+   * Base URL of the global RAiD resolver, shown above the title and copied to
+   * the clipboard. Should be https://raid.org/ for every agency, as raid.org
+   * redirects each handle to the agency's landing page. A missing trailing
+   * slash is tolerated. Defaults to https://raid.org/. Replaces the old
+   * `raidUrl` key, which is now ignored.
+   */
+  raidResolverUrl?: string;
   /** Google Analytics measurement IDs */
   analytics?: AnalyticsConfig;
   /** Citation-cache settings for the data-fetch scripts */
