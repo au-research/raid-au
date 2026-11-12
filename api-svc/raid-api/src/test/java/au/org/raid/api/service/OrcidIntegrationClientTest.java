@@ -1,7 +1,6 @@
 package au.org.raid.api.service;
 
 import au.org.raid.api.config.properties.OrcidIntegrationProperties;
-import au.org.raid.api.dto.RaidListenerMessage;
 import au.org.raid.api.factory.HttpEntityFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -28,9 +29,9 @@ class OrcidIntegrationClientTest {
     private OrcidIntegrationClient orcidIntegrationClient;
 
     @Test
-    @DisplayName("post method sends POST request to raid listener")
-    void post() {
-        final var message = new RaidListenerMessage();
+    @DisplayName("notifyRaidChanged sends the RAiD's handle to the updater's raid-changes endpoint with the API key")
+    void notifyRaidChanged() {
+        final var handle = "10.82841/86bf1b6c";
         final var httpEntity = mock(HttpEntity.class);
         final var uri = "_uri";
         final var response = mock(ResponseEntity.class);
@@ -38,14 +39,14 @@ class OrcidIntegrationClientTest {
 
         when(properties.getApiKey()).thenReturn(apiKey);
 
-        final var raidListenerProperties = new OrcidIntegrationProperties.RaidListener();
-        raidListenerProperties.setUri(uri);
+        final var raidChangesProperties = new OrcidIntegrationProperties.RaidChanges();
+        raidChangesProperties.setUri(uri);
 
-        when(properties.getRaidListener()).thenReturn(raidListenerProperties);
-        when(httpEntityFactory.create(message, apiKey)).thenReturn(httpEntity);
+        when(properties.getRaidChanges()).thenReturn(raidChangesProperties);
+        when(httpEntityFactory.create(Map.of("handle", handle), apiKey)).thenReturn(httpEntity);
         when(restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Void.class)).thenReturn(response);
 
-        orcidIntegrationClient.post(message);
+        orcidIntegrationClient.notifyRaidChanged(handle);
 
         verify(restTemplate).exchange(uri, HttpMethod.POST, httpEntity, Void.class);
     }

@@ -297,8 +297,8 @@ their own ORCID member credentials for it.
 | Property | Description |
 | --- | --- |
 | `raid.orcid-integration.enabled` | `true` to use the integration. From 2.20.0 it defaults to `false`. Not present on 2.19.0 and earlier, where the integration is always on. |
-| `raid.orcid-integration.host` | The raid.org ORCID integration host for the relevant environment. Required when `enabled` is `true`. |
-| `raid.orcid-integration.api-key` | The API key issued by raid.org for this deployment. Set it once raid.org has issued one. |
+| `raid.orcid-integration.host` | The base URL of the agency's ORCID updater, with no trailing slash. Required when `enabled` is `true`. |
+| `raid.orcid-integration.api-key` | The API key the agency's ORCID updater expects in the `X-Api-Key` header. Required when `enabled` is `true`; it has no default. |
 | `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/`, or `https://sandbox.orcid.org/` for sandbox. |
 | `raid.contributor-validation.orcid.schema-uri` | Must match the url-prefix above. |
 
@@ -310,8 +310,11 @@ checks every contributor's ORCID iD against ORCID's own API, using
 `raid.orcid-client.*`. See [ORCID iD lookups](#orcid-id-lookups).
 
 **With the integration enabled**, the API looks up each contributor's status
-from the integration host and sends each saved RAiD to it. If the host is
-unreachable, the mint or update fails.
+from the integration host. After every mint, update and patch commits, it sends
+the RAiD's handle to the agency's ORCID updater (`POST {host}/raid-changes`) in
+the background. If the updater is unreachable or rejects the call, the API logs
+`Could not tell the ORCID updater that RAiD {handle} changed` at `ERROR` and the
+save still succeeds. The next save of that RAiD tells the updater again.
 
 **With the integration disabled**, the API makes no request to any integration
 host. Mints and updates work without it. Each contributor keeps the status
@@ -323,11 +326,12 @@ authenticated through an earlier integration keeps that status.
 
 ```
 ORCID integration is enabled: host https://orcid.demo.raid.org
-ORCID integration is disabled: contributor statuses are not looked up and RAiDs are not sent to an ORCID integration host
+ORCID integration is disabled: contributor statuses are not looked up and the ORCID updater is not told about saved RAiDs
 ```
 
-If `enabled` is `true` and `host` is blank, the API refuses to start with
-`raid.orcid-integration.enabled is true but raid.orcid-integration.host is not set`.
+If `enabled` is `true` and `host` or `api-key` is blank, the API refuses to
+start and names the missing property, for example
+`raid.orcid-integration.enabled is true but raid.orcid-integration.api-key is not set`.
 
 A new agency can launch with the integration disabled and enable it later.
 Contributor status flows back into RAiD records only once the deployment is

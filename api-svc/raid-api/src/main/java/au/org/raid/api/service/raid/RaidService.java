@@ -88,7 +88,7 @@ public class RaidService {
         final var handle = new Handle(raidDto.getIdentifier().getId()).toString();
         updateMaterialisedMetadata(handle, raidDto);
 
-        orcidIntegrationService.updateOrcidRecord(raidDto);
+        orcidIntegrationService.notifyRaidChanged(raidDto);
         return raidDto;
     }
 
@@ -153,7 +153,7 @@ public class RaidService {
 
         final var saved = raidIngestService.update(raidDto);
         updateMaterialisedMetadata(handle, saved);
-        orcidIntegrationService.updateOrcidRecord(saved);
+        orcidIntegrationService.notifyRaidChanged(saved);
         return saved;
     }
 
@@ -177,7 +177,7 @@ public class RaidService {
         final var saved = raidIngestService.update(raid);
         updateMaterialisedMetadata(handle, saved);
 
-        orcidIntegrationService.updateOrcidRecord(saved);
+        orcidIntegrationService.notifyRaidChanged(saved);
         return saved;
     }
 

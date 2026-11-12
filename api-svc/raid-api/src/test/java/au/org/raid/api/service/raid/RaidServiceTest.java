@@ -138,7 +138,7 @@ class RaidServiceTest {
             verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle.toString()), anyString());
             verify(orcidIntegrationService).setContributorStatus(createRaidRequest.getContributor());
-            verify(orcidIntegrationService).updateOrcidRecord(raidDto);
+            verify(orcidIntegrationService).notifyRaidChanged(raidDto);
         }
     }
 
@@ -204,7 +204,7 @@ class RaidServiceTest {
         verify(dataciteService).update(expected, handle, repositoryId, password);
         verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
         verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
-        verify(orcidIntegrationService).updateOrcidRecord(expected);
+        verify(orcidIntegrationService).notifyRaidChanged(expected);
     }
 
     @Test
@@ -252,7 +252,7 @@ class RaidServiceTest {
             verify(dataciteService).update(updateRequest, handle, repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
             verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
-            verify(orcidIntegrationService).updateOrcidRecord(expected);
+            verify(orcidIntegrationService).notifyRaidChanged(expected);
         }
     }
 
