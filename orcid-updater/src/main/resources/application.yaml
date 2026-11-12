@@ -1,0 +1,41 @@
+# Every orcid-updater.* setting without a default must be supplied by the registration agency,
+# normally as environment variables (ORCID_UPDATER_ORCID_CLIENT_ID and so on). Startup fails and
+# names each one that is missing. See orcid-updater/README.md.
+server:
+  port: 8090
+
+spring:
+  application:
+    name: orcid-updater
+  datasource:
+    # The RA's PostgreSQL database and login, separate from the RAiD API's (RAID-975 Q4)
+    url: ${ORCID_UPDATER_DB_URL:}
+    username: ${ORCID_UPDATER_DB_USERNAME:}
+    password: ${ORCID_UPDATER_DB_PASSWORD:}
+  flyway:
+    schemas: orcid_updater
+    default-schema: orcid_updater
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${orcid-updater.keycloak.issuer-uri}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    # An SMTP outage must not mark the updater unhealthy and get it restarted: invitations report
+    # the email failure to the caller instead (RAID-975 "Invitation email cannot be sent").
+    mail:
+      enabled: false
+
+orcid-updater:
+  invitation:
+    expiry: 14d

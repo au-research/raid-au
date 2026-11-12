@@ -163,6 +163,23 @@ Design: [`doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md`]
 Agency guidance (onboarding, default roles, non-production setup, disabling harvesting):
 [`doc/reference/federation-harvest-client.md`](../../doc/reference/federation-harvest-client.md).
 
+### orcid-updater (Confidential, signed JWT, created at boot)
+
+The ORCID updater's own client, which it uses to call the RAiD API. It is not in the realm export. Keycloak creates it at startup when `RAID_ORCID_UPDATER_JWKS_URL` is set in Keycloak's environment to the updater's JWKS URL, for example `https://orcid-updater.example.org/.well-known/jwks.json`. Unset, nothing happens, because the updater is optional for an RA. An invalid URL is logged and ignored.
+
+The updater signs a JWT with its own key (`private_key_jwt`), and Keycloak checks it against the JWKS URL, so the client has no secret anyone needs to copy. Keycloak must be able to reach the URL.
+
+| Setting                      | Value        |
+|------------------------------|--------------|
+| Client authenticator         | Signed JWT (`client-jwt`), RS256, keys from `RAID_ORCID_UPDATER_JWKS_URL` |
+| Public client                | No           |
+| Flows                        | Service account only |
+| Full scope allowed           | Yes          |
+| Default client scopes        | The realm's default client scopes |
+| Service account roles        | `contributor-writer` |
+
+The boot hook runs on every start, in every realm that holds the `service-point-user` role, so master is left alone. It creates `contributor-writer` if the realm lacks it, and puts back any of the settings above that have drifted, including a changed JWKS URL. It does not change whether the client is enabled, so disabling it in the admin console sticks. A failure is logged and Keycloak still starts.
+
 ## Client Scopes
 
 ![Client scopes](images/admin-console/client-scopes.png)
@@ -227,6 +244,7 @@ Maps session notes (`client_id`, `clientHost`, `clientAddress`) into the token f
 | `raid-admin`          | Administrative RAiD access role                                   |
 | `raid-dumper`         | Permission to perform bulk data export                            |
 | `pid-searcher`        | Permission to search PIDs                                         |
+| `contributor-writer`  | Reads RAiDs naming a contributor and sets contributor status; created at boot for the `orcid-updater` client |
 
 See [Role Permissions](role-permissions.md) for a detailed breakdown of what each role can do.
 

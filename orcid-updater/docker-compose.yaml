@@ -1,0 +1,22 @@
+# Local PostgreSQL and SMTP for the ORCID updater. Keycloak comes from the RAiD API's stack
+# (api-svc/raid-api), which uses ports 7432 and 8001, so these use different ports.
+services:
+  orcid-updater-db:
+    image: postgres:16.8
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'orcid_updater']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 7433:5432
+    environment:
+      POSTGRES_USER: orcid_updater
+      POSTGRES_PASSWORD: supersecret
+      POSTGRES_DB: orcid_updater
+  mailpit:
+    # Catches invitation emails; read them at http://localhost:8025
+    image: axllent/mailpit:v1.21
+    ports:
+      - 1025:1025
+      - 8025:8025

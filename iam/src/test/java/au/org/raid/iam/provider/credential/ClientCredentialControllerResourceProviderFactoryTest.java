@@ -1,6 +1,7 @@
 package au.org.raid.iam.provider.credential;
 
 import au.org.raid.iam.provider.federation.FederationHarvestClientBootstrapper;
+import au.org.raid.iam.provider.orcidupdater.OrcidUpdaterClientBootstrapper;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -40,5 +41,17 @@ class ClientCredentialControllerResourceProviderFactoryTest {
         var session = mock(KeycloakSession.class);
         var provider = factory.create(session);
         assertThat(provider, is(notNullValue()));
+    }
+
+    @Test
+    void postInit_registersTheOrcidUpdaterBootHook() {
+        // Without this registration an RA would have to create the ORCID updater's client by hand.
+        var sessionFactory = mock(KeycloakSessionFactory.class);
+
+        try (var bootstrapper = mockStatic(OrcidUpdaterClientBootstrapper.class)) {
+            factory.postInit(sessionFactory);
+
+            bootstrapper.verify(() -> OrcidUpdaterClientBootstrapper.register(sessionFactory));
+        }
     }
 }
