@@ -1,7 +1,7 @@
 ---
 import InfoField from "@/components/info-field.astro";
 import type { Subject } from "@/generated/raid";
-import subjectMapping from "@/mapping/data/subject-mapping.json";
+import { getSubjectDisplay } from "@/utils/subject-label";
 
 interface Props {
   subjects: Subject[];
@@ -17,17 +17,12 @@ const { subjects } = Astro.props as Props;
     <div class="divide-y divide-gray-200">
       {
         subjects?.map((el) => {
-          const mappedSubject = subjectMapping.find(
-            (mapEl) => mapEl.definition === el.id
-          );
+          const subjectDisplay = getSubjectDisplay(el.id);
 
           return (
             <div class="ml-5 space-y-2 py-4">
               <div class="grid grid-cols-1 gap-5 text-sm">
-                <InfoField
-                  label="Subject"
-                  value={`${mappedSubject?.value} (${mappedSubject?.key})`}
-                />
+                <InfoField label="Subject" value={subjectDisplay.text} />
               </div>
 
               <div class="grid grid-cols-1 gap-5 text-sm">
