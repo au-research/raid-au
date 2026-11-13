@@ -528,7 +528,7 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/raid-update"
+      "path": "/raid-changes"
     },
     "httpResponse": {
       "statusCode": 202,
