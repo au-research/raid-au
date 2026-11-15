@@ -2,7 +2,7 @@
 
 - JIRA: [RAID-1056](https://ardc.atlassian.net/browse/RAID-1056), sub-task of [RAID-976](https://ardc.atlassian.net/browse/RAID-976) (epic [RAID-974](https://ardc.atlassian.net/browse/RAID-974))
 - Branch: `feature/RAID-1056` into `feature/RAID-976`
-- PR: to follow
+- PR: [#787](https://github.com/au-research/raid-au/pull/787)
 - Status: in review
 
 ## What changed and why
@@ -65,5 +65,8 @@ stack deployed, before this branch is pushed.
 
 - `doc/reference/deployment-configuration.md`: the `host` and `api-key`
   properties, the background notification and the startup check.
+- `doc/architecture/orcid-updater-communication.md` (new): Mermaid diagrams of
+  how the app, API, updater and ORCID communicate, linked from the updater's
+  README.
 - `api-svc/doc/orcid-integration.md` still describes the central updater. It is
   rewritten once RAID-976's sub-tasks are done.
