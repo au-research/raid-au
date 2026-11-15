@@ -60,6 +60,11 @@ stack deployed, before this branch is pushed.
   a RAiD each record a `POST /raid-changes` with the RAiD's handle and the API
   key header in MockServer.
 - Full intTest locally: 267 tests, 0 failures, 16 skipped.
+- Branch environment: 266 of 267 passed. `ContributorsIntegrationTest` "Should
+  add authenticated contributor to raid" expects the central integration to
+  report a real test iD as authenticated. Branch APIs now have the integration
+  off and read the stored status, so the test is disabled until RAID-1057
+  replaces it with a test of the stored status.
 
 ## Documentation
 

@@ -1368,6 +1368,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequest);
         }
 
+        @Disabled("Needs an ORCID integration that reports this iD as authenticated. Environments with the " +
+                "integration off, such as branch environments, read the stored status instead. To be replaced " +
+                "by a test of the stored status set by the ORCID updater.")
         @Test
         @DisplayName("Should add authenticated contributor to raid")
         void authenticatedContributor() {
