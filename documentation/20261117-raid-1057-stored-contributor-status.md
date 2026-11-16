@@ -3,8 +3,8 @@
 - JIRA: [RAID-1057](https://ardc.atlassian.net/browse/RAID-1057), sub-task of
   [RAID-976](https://ardc.atlassian.net/browse/RAID-976)
 - Branch: `feature/RAID-1057` into `feature/RAID-976`
-- PR: to follow
-- Status: in development
+- PR: [#793](https://github.com/au-research/raid-au/pull/793)
+- Status: in review
 
 ## What changed and why
 
