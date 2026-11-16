@@ -37,13 +37,14 @@ class OrcidIntegrationPropertiesTest {
 
         assertThat(properties.isEnabled(), is(false));
         assertThat(properties.getHost(), is(emptyOrNullString()));
+        assertThat(properties.getApiKey(), is(emptyOrNullString()));
     }
 
     @Test
     void defaultConfiguration_doesNotPointAtLocalMock() throws IOException {
         final var properties = bind("application.yaml");
 
-        assertThat(properties.getRaidListener().getUri(), not(containsString("localhost")));
+        assertThat(properties.getRaidChanges().getUri(), not(containsString("localhost")));
         assertThat(properties.getContributorIdLookup().getUri(), not(containsString("localhost")));
     }
 
@@ -53,7 +54,8 @@ class OrcidIntegrationPropertiesTest {
 
         assertThat(properties.isEnabled(), is(true));
         assertThat(properties.getHost(), equalTo("http://localhost:1080"));
-        assertThat(properties.getRaidListener().getUri(), equalTo("http://localhost:1080/raid-update"));
+        assertThat(properties.getRaidChanges().getUri(), equalTo("http://localhost:1080/raid-changes"));
+        assertThat(properties.getApiKey(), not(emptyOrNullString()));
         assertThat(properties.getContributorIdLookup().getUri(),
                 equalTo("http://localhost:1080/find-contributor-by-orcid"));
     }

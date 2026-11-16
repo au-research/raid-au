@@ -2,7 +2,6 @@ package au.org.raid.api.service;
 
 import au.org.raid.api.config.properties.OrcidIntegrationProperties;
 import au.org.raid.api.dto.ContributorLookupResponse;
-import au.org.raid.api.dto.RaidListenerMessage;
 import au.org.raid.api.factory.HttpEntityFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +22,15 @@ public class OrcidIntegrationClient {
     private final OrcidIntegrationProperties properties;
     private final HttpEntityFactory httpEntityFactory;
 
-    public void post(final RaidListenerMessage message) {
-        final var httpEntity = httpEntityFactory.create(message, properties.getApiKey());
+    /**
+     * Tells the registration agency's ORCID updater that the RAiD was minted or saved. The updater
+     * queues the change and reads the RAiD back from this API.
+     */
+    public void notifyRaidChanged(final String handle) {
+        final var httpEntity = httpEntityFactory.create(Map.of("handle", handle), properties.getApiKey());
 
-        final var response = restTemplate.exchange(properties.getRaidListener().getUri(), HttpMethod.POST, httpEntity, Void.class);
-        log.debug("Response from Raid Listener: {} {}", response.getStatusCode(), response.getBody());
+        final var response = restTemplate.exchange(properties.getRaidChanges().getUri(), HttpMethod.POST, httpEntity, Void.class);
+        log.debug("Response from ORCID updater for RAiD {}: {}", handle, response.getStatusCode());
     }
 
     public Optional<ContributorLookupResponse> findByOrcid(final String orcid) {

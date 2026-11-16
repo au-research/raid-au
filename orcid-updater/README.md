@@ -5,6 +5,8 @@ iDs and write RAiDs to their ORCID records with their consent (RAID-975).
 
 * API contract: [idl/orcid-updater-openapi-3.1.yaml](idl/orcid-updater-openapi-3.1.yaml)
 * Design decisions: [ADR 2026-10-23](../doc/adr/2026-10-23_per-ra-orcid-updater.md)
+* How the app, API, updater and ORCID communicate:
+  [diagrams](../doc/architecture/orcid-updater-communication.md)
 
 ## What an RA provides
 
