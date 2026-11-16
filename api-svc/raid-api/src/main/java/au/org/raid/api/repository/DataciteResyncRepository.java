@@ -22,6 +22,13 @@ public class DataciteResyncRepository {
                 .fetch(RAID.HANDLE);
     }
 
+    public void markResyncRequired(final String handle) {
+        dslContext.update(RAID)
+                .set(RAID.DATACITE_RESYNC_REQUIRED, true)
+                .where(RAID.HANDLE.eq(handle))
+                .execute();
+    }
+
     public void clearResyncRequired(final String handle) {
         dslContext.update(RAID)
                 .set(RAID.DATACITE_RESYNC_REQUIRED, false)

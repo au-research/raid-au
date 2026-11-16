@@ -61,11 +61,9 @@ public class RaidV3UpgradeService {
 
                             final var orcid = contributor.getId().substring(contributor.getId().lastIndexOf('/') + 1);
 
-                            final var contributorRecord = contributorRepository.findByPid(contributor.getId())
-                                    .orElseThrow(() -> new RuntimeException("Contributor not found with orcid %s".formatted(orcid)));
-                            contributorRecord.setStatus("UNAUTHENTICATED");
-
-                            contributorRepository.update(contributorRecord);
+                            if (contributorRepository.updateStatus(contributor.getId(), "UNAUTHENTICATED") == 0) {
+                                throw new RuntimeException("Contributor not found with orcid %s".formatted(orcid));
+                            }
                         }
                     });
                 })

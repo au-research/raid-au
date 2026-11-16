@@ -70,6 +70,7 @@ public class SecurityConfig {
         // API paths
         public static final String RAID_API = "/raid";
         public static final String SERVICE_POINT_API = "/service-point";
+        public static final String CONTRIBUTOR_STATUS_API = "/contributor/status";
         // Review feedback (robleney-ardc, #701): /ui/** marks frontend-helper endpoints
         // that aren't part of the RAiD API's public registry contract - the agency app
         // always has a token by the time it shows a contributor, so these require auth
@@ -127,6 +128,9 @@ public class SecurityConfig {
                 // /public must stay above the /** rule below: Spring Security uses the first match
                 .requestMatchers(GET, SERVICE_POINT_API + "/public").hasAnyRole(RAID_DUMPER_ROLE, SERVICE_POINT_USER_ROLE, OPERATOR_ROLE)
                 .requestMatchers(GET, SERVICE_POINT_API + "/**").hasAnyRole(SERVICE_POINT_USER_ROLE, OPERATOR_ROLE, RAID_DUMPER_ROLE)
+
+                // Contributor endpoints: only the registration agency's ORCID updater sets status
+                .requestMatchers(PUT, CONTRIBUTOR_STATUS_API).hasRole(CONTRIBUTOR_WRITER_ROLE)
 
                 // Admin endpoints
                 .requestMatchers(POST, "/admin/**").hasRole(OPERATOR_ROLE)

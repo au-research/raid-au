@@ -43,8 +43,6 @@ raid:
     host: ""
     raid-changes:
       uri: ${raid.orcid-integration.host}/raid-changes
-    contributor-id-lookup:
-      uri: ${raid.orcid-integration.host}/find-contributor-by-orcid
     api-key: ""
   stub:
     geo-names:

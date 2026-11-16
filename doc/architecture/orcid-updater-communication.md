@@ -89,6 +89,13 @@ sequenceDiagram
   U-->>R: AUTHENTICATED
 ```
 
+- `PUT /contributor/status` gives every RAiD naming the contributor a new
+  version holding the status, and updates each RAiD's DataCite DOI. A DOI
+  lists an ORCID contributor as a creator only while they are AUTHENTICATED;
+  ISNI contributors always appear. Repeating the call changes nothing, so the
+  updater can retry after a failure.
+- Mint, update and patch ignore any status the client sends and use the
+  stored one, UNAUTHENTICATED for a contributor the API hasn't seen.
 - ORCID sends the researcher back to the app, so each app's
   `<app URL>/orcid/callback` must be registered as a redirect URI on the RA's
   ORCID member client.

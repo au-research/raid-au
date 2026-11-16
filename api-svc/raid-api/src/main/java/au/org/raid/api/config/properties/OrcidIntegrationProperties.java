@@ -16,17 +16,10 @@ public class OrcidIntegrationProperties {
     private String orcidUrlPrefix;
     private String apiKey;
     private RaidChanges raidChanges;
-    private ContributorIdLookup contributorIdLookup;
 
     @Getter
     @Setter
     public static class RaidChanges {
-        private String uri;
-    }
-
-    @Getter
-    @Setter
-    public static class ContributorIdLookup {
         private String uri;
     }
 }

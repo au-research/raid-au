@@ -1368,22 +1368,6 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequest);
         }
 
-        @Disabled("Needs an ORCID integration that reports this iD as authenticated. Environments with the " +
-                "integration off, such as branch environments, read the stored status instead. To be replaced " +
-                "by a test of the stored status set by the ORCID updater.")
-        @Test
-        @DisplayName("Should add authenticated contributor to raid")
-        void authenticatedContributor() {
-            final var createResponse = raidApi.mintRaid(createRequest);
-            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
-
-            final var readResponse = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix());
-            final var raidDto = readResponse.getBody();
-
-            assertThat(raidDto.getContributor().get(0).getStatus(), is("AUTHENTICATED"));
-            assertThat(raidDto.getContributor().get(0).getId(), is(REAL_TEST_ORCID));
-        }
-
         @Test
         @DisplayName("Should be able to successfully patch a contributor")
         void happyPath() {

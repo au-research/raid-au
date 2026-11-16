@@ -502,6 +502,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationFailureResponse"
+  /contributor/status:
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - "contributor"
+      operationId: "updateContributorStatus"
+      summary: "Set a contributor's status"
+      description: "Called by the registration agency's ORCID updater when a contributor's\n\
+        authentication status changes. Requires the contributor-writer role.\nStatus\
+        \ belongs to the person, so one call covers every RAiD the\ncontributor is\
+        \ on: each RAiD that holds a different status gets a new\nversion, and its\
+        \ DataCite DOI is updated. Sending the status the RAiDs\nalready hold changes\
+        \ nothing, so the call is safe to repeat.\n"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContributorStatusUpdate"
+      responses:
+        204:
+          description: "The status was set, and every RAiD with this contributor holds\
+            \ it."
+        400:
+          description: "Bad request. The id or status is missing, or the status is\
+            \ not recognised."
+        404:
+          description: "No contributor has this id."
 components:
   securitySchemes:
     bearerAuth:
@@ -652,6 +681,24 @@ components:
           type: "boolean"
         appWritesEnabled:
           type: "boolean"
+    ContributorStatusUpdate:
+      type: "object"
+      required:
+      - "id"
+      - "status"
+      properties:
+        id:
+          description: "The contributor's identifier as it appears on RAiDs, for example\
+            \ https://orcid.org/0000-0002-1825-0097"
+          type: "string"
+        status:
+          type: "string"
+          enum:
+          - "AUTHENTICATED"
+          - "UNAUTHENTICATED"
+          - "AWAITING_AUTHENTICATION"
+          - "AUTHENTICATION_FAILED"
+          - "AUTHENTICATION_REVOKED"
     SurrogateKey:
       type: "integer"
       format: "int64"

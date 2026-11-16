@@ -45,7 +45,6 @@ class OrcidIntegrationPropertiesTest {
         final var properties = bind("application.yaml");
 
         assertThat(properties.getRaidChanges().getUri(), not(containsString("localhost")));
-        assertThat(properties.getContributorIdLookup().getUri(), not(containsString("localhost")));
     }
 
     @Test
@@ -56,8 +55,6 @@ class OrcidIntegrationPropertiesTest {
         assertThat(properties.getHost(), equalTo("http://localhost:1080"));
         assertThat(properties.getRaidChanges().getUri(), equalTo("http://localhost:1080/raid-changes"));
         assertThat(properties.getApiKey(), not(emptyOrNullString()));
-        assertThat(properties.getContributorIdLookup().getUri(),
-                equalTo("http://localhost:1080/find-contributor-by-orcid"));
     }
 
     @Test
