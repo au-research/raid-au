@@ -8,6 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DataciteRepositoryFactory {
+    /**
+     * DataCite client type for RAiD registries. Repositories created by the RAiD API must use this
+     * type, not the DataCite default of "repository" (RAID-1013).
+     */
+    public static final String CLIENT_TYPE = "raidRegistry";
+
     private final RepositoryClientProperties properties;
 
     public DataciteRepository create(final String name, final String password) {
@@ -19,7 +25,7 @@ public class DataciteRepositoryFactory {
                         .type("repositories")
                         .attributes(DataciteRepositoryAttributes.builder()
                                 .symbol("%s.%s".formatted(properties.getUsername(), suffix))
-                                .clientType("repository")
+                                .clientType(CLIENT_TYPE)
                                 .name(name)
                                 .systemEmail(properties.getEmail())
                                 .passwordInput(password)
