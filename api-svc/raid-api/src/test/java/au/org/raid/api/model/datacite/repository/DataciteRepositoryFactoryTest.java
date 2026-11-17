@@ -1,6 +1,7 @@
 package au.org.raid.api.model.datacite.repository;
 
 import au.org.raid.api.config.properties.RepositoryClientProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,14 +69,25 @@ class DataciteRepositoryFactoryTest {
     }
 
     @Test
-    @DisplayName("create() sets clientType to 'repository'")
+    @DisplayName("create() sets clientType to 'raidRegistry'")
     void create_SetsClientType() {
         final var username = "TEST.ORG";
         when(properties.getUsername()).thenReturn(username);
 
         final var result = factory.create("name", "password");
 
-        assertThat(result.getData().getAttributes().getClientType(), is("repository"));
+        assertThat(result.getData().getAttributes().getClientType(), is("raidRegistry"));
+    }
+
+    @Test
+    @DisplayName("create() request body sent to DataCite has clientType 'raidRegistry' (RAID-1013)")
+    void create_SerialisedRequestHasRaidRegistryClientType() throws Exception {
+        when(properties.getUsername()).thenReturn("TEST.ORG");
+
+        final var result = factory.create("name", "password");
+
+        final var json = new ObjectMapper().readTree(new ObjectMapper().writeValueAsString(result));
+        assertThat(json.at("/data/attributes/clientType").asText(), is("raidRegistry"));
     }
 
     @Test
