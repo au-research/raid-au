@@ -2,6 +2,7 @@ package au.org.raid.api.service.raid;
 
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.dto.legacy.RaidDtoFactory;
+import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.factory.HandleFactory;
@@ -28,6 +29,7 @@ import org.hamcrest.Matchers;
 import org.jooq.JSONB;
 import org.jooq.Record4;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -42,6 +45,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -135,10 +139,13 @@ class RaidServiceTest {
 
             raidService.mint(createRaidRequest, servicePointId);
             verify(raidIngestService).create(raidDto);
-            verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle.toString()), anyString());
-            verify(orcidIntegrationService).setContributorStatus(createRaidRequest.getContributor());
             verify(orcidIntegrationService).notifyRaidChanged(raidDto);
+
+            // stored status is applied before DataCite is called, so the DOI's creators follow it
+            final var inOrder = inOrder(contributorService, dataciteService);
+            inOrder.verify(contributorService).setStatus(createRaidRequest.getContributor());
+            inOrder.verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
         }
     }
 
@@ -203,7 +210,7 @@ class RaidServiceTest {
 
         verify(dataciteService).update(expected, handle, repositoryId, password);
         verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
-        verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
+        verify(contributorService).setStatus(expected.getContributor());
         verify(orcidIntegrationService).notifyRaidChanged(expected);
     }
 
@@ -251,7 +258,9 @@ class RaidServiceTest {
 
             verify(dataciteService).update(updateRequest, handle, repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
-            verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
+            final var inOrder = inOrder(contributorService, dataciteService);
+            inOrder.verify(contributorService).setStatus(updateRequest.getContributor());
+            inOrder.verify(dataciteService).update(updateRequest, handle, repositoryId, password);
             verify(orcidIntegrationService).notifyRaidChanged(expected);
         }
     }
@@ -939,5 +948,112 @@ class RaidServiceTest {
     private RaidCreateRequest createRaidRequest() throws IOException {
         final String json = FileUtil.resourceContent("/fixtures/create-raid.json");
         return objectMapper.readValue(json, RaidCreateRequest.class);
+    }
+
+    @Nested
+    @DisplayName("Refreshing contributor status")
+    class RefreshContributorStatus {
+        private static final String HANDLE = "10378.1/1696639";
+        private static final long SERVICE_POINT_ID = 10_000_000L;
+        private static final String ORCID = "https://orcid.org/0009-0002-5128-5184";
+
+        private RaidDto raidWithContributorStatus(final String status) throws JsonProcessingException {
+            final var raid = objectMapper.readValue(raidJson(), RaidDto.class);
+            raid.contributor(List.of(new Contributor()
+                    .id(ORCID)
+                    .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                    .status(status)));
+            return raid;
+        }
+
+        private void storedStatusIs(final String status) {
+            doAnswer(invocation -> {
+                final List<Contributor> contributors = invocation.getArgument(0);
+                contributors.forEach(contributor -> contributor.setStatus(status));
+                return null;
+            }).when(contributorService).setStatus(anyList());
+        }
+
+        private ServicePointRecord servicePoint() {
+            final var record = new ServicePointRecord().setRepositoryId("repository-id").setPassword("_password");
+            when(servicePointRepository.findById(SERVICE_POINT_ID)).thenReturn(Optional.of(record));
+            return record;
+        }
+
+        @Test
+        @DisplayName("A RAiD that already holds the stored status is left alone")
+        void noNewVersionWhenStatusUnchanged() throws JsonProcessingException {
+            final var raid = raidWithContributorStatus("AUTHENTICATED");
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+            storedStatusIs("AUTHENTICATED");
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(false));
+
+            verify(raidHistoryService, never()).save(any(RaidDto.class));
+            verifyNoInteractions(dataciteService, raidIngestService, orcidIntegrationService);
+        }
+
+        @Test
+        @DisplayName("A RAiD without contributors is left alone")
+        void noNewVersionWithoutContributors() throws JsonProcessingException {
+            final var raid = objectMapper.readValue(raidJson(), RaidDto.class).contributor(List.of());
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(false));
+
+            verifyNoInteractions(contributorService, dataciteService, raidIngestService);
+        }
+
+        @Test
+        @DisplayName("A changed status gives the RAiD a new version and updates its DOI, without telling the updater")
+        void newVersionAndDoiUpdateWhenStatusChanged() throws JsonProcessingException {
+            final var raid = raidWithContributorStatus("AWAITING_AUTHENTICATION");
+            final var servicePoint = servicePoint();
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+            when(raidIngestService.update(raid)).thenReturn(raid);
+            when(mapper.writeValueAsString(raid)).thenReturn("{}");
+            storedStatusIs("AUTHENTICATED");
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(true));
+
+            assertThat(raid.getContributor().get(0).getStatus(), Matchers.is("AUTHENTICATED"));
+            final var inOrder = inOrder(raidHistoryService, dataciteService, dataciteResyncRepository, raidIngestService, raidRepository);
+            inOrder.verify(raidHistoryService).save(raid);
+            inOrder.verify(dataciteService).update(raid, HANDLE, servicePoint.getRepositoryId(), servicePoint.getPassword());
+            inOrder.verify(dataciteResyncRepository).clearResyncRequired(HANDLE);
+            inOrder.verify(raidIngestService).update(raid);
+            inOrder.verify(raidRepository).updateMetadata(HANDLE, "{}");
+            verify(dataciteResyncRepository, never()).markResyncRequired(any());
+            verifyNoInteractions(orcidIntegrationService);
+        }
+
+        @Test
+        @DisplayName("A DataCite failure keeps the new version and flags the RAiD for resync")
+        void flagsResyncWhenDataciteFails() throws JsonProcessingException {
+            final var raid = raidWithContributorStatus("AUTHENTICATED");
+            final var servicePoint = servicePoint();
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+            when(raidIngestService.update(raid)).thenReturn(raid);
+            when(mapper.writeValueAsString(raid)).thenReturn("{}");
+            storedStatusIs("AUTHENTICATION_REVOKED");
+            doThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE))
+                    .when(dataciteService).update(raid, HANDLE, servicePoint.getRepositoryId(), servicePoint.getPassword());
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(true));
+
+            verify(raidHistoryService).save(raid);
+            verify(dataciteResyncRepository).markResyncRequired(HANDLE);
+            verify(dataciteResyncRepository, never()).clearResyncRequired(any());
+            verify(raidIngestService).update(raid);
+            verify(raidRepository).updateMetadata(HANDLE, "{}");
+        }
+
+        @Test
+        @DisplayName("An unknown handle is a not-found error")
+        void unknownHandle() {
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class, () -> raidService.refreshContributorStatus(HANDLE));
+        }
     }
 }

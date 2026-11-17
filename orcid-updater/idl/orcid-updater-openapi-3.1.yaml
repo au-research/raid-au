@@ -39,8 +39,10 @@ info:
       contributor, after that contributor's status changes.
     * `PUT /contributor/status` (new, see `ContributorStatusUpdate`) to set
       a contributor's status. Status is per person, so one call covers every
-      RAiD the person is on. It does not create a RAiD version, call
-      DataCite or notify the updater.
+      RAiD the person is on. Each of those RAiDs that holds a different
+      status gets a new version and a DataCite update, because a DOI lists
+      an ORCID contributor only while they are AUTHENTICATED. The call does
+      not notify the updater, and repeating it changes nothing.
 
     Statuses use the RAiD API's existing `ContributorStatus` values
     (Decision on RAID-974, 2026-10-23). AUTHENTICATION_FAILED is not used.
@@ -638,8 +640,11 @@ components:
       description: |
         Request body for `PUT /contributor/status` on the RAiD API (built in
         RAID-976, requires the `contributor-writer` role). Sets the status
-        on the shared contributor row. Responds 204, or 404 when the RAiD
-        API has no contributor with this iD.
+        on the shared contributor row, then gives each RAiD naming the
+        contributor a new version if its status differs. Responds 204, 400
+        for an unknown status, 404 when the RAiD API has no contributor with
+        this iD, or 500 when some RAiDs could not be updated (the rest are
+        saved, and a retry finishes them).
       required:
       - "id"
       - "status"

@@ -1,5 +1,6 @@
 package au.org.raid.inttest.service;
 
+import au.org.raid.idl.raidv2.api.ContributorApi;
 import au.org.raid.idl.raidv2.api.RaidApi;
 import au.org.raid.idl.raidv2.api.ServicePointApi;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +46,26 @@ public class TestClient {
                 .logger(new Slf4jLogger(RaidApi.class))
                 .logLevel(Logger.Level.FULL)
                 .target(RaidApi.class, apiUrl);
+    }
+
+    /**
+     * A status change gives every RAiD naming the contributor a new version and a DataCite update,
+     * so this client waits longer than the others.
+     */
+    public ContributorApi contributorApi(final String token) {
+        return Feign.builder()
+                .options(
+                        new Request.Options(10, TimeUnit.SECONDS, 60, TimeUnit.SECONDS, false)
+                )
+                .client(new OkHttpClient())
+                .encoder(new JacksonEncoder(objectMapper))
+                .decoder(new ResponseEntityDecoder(new JacksonDecoder(objectMapper)))
+                .errorDecoder(new RaidApiExceptionDecoder(objectMapper))
+                .contract(contract)
+                .requestInterceptor(request -> request.header(AUTHORIZATION, "Bearer " + token))
+                .logger(new Slf4jLogger(ContributorApi.class))
+                .logLevel(Logger.Level.FULL)
+                .target(ContributorApi.class, apiUrl);
     }
 
     public ServicePointApi servicePointApi(final String token) {
