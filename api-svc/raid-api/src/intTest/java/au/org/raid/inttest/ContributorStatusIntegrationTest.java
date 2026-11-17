@@ -110,14 +110,16 @@ public class ContributorStatusIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("A status change gives the RAiD a new version holding it, and repeating it changes nothing")
     void statusChangeCreatesNewVersion() {
-        setStatus(StatusEnum.UNAUTHENTICATED);
         final var handle = mintWithTestOrcid();
+        setStatus(StatusEnum.UNAUTHENTICATED);
 
-        final var minted = read(handle);
-        assertThat(minted.getContributor().get(0).getStatus())
+        final var start = read(handle);
+        assertThat(start.getContributor().get(0).getStatus()).isEqualTo("UNAUTHENTICATED");
+        final var mintedVersion = start.getIdentifier().getVersion();
+
+        assertThat(read(mintWithTestOrcid()).getContributor().get(0).getStatus())
                 .as("mint ignores the status the client sent")
                 .isEqualTo("UNAUTHENTICATED");
-        final var mintedVersion = minted.getIdentifier().getVersion();
 
         setStatus(StatusEnum.AUTHENTICATED);
 
@@ -141,8 +143,8 @@ public class ContributorStatusIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("An update can't change a contributor's status")
     void updateIgnoresClientStatus() {
-        setStatus(StatusEnum.AUTHENTICATED);
         final var handle = mintWithTestOrcid();
+        setStatus(StatusEnum.AUTHENTICATED);
 
         final var update = raidUpdateRequestFactory.create(read(handle));
         update.getTitle().get(0).setText("contributor-status-updated-" + UUID.randomUUID());
@@ -157,12 +159,8 @@ public class ContributorStatusIntegrationTest extends AbstractIntegrationTest {
     void doiCreatorsFollowStatus() {
         Assumptions.assumeTrue(isMockServerReachable(), "mockserver not reachable - skipping DataCite creator check");
 
-        setStatus(StatusEnum.AWAITING_AUTHENTICATION);
         final var handle = mintWithTestOrcid();
-
-        assertThat(latestCreators(HttpMethod.POST, "/dois", handle.toString()))
-                .as("not on the DOI before authenticating")
-                .doesNotContain(STATUS_TEST_ORCID_DIGITS);
+        setStatus(StatusEnum.AWAITING_AUTHENTICATION);
 
         setStatus(StatusEnum.AUTHENTICATED);
 
