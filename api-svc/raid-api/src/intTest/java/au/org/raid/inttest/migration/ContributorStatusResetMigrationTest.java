@@ -16,8 +16,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Regression guard for V50, which records every AUTHENTICATED ORCID contributor, then resets them
- * to UNAUTHENTICATED so they authenticate again through their registration agency's own updater.
+ * Regression guard for V50, which records every AUTHENTICATED ORCID contributor so the API can reset
+ * them. It changes no status: the API resets each one through the status-change path, so their RAiDs
+ * stay in step.
  *
  * <p>Runs against a throwaway Postgres so it can seed contributors freely.
  */
@@ -130,7 +131,7 @@ class ContributorStatusResetMigrationTest {
     }
 
     @Test
-    @DisplayName("Records every AUTHENTICATED ORCID contributor, resets them, and leaves everyone else alone")
+    @DisplayName("Records every AUTHENTICATED ORCID contributor as not yet reset, and changes no status")
     void resetsAuthenticatedOrcidContributors() throws Exception {
         final var database = freshDatabase("contributor_reset");
         flyway(database, BEFORE_RESET).migrate();
@@ -152,18 +153,26 @@ class ContributorStatusResetMigrationTest {
 
         try (var connection = connectionTo(database)) {
             final var statuses = statuses(connection);
-            assertThat(statuses).containsEntry("0000-0001-0000-0001", "UNAUTHENTICATED");
-            assertThat(statuses).containsEntry("0000-0001-0000-0002", "UNAUTHENTICATED");
-            assertThat(statuses).containsEntry("0000-0001-0000-0003", "AWAITING_AUTHENTICATION");
-            assertThat(statuses).containsEntry("0000-0001-0000-0004", "AUTHENTICATION_REVOKED");
-            assertThat(statuses).containsEntry("0000-0001-0000-0005", null);
             assertThat(statuses)
-                    .as("ISNI contributors don't authenticate, so they keep their status")
+                    .as("the migration changes no status; the API resets each contributor and their RAiDs together")
+                    .containsEntry("0000-0001-0000-0001", "AUTHENTICATED")
+                    .containsEntry("0000-0001-0000-0002", "AUTHENTICATED")
+                    .containsEntry("0000-0001-0000-0003", "AWAITING_AUTHENTICATION")
+                    .containsEntry("0000-0001-0000-0004", "AUTHENTICATION_REVOKED")
+                    .containsEntry("0000-0001-0000-0005", null)
                     .containsEntry("0000-0001-0000-0006", "AUTHENTICATED");
 
-            assertThat(retained(connection)).containsOnly(
-                    Map.entry("0000-0001-0000-0001", ORCID),
-                    Map.entry("0000-0001-0000-0002", SANDBOX_ORCID));
+            assertThat(retained(connection))
+                    .as("ISNI contributors don't authenticate, so they aren't recorded")
+                    .containsOnly(
+                            Map.entry("0000-0001-0000-0001", ORCID),
+                            Map.entry("0000-0001-0000-0002", SANDBOX_ORCID));
+
+            try (var statement = connection.createStatement();
+                 var rs = statement.executeQuery("select count(*) from contributor_status_reset where reset_at is null")) {
+                rs.next();
+                assertThat(rs.getInt(1)).as("nobody is reset yet").isEqualTo(2);
+            }
         }
     }
 
@@ -182,21 +191,21 @@ class ContributorStatusResetMigrationTest {
 
         try (var connection = connectionTo(database)) {
             final Map<String, String> retainedBefore = retained(connection);
-            final String resetAt;
+            final String recordedAt;
             try (var statement = connection.createStatement();
-                 var rs = statement.executeQuery("select reset_at::text from contributor_status_reset")) {
+                 var rs = statement.executeQuery("select recorded_at::text from contributor_status_reset")) {
                 rs.next();
-                resetAt = rs.getString(1);
+                recordedAt = rs.getString(1);
             }
 
             runMigrationSql(connection);
 
-            assertThat(statuses(connection)).containsEntry("0000-0001-0000-0001", "UNAUTHENTICATED");
+            assertThat(statuses(connection)).containsEntry("0000-0001-0000-0001", "AUTHENTICATED");
             assertThat(retained(connection)).isEqualTo(retainedBefore);
             try (var statement = connection.createStatement();
-                 var rs = statement.executeQuery("select reset_at::text from contributor_status_reset")) {
+                 var rs = statement.executeQuery("select recorded_at::text from contributor_status_reset")) {
                 rs.next();
-                assertThat(rs.getString(1)).as("the original record is kept").isEqualTo(resetAt);
+                assertThat(rs.getString(1)).as("the original record is kept").isEqualTo(recordedAt);
             }
         }
 
