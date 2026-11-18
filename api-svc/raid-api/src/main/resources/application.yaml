@@ -123,6 +123,16 @@ raid:
       batch-size: 50
       throttle-millis: 1000
       poll-delay-millis: 60000
+  contributor-status-refresh:
+    # A one-off background catch-up. It resets the contributors listed in contributor_status_reset
+    # through the normal status-change path, then brings each RAiD flagged via
+    # raid.contributor_status_refresh_required in step: a new version where the status it records
+    # differs from the contributor's current status, and a DataCite update either way. On by
+    # default, so every agency is brought up to date without any configuration.
+    enabled: true
+    batch-size: 50
+    throttle-millis: 1000
+    poll-delay-millis: 60000
 server:
   forward-headers-strategy: native
 spring:
