@@ -43,8 +43,8 @@ See `src/config/Appconfig.ts` for the full type definitions. The main overridabl
 
 ### Deployment
 
-- **AWS S3**: upload the updated `app-config.json` to the S3 bucket and invalidate the CloudFront cache — see [DEPLOYMENT.md](../../raid-agency-app/DEPLOYMENT.md)
-- **Docker / Kubernetes**: replace the mounted config file or update the file at the external URL — see [DEPLOYMENT.md](../../raid-agency-app/DEPLOYMENT.md)
+- **AWS S3**: upload the updated `app-config.json` to the S3 bucket and invalidate the CloudFront cache — see [DEPLOYMENT.md](../../doc/UI/raid-agency-app/DEPLOYMENT.md)
+- **Docker / Kubernetes**: replace the mounted config file or update the file at the external URL — see [DEPLOYMENT.md](../../doc/UI/raid-agency-app/DEPLOYMENT.md)
 
 ---
 

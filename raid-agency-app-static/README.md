@@ -340,7 +340,7 @@ While no formal testing framework is implemented, you can validate data processi
 
 For more detailed technical documentation and contribution guidelines, see:
 
-- [DOCUMENTATION.md](./DOCUMENTATION.md) - Detailed technical documentation
+- [DOCUMENTATION.md](../doc/UI/raid-agency-app-static/DOCUMENTATION.md) - Detailed technical documentation
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Guidelines for contributing to the project
 - [scripts/README.md](./scripts/README.md) - Detailed documentation for data fetching modules
 
