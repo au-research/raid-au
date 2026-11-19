@@ -1,6 +1,6 @@
 // src/config/defaultConfig.ts
 
-import { AppConfig } from "./Appconfig";
+import { AppConfig, Branding } from "./Appconfig";
 
 export const defaultConfig: AppConfig = {
   default: true,
@@ -79,5 +79,29 @@ export const defaultConfig: AppConfig = {
       borderRadius: 8,
     },
     mode: "light",
+  },
+};
+
+/**
+ * The branding built into the app (RAID-1065). It names no agency and loads no
+ * ARDC script. It applies when the realm uses the default login theme, when no
+ * theme is returned, or when the theme lookup fails.
+ */
+export const neutralBranding: Branding = {
+  theme: defaultConfig.theme,
+  header: {
+    title: "RAiD",
+    logo: {
+      light: "/raid-logo-light.svg",
+      dark: "/raid-logo-dark.svg",
+      alt: "RAiD",
+      height: 40,
+    },
+    navLinks: [],
+    menu: "none",
+  },
+  footer: {
+    variant: "generic",
+    links: [],
   },
 };

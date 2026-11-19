@@ -8,11 +8,22 @@ export type {
   LogoConfig,
   SocialLink,
   ThemePaletteColor,
+  Branding,
+  BrandingHeader,
+  BrandingFooter,
+  BrandingLogo,
+  HeaderMenu,
+  FooterVariant,
 } from "./Appconfig";
 
 export type { RuntimeConfig } from "./RuntimeConfig";
 
-export { defaultConfig } from "./DefaultConfig";
+export { defaultConfig, neutralBranding } from "./DefaultConfig";
+export {
+  resolveBranding,
+  isCustomLoginTheme,
+  DEFAULT_LOGIN_THEME,
+} from "./ResolveBranding";
 export { loadConfig } from "./Configloader";
 export { AppConfigProvider, useAppConfig } from "./Appconfigcontext";
 export { buildMuiTheme } from "./Buildtheme";

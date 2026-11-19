@@ -86,6 +86,40 @@ export interface ThemeConfig {
   mode?: "light" | "dark";
 }
 
+// Branding as chosen by the realm's login theme (RAID-1065). These sit beside
+// the existing AppConfig types until each consumer has moved across.
+
+/** Which ARDC web component the header mounts. "none" loads no ARDC script. */
+export type HeaderMenu = "none" | "ardc";
+
+/** Which footer component renders. "generic" loads no ARDC script. */
+export type FooterVariant = "generic" | "ardc";
+
+export interface BrandingLogo {
+  light: string;
+  dark: string;
+  alt: string;
+  height?: number;
+}
+
+export interface BrandingHeader {
+  title: string;
+  logo: BrandingLogo;
+  navLinks: NavLink[];
+  menu: HeaderMenu;
+}
+
+export interface BrandingFooter {
+  variant: FooterVariant;
+  links: NavLink[];
+}
+
+export interface Branding {
+  theme: ThemeConfig;
+  header: BrandingHeader;
+  footer: BrandingFooter;
+}
+
 export interface AppConfig {
   header: HeaderConfig;
   footer: FooterConfig;

@@ -1,42 +1,13 @@
 import { AppConfig } from "./Appconfig";
 import { RuntimeConfig } from "./RuntimeConfig";
 import { defaultConfig } from "./DefaultConfig";
+import { deepMerge } from "./deepMerge";
 import {
   ConfigError,
   ConfigIssues,
   hasConfigIssues,
   validateConfig,
 } from "./ConfigValidation";
-
-function deepMerge<T extends Record<string, any>>(
-  target: T,
-  source: Partial<T>
-): T {
-  const result = { ...target };
-
-  for (const key of Object.keys(source) as Array<keyof T>) {
-    const sourceVal = source[key];
-    const targetVal = target[key];
-
-    if (
-      sourceVal !== null &&
-      sourceVal !== undefined &&
-      typeof sourceVal === "object" &&
-      !Array.isArray(sourceVal) &&
-      typeof targetVal === "object" &&
-      !Array.isArray(targetVal)
-    ) {
-      result[key] = deepMerge(
-        targetVal as Record<string, any>,
-        sourceVal as Record<string, any>
-      ) as T[keyof T];
-    } else if (sourceVal !== undefined) {
-      result[key] = sourceVal as T[keyof T];
-    }
-  }
-
-  return result;
-}
 
 async function fetchConfigFile(): Promise<Record<string, any>> {
   let response: Response;
