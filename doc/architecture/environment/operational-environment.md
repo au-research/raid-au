@@ -123,6 +123,44 @@ non-DOI handles are skipped.
 * Credentials (repository ID and password) are stored per service point in the
   `service_point` table and managed via AWS Secrets Manager
 
+### Test environments don't create DataCite repositories or mint DOIs
+
+Disposable test environments must not create repositories or mint DOIs in
+DataCite's test instance. This covers the shared test environment, branch
+environments and local runs.
+
+DataCite can't undo either action:
+
+* Creating a repository permanently reserves a prefix from DataCite's shared
+  pool. Deleting the repository doesn't return the prefix.
+* A repository can only be deleted while it holds no DOIs.
+* Registered and findable DOIs can't be deleted.
+
+Before RAID-892, every branch pipeline run created 2 repositories, and the
+branch's tests minted DOIs into one of them. This left 555 repositories in
+ARDC's test account (ATHH), and DataCite asked us to stop.
+
+How the convention is applied:
+
+* Test and branch environments run with `raid.stub.datacite.enabled=true`.
+  The API then builds DataCite requests but never sends them, and service
+  point creation returns a fake repository. The stub refuses to start when
+  `raid.environment=prod`.
+* Local development and CI use MockServer for DataCite.
+* A test that must reach the real DataCite test API should:
+  * be off by default;
+  * use one long-lived repository;
+  * mint only draft DOIs, and delete them afterwards.
+
+  [DataciteLiveRelatedRaidIntegrationTest.java](/api-svc/raid-api/src/test/java/au/org/raid/api/datacite/DataciteLiveRelatedRaidIntegrationTest.java)
+  is the reference example.
+* Don't add environments or scripts that create service points against the
+  real DataCite test API. If a new environment needs real DataCite, agree it
+  with the RAiD team first.
+
+This is temporary. The mock API server proposed in RAID-812 will replace the
+stub.
+
 
 ## Database
 
