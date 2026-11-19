@@ -127,7 +127,7 @@ describe("loadConfig", () => {
   });
 
   describe("blocking fields", () => {
-    it.each(["keycloak.url", "keycloak.realm", "keycloak.clientId", "apiBaseUrl", "environment"])(
+    it.each(["keycloak.url", "keycloak.realm", "keycloak.clientId", "apiBaseUrl", "environment", "supportEmail"])(
       "throws an invalid-fields ConfigError naming %s when it is missing",
       async (path) => {
         const config = structuredClone(mockValidConfig) as Record<string, any>;
@@ -153,7 +153,17 @@ describe("loadConfig", () => {
         "keycloak.realm",
         "keycloak.clientId",
         "apiBaseUrl",
+        "supportEmail",
       ]);
+    });
+
+    it("treats a blank supportEmail as missing and does not start the app", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, supportEmail: "   " }));
+
+      const error = await loadError();
+
+      expect(error.reason).toBe("invalid-fields");
+      expect(error.issues.missing).toEqual(["supportEmail"]);
     });
 
     it("reports a blocking URL that is not a valid URL as invalid", async () => {
@@ -205,6 +215,125 @@ describe("loadConfig", () => {
       const { issues } = await loadConfig();
 
       expect(issues).toEqual({ missing: [], invalid: ["services.staticProd"] });
+    });
+  });
+
+  describe("branding sections in the new layout (RAID-1065)", () => {
+    const newLayout = {
+      contactEmail: "contact@example.org",
+      theme: { mode: "dark" },
+      header: {
+        title: "SURF RAiD",
+        menu: "ardc",
+        navLinks: [{ label: "About", path: "https://example.org/about" }],
+      },
+      footer: { variant: "ardc", links: [{ label: "Privacy", path: "https://example.org/privacy" }] },
+    };
+
+    it("returns the theme, header and footer sections from the top level of the file", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, ...newLayout }));
+
+      const { branding, issues } = await loadConfig();
+
+      expect(branding).toEqual({
+        theme: newLayout.theme,
+        header: newLayout.header,
+        footer: newLayout.footer,
+      });
+      expect(issues).toEqual({ missing: [], invalid: [] });
+    });
+
+    it("returns empty sections when the file has no branding", async () => {
+      vi.stubGlobal("fetch", mockFetch(mockValidConfig));
+
+      const { branding } = await loadConfig();
+
+      expect(branding).toEqual({ theme: {}, header: {}, footer: {} });
+    });
+
+    it("reads contactEmail into the runtime config when it is set", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, contactEmail: "contact@example.org" }));
+
+      const { runtime } = await loadConfig();
+
+      expect(runtime.contactEmail).toBe("contact@example.org");
+    });
+
+    it.each([undefined, "", "   ", 42])("leaves contactEmail unset when it is %j", async (value) => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, contactEmail: value }));
+
+      const { runtime } = await loadConfig();
+
+      expect(runtime.contactEmail).toBeUndefined();
+    });
+
+    it("keeps contactEmail out of the branding sections", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, ...newLayout }));
+
+      const { branding } = await loadConfig();
+
+      expect(JSON.stringify(branding)).not.toContain("contact@example.org");
+    });
+
+    it("drops an unsafe link, keeps the safe one, and names the field in the issues", async () => {
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({
+          ...mockValidConfig,
+          header: {
+            navLinks: [
+              { label: "Bad", path: "javascript:alert(1)" },
+              { label: "Good", path: "https://example.org" },
+            ],
+          },
+        })
+      );
+
+      const { branding, issues } = await loadConfig();
+
+      expect(branding.header.navLinks).toEqual([{ label: "Good", path: "https://example.org" }]);
+      expect(issues.invalid).toEqual(["header.navLinks"]);
+    });
+
+    it("drops an unknown header.menu and names the field in the issues", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, header: { title: "T", menu: "mega" } }));
+
+      const { branding, issues } = await loadConfig();
+
+      expect(branding.header).toEqual({ title: "T" });
+      expect(issues.invalid).toEqual(["header.menu"]);
+    });
+
+    it("never writes a rejected value to the console", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({ ...mockValidConfig, header: { navLinks: [{ label: "x", path: "javascript:steal()" }] } })
+      );
+
+      await loadConfig();
+
+      expect(warn).toHaveBeenCalled();
+      expect(String(warn.mock.calls[0][0])).toContain("header.navLinks");
+      expect(String(warn.mock.calls[0][0])).not.toContain("steal");
+    });
+
+    it("warns that a leftover branding key is no longer used", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, branding: { default: false } }));
+
+      const { issues } = await loadConfig();
+
+      expect(issues.retired).toEqual(["branding"]);
+      expect(String(warn.mock.calls[0][0])).toContain("no longer used: branding");
+    });
+
+    it("reports no retired key for a file in the new layout", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, ...newLayout }));
+
+      const { issues } = await loadConfig();
+
+      expect(issues.retired ?? []).toEqual([]);
     });
   });
 

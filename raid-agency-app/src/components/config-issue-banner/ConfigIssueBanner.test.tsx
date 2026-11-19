@@ -53,6 +53,51 @@ describe("ConfigIssueBanner", () => {
       );
     });
 
+    it("names a retired key as no longer used when it is the only issue", () => {
+      render(
+        <ConfigIssueBanner
+          level="warning"
+          issues={{ missing: [], invalid: [], retired: ["branding"] }}
+        />
+      );
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Some configuration is no longer used: branding."
+      );
+    });
+
+    it("adds the retired keys after the missing and invalid fields", () => {
+      render(
+        <ConfigIssueBanner
+          level="warning"
+          issues={{ missing: ["services.orcid"], invalid: ["header.menu"], retired: ["branding"] }}
+        />
+      );
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Some configuration is missing: services.orcid. Invalid: header.menu. No longer used: branding."
+      );
+    });
+
+    it("adds the retired keys after an invalid-only headline", () => {
+      render(
+        <ConfigIssueBanner
+          level="warning"
+          issues={{ missing: [], invalid: ["header.navLinks"], retired: ["branding"] }}
+        />
+      );
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Some configuration is invalid: header.navLinks. No longer used: branding."
+      );
+    });
+
+    it("does not say anything about retired keys when there are none", () => {
+      render(<ConfigIssueBanner level="warning" issues={{ missing: ["services.orcid"], invalid: [] }} />);
+
+      expect(screen.getByRole("status")).not.toHaveTextContent("No longer used");
+    });
+
     it("cannot be dismissed", () => {
       render(<ConfigIssueBanner level="warning" issues={{ missing: ["supportEmail"], invalid: [] }} />);
 

@@ -90,10 +90,12 @@ export interface ThemeConfig {
 // the existing AppConfig types until each consumer has moved across.
 
 /** Which ARDC web component the header mounts. "none" loads no ARDC script. */
-export type HeaderMenu = "none" | "ardc";
+export const HEADER_MENUS = ["none", "ardc"] as const;
+export type HeaderMenu = (typeof HEADER_MENUS)[number];
 
 /** Which footer component renders. "generic" loads no ARDC script. */
-export type FooterVariant = "generic" | "ardc";
+export const FOOTER_VARIANTS = ["generic", "ardc"] as const;
+export type FooterVariant = (typeof FOOTER_VARIANTS)[number];
 
 export interface BrandingLogo {
   light: string;

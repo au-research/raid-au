@@ -38,6 +38,7 @@ const runtime: RuntimeConfig = {
   keycloak: { url: "https://iam.example.org", realm: "raid", clientId: "raid-api" },
   apiBaseUrl: "https://api.example.org",
   environment: "demo",
+  supportEmail: "support@example.org",
   googleAnalytics: {},
   services: {},
   app: { orcid: {} },

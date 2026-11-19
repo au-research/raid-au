@@ -25,6 +25,8 @@ export {
   DEFAULT_LOGIN_THEME,
 } from "./ResolveBranding";
 export { loadConfig } from "./Configloader";
+export { sanitiseBranding } from "./SanitiseBranding";
+export type { RawBranding } from "./SanitiseBranding";
 export { AppConfigProvider, useAppConfig } from "./Appconfigcontext";
 export { buildMuiTheme } from "./Buildtheme";
 export {

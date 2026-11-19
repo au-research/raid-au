@@ -1,7 +1,7 @@
-// keycloak, apiBaseUrl and environment are guaranteed by loadConfig() (the
-// app does not start without them). The optional fields may be missing from
-// a stale app-config.json; the app shows a warning banner when they are
-// (see ConfigValidation.ts).
+// keycloak, apiBaseUrl, environment and supportEmail are guaranteed by
+// loadConfig() (the app does not start without them). The optional fields may
+// be missing from a stale app-config.json; the app shows a warning banner when
+// they are (see ConfigValidation.ts).
 export interface RuntimeConfig {
   keycloak: {
     url: string;
@@ -10,7 +10,8 @@ export interface RuntimeConfig {
   };
   apiBaseUrl: string;
   environment: string;
-  supportEmail?: string;
+  supportEmail: string;
+  contactEmail?: string;
   googleAnalytics: {
     measurementId?: string;
     measurementIdDemo?: string;

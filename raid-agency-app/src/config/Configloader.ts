@@ -8,6 +8,7 @@ import {
   hasConfigIssues,
   validateConfig,
 } from "./ConfigValidation";
+import { RawBranding, sanitiseBranding } from "./SanitiseBranding";
 
 async function fetchConfigFile(): Promise<Record<string, any>> {
   let response: Response;
@@ -49,12 +50,21 @@ function describeIssues(issues: ConfigIssues): string {
   const parts: string[] = [];
   if (issues.missing.length > 0) parts.push(`missing: ${issues.missing.join(", ")}`);
   if (issues.invalid.length > 0) parts.push(`invalid: ${issues.invalid.join(", ")}`);
+  if (issues.retired && issues.retired.length > 0) {
+    parts.push(`no longer used: ${issues.retired.join(", ")}`);
+  }
   return parts.join("; ");
 }
 
 export async function loadConfig(): Promise<{
   runtime: RuntimeConfig;
   app: AppConfig;
+  /**
+   * The theme, header and footer sections from the top level of the file, with
+   * unusable values removed. Pass this to resolveBranding() with the realm's
+   * login theme (RAID-1065).
+   */
+  branding: RawBranding;
   issues: ConfigIssues;
 }> {
   const raw = await fetchConfigFile();
@@ -79,19 +89,28 @@ export async function loadConfig(): Promise<{
     apiBaseUrl: raw.apiBaseUrl,
     environment: raw.environment,
     supportEmail: raw.supportEmail,
+    // Optional. Anything that is not a non-blank text is ignored (and named in
+    // the issues by validateConfig).
+    contactEmail:
+      typeof raw.contactEmail === "string" && raw.contactEmail.trim() !== ""
+        ? raw.contactEmail
+        : undefined,
     googleAnalytics: raw.googleAnalytics ?? {},
     services: raw.services ?? {},
     app: { ...raw.app, orcid: { ...raw.app?.orcid } },
   };
 
-  const branding = raw.branding ?? {};
+  // Until the header and footer read the resolved branding, the app still takes
+  // its branding from the old "branding" wrapper. Phases 4 and 5 of RAID-1065
+  // move the header and footer across and remove this.
+  const legacyBranding = raw.branding ?? {};
   const app: AppConfig = deepMerge(defaultConfig, {
-    default: branding.default,
-    header: branding.header,
-    footer: branding.footer,
-    content: branding.content,
-    theme: branding.theme,
+    default: legacyBranding.default,
+    header: legacyBranding.header,
+    footer: legacyBranding.footer,
+    content: legacyBranding.content,
+    theme: legacyBranding.theme,
   });
 
-  return { runtime, app, issues: warning };
+  return { runtime, app, branding: sanitiseBranding(raw), issues: warning };
 }

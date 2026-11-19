@@ -49,23 +49,47 @@ const IssueSummary = ({ issues }: { issues: ConfigIssues }) => (
   </>
 );
 
+// Keys that earlier releases read and this one ignores (RAID-1065).
+const RetiredNote = ({ paths }: { paths: string[] }) => (
+  <>
+    {" "}No longer used: <FieldList paths={paths} describeUrls={false} />.
+  </>
+);
+
 // First line of the warning banner, e.g.
-// "Some configuration is missing: a, b. Invalid: c (not a valid URL)."
-const WarningHeadline = ({ issues }: { issues: ConfigIssues }) =>
-  issues.missing.length > 0 ? (
+// "Some configuration is missing: a, b. Invalid: c (not a valid URL). No longer used: d."
+const WarningHeadline = ({ issues }: { issues: ConfigIssues }) => {
+  const retired = issues.retired ?? [];
+
+  if (issues.missing.length > 0) {
+    return (
+      <>
+        Some configuration is missing: <FieldList paths={issues.missing} describeUrls={false} />.
+        {issues.invalid.length > 0 && (
+          <>
+            {" "}Invalid: <FieldList paths={issues.invalid} describeUrls />.
+          </>
+        )}
+        {retired.length > 0 && <RetiredNote paths={retired} />}
+      </>
+    );
+  }
+
+  if (issues.invalid.length > 0) {
+    return (
+      <>
+        Some configuration is invalid: <FieldList paths={issues.invalid} describeUrls />.
+        {retired.length > 0 && <RetiredNote paths={retired} />}
+      </>
+    );
+  }
+
+  return (
     <>
-      Some configuration is missing: <FieldList paths={issues.missing} describeUrls={false} />.
-      {issues.invalid.length > 0 && (
-        <>
-          {" "}Invalid: <FieldList paths={issues.invalid} describeUrls />.
-        </>
-      )}
-    </>
-  ) : (
-    <>
-      Some configuration is invalid: <FieldList paths={issues.invalid} describeUrls />.
+      Some configuration is no longer used: <FieldList paths={retired} describeUrls={false} />.
     </>
   );
+};
 
 export const ConfigIssueBanner = (props: ConfigIssueBannerProps) => {
   if (props.level === "warning") {
