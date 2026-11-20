@@ -11,19 +11,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Component
 @RequiredArgsConstructor
 public class DataciteAttributesDtoFactory {
-    private static final String AUTHENTICATED_STATUS = "AUTHENTICATED";
-    private static final Set<ContributorSchemaUriEnum> ORCID_SCHEMAS = Set.of(
-            ContributorSchemaUriEnum.HTTPS_ORCID_ORG_,
-            ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_
-    );
-
     private final DataciteTitleFactory titleFactory;
     private final DataciteCreatorFactory creatorFactory;
     private final DataciteDateFactory dateFactory;
@@ -38,9 +31,8 @@ public class DataciteAttributesDtoFactory {
     private final IdentifierProperties identifierProperties;
 
     /**
-     * An ORCID contributor appears on the DOI only once they have authenticated their iD. ISNI
-     * contributors have no authentication step, so they always appear. When no contributor qualifies,
-     * DataCite still gets the single empty creator it requires.
+     * Every contributor is a creator, whatever their status. When there are none, DataCite still
+     * gets the single empty creator it requires.
      */
     private List<DataciteCreator> addCreators(final List<Contributor> contributors) {
         if (contributors == null) {
@@ -48,21 +40,12 @@ public class DataciteAttributesDtoFactory {
         }
 
         final var creators = contributors.stream()
-                .filter(DataciteAttributesDtoFactory::appearsOnDoi)
                 .map(creatorFactory::create)
                 .filter(Objects::nonNull)
                 .filter(creator -> !isBlank(creator.getName()))
                 .toList();
 
         return creators.isEmpty() ? List.of(new DataciteCreator()) : creators;
-    }
-
-    private static boolean appearsOnDoi(final Contributor contributor) {
-        if (contributor.getSchemaUri() == null || !ORCID_SCHEMAS.contains(contributor.getSchemaUri())) {
-            return true;
-        }
-
-        return AUTHENTICATED_STATUS.equals(contributor.getStatus());
     }
 
     private String publicationYear(final Date date) {

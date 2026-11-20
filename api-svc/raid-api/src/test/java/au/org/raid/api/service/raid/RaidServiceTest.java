@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -45,7 +44,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -142,7 +140,7 @@ class RaidServiceTest {
             verify(raidRepository).updateMetadata(eq(handle.toString()), anyString());
             verify(orcidIntegrationService).notifyRaidChanged(raidDto);
 
-            // stored status is applied before DataCite is called, so the DOI's creators follow it
+            // the stored status is applied before anything is saved or sent
             final var inOrder = inOrder(contributorService, dataciteService);
             inOrder.verify(contributorService).setStatus(createRaidRequest.getContributor());
             inOrder.verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
@@ -954,7 +952,6 @@ class RaidServiceTest {
     @DisplayName("Refreshing contributor status")
     class RefreshContributorStatus {
         private static final String HANDLE = "10378.1/1696639";
-        private static final long SERVICE_POINT_ID = 10_000_000L;
         private static final String ORCID = "https://orcid.org/0009-0002-5128-5184";
 
         private RaidDto raidWithContributorStatus(final String status) throws JsonProcessingException {
@@ -972,12 +969,6 @@ class RaidServiceTest {
                 contributors.forEach(contributor -> contributor.setStatus(status));
                 return null;
             }).when(contributorService).setStatus(anyList());
-        }
-
-        private ServicePointRecord servicePoint() {
-            final var record = new ServicePointRecord().setRepositoryId("repository-id").setPassword("_password");
-            when(servicePointRepository.findById(SERVICE_POINT_ID)).thenReturn(Optional.of(record));
-            return record;
         }
 
         @Test
@@ -1005,10 +996,9 @@ class RaidServiceTest {
         }
 
         @Test
-        @DisplayName("A changed status gives the RAiD a new version and updates its DOI, without telling the updater")
-        void newVersionAndDoiUpdateWhenStatusChanged() throws JsonProcessingException {
+        @DisplayName("A changed status gives the RAiD a new version, without calling DataCite or telling the updater")
+        void newVersionWhenStatusChanged() throws JsonProcessingException {
             final var raid = raidWithContributorStatus("AWAITING_AUTHENTICATION");
-            final var servicePoint = servicePoint();
             when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
             when(raidIngestService.update(raid)).thenReturn(raid);
             when(mapper.writeValueAsString(raid)).thenReturn("{}");
@@ -1017,35 +1007,11 @@ class RaidServiceTest {
             assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(true));
 
             assertThat(raid.getContributor().get(0).getStatus(), Matchers.is("AUTHENTICATED"));
-            final var inOrder = inOrder(raidHistoryService, dataciteService, dataciteResyncRepository, raidIngestService, raidRepository);
+            final var inOrder = inOrder(raidHistoryService, raidIngestService, raidRepository);
             inOrder.verify(raidHistoryService).save(raid);
-            inOrder.verify(dataciteService).update(raid, HANDLE, servicePoint.getRepositoryId(), servicePoint.getPassword());
-            inOrder.verify(dataciteResyncRepository).clearResyncRequired(HANDLE);
             inOrder.verify(raidIngestService).update(raid);
             inOrder.verify(raidRepository).updateMetadata(HANDLE, "{}");
-            verify(dataciteResyncRepository, never()).markResyncRequired(any());
-            verifyNoInteractions(orcidIntegrationService);
-        }
-
-        @Test
-        @DisplayName("A DataCite failure keeps the new version and flags the RAiD for resync")
-        void flagsResyncWhenDataciteFails() throws JsonProcessingException {
-            final var raid = raidWithContributorStatus("AUTHENTICATED");
-            final var servicePoint = servicePoint();
-            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
-            when(raidIngestService.update(raid)).thenReturn(raid);
-            when(mapper.writeValueAsString(raid)).thenReturn("{}");
-            storedStatusIs("AUTHENTICATION_REVOKED");
-            doThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE))
-                    .when(dataciteService).update(raid, HANDLE, servicePoint.getRepositoryId(), servicePoint.getPassword());
-
-            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(true));
-
-            verify(raidHistoryService).save(raid);
-            verify(dataciteResyncRepository).markResyncRequired(HANDLE);
-            verify(dataciteResyncRepository, never()).clearResyncRequired(any());
-            verify(raidIngestService).update(raid);
-            verify(raidRepository).updateMetadata(HANDLE, "{}");
+            verifyNoInteractions(dataciteService, dataciteResyncRepository, servicePointRepository, orcidIntegrationService);
         }
 
         @Test

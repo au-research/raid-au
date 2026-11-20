@@ -182,10 +182,9 @@ public class RaidService {
 
     /**
      * Brings the RAiD's contributors up to date with their stored status, after the ORCID updater has
-     * changed one. When any status differs, the RAiD gets a new version and its DataCite DOI is
-     * updated, so the DOI's creators follow the change. A DataCite failure doesn't undo the version:
-     * the RAiD is flagged for the DataCite resync worker instead. The ORCID updater isn't told, since
-     * the change came from it.
+     * changed one. When any status differs, the RAiD gets a new version. DataCite isn't called: a
+     * contributor's status isn't part of what the DOI records, so the DOI already matches. The ORCID
+     * updater isn't told, since the change came from it.
      *
      * @return true when a new version was saved, false when every status was already current
      */
@@ -205,18 +204,7 @@ public class RaidService {
             return false;
         }
 
-        final var servicePointRecord = resolveServicePoint(raid.getIdentifier().getOwner().getServicePoint().longValueExact());
-
         raidHistoryService.save(raid);
-
-        try {
-            dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
-            dataciteResyncRepository.clearResyncRequired(handle);
-        } catch (final RuntimeException e) {
-            log.warn("DataCite update failed after a contributor status change on RAiD {}; flagged for resync: {}",
-                    handle, e.getMessage());
-            dataciteResyncRepository.markResyncRequired(handle);
-        }
 
         final var updated = raidIngestService.update(raid);
         updateMaterialisedMetadata(handle, updated);

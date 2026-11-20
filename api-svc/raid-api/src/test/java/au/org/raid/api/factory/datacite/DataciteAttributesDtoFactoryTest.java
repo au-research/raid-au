@@ -19,7 +19,6 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -169,7 +168,6 @@ class DataciteAttributesDtoFactoryTest {
 
         final var result = attributesDtoFactory.create(request, handle);
 
-        verifyNoInteractions(creatorFactory);
 
         assertThat(result.getContributors(), is(List.of(registrationAgencyContributor, organisationContributor)));
         assertThat(result.getPublisher(), is(publisher));
@@ -585,52 +583,39 @@ class DataciteAttributesDtoFactoryTest {
                 .contributor(contributors);
     }
 
-    @Test
-    @DisplayName("An authenticated ORCID contributor appears as a creator")
-    void authenticatedOrcidContributorIsCreator() {
-        final var contributor = contributor("https://orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, "AUTHENTICATED");
-        final var creator = new DataciteCreator().setName("Researcher");
-
-        when(dateFactory.create(any())).thenReturn(new DataciteDate());
-        when(creatorFactory.create(contributor)).thenReturn(creator);
-
-        final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
-
-        assertThat(result.getCreators(), is(List.of(creator)));
-    }
-
-    @Test
-    @DisplayName("An authenticated sandbox ORCID contributor appears as a creator")
-    void authenticatedSandboxOrcidContributorIsCreator() {
-        final var contributor = contributor("https://sandbox.orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_, "AUTHENTICATED");
-        final var creator = new DataciteCreator().setName("Researcher");
-
-        when(dateFactory.create(any())).thenReturn(new DataciteDate());
-        when(creatorFactory.create(contributor)).thenReturn(creator);
-
-        final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
-
-        assertThat(result.getCreators(), is(List.of(creator)));
-    }
-
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"UNAUTHENTICATED", "AWAITING_AUTHENTICATION", "AUTHENTICATION_FAILED", "AUTHENTICATION_REVOKED"})
-    @DisplayName("An ORCID contributor who isn't authenticated is left off the DOI")
-    void orcidContributorWithoutAuthenticationIsNotCreator(final String status) {
+    @ValueSource(strings = {"AUTHENTICATED", "UNAUTHENTICATED", "AWAITING_AUTHENTICATION", "AUTHENTICATION_FAILED", "AUTHENTICATION_REVOKED"})
+    @DisplayName("An ORCID contributor appears as a creator whatever their status")
+    void orcidContributorIsCreatorWhateverStatus(final String status) {
         final var contributor = contributor("https://orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, status);
+        final var creator = new DataciteCreator().setName("Researcher");
 
         when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(creatorFactory.create(contributor)).thenReturn(creator);
 
         final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
 
-        verifyNoInteractions(creatorFactory);
-        assertThat(result.getCreators(), is(List.of(new DataciteCreator())));
+        assertThat(result.getCreators(), is(List.of(creator)));
     }
 
     @Test
-    @DisplayName("An ISNI contributor appears as a creator whatever their status")
-    void isniContributorIsCreatorWithoutAuthentication() {
+    @DisplayName("An unauthenticated sandbox ORCID contributor appears as a creator")
+    void sandboxOrcidContributorIsCreator() {
+        final var contributor = contributor("https://sandbox.orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_, "UNAUTHENTICATED");
+        final var creator = new DataciteCreator().setName("Researcher");
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(creatorFactory.create(contributor)).thenReturn(creator);
+
+        final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getCreators(), is(List.of(creator)));
+    }
+
+    @Test
+    @DisplayName("An ISNI contributor appears as a creator")
+    void isniContributorIsCreator() {
         final var contributor = contributor("https://isni.org/isni/0000000000000001", ContributorSchemaUriEnum.HTTPS_ISNI_ORG_, "UNAUTHENTICATED");
         final var creator = new DataciteCreator().setName("Researcher");
 
@@ -643,17 +628,20 @@ class DataciteAttributesDtoFactoryTest {
     }
 
     @Test
-    @DisplayName("Only qualifying contributors appear when a RAiD mixes them, on create and update too")
-    void onlyQualifyingContributorsAreCreators() {
+    @DisplayName("Every contributor appears, in order, when a RAiD mixes statuses, on create and update too")
+    void everyContributorIsCreator() {
         final var authenticated = contributor("https://orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, "AUTHENTICATED");
         final var awaiting = contributor("https://orcid.org/0000-0000-0000-0002", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, "AWAITING_AUTHENTICATION");
         final var isni = contributor("https://isni.org/isni/0000000000000001", ContributorSchemaUriEnum.HTTPS_ISNI_ORG_, "UNAUTHENTICATED");
-        final var orcidCreator = new DataciteCreator().setName("ORCID researcher");
+        final var authenticatedCreator = new DataciteCreator().setName("Authenticated researcher");
+        final var awaitingCreator = new DataciteCreator().setName("Awaiting researcher");
         final var isniCreator = new DataciteCreator().setName("ISNI researcher");
         final var contributors = List.of(authenticated, awaiting, isni);
+        final var expected = List.of(authenticatedCreator, awaitingCreator, isniCreator);
 
         when(dateFactory.create(any())).thenReturn(new DataciteDate());
-        when(creatorFactory.create(authenticated)).thenReturn(orcidCreator);
+        when(creatorFactory.create(authenticated)).thenReturn(authenticatedCreator);
+        when(creatorFactory.create(awaiting)).thenReturn(awaitingCreator);
         when(creatorFactory.create(isni)).thenReturn(isniCreator);
 
         final var create = new RaidCreateRequest()
@@ -669,9 +657,8 @@ class DataciteAttributesDtoFactoryTest {
                 .contributor(contributors)
                 .access(publicationYearAccess());
 
-        assertThat(attributesDtoFactory.create(create, PUBLICATION_YEAR_HANDLE).getCreators(), is(List.of(orcidCreator, isniCreator)));
-        assertThat(attributesDtoFactory.create(update, PUBLICATION_YEAR_HANDLE).getCreators(), is(List.of(orcidCreator, isniCreator)));
-        assertThat(attributesDtoFactory.create(raidWithContributors(contributors), PUBLICATION_YEAR_HANDLE).getCreators(),
-                is(List.of(orcidCreator, isniCreator)));
+        assertThat(attributesDtoFactory.create(create, PUBLICATION_YEAR_HANDLE).getCreators(), is(expected));
+        assertThat(attributesDtoFactory.create(update, PUBLICATION_YEAR_HANDLE).getCreators(), is(expected));
+        assertThat(attributesDtoFactory.create(raidWithContributors(contributors), PUBLICATION_YEAR_HANDLE).getCreators(), is(expected));
     }
 }

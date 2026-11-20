@@ -6,6 +6,11 @@
 - PR: [#795](https://github.com/au-research/raid-au/pull/795)
 - Status: in review
 
+> **Superseded in part by [RAID-1074](https://ardc.atlassian.net/browse/RAID-1074)
+> (2026-11-20).** Every contributor is now a DataCite creator whatever their
+> status, and a status change no longer calls DataCite. See
+> `20261120-raid-1074-datacite-creators-ignore-status.md`.
+
 ## What changed and why
 
 After [RAID-1057](https://ardc.atlassian.net/browse/RAID-1057), a DOI lists an

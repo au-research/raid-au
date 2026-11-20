@@ -90,10 +90,10 @@ sequenceDiagram
 ```
 
 - `PUT /contributor/status` gives every RAiD naming the contributor a new
-  version holding the status, and updates each RAiD's DataCite DOI. A DOI
-  lists an ORCID contributor as a creator only while they are AUTHENTICATED;
-  ISNI contributors always appear. Repeating the call changes nothing, so the
-  updater can retry after a failure.
+  version holding the status. DataCite isn't called: every contributor is a
+  creator on the DOI whatever their status, so the DOI doesn't change.
+  Repeating the call changes nothing, so the updater can retry after a
+  failure.
 - Mint, update and patch ignore any status the client sends and use the
   stored one, UNAUTHENTICATED for a contributor the API hasn't seen.
 - ORCID sends the researcher back to the app, so each app's
