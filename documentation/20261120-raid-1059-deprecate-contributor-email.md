@@ -1,4 +1,4 @@
-# RAID-1059: Deprecate the contributor email field
+# RAID-1059: Remove the contributor email field
 
 - JIRA: [RAID-1059](https://ardc.atlassian.net/browse/RAID-1059), sub-task of
   [RAID-976](https://ardc.atlassian.net/browse/RAID-976)
@@ -8,10 +8,11 @@
 
 ## What changed and why
 
-Decision (Rob, 2026-11-12): the contributor `email` field in the RAiD API is
-deprecated and ignored. The API never stores or logs it, so Member API clients
-that still send it keep working. The RAiD app sends the email to the
-registration agency's ORCID updater instead.
+Decision (Rob, 2026-11-12): the API ignores the contributor `email` field, so
+Member API clients that still send it keep working. The RAiD app sends the
+email to the registration agency's ORCID updater instead. On 2026-11-20 Rob
+chose to remove the field from the data model rather than keep it as a
+deprecated field the API clears.
 
 [RAID-569](https://ardc.atlassian.net/browse/RAID-569) removed the field from
 the legacy 3.0 spec and the RAiD app, but it stayed in the LinkML data model,
@@ -19,30 +20,27 @@ which generates the 3.1 specs and the Java models. So until now an email sent
 on mint, update or patch was saved in the RAiD's metadata, returned on read
 and written to the RDF output.
 
-- **Ignored on save**: `ContributorService.dropEmail` clears each
-  contributor's email on mint, update and patch, before anything is saved or
-  sent.
-- **RDF**: `RaidRdfService` no longer writes a contributor's `vcard:email`.
-- **Spec**: the LinkML `email` attribute is marked deprecated, and its
-  description in the generated JSON schemas and both 3.1 OpenAPI specs says it
-  is ignored. The LinkML JSON schema generator doesn't emit a `deprecated`
-  flag, so the description carries the deprecation.
-- **ADR**: `doc/adr/2026-10-23_per-ra-orcid-updater.md` now says the field is
-  deprecated and ignored rather than removed.
+- **Data model**: `email` is removed from the LinkML `Contributor` class. The
+  regenerated JSON schemas and both 3.1 OpenAPI specs no longer list it, and
+  the generated Java `Contributor` has no email.
+- **Ignored, not refused**: the API uses Jackson's default of skipping unknown
+  properties, so a request that still sends an email succeeds and the email
+  goes nowhere. No code clears it.
+- **RDF**: `RaidRdfService` no longer writes `vcard:email`.
 
-## Not changed
+The schema's `additionalProperties: false` now describes a request with an
+email as invalid, but the API doesn't enforce that at runtime.
 
-RAiDs saved before this change may still hold a contributor email in their
-stored metadata, and a read returns it until the RAiD is next updated. Removing
-stored emails would give each affected RAiD a new version, so it is left for a
-separate decision.
+## Stored emails
+
+The API reads saved metadata into the generated model, which has no email, so
+an email stored before this change is no longer returned on read and is
+dropped the next time the RAiD is saved. It remains in the stored metadata and
+history until then.
 
 ## Testing
 
-- Unit tests: `ContributorServiceTest` (email dropped, no contributors),
-  `RaidServiceTest` (mint, update and patch drop the email before saving),
-  `RaidRdfServiceTest` (no `vcard:email` in the RDF). 1,118 run, 0 failures,
-  18 skipped.
-- Integration: `ContributorsIntegrationTest` checks that an email sent on mint
-  and on update is accepted and not stored. Full suite: 276 run, 0 failures,
-  16 skipped (existing).
+- Unit tests: 1,115 run, 0 failures, 18 skipped.
+- Integration: `ContributorsIntegrationTest` sends raw JSON with a contributor
+  email on mint and on update, and checks each is accepted and that a read
+  returns no email. Full suite: 276 run, 0 failures, 16 skipped (existing).

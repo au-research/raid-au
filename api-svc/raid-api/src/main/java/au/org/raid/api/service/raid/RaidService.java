@@ -76,9 +76,8 @@ public class RaidService {
                 servicePointRepository.findById(servicePointId).orElseThrow(() ->
                         new UnknownServicePointException(servicePointId));
 
-        // Before anything is saved or sent.
+        // Before DataCite is called, so the DOI lists only the contributors whose stored status allows it.
         contributorService.setStatus(raid.getContributor());
-        contributorService.dropEmail(raid.getContributor());
 
         mintHandle(raid, servicePointRecord, 0);
 
@@ -145,7 +144,6 @@ public class RaidService {
         }
 
         contributorService.setStatus(raid.getContributor());
-        contributorService.dropEmail(raid.getContributor());
 
         final var raidDto = raidHistoryService.save(raid);
 
@@ -169,7 +167,6 @@ public class RaidService {
         final var servicePointRecord = resolveServicePoint(servicePointId);
 
         contributorService.setStatus(contributors);
-        contributorService.dropEmail(contributors);
         raid.setContributor(contributors);
 
         raidHistoryService.save(raid);

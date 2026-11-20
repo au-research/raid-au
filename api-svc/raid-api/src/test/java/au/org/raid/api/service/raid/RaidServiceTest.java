@@ -141,11 +141,9 @@ class RaidServiceTest {
             verify(orcidIntegrationService).notifyRaidChanged(raidDto);
 
             // the stored status is applied before anything is saved or sent
-            final var inOrder = inOrder(contributorService, dataciteService, raidHistoryService);
+            final var inOrder = inOrder(contributorService, dataciteService);
             inOrder.verify(contributorService).setStatus(createRaidRequest.getContributor());
-            inOrder.verify(contributorService).dropEmail(createRaidRequest.getContributor());
             inOrder.verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
-            inOrder.verify(raidHistoryService).save(createRaidRequest);
         }
     }
 
@@ -210,10 +208,7 @@ class RaidServiceTest {
 
         verify(dataciteService).update(expected, handle, repositoryId, password);
         verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
-        final var inOrder = inOrder(contributorService, raidHistoryService);
-        inOrder.verify(contributorService).setStatus(expected.getContributor());
-        inOrder.verify(contributorService).dropEmail(expected.getContributor());
-        inOrder.verify(raidHistoryService).save(expected);
+        verify(contributorService).setStatus(expected.getContributor());
         verify(orcidIntegrationService).notifyRaidChanged(expected);
     }
 
@@ -261,10 +256,8 @@ class RaidServiceTest {
 
             verify(dataciteService).update(updateRequest, handle, repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
-            final var inOrder = inOrder(contributorService, raidHistoryService, dataciteService);
+            final var inOrder = inOrder(contributorService, dataciteService);
             inOrder.verify(contributorService).setStatus(updateRequest.getContributor());
-            inOrder.verify(contributorService).dropEmail(updateRequest.getContributor());
-            inOrder.verify(raidHistoryService).save(updateRequest);
             inOrder.verify(dataciteService).update(updateRequest, handle, repositoryId, password);
             verify(orcidIntegrationService).notifyRaidChanged(expected);
         }

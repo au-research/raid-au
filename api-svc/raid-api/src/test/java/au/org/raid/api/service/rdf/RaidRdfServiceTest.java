@@ -3,7 +3,6 @@ package au.org.raid.api.service.rdf;
 import au.org.raid.idl.raidv2.model.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
@@ -90,17 +89,6 @@ class RaidRdfServiceTest {
         assertThat(orgResource.hasProperty(hasRole)).isTrue();
     }
     
-    @Test
-    @DisplayName("Leaves out a contributor's email, even when one is stored")
-    void shouldNotIncludeContributorEmail() {
-        var raidDto = createSampleRaidDto();
-
-        Model model = raidRdfService.toRdfModel(raidDto);
-
-        Property email = model.createProperty("http://www.w3.org/2006/vcard/ns#", "email");
-        assertThat(model.listStatements(null, email, (RDFNode) null).hasNext()).isFalse();
-    }
-
     private Resource raidResource(Model model) {
         return model.getResource("https://raid.org/123.456/abc");
     }
@@ -191,7 +179,6 @@ class RaidRdfServiceTest {
         var contributor = new Contributor();
         contributor.setId("https://orcid.org/0000-0002-1825-0097");
         contributor.setSchemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
-        contributor.setEmail("researcher@example.org");
         contributor.setUuid("12345678-abcd-1234-efgh-1234567890ab");
         contributor.setLeader(true);
         contributor.setContact(true);

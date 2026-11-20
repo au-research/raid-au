@@ -28,7 +28,6 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
@@ -337,26 +336,6 @@ class ContributorServiceTest {
     @DisplayName("setStatus() accepts no contributors")
     void setStatusWithNullContributors() {
         contributorService.setStatus(null);
-
-        verifyNoInteractions(contributorRepository);
-    }
-
-    @Test
-    @DisplayName("dropEmail() removes the email a client sent")
-    void dropEmailRemovesEmail() {
-        final var contributor = new Contributor().id("https://orcid.org/0000-0000-0000-0001")
-                .email("researcher@example.org");
-
-        contributorService.dropEmail(List.of(contributor));
-
-        assertThat(contributor.getEmail(), is(nullValue()));
-        assertThat(contributor.getId(), is("https://orcid.org/0000-0000-0000-0001"));
-    }
-
-    @Test
-    @DisplayName("dropEmail() accepts no contributors")
-    void dropEmailWithNullContributors() {
-        contributorService.dropEmail(null);
 
         verifyNoInteractions(contributorRepository);
     }

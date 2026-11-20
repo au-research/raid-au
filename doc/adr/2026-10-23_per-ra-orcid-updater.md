@@ -81,8 +81,7 @@ edit the RAiD by calling the API's permissions endpoint with the minter's
 token, reads the title and service point name from the API, sends the
 invitation and keeps only a keyed hash (HMAC-SHA-256), and only when the
 researcher ticks "Remember me". The API's leftover contributor `email` field
-is deprecated and ignored in RAID-976 (decision 2026-11-12): the API never
-stores it, and Member API clients that still send it keep working.
+is removed in RAID-976.
 
 ## Callers and credentials
 
@@ -262,8 +261,7 @@ Decided 2026-10-27 (RAID-1005).
 # Consequences
 
 * RAID-976 adds `PUT /contributor/status`, the "RAiD changed" notification,
-  the API key configuration, and deprecates the contributor `email` field,
-  which the API ignores.
+  the API key configuration, and removes the contributor `email` field.
 * Each RA must provide PostgreSQL, SMTP, an ORCID member client and two
   Keycloak clients or roles. RAID-886 documents the settings.
 * The updater depends on the RAiD API being reachable to send invitations

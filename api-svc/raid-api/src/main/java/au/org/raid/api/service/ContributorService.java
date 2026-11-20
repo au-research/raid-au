@@ -105,18 +105,6 @@ public class ContributorService {
     }
 
     /**
-     * Drops each contributor's email. The field is deprecated and ignored: the API never stores it,
-     * and a client that still sends it isn't refused.
-     */
-    public void dropEmail(final List<Contributor> contributors) {
-        if (contributors == null) {
-            return;
-        }
-
-        contributors.forEach(contributor -> contributor.setEmail(null));
-    }
-
-    /**
      * Sets the status stored for a contributor. The row is shared by every RAiD the person is on.
      *
      * @return false when no contributor has this id

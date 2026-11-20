@@ -171,13 +171,6 @@
             "null"
           ]
         },
-        "email": {
-          "description": "Deprecated and ignored. The API doesn't store a contributor's email, and accepts a request that still sends one.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "id": {
           "description": "the contributor (person) associated with a project or activity identified by a persistent identifier (PID)",
           "type": [
