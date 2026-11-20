@@ -60,6 +60,27 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
+        @DisplayName("A contributor email sent on mint or update is accepted and not stored")
+        void contributorEmailIgnored() {
+            createRequest.getContributor().get(0).setEmail("researcher@example.org");
+
+            final var createResponse = raidApi.mintRaid(createRequest);
+            assertThat(createResponse.getBody().getContributor().get(0).getEmail(), is(nullValue()));
+
+            final var handle = new Handle(createResponse.getBody().getIdentifier().getId());
+            final var minted = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody();
+            assertThat(minted.getContributor().get(0).getEmail(), is(nullValue()));
+
+            final var updateRequest = raidUpdateRequestFactory.create(minted);
+            updateRequest.getContributor().get(0).setEmail("researcher@example.org");
+            updateRequest.getTitle().get(0).setText("contributor-email-" + java.util.UUID.randomUUID());
+            raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), updateRequest);
+
+            final var updated = raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody();
+            assertThat(updated.getContributor().get(0).getEmail(), is(nullValue()));
+        }
+
+        @Test
         @DisplayName("Should create a RAiD with a contributor with an ISNI id")
         void raidWithIsniContributor() {
 
