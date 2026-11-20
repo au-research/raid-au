@@ -40,9 +40,9 @@ info:
     * `PUT /contributor/status` (new, see `ContributorStatusUpdate`) to set
       a contributor's status. Status is per person, so one call covers every
       RAiD the person is on. Each of those RAiDs that holds a different
-      status gets a new version and a DataCite update, because a DOI lists
-      an ORCID contributor only while they are AUTHENTICATED. The call does
-      not notify the updater, and repeating it changes nothing.
+      status gets a new version. DataCite isn't updated, because a DOI lists
+      every contributor whatever their status. The call does not notify the
+      updater, and repeating it changes nothing.
 
     Statuses use the RAiD API's existing `ContributorStatus` values
     (Decision on RAID-974, 2026-10-23). AUTHENTICATION_FAILED is not used.

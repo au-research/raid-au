@@ -411,7 +411,7 @@ These all have workable defaults. Override them only where noted.
 | Property | Default | Description |
 | --- | --- | --- |
 | `raid.datacite.resync.enabled` | `false` | Background re-push of records flagged for DataCite re-sync. |
-| `raid.contributor-status-refresh.enabled` | `true` | One-off background catch-up: resets contributors authenticated through the central ORCID integration and updates every RAiD and DOI that names them. Leave on. |
+| `raid.contributor-status-reset.enabled` | `true` | One-off background reset: sets contributors authenticated through the central ORCID integration to UNAUTHENTICATED and gives every RAiD that names them a new version. Leave on. |
 | `raid.history.baseline-interval` | `50` | How often a full history baseline is written. |
 | `logging.level.root` | `info` | Root log level. `logging.level.<package>` can raise or lower individual loggers. |
 | `raid.stub.<resolver>.enabled` | `false` | In-memory stub for one external resolver. Leave off in a deployed environment. |
@@ -609,10 +609,10 @@ describes them in full; the description here says how the RAiD API uses them.
 | `raid.datacite.resync.batch-size` | `50` | Leave | Number of flagged RAiDs the worker takes in each pass. |
 | `raid.datacite.resync.throttle-millis` | `1000` | Leave | Pause between RAiDs within a pass, in milliseconds, so the worker stays well inside DataCite's rate limits. |
 | `raid.datacite.resync.poll-delay-millis` | `60000` | Leave | Pause between passes, in milliseconds. |
-| `raid.contributor-status-refresh.enabled` | `true` | Leave | Turns on a one-off background catch-up. First it resets each contributor authenticated through the central ORCID integration to UNAUTHENTICATED, giving every RAiD that names them a new version and a DataCite update. Then it updates every RAiD naming an ORCID contributor: a new version where the status the RAiD records differs from the contributor's current status, and a DataCite update either way, so its DOI lists only AUTHENTICATED ORCID contributors. Once done, it does nothing. Turning it off leaves those contributors authenticated and existing DOIs out of date. |
-| `raid.contributor-status-refresh.batch-size` | `50` | Leave | Number of flagged RAiDs the worker takes in each pass. |
-| `raid.contributor-status-refresh.throttle-millis` | `1000` | Leave | Pause between RAiDs within a pass, in milliseconds, so the worker stays well inside DataCite's rate limits. |
-| `raid.contributor-status-refresh.poll-delay-millis` | `60000` | Leave | Pause between passes, in milliseconds. |
+| `raid.contributor-status-reset.enabled` | `true` | Leave | Turns on a one-off background reset. It sets each contributor authenticated through the central ORCID integration to UNAUTHENTICATED, through the same path as a status change from the ORCID updater, so every RAiD that names them gets a new version. A contributor the updater has since given another status keeps it. Once done, it does nothing. Turning it off leaves those contributors authenticated. |
+| `raid.contributor-status-reset.batch-size` | `50` | Leave | Number of contributors the worker takes in each pass. |
+| `raid.contributor-status-reset.throttle-millis` | `1000` | Leave | Pause between contributors within a pass, in milliseconds. Each reset saves a new version of every RAiD naming that contributor. |
+| `raid.contributor-status-reset.poll-delay-millis` | `60000` | Leave | Pause between passes, in milliseconds. |
 
 ### ORCID
 

@@ -37,8 +37,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * The ORCID updater sets a contributor's status with PUT /contributor/status. Every RAiD naming the
- * contributor takes the new status in a new version, and the DOI lists an ORCID contributor as a
- * creator only while they are AUTHENTICATED. Mint, update and patch ignore any status the client sends.
+ * contributor takes the new status in a new version, without a DataCite update: the DOI lists every
+ * contributor whatever their status. Mint, update and patch ignore any status the client sends.
  *
  * <p>Status belongs to the person and is shared by every RAiD that names them, so these tests use an
  * iD that only they set status on, and take it off their RAiDs afterwards so a status change here only
@@ -155,24 +155,31 @@ public class ContributorStatusIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("The DOI lists an ORCID contributor only while they are AUTHENTICATED")
-    void doiCreatorsFollowStatus() {
+    @DisplayName("A status change doesn't call DataCite, and the DOI lists the contributor whatever their status")
+    void doiListsContributorWhateverStatus() {
         Assumptions.assumeTrue(isMockServerReachable(), "mockserver not reachable - skipping DataCite creator check");
 
         final var handle = mintWithTestOrcid();
-        setStatus(StatusEnum.AWAITING_AUTHENTICATION);
+        final var doiPath = "/dois/" + handle;
+        final var updatesBefore = recordedBodies(HttpMethod.PUT, doiPath, handle.toString()).size();
 
         setStatus(StatusEnum.AUTHENTICATED);
-
-        assertThat(latestCreators(HttpMethod.PUT, "/dois/" + handle, handle.toString()))
-                .as("on the DOI once authenticated")
-                .contains(STATUS_TEST_ORCID_DIGITS);
-
         setStatus(StatusEnum.AUTHENTICATION_REVOKED);
 
-        assertThat(latestCreators(HttpMethod.PUT, "/dois/" + handle, handle.toString()))
-                .as("off the DOI once revoked")
-                .doesNotContain(STATUS_TEST_ORCID_DIGITS);
+        assertThat(read(handle).getContributor().get(0).getStatus())
+                .as("the RAiD holds the new status")
+                .isEqualTo("AUTHENTICATION_REVOKED");
+        assertThat(recordedBodies(HttpMethod.PUT, doiPath, handle.toString()))
+                .as("no DataCite update for a status change")
+                .hasSize(updatesBefore);
+
+        final var update = raidUpdateRequestFactory.create(read(handle));
+        update.getTitle().get(0).setText("contributor-status-doi-" + UUID.randomUUID());
+        raidApi.updateRaid(handle.getPrefix(), handle.getSuffix(), update);
+
+        assertThat(latestCreators(HttpMethod.PUT, doiPath, handle.toString()))
+                .as("on the DOI while revoked")
+                .contains(STATUS_TEST_ORCID_DIGITS);
     }
 
     @Test
@@ -233,8 +240,8 @@ public class ContributorStatusIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    /** The creators of the most recent DataCite request recorded for the method and path that names the handle. */
-    private String latestCreators(final HttpMethod method, final String path, final String handle) {
+    /** The bodies of the DataCite requests recorded for the method and path that name the handle, oldest first. */
+    private List<JsonNode> recordedBodies(final HttpMethod method, final String path, final String handle) {
         final var matcher = objectMapper.createObjectNode();
         matcher.put("path", path);
         matcher.put("method", method.name());
@@ -245,21 +252,27 @@ public class ContributorStatusIntegrationTest extends AbstractIntegrationTest {
         final var recorded = restTemplate.exchange(MOCKSERVER_RETRIEVE_RECORDED_REQUESTS_URL, HttpMethod.PUT,
                 new HttpEntity<>(matcher.toString(), headers), JsonNode.class).getBody();
 
-        JsonNode latest = null;
+        final var bodies = new ArrayList<JsonNode>();
         if (recorded != null) {
             for (final var request : recorded) {
                 final var body = jsonBody(request);
                 if (body != null && body.toString().contains(handle)) {
-                    latest = body;
+                    bodies.add(body);
                 }
             }
         }
+        return bodies;
+    }
 
-        assertThat(latest)
+    /** The creators of the most recent DataCite request recorded for the method and path that names the handle. */
+    private String latestCreators(final HttpMethod method, final String path, final String handle) {
+        final var bodies = recordedBodies(method, path, handle);
+
+        assertThat(bodies)
                 .as("Expected a recorded DataCite %s %s request naming %s", method, path, handle)
-                .isNotNull();
+                .isNotEmpty();
 
-        return latest.path("data").path("attributes").path("creators").toString();
+        return bodies.get(bodies.size() - 1).path("data").path("attributes").path("creators").toString();
     }
 
     private JsonNode jsonBody(final JsonNode recordedRequest) {

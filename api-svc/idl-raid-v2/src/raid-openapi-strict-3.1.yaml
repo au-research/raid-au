@@ -513,9 +513,9 @@ paths:
       description: "Called by the registration agency's ORCID updater when a contributor's\n\
         authentication status changes. Requires the contributor-writer role.\nStatus\
         \ belongs to the person, so one call covers every RAiD the\ncontributor is\
-        \ on: each RAiD that holds a different status gets a new\nversion, and its\
-        \ DataCite DOI is updated. Sending the status the RAiDs\nalready hold changes\
-        \ nothing, so the call is safe to repeat.\n"
+        \ on: each RAiD that holds a different status gets a new\nversion. DataCite\
+        \ isn't updated, because status isn't part of the DOI.\nSending the status\
+        \ the RAiDs already hold changes nothing, so the call\nis safe to repeat.\n"
       requestBody:
         required: true
         content:

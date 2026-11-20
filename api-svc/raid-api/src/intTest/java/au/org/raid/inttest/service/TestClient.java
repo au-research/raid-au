@@ -49,8 +49,8 @@ public class TestClient {
     }
 
     /**
-     * A status change gives every RAiD naming the contributor a new version and a DataCite update,
-     * so this client waits longer than the others.
+     * A status change gives every RAiD naming the contributor a new version, so this client waits
+     * longer than the others.
      */
     public ContributorApi contributorApi(final String token) {
         return Feign.builder()
