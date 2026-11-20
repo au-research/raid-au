@@ -13,6 +13,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import feign.Request;
+import feign.Response;
+import feign.okhttp.OkHttpClient;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +42,7 @@ import static au.org.raid.fixtures.TestConstants.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 // TODO: Test that pre-existing contributors have UNVERIFIED status
 
@@ -38,6 +53,9 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
     // client and cannot see the api-svc main classes, so this mirrors
     // InMemoryStubTestData.MALFORMED_TEST_ISNI locally (same pattern as the ROR sentinels).
     private static final String MALFORMED_TEST_ISNI = "https://isni.org/isni/0000000000000000";
+
+    @Value("${raid.test.api.url}")
+    private String apiUrl;
 
     @Autowired
     private RaidUpdateRequestFactory raidUpdateRequestFactory;
@@ -57,6 +75,30 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
             final var raidDto = readResponse.getBody();
 
             assertThat(raidDto.getContributor().get(0).getId(), is(REAL_TEST_ORCID));
+        }
+
+        @Test
+        @DisplayName("A contributor email sent on mint or update is accepted and not stored")
+        void contributorEmailIgnored() throws IOException {
+            final var mint = sendJson(Request.HttpMethod.POST, "/raid/",
+                    withContributorEmail(objectMapper.valueToTree(createRequest)));
+            assertThat(mint.status(), is(201));
+
+            final var minted = objectMapper.readTree(readBody(mint));
+            assertThat(minted.path("contributor").get(0).has("email"), is(false));
+
+            final var handle = new Handle(minted.path("identifier").path("id").asText());
+            final var path = "/raid/%s/%s".formatted(handle.getPrefix(), handle.getSuffix());
+            assertThat(readContributor(path).has("email"), is(false));
+
+            final var updateRequest = raidUpdateRequestFactory.create(
+                    raidApi.findRaidByName(handle.getPrefix(), handle.getSuffix()).getBody());
+            updateRequest.getTitle().get(0).setText("contributor-email-" + UUID.randomUUID());
+            final var update = sendJson(Request.HttpMethod.PUT, path,
+                    withContributorEmail(objectMapper.valueToTree(updateRequest)));
+            assertThat(update.status(), is(200));
+
+            assertThat(readContributor(path).has("email"), is(false));
         }
 
         @Test
@@ -1408,5 +1450,33 @@ public class ContributorsIntegrationTest extends AbstractIntegrationTest {
                 ));
             }
         }
+    }
+
+    private JsonNode withContributorEmail(final JsonNode body) {
+        ((ObjectNode) body.path("contributor").get(0)).put("email", "researcher@example.org");
+        return body;
+    }
+
+    private JsonNode readContributor(final String path) throws IOException {
+        final var response = sendJson(Request.HttpMethod.GET, path, null);
+        assertThat(response.status(), is(200));
+        return objectMapper.readTree(readBody(response)).path("contributor").get(0);
+    }
+
+    private Response sendJson(final Request.HttpMethod method, final String path, final JsonNode body)
+            throws IOException {
+        final Map<String, Collection<String>> headers = new HashMap<>();
+        headers.put("Content-Type", List.of("application/json"));
+        headers.put("Accept", List.of("application/json"));
+        headers.put(AUTHORIZATION, List.of("Bearer " + userContext.getToken()));
+
+        final var request = Request.create(method, apiUrl + path, headers,
+                body == null ? null : objectMapper.writeValueAsBytes(body), StandardCharsets.UTF_8, null);
+
+        return new OkHttpClient().execute(request, new Request.Options(10, TimeUnit.SECONDS, 30, TimeUnit.SECONDS, false));
+    }
+
+    private String readBody(final Response response) throws IOException {
+        return new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 }
