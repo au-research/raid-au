@@ -151,13 +151,12 @@ Environment variables read by `raid-iam.jar`:
 
 | Variable | Default | Effect |
 |---|---|---|
-| `RAID_FEDERATION_HARVEST_JWKS_URL` | `https://keys.raid.org/federation/jwks.json` | The JWKS URL to trust. The default is the **production** key set, so non-production instances must set this. An invalid value is logged and nothing is provisioned. Log messages show the URL without its query string, fragment or user info, which may hold credentials; the client stores the full URL. |
+| `RAID_FEDERATION_HARVEST_JWKS_URL` | `https://keys.raid.org/federation/jwks.json` | The JWKS URL to trust. The default is the **production** key set: leave it unset in production. Non-production instances must set it to `https://keys.demo.raid.org/federation/jwks.json`. An invalid value is logged and nothing is provisioned. Log messages show the URL without its query string, fragment or user info, which may hold credentials; the client stores the full URL. |
 | `RAID_FEDERATION_HARVEST_USE_JWKS_URL` | `true` | `false` uses the key set embedded in `raid-iam.jar` instead of the URL, for instances that cannot make outbound HTTPS calls. The embedded set is empty until a release ships the Registration Authority's keys. |
 | `RAID_FEDERATION_HARVEST_ALLOW_HTTP_JWKS_URL` | `false` | `true` accepts a plain `http` JWKS URL. For local and test rigs only; a warning is logged at every boot. |
 
 At boot, Keycloak checks in the background that the JWKS URL can be fetched and logs a warning
-naming it if not. Until ARDC publishes the key set at `keys.raid.org`, every instance using the default URL
-logs this warning.
+naming it if not.
 
 Design: [`doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md`](../../doc/adr/2026-09-30_federation-harvest-client-uses-private-key-jwt.md).
 Agency guidance (onboarding, default roles, non-production setup, disabling harvesting):
