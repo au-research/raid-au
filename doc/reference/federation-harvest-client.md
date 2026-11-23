@@ -86,11 +86,12 @@ test, staging or demo instance that keeps the default would trust the
 production harvester instead of ARDC's non-production one.
 
 On every non-production instance, set this environment variable on the Keycloak
-container:
+container. Leave it unset in production.
 
-| Variable | Value |
+| Environment | `RAID_FEDERATION_HARVEST_JWKS_URL` |
 | --- | --- |
-| `RAID_FEDERATION_HARVEST_JWKS_URL` | The non-production JWKS URL ARDC gives you |
+| Production | Not set. The default, `https://keys.raid.org/federation/jwks.json`, is ARDC's production key set. |
+| Demo, test, staging and any other non-production instance | `https://keys.demo.raid.org/federation/jwks.json` |
 
 The URL must use HTTPS. If you do not want a non-production instance harvested
 at all, disable the client there instead (see below).
@@ -125,8 +126,7 @@ Do not:
   checks in the background that it can fetch the JWKS URL. If it cannot, it
   logs this warning but starts normally. Harvesting will fail until Keycloak can
   reach the URL, so allow outbound HTTPS to it, including through any egress
-  proxy. Until ARDC publishes the production key set at `keys.raid.org`, every
-  instance using the default URL logs this warning.
+  proxy.
 - **Failed token requests from `raid-federation-harvester`.** When ARDC rotates
   its signing key, it may send a few requests with an unknown key ID. These make
   each Keycloak node refetch the key set so it stops accepting the retired key.
