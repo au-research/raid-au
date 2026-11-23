@@ -20,10 +20,15 @@ import { useKeycloak } from '@/contexts/keycloak-context';
 import React from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAppConfig } from "@/config/Appconfigcontext";
-import { hasConfigIssues, useConfigIssues, useRuntimeConfig } from "@/config";
+import {
+  hasConfigIssues,
+  useConfigIssues,
+  useRuntimeConfig,
+  useThemeLookupFailed,
+} from "@/config";
 import { MegaMenu } from "../mega-menu/mega-menu";
 import Banner from "../alert-notifications/banner/Banner";
-import { ConfigIssueBanner } from "../config-issue-banner";
+import { ConfigIssueBanner, ThemeLookupBanner } from "../config-issue-banner";
 import { ROUTES } from "@/constants/routes";
 import { EXTERNAL_LINKS } from "@/constants/external-links";
 
@@ -136,8 +141,9 @@ export const AppNavBar = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const config = useAppConfig();
-  const { environment } = useRuntimeConfig();
+  const { environment, supportEmail } = useRuntimeConfig();
   const configIssues = useConfigIssues();
+  const themeLookupFailed = useThemeLookupFailed();
   const isProduction = environment === 'prod';
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -217,6 +223,7 @@ export const AppNavBar = () => {
             dismissible={false}
           />
         )}
+      {themeLookupFailed && <ThemeLookupBanner supportEmail={supportEmail} />}
       {hasConfigIssues(configIssues) && (
         <ConfigIssueBanner level="warning" issues={configIssues} />
       )}

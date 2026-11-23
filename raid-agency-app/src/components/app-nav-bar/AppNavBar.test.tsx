@@ -9,6 +9,7 @@ import {
   NO_CONFIG_ISSUES,
   RuntimeConfig,
   RuntimeConfigProvider,
+  ThemeLookupFailedProvider,
 } from "@/config";
 import { AppNavBar } from "./AppNavBar";
 
@@ -44,15 +45,17 @@ const runtime: RuntimeConfig = {
   app: { orcid: {} },
 };
 
-const renderNavBar = (issues: ConfigIssues) =>
+const renderNavBar = (issues: ConfigIssues, themeLookupFailed = false) =>
   render(
     <RuntimeConfigProvider config={runtime}>
       <ConfigIssuesProvider issues={issues}>
-        <AppConfigProvider config={defaultConfig}>
-          <MemoryRouter>
-            <AppNavBar />
-          </MemoryRouter>
-        </AppConfigProvider>
+        <ThemeLookupFailedProvider failed={themeLookupFailed}>
+          <AppConfigProvider config={defaultConfig}>
+            <MemoryRouter>
+              <AppNavBar />
+            </MemoryRouter>
+          </AppConfigProvider>
+        </ThemeLookupFailedProvider>
       </ConfigIssuesProvider>
     </RuntimeConfigProvider>
   );
@@ -89,5 +92,25 @@ describe("AppNavBar config warnings", () => {
     renderNavBar(NO_CONFIG_ISSUES);
 
     expect(screen.queryByText(/Some configuration/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/could not load this site's branding/)).not.toBeInTheDocument();
+  });
+
+  it("shows the branding banner under the header when the theme lookup failed", () => {
+    renderNavBar(NO_CONFIG_ISSUES, true);
+
+    const banner = screen.getByRole("status");
+    const stack = screen.getByTestId("app-nav-bar").nextElementSibling;
+    expect(banner).toHaveTextContent("We could not load this site's branding");
+    expect(banner).toHaveTextContent("support@example.org");
+    expect(stack?.firstElementChild).toBe(banner);
+  });
+
+  it("shows the branding banner before the config warning when both apply", () => {
+    renderNavBar({ missing: ["services.orcid"], invalid: [] }, true);
+
+    const stack = screen.getByTestId("app-nav-bar").nextElementSibling;
+    expect(stack?.children).toHaveLength(2);
+    expect(stack?.children[0]).toHaveTextContent("We could not load this site's branding");
+    expect(stack?.children[1]).toHaveTextContent("Some configuration is missing");
   });
 });

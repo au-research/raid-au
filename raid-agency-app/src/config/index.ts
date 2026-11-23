@@ -36,7 +36,13 @@ export {
   useRuntimeConfig,
   ConfigIssuesProvider,
   useConfigIssues,
+  ThemeLookupFailedProvider,
+  useThemeLookupFailed,
+  BrandingProvider,
+  useBranding,
 } from "./RuntimeConfigContext";
+export { fetchLoginTheme, resolveStartupBranding } from "./KeycloakTheme";
+export type { ThemeLookup } from "./KeycloakTheme";
 export type { ConfigIssues, ConfigErrorReason } from "./ConfigValidation";
 export {
   ConfigError,

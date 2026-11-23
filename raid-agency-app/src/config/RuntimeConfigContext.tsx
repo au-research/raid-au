@@ -1,6 +1,8 @@
 import React, { createContext, useContext } from "react";
 import { RuntimeConfig } from "./RuntimeConfig";
 import { ConfigIssues, NO_CONFIG_ISSUES } from "./ConfigValidation";
+import { Branding } from "./Appconfig";
+import { neutralBranding } from "./DefaultConfig";
 
 // Module-level store for non-React consumers (services, utils)
 let _runtimeConfig: RuntimeConfig | null = null;
@@ -63,4 +65,38 @@ export const ConfigIssuesProvider: React.FC<ConfigIssuesProviderProps> = ({
 
 export function useConfigIssues(): ConfigIssues {
   return useContext(ConfigIssuesContext);
+}
+
+// True when the realm's login theme could not be looked up, so the app is
+// showing neutral branding by fallback (RAID-1065). Kept apart from
+// ConfigIssues because app-config.json itself is fine.
+const ThemeLookupFailedContext = createContext<boolean>(false);
+
+export const ThemeLookupFailedProvider: React.FC<{
+  failed: boolean;
+  children: React.ReactNode;
+}> = ({ failed, children }) => (
+  <ThemeLookupFailedContext.Provider value={failed}>
+    {children}
+  </ThemeLookupFailedContext.Provider>
+);
+
+export function useThemeLookupFailed(): boolean {
+  return useContext(ThemeLookupFailedContext);
+}
+
+// The branding the app renders with: neutral, or the configured branding when
+// the realm uses a custom login theme. Phases 4 and 5 read it in the header
+// and footer.
+const BrandingContext = createContext<Branding>(neutralBranding);
+
+export const BrandingProvider: React.FC<{
+  branding: Branding;
+  children: React.ReactNode;
+}> = ({ branding, children }) => (
+  <BrandingContext.Provider value={branding}>{children}</BrandingContext.Provider>
+);
+
+export function useBranding(): Branding {
+  return useContext(BrandingContext);
 }
