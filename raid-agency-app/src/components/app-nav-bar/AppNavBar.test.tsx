@@ -3,13 +3,11 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { MemoryRouter } from "react-router-dom";
 import {
-  AppConfigProvider,
   Branding,
   BrandingProvider,
   neutralBranding,
   ConfigIssues,
   ConfigIssuesProvider,
-  defaultConfig,
   NO_CONFIG_ISSUES,
   RuntimeConfig,
   RuntimeConfigProvider,
@@ -65,11 +63,9 @@ const renderNavBar = (
         <ConfigIssuesProvider issues={issues}>
           <ThemeLookupFailedProvider failed={themeLookupFailed}>
             <BrandingProvider branding={branding}>
-              <AppConfigProvider config={defaultConfig}>
-                <MemoryRouter>
-                  <AppNavBar />
-                </MemoryRouter>
-              </AppConfigProvider>
+              <MemoryRouter>
+                <AppNavBar />
+              </MemoryRouter>
             </BrandingProvider>
           </ThemeLookupFailedProvider>
         </ConfigIssuesProvider>

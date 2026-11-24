@@ -1,12 +1,6 @@
 export type {
-  AppConfig,
-  HeaderConfig,
-  FooterConfig,
-  ContentConfig,
-  ThemeConfig,
   NavLink,
-  LogoConfig,
-  SocialLink,
+  ThemeConfig,
   ThemePaletteColor,
   Branding,
   BrandingHeader,
@@ -18,7 +12,7 @@ export type {
 
 export type { RuntimeConfig } from "./RuntimeConfig";
 
-export { defaultConfig, neutralBranding } from "./DefaultConfig";
+export { defaultTheme, neutralBranding } from "./DefaultConfig";
 export {
   resolveBranding,
   isCustomLoginTheme,
@@ -27,7 +21,6 @@ export {
 export { loadConfig } from "./Configloader";
 export { sanitiseBranding } from "./SanitiseBranding";
 export type { RawBranding } from "./SanitiseBranding";
-export { AppConfigProvider, useAppConfig } from "./Appconfigcontext";
 export { buildMuiTheme } from "./Buildtheme";
 export {
   setRuntimeConfig,

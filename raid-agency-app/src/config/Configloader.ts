@@ -1,7 +1,4 @@
-import { AppConfig } from "./Appconfig";
 import { RuntimeConfig } from "./RuntimeConfig";
-import { defaultConfig } from "./DefaultConfig";
-import { deepMerge } from "./deepMerge";
 import {
   ConfigError,
   ConfigIssues,
@@ -58,7 +55,6 @@ function describeIssues(issues: ConfigIssues): string {
 
 export async function loadConfig(): Promise<{
   runtime: RuntimeConfig;
-  app: AppConfig;
   /**
    * The theme, header and footer sections from the top level of the file, with
    * unusable values removed. Pass this to resolveBranding() with the realm's
@@ -100,17 +96,5 @@ export async function loadConfig(): Promise<{
     app: { ...raw.app, orcid: { ...raw.app?.orcid } },
   };
 
-  // Until the header and footer read the resolved branding, the app still takes
-  // its branding from the old "branding" wrapper. Phases 4 and 5 of RAID-1065
-  // move the header and footer across and remove this.
-  const legacyBranding = raw.branding ?? {};
-  const app: AppConfig = deepMerge(defaultConfig, {
-    default: legacyBranding.default,
-    header: legacyBranding.header,
-    footer: legacyBranding.footer,
-    content: legacyBranding.content,
-    theme: legacyBranding.theme,
-  });
-
-  return { runtime, app, branding: sanitiseBranding(raw), issues: warning };
+  return { runtime, branding: sanitiseBranding(raw), issues: warning };
 }

@@ -1,5 +1,5 @@
 import { AppBar, Box, Stack, Toolbar, Typography } from "@mui/material";
-import { ConfigError, defaultConfig, neutralBranding } from "@/config";
+import { ConfigError, neutralBranding } from "@/config";
 import { ConfigIssueBanner } from "./ConfigIssueBanner";
 
 /**
@@ -19,7 +19,7 @@ export const ConfigErrorScreen = ({ error }: { error: unknown }) => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: defaultConfig.theme.palette.background?.default,
+        backgroundColor: neutralBranding.theme.palette.background?.default,
       }}
     >
       <AppBar

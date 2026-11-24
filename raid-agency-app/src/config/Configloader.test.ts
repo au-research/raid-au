@@ -336,39 +336,4 @@ describe("loadConfig", () => {
       expect(issues.retired ?? []).toEqual([]);
     });
   });
-
-  describe("branding config", () => {
-    it("uses defaultConfig branding when branding section is absent", async () => {
-      vi.stubGlobal("fetch", mockFetch(mockValidConfig));
-
-      const { app } = await loadConfig();
-
-      expect(app.header.title).toBe("RAiD");
-      expect(app.header.logo).toBeDefined();
-    });
-
-    it("deep-merges branding overrides with defaults", async () => {
-      vi.stubGlobal("fetch", mockFetch({
-        ...mockValidConfig,
-        branding: { header: { title: "Custom Title" } },
-      }));
-
-      const { app } = await loadConfig();
-
-      expect(app.header.title).toBe("Custom Title");
-      expect(app.header.logo).toBeDefined();
-    });
-
-    it("does not override defaults with undefined branding fields", async () => {
-      vi.stubGlobal("fetch", mockFetch({
-        ...mockValidConfig,
-        branding: { theme: { mode: "dark" } },
-      }));
-
-      const { app } = await loadConfig();
-
-      expect(app.theme.mode).toBe("dark");
-      expect(app.header.title).toBe("RAiD");
-    });
-  });
 });

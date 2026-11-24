@@ -13,10 +13,9 @@ import { otherRoutes, raidPageRoutes, servicePointRoutes } from "./routes";
 import { ErrorAlertComponent } from "./components/error-alert-component";
 import {
   loadConfig,
-  AppConfigProvider,
   buildMuiTheme,
   ConfigIssuesProvider,
-  defaultConfig,
+  defaultTheme,
   setRuntimeConfig,
   RuntimeConfigProvider,
   ThemeLookupFailedProvider,
@@ -52,13 +51,13 @@ async function bootstrap() {
   // RAID-1065: nothing branded is shown until the config and the realm's login
   // theme are both known. There is no timeout.
   root.render(
-    <ThemeProvider theme={buildMuiTheme(defaultConfig.theme)}>
+    <ThemeProvider theme={buildMuiTheme(defaultTheme)}>
       <CssBaseline />
       <StartupSpinner />
     </ThemeProvider>
   );
 
-  const { runtime, app, branding: rawBranding, issues } = await loadConfig();
+  const { runtime, branding: rawBranding, issues } = await loadConfig();
 
   setRuntimeConfig(runtime);
   initKeycloakInstance(runtime.keycloak);
@@ -75,12 +74,10 @@ async function bootstrap() {
       <ConfigIssuesProvider issues={issues}>
         <ThemeLookupFailedProvider failed={themeLookupFailed}>
           <BrandingProvider branding={branding}>
-            <AppConfigProvider config={app}>
-              <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <RouterProvider router={router} />
-              </ThemeProvider>
-            </AppConfigProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <RouterProvider router={router} />
+            </ThemeProvider>
           </BrandingProvider>
         </ThemeLookupFailedProvider>
       </ConfigIssuesProvider>
@@ -93,7 +90,7 @@ async function bootstrap() {
 function renderStartupError(error: unknown) {
   console.error(error);
   root.render(
-    <ThemeProvider theme={buildMuiTheme(defaultConfig.theme)}>
+    <ThemeProvider theme={buildMuiTheme(defaultTheme)}>
       <CssBaseline />
       <ConfigErrorScreen error={error} />
     </ThemeProvider>
