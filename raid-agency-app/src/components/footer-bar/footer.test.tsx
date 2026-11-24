@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import { Branding, BrandingProvider, neutralBranding } from "@/config";
+import {
+  Branding,
+  BrandingProvider,
+  neutralBranding,
+  RuntimeConfig,
+  RuntimeConfigProvider,
+} from "@/config";
 import { Footer } from "./footer";
 
 const FOOTER_SCRIPT = "footer.min.js";
@@ -13,15 +19,23 @@ const links = [
 
 const withFooter = (footer: Branding["footer"]): Branding => ({ ...neutralBranding, footer });
 
-const renderFooter = (branding?: Branding) =>
+const runtime: RuntimeConfig = {
+  keycloak: { url: "https://iam.example.org", realm: "raid", clientId: "raid-api" },
+  apiBaseUrl: "https://api.example.org",
+  environment: "demo",
+  supportEmail: "help@example.org",
+  googleAnalytics: {},
+  services: {},
+  app: { orcid: {} },
+};
+
+const renderFooter = (branding: Branding = neutralBranding, config: RuntimeConfig = runtime) =>
   render(
-    branding ? (
+    <RuntimeConfigProvider config={config}>
       <BrandingProvider branding={branding}>
         <Footer />
       </BrandingProvider>
-    ) : (
-      <Footer />
-    )
+    </RuntimeConfigProvider>
   );
 
 const footerScripts = () =>
@@ -33,19 +47,47 @@ afterEach(() => {
 });
 
 describe("Footer", () => {
-  it("renders nothing for the neutral branding", () => {
-    const { container } = renderFooter();
+  describe("neutral branding", () => {
+    it("shows the helpdesk address as a support link", () => {
+      renderFooter();
 
-    expect(container).toBeEmptyDOMElement();
-    expect(footerScripts()).toHaveLength(0);
+      const footer = screen.getByRole("contentinfo");
+      expect(within(footer).getByRole("link", { name: "help@example.org" })).toHaveAttribute(
+        "href",
+        "mailto:help@example.org"
+      );
+      expect(footer).toHaveTextContent("Support");
+    });
+
+    it("shows no contact link when contactEmail is not set", () => {
+      renderFooter();
+
+      expect(screen.getByRole("contentinfo")).not.toHaveTextContent("Contact");
+      expect(screen.getAllByRole("link")).toHaveLength(1);
+    });
+
+    it("shows a contact link when contactEmail is set", () => {
+      renderFooter(neutralBranding, { ...runtime, contactEmail: "contact@example.org" });
+
+      const footer = screen.getByRole("contentinfo");
+      expect(within(footer).getByRole("link", { name: "contact@example.org" })).toHaveAttribute(
+        "href",
+        "mailto:contact@example.org"
+      );
+      expect(footer).toHaveTextContent("Contact");
+      expect(within(footer).getByRole("link", { name: "help@example.org" })).toBeInTheDocument();
+    });
+
+    it("names no agency and loads no ARDC script or element", () => {
+      const { container } = renderFooter();
+
+      expect(footerScripts()).toHaveLength(0);
+      expect(container.querySelector("ardc-footer")).toBeNull();
+      expect(container).not.toHaveTextContent(/ARDC/i);
+    });
   });
 
   describe("generic variant", () => {
-    it("renders nothing when there are no links", () => {
-      const { container } = renderFooter(withFooter({ variant: "generic", links: [] }));
-      expect(container).toBeEmptyDOMElement();
-    });
-
     it("lists the configured links without contact entries", () => {
       renderFooter(withFooter({ variant: "generic", links }));
 
@@ -58,12 +100,21 @@ describe("Footer", () => {
       expect(within(footer).queryByText("services@example.org")).not.toBeInTheDocument();
     });
 
-    it("opens web links in a new tab safely", () => {
+    it("shows the support address as well as the configured links", () => {
+      renderFooter(withFooter({ variant: "generic", links }));
+
+      expect(
+        within(screen.getByRole("contentinfo")).getByRole("link", { name: "help@example.org" })
+      ).toBeInTheDocument();
+    });
+
+    it("opens web links in a new tab and mailto links in the same tab", () => {
       renderFooter(withFooter({ variant: "generic", links }));
 
       const terms = screen.getByRole("link", { name: "Terms of use" });
       expect(terms).toHaveAttribute("target", "_blank");
       expect(terms).toHaveAttribute("rel", "noopener noreferrer");
+      expect(screen.getByRole("link", { name: "help@example.org" })).not.toHaveAttribute("target");
     });
 
     it("never loads the ARDC footer script or element", () => {

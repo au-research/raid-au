@@ -43,7 +43,7 @@ So the Keycloak theme decides whether branding applies, and `app-config.json` su
 |---------|--------|
 | `theme` | `palette` (`primary`, `secondary`, `background`, `error`, `warning`, `info`, `success`, `text`), `typography` (`fontFamily`, `fontSize`), `shape.borderRadius`, `mode` |
 | `header` | `title`, `logo` (`light`, `dark`, `alt`, `height`), `navLinks`, `menu` (`none` or `ardc`) |
-| `footer` | `variant` (`generic` or `ardc`), `links` |
+| `footer` | `variant` (`generic` or `ardc`), `links`. The generic footer also shows `supportEmail` and, if set, `contactEmail`. |
 
 Links need a `label` and an `https` or `mailto` address. `menu: "ardc"` and `variant: "ardc"` load ARDC web component scripts, so use them only for ARDC branding. For the full field rules, the one-time move from the old `branding` wrapper, and how failures show, see [DEPLOYMENT.md](../../doc/UI/raid-agency-app/DEPLOYMENT.md#branding). Ready-made examples are in `raid-agency-app/app-config-examples/`.
 

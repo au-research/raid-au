@@ -79,7 +79,7 @@ The answer is `{"loginTheme": "<name>"}` or `{"loginTheme": null}`. The app show
 
 | Answer | What the app shows |
 |--------|--------------------|
-| `raid-custom` or `null` | The neutral look. The `theme`, `header` and `footer` sections of `app-config.json` are ignored. |
+| `raid-custom` or `null` | The neutral look, with a simple footer showing the support address (and the contact address if set). The `theme`, `header` and `footer` sections of `app-config.json` are ignored. |
 | Any other theme, for example `ardc-branding` | The sections in `app-config.json`, merged over the neutral look. A field you leave out keeps its neutral value. |
 | The lookup fails (network error, any non-2xx answer, a body that is not JSON, or no `loginTheme` field) | The neutral look, plus a warning banner: "We could not load this site's branding, so the default RAiD look is shown." The banner has a **Reload** button and the `supportEmail` address. |
 
@@ -96,8 +96,8 @@ These sit at the top level of `app-config.json`, after the services and `app` se
 | `header.logo` | `light`, `dark`, `alt`, `height` | `light` shows in light mode, `dark` in dark mode |
 | `header.navLinks` | list of `{ "label", "path" }` | Shown after Home and Your RAiDs. There are no default links. |
 | `header.menu` | `none` or `ardc` | `ardc` mounts the ARDC mega menu and loads its script. `none` loads no script. |
-| `footer.variant` | `generic` or `ardc` | `ardc` uses the ARDC footer component and loads its script. `generic` shows only the links below and loads no script. |
-| `footer.links` | list of `{ "label", "path" }` | A link flagged `"contact": true` is used as the contact address and is not listed in the footer. |
+| `footer.variant` | `generic` or `ardc` | `ardc` uses the ARDC footer component and loads its script. `generic` is a simple footer that shows the links below, the `supportEmail` address and, if set, the `contactEmail` address. It loads no script. |
+| `footer.links` | list of `{ "label", "path" }` | Optional. A link flagged `"contact": true` is not listed in the footer. |
 
 Every link needs a `label`, and its `path` must be an `https` or `mailto` address. A link that fails this is dropped and named in the warning banner. Web links open in a new tab.
 
