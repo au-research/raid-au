@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -96,6 +98,7 @@ class DataciteAttributesDtoFactoryTest {
 
         final var description = new Description();
         final var contributor = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .status("AWAITING_AUTHENTICATION");
 
         final var relatedObject = new RelatedObject()
@@ -165,7 +168,6 @@ class DataciteAttributesDtoFactoryTest {
 
         final var result = attributesDtoFactory.create(request, handle);
 
-//        verifyNoInteractions(creatorFactory);
 
         assertThat(result.getContributors(), is(List.of(registrationAgencyContributor, organisationContributor)));
         assertThat(result.getPublisher(), is(publisher));
@@ -227,6 +229,7 @@ class DataciteAttributesDtoFactoryTest {
 
         final var description = new Description();
         final var contributor = new Contributor()
+                .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
                 .status("AUTHENTICATED");
 
         final var relatedObject = new RelatedObject()
@@ -565,5 +568,97 @@ class DataciteAttributesDtoFactoryTest {
         final var result = attributesDtoFactory.create(raid, PUBLICATION_YEAR_HANDLE);
 
         assertThat(result.getRightsList(), is(RIGHTS_LIST));
+    }
+
+    private static Contributor contributor(final String id, final ContributorSchemaUriEnum schemaUri, final String status) {
+        return new Contributor().id(id).schemaUri(schemaUri).status(status);
+    }
+
+    private static RaidDto raidWithContributors(final List<Contributor> contributors) {
+        return new RaidDto()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate("2019"))
+                .access(publicationYearAccess())
+                .contributor(contributors);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"AUTHENTICATED", "UNAUTHENTICATED", "AWAITING_AUTHENTICATION", "AUTHENTICATION_FAILED", "AUTHENTICATION_REVOKED"})
+    @DisplayName("An ORCID contributor appears as a creator whatever their status")
+    void orcidContributorIsCreatorWhateverStatus(final String status) {
+        final var contributor = contributor("https://orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, status);
+        final var creator = new DataciteCreator().setName("Researcher");
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(creatorFactory.create(contributor)).thenReturn(creator);
+
+        final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getCreators(), is(List.of(creator)));
+    }
+
+    @Test
+    @DisplayName("An unauthenticated sandbox ORCID contributor appears as a creator")
+    void sandboxOrcidContributorIsCreator() {
+        final var contributor = contributor("https://sandbox.orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_SANDBOX_ORCID_ORG_, "UNAUTHENTICATED");
+        final var creator = new DataciteCreator().setName("Researcher");
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(creatorFactory.create(contributor)).thenReturn(creator);
+
+        final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getCreators(), is(List.of(creator)));
+    }
+
+    @Test
+    @DisplayName("An ISNI contributor appears as a creator")
+    void isniContributorIsCreator() {
+        final var contributor = contributor("https://isni.org/isni/0000000000000001", ContributorSchemaUriEnum.HTTPS_ISNI_ORG_, "UNAUTHENTICATED");
+        final var creator = new DataciteCreator().setName("Researcher");
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(creatorFactory.create(contributor)).thenReturn(creator);
+
+        final var result = attributesDtoFactory.create(raidWithContributors(List.of(contributor)), PUBLICATION_YEAR_HANDLE);
+
+        assertThat(result.getCreators(), is(List.of(creator)));
+    }
+
+    @Test
+    @DisplayName("Every contributor appears, in order, when a RAiD mixes statuses, on create and update too")
+    void everyContributorIsCreator() {
+        final var authenticated = contributor("https://orcid.org/0000-0000-0000-0001", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, "AUTHENTICATED");
+        final var awaiting = contributor("https://orcid.org/0000-0000-0000-0002", ContributorSchemaUriEnum.HTTPS_ORCID_ORG_, "AWAITING_AUTHENTICATION");
+        final var isni = contributor("https://isni.org/isni/0000000000000001", ContributorSchemaUriEnum.HTTPS_ISNI_ORG_, "UNAUTHENTICATED");
+        final var authenticatedCreator = new DataciteCreator().setName("Authenticated researcher");
+        final var awaitingCreator = new DataciteCreator().setName("Awaiting researcher");
+        final var isniCreator = new DataciteCreator().setName("ISNI researcher");
+        final var contributors = List.of(authenticated, awaiting, isni);
+        final var expected = List.of(authenticatedCreator, awaitingCreator, isniCreator);
+
+        when(dateFactory.create(any())).thenReturn(new DataciteDate());
+        when(creatorFactory.create(authenticated)).thenReturn(authenticatedCreator);
+        when(creatorFactory.create(awaiting)).thenReturn(awaitingCreator);
+        when(creatorFactory.create(isni)).thenReturn(isniCreator);
+
+        final var create = new RaidCreateRequest()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate("2019"))
+                .contributor(contributors)
+                .access(publicationYearAccess());
+        final var update = new RaidUpdateRequest()
+                .identifier(publicationYearIdentifier())
+                .title(publicationYearTitles())
+                .date(new Date().startDate("2019"))
+                .contributor(contributors)
+                .access(publicationYearAccess());
+
+        assertThat(attributesDtoFactory.create(create, PUBLICATION_YEAR_HANDLE).getCreators(), is(expected));
+        assertThat(attributesDtoFactory.create(update, PUBLICATION_YEAR_HANDLE).getCreators(), is(expected));
+        assertThat(attributesDtoFactory.create(raidWithContributors(contributors), PUBLICATION_YEAR_HANDLE).getCreators(), is(expected));
     }
 }

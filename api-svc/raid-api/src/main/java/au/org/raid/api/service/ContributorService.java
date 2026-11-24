@@ -8,6 +8,7 @@ import au.org.raid.api.factory.record.RaidContributorRecordFactory;
 import au.org.raid.api.repository.ContributorRepository;
 import au.org.raid.api.repository.ContributorSchemaRepository;
 import au.org.raid.api.repository.RaidContributorRepository;
+import au.org.raid.db.jooq.tables.records.ContributorRecord;
 import au.org.raid.idl.raidv2.model.Contributor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -90,12 +91,36 @@ public class ContributorService {
         create(contributors, handle);
     }
 
+    /**
+     * Replaces each contributor's status with the one stored for that person, or UNAUTHENTICATED when
+     * none is stored. A status sent by the client is never kept: only the ORCID updater sets status,
+     * through {@link #updateStatus}.
+     */
     public void setStatus(final List<Contributor> contributors) {
-        contributors.forEach(contributor -> {
-            if (!isBlank(contributor.getId())) {
-                final var optional = contributorRepository.findByPid(contributor.getId());
-                optional.ifPresent(contributorRecord -> contributor.status(contributorRecord.getStatus()));
-            }
-        });
+        if (contributors == null) {
+            return;
+        }
+
+        contributors.forEach(contributor -> contributor.setStatus(storedStatus(contributor.getId())));
+    }
+
+    /**
+     * Sets the status stored for a contributor. The row is shared by every RAiD the person is on.
+     *
+     * @return false when no contributor has this id
+     */
+    public boolean updateStatus(final String pid, final String status) {
+        return contributorRepository.updateStatus(pid, status) > 0;
+    }
+
+    private String storedStatus(final String pid) {
+        if (isBlank(pid)) {
+            return UNAUTHENTICATED_STATUS;
+        }
+
+        return contributorRepository.findByPid(pid)
+                .map(ContributorRecord::getStatus)
+                .filter(status -> !isBlank(status))
+                .orElse(UNAUTHENTICATED_STATUS);
     }
 }

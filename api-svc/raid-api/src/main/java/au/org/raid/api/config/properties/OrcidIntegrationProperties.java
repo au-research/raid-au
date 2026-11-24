@@ -15,18 +15,11 @@ public class OrcidIntegrationProperties {
     private String host;
     private String orcidUrlPrefix;
     private String apiKey;
-    private RaidListener raidListener;
-    private ContributorIdLookup contributorIdLookup;
+    private RaidChanges raidChanges;
 
     @Getter
     @Setter
-    public static class RaidListener {
-        private String uri;
-    }
-
-    @Getter
-    @Setter
-    public static class ContributorIdLookup {
+    public static class RaidChanges {
         private String uri;
     }
 }

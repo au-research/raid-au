@@ -296,4 +296,57 @@ class ContributorServiceTest {
         verify(contributorPositionService).create(positions, raidContributorId);
         verify(contributorRoleService).create(roles, raidContributorId);
     }
+
+    @Test
+    @DisplayName("setStatus() replaces a client-sent status with the stored one")
+    void setStatusUsesStoredStatus() {
+        final var contributor = new Contributor().id("https://orcid.org/0000-0000-0000-0001").status("UNAUTHENTICATED");
+        when(contributorRepository.findByPid(contributor.getId()))
+                .thenReturn(Optional.of(new ContributorRecord().setPid(contributor.getId()).setStatus("AUTHENTICATED")));
+
+        contributorService.setStatus(List.of(contributor));
+
+        assertThat(contributor.getStatus(), is("AUTHENTICATED"));
+    }
+
+    @Test
+    @DisplayName("setStatus() ignores a client claiming AUTHENTICATED for a new contributor")
+    void setStatusDefaultsNewContributorToUnauthenticated() {
+        final var contributor = new Contributor().id("https://orcid.org/0000-0000-0000-0001").status("AUTHENTICATED");
+        when(contributorRepository.findByPid(contributor.getId())).thenReturn(Optional.empty());
+
+        contributorService.setStatus(List.of(contributor));
+
+        assertThat(contributor.getStatus(), is("UNAUTHENTICATED"));
+    }
+
+    @Test
+    @DisplayName("setStatus() treats a blank stored status as UNAUTHENTICATED")
+    void setStatusDefaultsBlankStoredStatus() {
+        final var contributor = new Contributor().id("https://orcid.org/0000-0000-0000-0001").status("AUTHENTICATED");
+        when(contributorRepository.findByPid(contributor.getId()))
+                .thenReturn(Optional.of(new ContributorRecord().setPid(contributor.getId())));
+
+        contributorService.setStatus(List.of(contributor));
+
+        assertThat(contributor.getStatus(), is("UNAUTHENTICATED"));
+    }
+
+    @Test
+    @DisplayName("setStatus() accepts no contributors")
+    void setStatusWithNullContributors() {
+        contributorService.setStatus(null);
+
+        verifyNoInteractions(contributorRepository);
+    }
+
+    @Test
+    @DisplayName("updateStatus() reports whether a contributor had the id")
+    void updateStatus() {
+        when(contributorRepository.updateStatus("https://orcid.org/0000-0000-0000-0001", "AUTHENTICATED")).thenReturn(1);
+        when(contributorRepository.updateStatus("https://orcid.org/0000-0000-0000-0002", "AUTHENTICATED")).thenReturn(0);
+
+        assertThat(contributorService.updateStatus("https://orcid.org/0000-0000-0000-0001", "AUTHENTICATED"), is(true));
+        assertThat(contributorService.updateStatus("https://orcid.org/0000-0000-0000-0002", "AUTHENTICATED"), is(false));
+    }
 }

@@ -528,85 +528,12 @@
   {
     "httpRequest": {
       "method": "POST",
-      "path": "/raid-update"
+      "path": "/raid-changes"
     },
     "httpResponse": {
       "statusCode": 202,
       "headers": {
         "Content-Type": ["application/json"]
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
-      "path": "/find-contributor-by-orcid",
-      "body": {
-        "type": "JSON",
-        "json": {
-          "orcid": "https://sandbox.orcid.org/0009-0002-5128-5184"
-        },
-        "matchType": "STRICT"
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": ["application/json"]
-      },
-      "body": {
-        "status": "AUTHENTICATED",
-        "name": "David Smith",
-        "orcid": "https://orcid.org/0009-0002-5128-5184"
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
-      "path": "/find-contributor-by-orcid",
-      "body": {
-        "type": "JSON",
-        "json": {
-          "orcid": "https://orcid.org/0009-0006-4129-5257"
-        },
-        "matchType": "STRING"
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": ["application/json"]
-      },
-      "body": {
-        "status": "AWAITING_AUTHENTICATION",
-        "orcid": "https://orcid.org/0009-0006-4129-5257"
-
-      }
-    }
-  },
-  {
-    "httpRequest": {
-      "method": "POST",
-      "path": "/find-contributor-by-orcid",
-      "body": {
-        "type": "JSON",
-        "json": {
-          "orcid": "https://orcid.org/0000-0002-6492-9025"
-        },
-        "matchType": "STRICT"
-      }
-    },
-    "httpResponse": {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": [
-          "application/json"
-        ]
-      },
-      "body": {
-        "status": "AUTHENTICATION_FAILED",
-        "orcid": "https://orcid.org/0000-0002-6492-9025"
       }
     }
   }

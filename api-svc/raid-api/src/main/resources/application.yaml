@@ -36,16 +36,14 @@ raid:
       url-prefix: https://isni.org/
       schema-uri: https://isni.org/
   orcid-integration:
-    # RAID-993: when false the API makes no call to the ORCID integration host. Deployments
-    # that run an integration set enabled=true and host; the dev profile points at the mock.
+    # When false the API makes no call to the registration agency's ORCID updater. Deployments
+    # that run an updater set enabled=true, host and api-key; the dev profile points at the mock.
     enabled: false
     orcid-url-prefix: https://sandbox.orcid.org/
     host: ""
-    raid-listener:
-      uri: ${raid.orcid-integration.host}/raid-update
-    contributor-id-lookup:
-      uri: ${raid.orcid-integration.host}/find-contributor-by-orcid
-    api-key: not-set
+    raid-changes:
+      uri: ${raid.orcid-integration.host}/raid-changes
+    api-key: ""
   stub:
     geo-names:
       enabled: false
@@ -125,6 +123,14 @@ raid:
       batch-size: 50
       throttle-millis: 1000
       poll-delay-millis: 60000
+  contributor-status-reset:
+    # A one-off background reset. It sets each contributor listed in contributor_status_reset to
+    # UNAUTHENTICATED through the normal status-change path, so every RAiD naming them gets a new
+    # version. On by default, so every agency is brought up to date without any configuration.
+    enabled: true
+    batch-size: 50
+    throttle-millis: 1000
+    poll-delay-millis: 60000
 server:
   forward-headers-strategy: native
 spring:

@@ -30,7 +30,14 @@ public class DataciteAttributesDtoFactory {
     private final DataciteFundingReferenceFactory fundingReferenceFactory;
     private final IdentifierProperties identifierProperties;
 
+    /**
+     * Every contributor is a creator, whatever their status. When there are none, DataCite still
+     * gets the single empty creator it requires.
+     */
     private List<DataciteCreator> addCreators(final List<Contributor> contributors) {
+        if (contributors == null) {
+            return List.of(new DataciteCreator());
+        }
 
         final var creators = contributors.stream()
                 .map(creatorFactory::create)
@@ -39,7 +46,6 @@ public class DataciteAttributesDtoFactory {
                 .toList();
 
         return creators.isEmpty() ? List.of(new DataciteCreator()) : creators;
-
     }
 
     private String publicationYear(final Date date) {
