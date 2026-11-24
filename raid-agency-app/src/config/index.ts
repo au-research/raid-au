@@ -40,6 +40,7 @@ export {
   useThemeLookupFailed,
   BrandingProvider,
   useBranding,
+  useContactEmail,
 } from "./RuntimeConfigContext";
 export { fetchLoginTheme, resolveStartupBranding } from "./KeycloakTheme";
 export type { ThemeLookup } from "./KeycloakTheme";

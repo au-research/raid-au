@@ -18,12 +18,12 @@ import { KeycloakProvider, useKeycloak } from "./contexts/keycloak-context";
 import { useGoogleAnalytics } from "./shared/hooks/google-analytics/useGoogleAnalytics";
 import { NotificationProvider } from "./components/alert-notifications/notification-context/NotificationsProvider";
 import { CodesProvider } from "./components/tree-view/context/CodesProvider";
-import { useAppConfig } from "./config/Appconfigcontext";
+import { useBranding } from "./config";
 
 function AppContent() {
   useGoogleAnalytics();
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const { theme: appTheme } = useAppConfig();
+  const { theme: appTheme } = useBranding();
   const theme = useMemo(
     () =>
       createTheme({
@@ -34,7 +34,7 @@ function AppContent() {
           mode: prefersDarkMode ? "dark" : "light",
         },
       }),
-    [prefersDarkMode]
+    [prefersDarkMode, appTheme]
   );
 
   const queryClient = new QueryClient({

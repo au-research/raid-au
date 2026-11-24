@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppConfig } from "@/config/Appconfigcontext";
+import { useContactEmail } from "@/config";
 interface ErrorAlertProps {
   error?: Error | string;
   showButtons?: boolean;
@@ -19,8 +19,7 @@ interface ErrorAlertProps {
 export const ErrorAlertComponent = memo(
   ({ error, showButtons }: ErrorAlertProps) => {
     const navigate = useNavigate();
-    const config = useAppConfig();
-    const supportEmail = config.footer.links.find(link => link.contact)?.label || "support team";
+    const supportEmail = useContactEmail();
 
     const handleContactSupport = () => {
       location.href = `mailto:${supportEmail}`;

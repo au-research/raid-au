@@ -1,6 +1,6 @@
-import { useContext, useEffect } from 'react';
-import { AppConfigContext } from '../../config/Appconfigcontext';
-import { AppConfig } from '@/config/Appconfig';
+import { useEffect } from 'react';
+import { Box, Link, Stack } from '@mui/material';
+import { NavLink, useBranding } from '@/config';
 import { useExternalScript } from '@/hooks/useExternalScript';
 import { EXTERNAL_LINKS } from '@/constants/external-links';
 
@@ -22,7 +22,7 @@ const FOOTER_SCRIPT_SRC =
 const ARDC_ACN_URL =
     'https://www.acnc.gov.au/charity/charities/eca273f3-f5be-e911-a98a-000d3ad02a61/profile';
 
-const ArdcFooter = ({ config }: { config: AppConfig }) => {
+const ArdcFooter = ({ links }: { links: NavLink[] }) => {
     useExternalScript(FOOTER_SCRIPT_SRC, () => {
         const el = document.querySelector<HTMLElement>('ardc-footer');
         if (el) el.style.display = 'none';
@@ -56,8 +56,6 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
         return () => clearInterval(interval);
     }, []);
 
-    const legalLinks = config.footer.links.filter((link) => !link.contact);
-
     return (
         <ardc-footer
             className="ardc-footer ardc-custom-component"
@@ -71,7 +69,7 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
                 ))}
             </ul>
             <ul id="legal-links">
-                {legalLinks.map((link, index) => (
+                {links.map((link, index) => (
                     <li key={index}><a href={link.path}>{link.label}</a></li>
                 ))}
             </ul>
@@ -80,14 +78,56 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
     );
 };
 
-export const Footer = () => {
-    const config = useContext(AppConfigContext);
+// Contact entries (mailto addresses flagged with contact: true) are shown by
+// the ARDC footer's own contact area, not in the legal links.
+const withoutContactEntries = (links: NavLink[]) => links.filter((link) => !link.contact);
 
-    if (!config || config.default) {
+// Plain footer for agencies without ARDC branding: just the configured links.
+// Renders nothing when there are none, and loads no external script.
+const GenericFooter = ({ links }: { links: NavLink[] }) => {
+    if (links.length === 0) {
         return null;
     }
 
-    return <ArdcFooter config={config} />;
+    return (
+        <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', py: 3, px: 2 }}>
+            <Stack
+                component="ul"
+                direction="row"
+                flexWrap="wrap"
+                justifyContent="center"
+                gap={3}
+                sx={{ listStyle: 'none', m: 0, p: 0 }}
+            >
+                {links.map((link) => (
+                    <li key={`${link.label}|${link.path}`}>
+                        <Link
+                            href={link.path}
+                            color="text.secondary"
+                            underline="hover"
+                            {...(link.path.startsWith('https:')
+                                ? { target: '_blank', rel: 'noopener noreferrer' }
+                                : {})}
+                        >
+                            {link.label}
+                        </Link>
+                    </li>
+                ))}
+            </Stack>
+        </Box>
+    );
+};
+
+export const Footer = () => {
+    const { variant, links } = useBranding().footer;
+    const shown = withoutContactEntries(links);
+
+    // The ARDC variant is the only one that loads an ARDC script.
+    if (variant === 'ardc') {
+        return <ArdcFooter links={shown} />;
+    }
+
+    return <GenericFooter links={shown} />;
 };
 
 export default Footer;

@@ -1,10 +1,10 @@
 import { AppBar, Box, Stack, Toolbar, Typography } from "@mui/material";
-import { ConfigError, defaultConfig } from "@/config";
+import { ConfigError, defaultConfig, neutralBranding } from "@/config";
 import { ConfigIssueBanner } from "./ConfigIssueBanner";
 
 /**
  * Shown instead of the app when bootstrap fails (RAID-941). Deliberately uses
- * only the built-in default branding: the router, Keycloak and the loaded
+ * only the built-in neutral branding: the router, Keycloak and the loaded
  * config are all unavailable at this point.
  */
 export const ConfigErrorScreen = ({ error }: { error: unknown }) => {
@@ -30,12 +30,17 @@ export const ConfigErrorScreen = ({ error }: { error: unknown }) => {
       >
         <Toolbar variant="dense" sx={{ minHeight: "64px" }}>
           <Stack direction="row" alignItems="center" gap={1.5}>
-            <img src={defaultConfig.header.logo.src} alt="logo" width={62} height={34} />
+            <img
+              src={neutralBranding.header.logo.light}
+              alt={neutralBranding.header.logo.alt}
+              height={neutralBranding.header.logo.height}
+              style={{ width: "auto" }}
+            />
             <Typography
               variant="subtitle1"
               sx={{ fontWeight: 600, color: "text.primary", display: { xs: "none", sm: "block" } }}
             >
-              ARDC Research Activity Identifier
+              {neutralBranding.header.title}
             </Typography>
           </Stack>
         </Toolbar>
