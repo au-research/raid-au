@@ -16,9 +16,6 @@ The app is configured at runtime via a single `app-config.json` file fetched on 
   "apiBaseUrl": "https://api.{env}.raid.org.au",
   "environment": "{env}",
   "supportEmail": "contact@example.org",
-  "googleAnalytics": {
-    "measurementId": "G-XXXXXXXXXX"
-  },
   "services": {
     "orcid": "https://orcid.{env}.example.org",
     "staticProd": "https://static.prod.example.org",
@@ -29,21 +26,95 @@ The app is configured at runtime via a single `app-config.json` file fetched on 
       "placeholder": "Enter ORCID iD or ISNI",
       "helpText": "Enter a valid ORCID iD e.g. 0000-0002-1825-0097"
     }
-  },
-  "branding": {}
+  }
 }
 ```
 
-**Required to start the app:** `keycloak.url`, `keycloak.realm`, `keycloak.clientId`, `apiBaseUrl`, `environment`. If any is missing or invalid, the app shows an error banner instead of loading.
+This is the neutral layout. Copy [app-config.template.json](../../../raid-agency-app/app-config-examples/app-config.template.json) to start. For an agency with its own branding, add the `theme`, `header` and `footer` sections described in [Branding](#branding).
 
-**Required for full functionality:** `supportEmail`, `services.orcid`, `services.staticProd`, `services.staticBase`, `app.orcid.placeholder`, `app.orcid.helpText`. If any is missing or invalid, the app still loads and shows a warning banner under the header.
+**Required to start the app:** `keycloak.url`, `keycloak.realm`, `keycloak.clientId`, `apiBaseUrl`, `environment`, `supportEmail`. `supportEmail` is the helpdesk address shown to people who need help, including in the banner that appears when branding cannot be loaded. If any is missing or invalid, the app shows an error banner instead of loading.
+
+**Required for full functionality:** `services.orcid`, `services.staticProd`, `services.staticBase`, `app.orcid.placeholder`, `app.orcid.helpText`. If any is missing or invalid, the app still loads and shows a warning banner under the header.
 
 URL fields must be absolute `http` or `https` URLs. See [Troubleshooting configuration banners](#troubleshooting-configuration-banners).
 
 **Optional fields:**
 - `services.invite` — omit if the invite feature is disabled
-- `googleAnalytics` — omit or leave empty if not used
-- `branding` — omit entirely to use built-in defaults, or override individual fields
+- `googleAnalytics` — omit it, or either id in it, if you do not use Google Analytics. Nothing is loaded and no banner is shown. See [Google Analytics](#google-analytics-optional).
+- `contactEmail` — a second contact address, if the agency has one besides `supportEmail`
+- `theme`, `header`, `footer` — see [Branding](#branding). Omit them for the neutral look.
+
+---
+
+## Google Analytics (optional)
+
+Google Analytics is off unless you add this block:
+
+```json
+"googleAnalytics": {
+  "measurementId": "G-XXXXXXXXXX",
+  "measurementIdDemo": "G-YYYYYYYYYY"
+}
+```
+
+- `measurementId` is used on production sites (the build is a production build or the host name contains `prod`).
+- `measurementIdDemo` is used on hosts whose name contains `demo`.
+- Every other host, including local development, never loads Google Analytics.
+- Either id, or the whole block, can be left out. A missing id switches tracking off for that environment and raises no banner.
+- An id must look like a Google tag id, for example `G-ABC123XYZ`. Anything else is ignored.
+
+---
+
+## Branding
+
+The app shows a neutral RAiD look by default. It applies an agency's branding only when the Keycloak realm uses a custom login theme.
+
+### How the app decides
+
+On every page load the app asks Keycloak which login theme the realm uses for this client:
+
+`GET {keycloak.url}/realms/{keycloak.realm}/theme?client_id={keycloak.clientId}`
+
+The answer is `{"loginTheme": "<name>"}` or `{"loginTheme": null}`. The app shows a spinner until it knows. There is no timeout and no cache.
+
+| Answer | What the app shows |
+|--------|--------------------|
+| `raid-custom` or `null` | The neutral look. The `theme`, `header` and `footer` sections of `app-config.json` are ignored. |
+| Any other theme, for example `ardc-branding` | The sections in `app-config.json`, merged over the neutral look. A field you leave out keeps its neutral value. |
+| The lookup fails (network error, any non-2xx answer, a body that is not JSON, or no `loginTheme` field) | The neutral look, plus a warning banner: "We could not load this site's branding, so the default RAiD look is shown." The banner has a **Reload** button and the `supportEmail` address. |
+
+The theme endpoint is part of the Keycloak provider in `iam/`. Deploy it to the realm before you release a web app that depends on it. Until then, every visitor sees the failed lookup banner. The browser also logs a CORS error, because Keycloak's own 404 page has no CORS headers. The client's **Web origins** must include the web app's origin.
+
+### The branding sections
+
+These sit at the top level of `app-config.json`, after the services and `app` sections. See [app-config.ardc.example.json](../../../raid-agency-app/app-config-examples/app-config.ardc.example.json) for a full example.
+
+| Field | Values | Notes |
+|-------|--------|-------|
+| `theme` | MUI palette, typography, shape and mode | `palette.primary`, `secondary`, `background`, `error`, `warning`, `info`, `success`, `text`; `typography.fontFamily`, `fontSize`; `shape.borderRadius`; `mode` |
+| `header.title` | text | Shown beside the logo |
+| `header.logo` | `light`, `dark`, `alt`, `height` | `light` shows in light mode, `dark` in dark mode |
+| `header.navLinks` | list of `{ "label", "path" }` | Shown after Home and Your RAiDs. There are no default links. |
+| `header.menu` | `none` or `ardc` | `ardc` mounts the ARDC mega menu and loads its script. `none` loads no script. |
+| `footer.variant` | `generic` or `ardc` | `ardc` uses the ARDC footer component and loads its script. `generic` shows only the links below and loads no script. |
+| `footer.links` | list of `{ "label", "path" }` | A link flagged `"contact": true` is used as the contact address and is not listed in the footer. |
+
+Every link needs a `label`, and its `path` must be an `https` or `mailto` address. A link that fails this is dropped and named in the warning banner. Web links open in a new tab.
+
+### Where the branding lives
+
+Branding belongs only in the external `app-config.json` for each environment (S3, a volume mount or `APP_CONFIG_URL`). Do not add it to `public/app-config.json`, which is only the local development default.
+
+### Moving from the old layout
+
+Earlier releases read branding from a `branding` wrapper (`branding.header`, `branding.footer`, `branding.content`, `branding.theme`). This release ignores it and shows an amber banner: "Some configuration is no longer used: branding." Do this once for each environment:
+
+1. Move `theme`, `header` and `footer` from inside `branding` to the top level.
+2. Rewrite `header.logo.src` as `header.logo.light` and `header.logo.dark`.
+3. Rewrite the footer: use `footer.variant` and `footer.links`. The old `footer.main`, `copyright`, `showSocialLinks` and `socialLinks` are no longer used.
+4. Delete the `branding` key, including `branding.content` and `branding.default`.
+5. Add `supportEmail` if it is missing. The app does not start without it.
+6. Check that the realm's login theme is the one you expect, then deploy the file and reload the page.
 
 ---
 
@@ -348,4 +419,12 @@ The app cannot start. Only a minimal header and the banner are shown, on every p
 
 The app runs, but the listed features may not work. The banner appears under the header on every page. When signed out, the login page pauses with a **Continue to log in** button so the banner can be read.
 
-**To fix either banner:** correct `app-config.json` for the environment using the steps above for your deployment type, then reload the page. No rebuild is needed.
+**Amber banner: "Some configuration is no longer used"**
+
+`app-config.json` still has the old `branding` key. Follow [Moving from the old layout](#moving-from-the-old-layout).
+
+**Amber banner: "We could not load this site's branding"**
+
+The app could not look up the realm's login theme, so it shows the neutral look. The configuration file is fine. Reload the page. If it continues, check that `{keycloak.url}/realms/{keycloak.realm}/theme?client_id={keycloak.clientId}` returns JSON from the browser, that Keycloak has the theme endpoint deployed, and that the client's **Web origins** include the web app's origin. On the login page the app pauses with a **Continue to log in** button so the banner can be read.
+
+**To fix a banner about `app-config.json`:** correct `app-config.json` for the environment using the steps above for your deployment type, then reload the page. No rebuild is needed.

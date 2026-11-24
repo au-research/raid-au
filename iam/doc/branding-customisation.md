@@ -2,44 +2,52 @@
 
 ## 1. React App — Custom Branding via `app-config.json`
 
-The React app reads branding at runtime from `app-config.json`. No rebuild is required — update the config file and reload the page.
+The React app reads its branding at runtime. No rebuild is required: update the config file and reload the page.
 
-Add a `branding` key to your `app-config.json` with only the fields you want to override. Anything omitted falls back to the defaults in `src/config/DefaultConfig.ts`.
+The app shows a neutral RAiD look unless the realm's Keycloak login theme is a custom one. On every page load it asks Keycloak for the theme (`GET /realms/{realm}/theme?client_id={clientId}`):
+
+- `raid-custom` or no theme: the neutral look. The branding sections of `app-config.json` are ignored.
+- Any other theme, such as `ardc-branding`: the `theme`, `header` and `footer` sections of `app-config.json`, merged over the neutral look.
+- The lookup fails: the neutral look and a banner asking people to reload.
+
+So the Keycloak theme decides whether branding applies, and `app-config.json` supplies the values. Add the sections at the top level of `app-config.json`, with only the fields you want to set. A field you leave out keeps its neutral value.
 
 ```json
 {
-  "keycloak": { "..." : "..." },
+  "keycloak": { "url": "https://iam.example.org", "realm": "raid", "clientId": "raid-api" },
   "apiBaseUrl": "https://api.example.org",
-  "branding": {
-    "header": {
-      "title": "My Organisation",
-      "logo": { "src": "/my-logo.svg", "alt": "My Logo" }
-    },
-    "footer": {
-      "copyright": "© 2025 My Organisation"
-    },
-    "theme": {
-      "palette": {
-        "primary": { "main": "#2a2f8f" },
-        "secondary": { "main": "#e65100" }
-      }
+  "environment": "prod",
+  "supportEmail": "support@example.org",
+  "theme": {
+    "palette": {
+      "primary": { "main": "#2a2f8f" },
+      "secondary": { "main": "#e65100" }
     }
+  },
+  "header": {
+    "title": "My Organisation RAiD",
+    "logo": { "light": "/my-logo.svg", "dark": "/my-logo-dark.svg", "alt": "My Organisation" },
+    "navLinks": [{ "label": "About", "path": "https://example.org/about" }],
+    "menu": "none"
+  },
+  "footer": {
+    "variant": "generic",
+    "links": [{ "label": "Privacy policy", "path": "https://example.org/privacy" }]
   }
 }
 ```
 
 ### Configurable branding fields
 
-See `src/config/Appconfig.ts` for the full type definitions. The main overridable sections are:
+| Section | Fields |
+|---------|--------|
+| `theme` | `palette` (`primary`, `secondary`, `background`, `error`, `warning`, `info`, `success`, `text`), `typography` (`fontFamily`, `fontSize`), `shape.borderRadius`, `mode` |
+| `header` | `title`, `logo` (`light`, `dark`, `alt`, `height`), `navLinks`, `menu` (`none` or `ardc`) |
+| `footer` | `variant` (`generic` or `ardc`), `links` |
 
-| Section | Key fields |
-|---------|-----------|
-| `header` | `title`, `subtitle`, `logo.src`, `logo.alt`, `logo.height`, `navLinks` |
-| `footer` | `copyright`, `links`, `main.logos`, `main.text`, `showSocialLinks`, `socialLinks` |
-| `content.landingPage` | `heroTitle`, `heroSubtitle`, `showHero` |
-| `theme.palette` | `primary`, `secondary`, `background`, `error`, `warning`, `info`, `success`, `text` |
-| `theme.typography` | `fontFamily`, `fontSize` |
-| `theme.shape` | `borderRadius` |
+Links need a `label` and an `https` or `mailto` address. `menu: "ardc"` and `variant: "ardc"` load ARDC web component scripts, so use them only for ARDC branding. For the full field rules, the one-time move from the old `branding` wrapper, and how failures show, see [DEPLOYMENT.md](../../doc/UI/raid-agency-app/DEPLOYMENT.md#branding). Ready-made examples are in `raid-agency-app/app-config-examples/`.
+
+Branding belongs only in the external `app-config.json` for each environment, never in `public/`.
 
 ### Deployment
 
