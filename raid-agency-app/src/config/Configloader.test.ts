@@ -336,4 +336,54 @@ describe("loadConfig", () => {
       expect(issues.retired ?? []).toEqual([]);
     });
   });
+
+  describe("googleAnalytics is optional", () => {
+    const { googleAnalytics: _, ...withoutGA } = mockValidConfig;
+
+    it("raises no issue when the section is absent", async () => {
+      vi.stubGlobal("fetch", mockFetch(withoutGA));
+
+      const { issues } = await loadConfig();
+
+      expect(issues).toEqual({ missing: [], invalid: [] });
+    });
+
+    it("keeps one id when the other is absent", async () => {
+      vi.stubGlobal("fetch", mockFetch({ ...withoutGA, googleAnalytics: { measurementId: "G-123" } }));
+
+      const { runtime, issues } = await loadConfig();
+
+      expect(runtime.googleAnalytics).toEqual({ measurementId: "G-123" });
+      expect(issues).toEqual({ missing: [], invalid: [] });
+    });
+
+    it.each([
+      ["null", null],
+      ["a string", "G-123"],
+      ["a list", ["G-123"]],
+    ])("ignores the section when it is %s", async (_label, value) => {
+      vi.stubGlobal("fetch", mockFetch({ ...withoutGA, googleAnalytics: value }));
+
+      const { runtime, issues } = await loadConfig();
+
+      expect(runtime.googleAnalytics).toEqual({});
+      expect(issues).toEqual({ missing: [], invalid: [] });
+    });
+
+    it.each([
+      ["blank", "   "],
+      ["a number", 123],
+      ["not an id", "G-1'); alert(1); //"],
+    ])("drops a measurement id that is %s", async (_label, value) => {
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({ ...withoutGA, googleAnalytics: { measurementId: value, measurementIdDemo: value } })
+      );
+
+      const { runtime, issues } = await loadConfig();
+
+      expect(runtime.googleAnalytics).toEqual({});
+      expect(issues).toEqual({ missing: [], invalid: [] });
+    });
+  });
 });

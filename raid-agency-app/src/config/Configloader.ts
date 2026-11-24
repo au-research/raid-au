@@ -53,6 +53,24 @@ function describeIssues(issues: ConfigIssues): string {
   return parts.join("; ");
 }
 
+// Google Analytics is optional. The section, and each id in it, may be left
+// out. An id that does not look like a Google tag id (for example "G-ABC123XYZ")
+// is dropped, because the id is written into a script tag.
+const GOOGLE_TAG_ID = /^[A-Za-z]{1,3}-[A-Za-z0-9-]+$/;
+
+function googleTagId(value: unknown): string | undefined {
+  return typeof value === "string" && GOOGLE_TAG_ID.test(value) ? value : undefined;
+}
+
+function readGoogleAnalytics(value: unknown): RuntimeConfig["googleAnalytics"] {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return {};
+  const { measurementId, measurementIdDemo } = value as Record<string, unknown>;
+  return {
+    measurementId: googleTagId(measurementId),
+    measurementIdDemo: googleTagId(measurementIdDemo),
+  };
+}
+
 export async function loadConfig(): Promise<{
   runtime: RuntimeConfig;
   /**
@@ -91,7 +109,7 @@ export async function loadConfig(): Promise<{
       typeof raw.contactEmail === "string" && raw.contactEmail.trim() !== ""
         ? raw.contactEmail
         : undefined,
-    googleAnalytics: raw.googleAnalytics ?? {},
+    googleAnalytics: readGoogleAnalytics(raw.googleAnalytics),
     services: raw.services ?? {},
     app: { ...raw.app, orcid: { ...raw.app?.orcid } },
   };
