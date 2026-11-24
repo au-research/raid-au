@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Box, Link, Stack, Typography } from '@mui/material';
+import { Fragment, ReactNode, useEffect } from 'react';
+import { Box, Link, Typography, useTheme } from '@mui/material';
 import { NavLink, useBranding, useRuntimeConfig } from '@/config';
 import { useExternalScript } from '@/hooks/useExternalScript';
 import { EXTERNAL_LINKS } from '@/constants/external-links';
@@ -82,54 +82,93 @@ const ArdcFooter = ({ links }: { links: NavLink[] }) => {
 // the ARDC footer's own contact area, not in the legal links.
 const withoutContactEntries = (links: NavLink[]) => links.filter((link) => !link.contact);
 
-const MailLink = ({ label, address }: { label: string; address: string }) => (
-    <Typography variant="body2" color="text.secondary" component="span">
-        {label}:{' '}
-        <Link href={`mailto:${address}`} color="inherit" underline="hover">
-            {address}
-        </Link>
-    </Typography>
+const textColor = { light: 'text.secondary', dark: 'grey.400' } as const;
+
+const Separator = () => (
+    <Box
+        component="li"
+        aria-hidden="true"
+        data-testid="footer-separator"
+        sx={{ width: '1px', height: 14, bgcolor: 'currentColor', opacity: 0.35, listStyle: 'none' }}
+    />
 );
 
 // Simple footer for agencies without ARDC branding: the configured links, the
-// helpdesk address and, when set, the contact address. It names no agency and
+// helpdesk address and, when set, the contact address, on one centred line with
+// a separator between each. It has the header's background, names no agency and
 // loads no external script.
 const GenericFooter = ({ links }: { links: NavLink[] }) => {
+    const theme = useTheme();
     const { supportEmail, contactEmail } = useRuntimeConfig();
+    const isDark = theme.palette.mode === 'dark';
+
+    const items: ReactNode[] = [
+        ...links.map((link) => (
+            <Link
+                key={`${link.label}|${link.path}`}
+                href={link.path}
+                color="inherit"
+                underline="hover"
+                {...(link.path.startsWith('https:')
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+            >
+                {link.label}
+            </Link>
+        )),
+        <span key="support">
+            Support:{' '}
+            <Link href={`mailto:${supportEmail}`} color="inherit" underline="always">
+                {supportEmail}
+            </Link>
+        </span>,
+    ];
+    if (contactEmail) {
+        items.push(
+            <span key="contact">
+                Contact:{' '}
+                <Link href={`mailto:${contactEmail}`} color="inherit" underline="always">
+                    {contactEmail}
+                </Link>
+            </span>
+        );
+    }
 
     return (
-        <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', py: 3, px: 2 }}>
-            <Stack alignItems="center" gap={1.5}>
-                {links.length > 0 && (
-                    <Stack
-                        component="ul"
-                        direction="row"
-                        flexWrap="wrap"
-                        justifyContent="center"
-                        gap={3}
-                        sx={{ listStyle: 'none', m: 0, p: 0 }}
-                    >
-                        {links.map((link) => (
-                            <li key={`${link.label}|${link.path}`}>
-                                <Link
-                                    href={link.path}
-                                    color="text.secondary"
-                                    underline="hover"
-                                    {...(link.path.startsWith('https:')
-                                        ? { target: '_blank', rel: 'noopener noreferrer' }
-                                        : {})}
-                                >
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </Stack>
-                )}
-                <Stack direction="row" flexWrap="wrap" justifyContent="center" columnGap={3}>
-                    <MailLink label="Support" address={supportEmail} />
-                    {contactEmail && <MailLink label="Contact" address={contactEmail} />}
-                </Stack>
-            </Stack>
+        <Box
+            component="footer"
+            sx={{
+                // The same background as the header (see AppNavBar).
+                bgcolor: isDark ? 'black' : 'white',
+                color: isDark ? textColor.dark : textColor.light,
+                borderTop: 1,
+                borderColor: isDark ? 'grey.800' : 'divider',
+                py: 2,
+                px: 2,
+            }}
+        >
+            <Typography
+                variant="body2"
+                component="ul"
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    columnGap: 2,
+                    rowGap: 1,
+                    listStyle: 'none',
+                    m: 0,
+                    p: 0,
+                }}
+            >
+                {items.map((item, index) => (
+                    <Fragment key={index}>
+                        {index > 0 && <Separator />}
+                        <li>{item}</li>
+                    </Fragment>
+                ))}
+            </Typography>
         </Box>
     );
 };

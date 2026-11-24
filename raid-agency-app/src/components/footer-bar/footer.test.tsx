@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
   Branding,
   BrandingProvider,
@@ -29,14 +30,22 @@ const runtime: RuntimeConfig = {
   app: { orcid: {} },
 };
 
-const renderFooter = (branding: Branding = neutralBranding, config: RuntimeConfig = runtime) =>
+const renderFooter = (
+  branding: Branding = neutralBranding,
+  config: RuntimeConfig = runtime,
+  mode: "light" | "dark" = "light"
+) =>
   render(
-    <RuntimeConfigProvider config={config}>
-      <BrandingProvider branding={branding}>
-        <Footer />
-      </BrandingProvider>
-    </RuntimeConfigProvider>
+    <ThemeProvider theme={createTheme({ palette: { mode } })}>
+      <RuntimeConfigProvider config={config}>
+        <BrandingProvider branding={branding}>
+          <Footer />
+        </BrandingProvider>
+      </RuntimeConfigProvider>
+    </ThemeProvider>
   );
+
+const separators = () => screen.queryAllByTestId("footer-separator");
 
 const footerScripts = () =>
   Array.from(document.querySelectorAll("script")).filter((s) => s.src.includes(FOOTER_SCRIPT));
@@ -78,6 +87,28 @@ describe("Footer", () => {
       expect(within(footer).getByRole("link", { name: "help@example.org" })).toBeInTheDocument();
     });
 
+    it("has no separator when there is only one item", () => {
+      renderFooter();
+
+      expect(separators()).toHaveLength(0);
+    });
+
+    it("has 16px vertical padding and the header's white background in light mode", () => {
+      renderFooter();
+
+      expect(screen.getByRole("contentinfo")).toHaveStyle({
+        paddingTop: "16px",
+        paddingBottom: "16px",
+        backgroundColor: "rgb(255, 255, 255)",
+      });
+    });
+
+    it("has the header's black background in dark mode", () => {
+      renderFooter(neutralBranding, runtime, "dark");
+
+      expect(screen.getByRole("contentinfo")).toHaveStyle({ backgroundColor: "rgb(0, 0, 0)" });
+    });
+
     it("names no agency and loads no ARDC script or element", () => {
       const { container } = renderFooter();
 
@@ -98,6 +129,23 @@ describe("Footer", () => {
       );
       expect(within(footer).getByRole("link", { name: "Privacy policy" })).toBeInTheDocument();
       expect(within(footer).queryByText("services@example.org")).not.toBeInTheDocument();
+    });
+
+    it("puts links, support and contact on one line with a separator between each", () => {
+      renderFooter(withFooter({ variant: "generic", links }), {
+        ...runtime,
+        contactEmail: "contact@example.org",
+      });
+
+      const items = screen.getAllByRole("listitem").filter((li) => li.dataset.testid !== "footer-separator");
+      expect(items.map((li) => li.textContent)).toEqual([
+        "Terms of use",
+        "Privacy policy",
+        "Support: help@example.org",
+        "Contact: contact@example.org",
+      ]);
+      expect(separators()).toHaveLength(3);
+      separators().forEach((separator) => expect(separator).toHaveAttribute("aria-hidden", "true"));
     });
 
     it("shows the support address as well as the configured links", () => {
