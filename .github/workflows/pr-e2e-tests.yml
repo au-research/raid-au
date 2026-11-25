@@ -21,7 +21,10 @@ jobs:
   e2e-tests:
     needs: check-paths
     if: needs.check-paths.outputs.frontend-changed == 'true'
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is now Ubuntu 26.04, which Playwright 1.59.1 does not
+    # support ("Playwright does not support chromium on ubuntu26.04-x64"). Move
+    # back to ubuntu-latest once Playwright is upgraded to a version that does.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
