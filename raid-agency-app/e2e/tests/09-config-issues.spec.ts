@@ -159,4 +159,59 @@ test.describe("Configuration issues", () => {
       await context.close();
     });
   });
+
+  test.describe("ARDC components follow the login theme (RAID-1065)", () => {
+    const themeEndpoint = /\/realms\/[^/]+\/theme/;
+    const ardcScript = /ardc\.edu\.au\/wp-content\/plugins\/ardc-custom-web-components/;
+
+    const answerTheme = (page: Page, loginTheme: string | null) =>
+      page.route(themeEndpoint, (route) =>
+        route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ loginTheme }) })
+      );
+
+    // The config asks for the ARDC components. Only a custom login theme may
+    // act on it.
+    const askForArdcComponents = (page: Page) =>
+      patchAppConfig(page, (config) => {
+        config.header = { ...config.header, menu: "ardc" };
+        config.footer = { ...config.footer, variant: "ardc" };
+      });
+
+    test("neutral branding mounts no ARDC component and requests no ARDC script", async ({ page }) => {
+      const ardcRequests: string[] = [];
+      page.on("request", (request) => {
+        if (ardcScript.test(request.url())) ardcRequests.push(request.url());
+      });
+      await answerTheme(page, "raid-custom");
+      await askForArdcComponents(page);
+
+      await page.goto("/raids");
+
+      await expect(page.getByTestId("app-nav-bar")).toBeVisible();
+      await expect(page.locator("ardc-megamenu")).toHaveCount(0);
+      await expect(page.locator("ardc-footer")).toHaveCount(0);
+      expect(ardcRequests).toEqual([]);
+    });
+
+    test("a custom theme mounts the ARDC mega-menu and footer", async ({ page }) => {
+      await answerTheme(page, "ardc-branding");
+      await askForArdcComponents(page);
+
+      await page.goto("/raids");
+
+      await expect(page.getByTestId("app-nav-bar")).toBeVisible();
+      await expect(page.locator("ardc-megamenu")).toBeAttached();
+      await expect(page.locator("ardc-footer")).toBeAttached();
+    });
+
+    test("neutral branding shows the simple footer with the support address", async ({ page }) => {
+      await answerTheme(page, "raid-custom");
+
+      await page.goto("/raids");
+
+      const footer = page.getByRole("contentinfo");
+      await expect(footer).toContainText("Support:");
+      await expect(footer.getByRole("link").first()).toHaveAttribute("href", /^mailto:/);
+    });
+  });
 });
