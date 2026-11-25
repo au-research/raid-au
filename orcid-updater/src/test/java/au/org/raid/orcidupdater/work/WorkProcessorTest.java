@@ -16,6 +16,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.mockito.ArgumentCaptor;
 
 import java.time.Clock;
@@ -37,7 +40,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @DisplayName("WorkProcessor")
+@ExtendWith(OutputCaptureExtension.class)
 class WorkProcessorTest {
+    private static final String BARE_ID = "0000-0002-1825-0097";
     private static final Instant NOW = Instant.parse("2026-10-27T01:00:00Z");
     private static final String ID = "https://orcid.org/0000-0002-1825-0097";
     private static final String HANDLE = "10.82841/86bf1b6c";
@@ -240,6 +245,75 @@ class WorkProcessorTest {
             final var next = ArgumentCaptor.forClass(Instant.class);
             verify(workRepository).recordFailure(any(), any(), eq(NOW), next.capture());
             assertThat(next.getValue()).isEqualTo(NOW.plusSeconds(30L << 16));
+        }
+    }
+
+    @Nested
+    @DisplayName("Logging")
+    class Logging {
+        @Test
+        @DisplayName("A status pushed for an authenticated contributor is logged without their ORCID iD")
+        void statusPushed(final CapturedOutput output) {
+            when(statusService.statusOf(ID)).thenReturn(ContributorStatus.AUTHENTICATED);
+            when(raidServiceClient.findHandlesByContributor(ID)).thenReturn(List.of(HANDLE));
+
+            processor.process(status(0));
+
+            assertThat(output.getAll()).contains("Status AUTHENTICATED set for a contributor")
+                    .contains("1 RAiD(s) queued for ORCID").doesNotContain(BARE_ID);
+        }
+
+        @Test
+        @DisplayName("A status the RAiD API has no contributor for is logged without the ORCID iD")
+        void noContributor(final CapturedOutput output) {
+            when(statusService.statusOf(ID)).thenReturn(ContributorStatus.UNAUTHENTICATED);
+            when(raidServiceClient.updateContributorStatus(any(), any())).thenReturn(false);
+
+            processor.process(status(0));
+
+            assertThat(output.getAll()).contains("no contributor with this iD").doesNotContain(BARE_ID);
+        }
+
+        @Test
+        @DisplayName("Retrying, giving up and unexpected failures on a STATUS item name the kind, not the iD")
+        void statusFailures(final CapturedOutput output) {
+            when(statusService.statusOf(ID)).thenReturn(ContributorStatus.AUTHENTICATED);
+            when(raidServiceClient.updateContributorStatus(any(), any()))
+                    .thenThrow(new RaidApiUnavailableException("RAiD API returned 504 setting a contributor's status"));
+
+            processor.process(status(0));
+            processor.process(status(4));
+            when(statusService.statusOf(ID)).thenThrow(new IllegalStateException("boom"));
+            processor.process(status(0));
+
+            assertThat(output.getAll()).contains("STATUS for a contributor: attempt 1 failed")
+                    .contains("STATUS for a contributor: gave up after 5 attempts")
+                    .contains("STATUS for a contributor: unexpected failure")
+                    .doesNotContain(BARE_ID);
+        }
+
+        @Test
+        @DisplayName("A RAID_SYNC item's failures name the RAiD handle")
+        void syncFailures(final CapturedOutput output) {
+            when(raidServiceClient.findRaid(HANDLE)).thenThrow(new RaidApiUnavailableException("down"));
+
+            processor.process(sync());
+
+            assertThat(output.getAll()).contains("RAID_SYNC " + HANDLE + ": attempt 1 failed");
+        }
+
+        @Test
+        @DisplayName("A synced RAiD logs how many contributors had each outcome, not who they were")
+        void syncOutcomeCounts(final CapturedOutput output) throws Exception {
+            when(raidServiceClient.findRaid(HANDLE)).thenReturn(Optional.of(raid(WorkProcessor.OPEN_ACCESS)));
+            when(orcidWriter.sync(any())).thenReturn(List.of(
+                    new OrcidWriter.EntryOutcome(ID, OrcidWriter.Outcome.NOT_AUTHENTICATED),
+                    new OrcidWriter.EntryOutcome("https://orcid.org/0000-0001-5109-3700", OrcidWriter.Outcome.NOT_AUTHENTICATED)));
+
+            processor.process(sync());
+
+            assertThat(output.getAll()).contains("RAiD " + HANDLE + " synced to ORCID: {NOT_AUTHENTICATED=2}")
+                    .doesNotContain(BARE_ID).doesNotContain("0000-0001-5109-3700");
         }
     }
 

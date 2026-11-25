@@ -118,6 +118,28 @@ class OrcidMemberClientTest {
     }
 
     @Test
+    @DisplayName("An ORCID iD in ORCID's developer message is redacted, as the failure is logged and stored")
+    void developerMessageRedacted() {
+        server.expect(requestTo(MEMBERSHIPS)).andRespond(withStatus(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("""
+                        {"response-code": 403, "developer-message": "403 Forbidden: not allowed to modify record 0000-0002-1825-0097"}
+                        """));
+
+        assertThatThrownBy(() -> client.create(ID, "t", MEMBERSHIP))
+                .hasMessage("ORCID returned 403: 403 Forbidden: not allowed to modify record [ORCID iD]");
+    }
+
+    @Test
+    @DisplayName("No response: the connection error's URL is redacted")
+    void unreachableRedacted() {
+        server.expect(requestTo(MEMBERSHIPS)).andRespond(withException(new IOException("connect timed out")));
+
+        assertThatThrownBy(() -> client.create(ID, "t", MEMBERSHIP))
+                .message().startsWith("ORCID could not be reached").doesNotContain("0000-0002-1825-0097");
+    }
+
+    @Test
     @DisplayName("The member API takes the bare iD")
     void bareId() {
         assertThat(OrcidMemberClient.bareId(ID)).isEqualTo("0000-0002-1825-0097");

@@ -51,8 +51,8 @@ public class InvitationService {
 
             final var remembered = researcherRepository.findOrcidIdByConsentedEmailHash(emailHash);
             if (remembered.isPresent()) {
-                log.info("Invitation for {} on {} matched a researcher who chose Remember me; no email sent",
-                        request.contributorId(), request.handle());
+                log.info("Invitation on {} matched a researcher who chose Remember me; no email sent",
+                        request.handle());
                 // the researcher is already authenticated, so the RAiD can be written straight away
                 workQueue.requestRaidSync(request.handle());
                 return new InvitationResponse(remembered.get(), ContributorStatus.AUTHENTICATED, false, null);
@@ -61,8 +61,8 @@ public class InvitationService {
             final var now = clock.instant();
             final var pending = invitationRepository.findPendingExpiry(request.contributorId(), now);
             if (pending.isPresent()) {
-                log.info("Invitation for {} on {} already pending until {}; no email sent",
-                        request.contributorId(), request.handle(), pending.get());
+                log.info("Invitation on {} already pending until {}; no email sent",
+                        request.handle(), pending.get());
                 return new InvitationResponse(request.contributorId(), ContributorStatus.AWAITING_AUTHENTICATION,
                         false, pending.get());
             }
@@ -76,8 +76,7 @@ public class InvitationService {
             final var link = properties.appUrl("/invitations/" + token.encode());
             emailSender.send(request.email(), raid, link, expiresAt);
 
-            log.info("Invitation {} sent for {} on {}, expires {}",
-                    id, request.contributorId(), request.handle(), expiresAt);
+            log.info("Invitation {} sent on {}, expires {}", id, request.handle(), expiresAt);
             return new InvitationResponse(request.contributorId(), ContributorStatus.AWAITING_AUTHENTICATION,
                     true, expiresAt);
         });

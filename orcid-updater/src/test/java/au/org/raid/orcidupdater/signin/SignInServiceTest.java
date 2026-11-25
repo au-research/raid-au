@@ -6,6 +6,7 @@ import au.org.raid.orcidupdater.crypto.LinkCipher;
 import au.org.raid.orcidupdater.crypto.TokenCipher;
 import au.org.raid.orcidupdater.invitation.Invitation;
 import au.org.raid.orcidupdater.invitation.InvitationRepository;
+import au.org.raid.orcidupdater.orcid.OrcidMemberClient;
 import au.org.raid.orcidupdater.researcher.ResearcherRepository;
 import au.org.raid.orcidupdater.signin.InvalidInvitationLinkException.Reason;
 import au.org.raid.orcidupdater.signin.OAuthStateRepository.OAuthState;
@@ -333,12 +334,13 @@ class SignInServiceTest {
         }
 
         @Test
-        @DisplayName("Logs never contain the state, the code or the ORCID tokens")
+        @DisplayName("Logs never contain the state, the code, the ORCID tokens or the ORCID iD")
         void nothingSecretLogged(final CapturedOutput output) {
             service.completeSignIn(STATE, CODE, null);
 
-            assertThat(output.getAll()).contains(TYPED_ID)
-                    .doesNotContain(STATE, CODE, "access-token-value", "refresh-token-value");
+            assertThat(output.getAll()).contains("authenticated, iD as typed")
+                    .doesNotContain(STATE, CODE, "access-token-value", "refresh-token-value")
+                    .doesNotContain(OrcidMemberClient.bareId(TYPED_ID));
         }
 
         @Test
