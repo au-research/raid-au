@@ -328,6 +328,39 @@ describe("loadConfig", () => {
       expect(String(warn.mock.calls[0][0])).toContain("no longer used: branding");
     });
 
+    it("does not apply anything from inside the retired branding key", async () => {
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({
+          ...mockValidConfig,
+          branding: {
+            header: { title: "Old layout title", menu: "ardc" },
+            footer: { variant: "ardc", links: [{ label: "Old", path: "https://example.org/old" }] },
+            theme: { mode: "dark" },
+          },
+        })
+      );
+
+      const { branding } = await loadConfig();
+
+      expect(branding).toEqual({ theme: {}, header: {}, footer: {} });
+    });
+
+    it("takes the top-level sections and ignores a retired branding key beside them", async () => {
+      vi.stubGlobal(
+        "fetch",
+        mockFetch({
+          ...mockValidConfig,
+          header: { title: "New layout title" },
+          branding: { header: { title: "Old layout title" } },
+        })
+      );
+
+      const { branding } = await loadConfig();
+
+      expect(branding.header).toEqual({ title: "New layout title" });
+    });
+
     it("reports no retired key for a file in the new layout", async () => {
       vi.stubGlobal("fetch", mockFetch({ ...mockValidConfig, ...newLayout }));
 

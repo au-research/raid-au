@@ -5,6 +5,7 @@ import {
   resolveBranding,
 } from "./ResolveBranding";
 import { neutralBranding } from "./DefaultConfig";
+import { CONFIG_FIELD_RULES, readPath } from "./ConfigValidation";
 
 // What an agency with a custom realm theme would put in app-config.json.
 const configuredBranding = {
@@ -155,5 +156,58 @@ describe("resolveBranding: shared state", () => {
 
     expect(neutralBranding.header.title).toBe("RAiD");
     expect(neutralBranding.footer.links).toEqual([]);
+  });
+});
+
+describe("every documented branding field takes effect", () => {
+  // The fields DEPLOYMENT.md documents for a custom login theme, each set to
+  // a distinct value. A field that the code stopped reading would fail here.
+  const documented: Array<[string, Record<string, unknown>, unknown]> = [
+    ["theme.palette.primary.main", { theme: { palette: { primary: { main: "#123456" } } } }, "#123456"],
+    ["theme.palette.secondary.main", { theme: { palette: { secondary: { main: "#654321" } } } }, "#654321"],
+    ["theme.palette.background.default", { theme: { palette: { background: { default: "#abcdef" } } } }, "#abcdef"],
+    ["theme.typography.fontFamily", { theme: { typography: { fontFamily: "Test Sans" } } }, "Test Sans"],
+    ["theme.typography.fontSize", { theme: { typography: { fontSize: 17 } } }, 17],
+    ["theme.shape.borderRadius", { theme: { shape: { borderRadius: 2 } } }, 2],
+    ["theme.mode", { theme: { mode: "dark" } }, "dark"],
+    ["header.title", { header: { title: "Distinct title" } }, "Distinct title"],
+    ["header.logo.light", { header: { logo: { light: "/l.svg" } } }, "/l.svg"],
+    ["header.logo.dark", { header: { logo: { dark: "/d.svg" } } }, "/d.svg"],
+    ["header.logo.alt", { header: { logo: { alt: "Distinct alt" } } }, "Distinct alt"],
+    ["header.logo.height", { header: { logo: { height: 31 } } }, 31],
+    ["header.menu", { header: { menu: "ardc" } }, "ardc"],
+    ["footer.variant", { footer: { variant: "ardc" } }, "ardc"],
+  ];
+
+  it.each(documented)("%s", (path, section, expected) => {
+    const resolved = resolveBranding({ theme: {}, header: {}, footer: {}, ...section }, "ardc-branding");
+
+    expect(readPath(resolved as unknown as Record<string, unknown>, path)).toEqual(expected);
+  });
+
+  it("reads the navigation and footer link lists", () => {
+    const resolved = resolveBranding(
+      {
+        theme: {},
+        header: { navLinks: [{ label: "About", path: "https://example.org/about" }] },
+        footer: { links: [{ label: "Privacy", path: "https://example.org/privacy" }] },
+      },
+      "ardc-branding"
+    );
+
+    expect(resolved.header.navLinks).toEqual([{ label: "About", path: "https://example.org/about" }]);
+    expect(resolved.footer.links).toEqual([{ label: "Privacy", path: "https://example.org/privacy" }]);
+  });
+
+  it("is kept in step with the validated fields, so a new field cannot be added unread", () => {
+    const validated = CONFIG_FIELD_RULES.map((rule) => rule.path).filter((path) =>
+      /^(theme|header|footer)\./.test(path)
+    );
+    const covered = new Set([...documented.map(([path]) => path), "header.navLinks", "footer.links"]);
+    const containers = new Set(["header.logo"]);
+
+    const unread = validated.filter((path) => !covered.has(path) && !containers.has(path));
+
+    expect(unread).toEqual([]);
   });
 });

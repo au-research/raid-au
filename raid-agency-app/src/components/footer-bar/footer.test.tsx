@@ -192,6 +192,14 @@ describe("Footer", () => {
       expect(footerScripts()).toHaveLength(1);
     });
 
+    it("hides the ARDC footer, and does not throw, when its script cannot be loaded", () => {
+      const { container } = renderFooter(withFooter({ variant: "ardc", links }));
+
+      expect(() => footerScripts()[0].dispatchEvent(new Event("error"))).not.toThrow();
+
+      expect(container.querySelector<HTMLElement>("ardc-footer")!.style.display).toBe("none");
+    });
+
     it("renders even when no legal links are configured", () => {
       const { container } = renderFooter(withFooter({ variant: "ardc", links: [] }));
 
