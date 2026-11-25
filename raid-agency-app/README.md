@@ -79,7 +79,7 @@ npm run build
 
 This will create a production-ready build in the `dist` directory.
 
-For deploying to AWS S3 + CloudFront, Docker, or Kubernetes, see [DEPLOYMENT.md](DEPLOYMENT.md).
+For deploying to AWS S3 + CloudFront, Docker, or Kubernetes, see [DEPLOYMENT.md](../doc/UI/raid-agency-app/DEPLOYMENT.md).
 
 ## Testing
 

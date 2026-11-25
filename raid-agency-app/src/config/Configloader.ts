@@ -1,42 +1,11 @@
-import { AppConfig } from "./Appconfig";
 import { RuntimeConfig } from "./RuntimeConfig";
-import { defaultConfig } from "./DefaultConfig";
 import {
   ConfigError,
   ConfigIssues,
   hasConfigIssues,
   validateConfig,
 } from "./ConfigValidation";
-
-function deepMerge<T extends Record<string, any>>(
-  target: T,
-  source: Partial<T>
-): T {
-  const result = { ...target };
-
-  for (const key of Object.keys(source) as Array<keyof T>) {
-    const sourceVal = source[key];
-    const targetVal = target[key];
-
-    if (
-      sourceVal !== null &&
-      sourceVal !== undefined &&
-      typeof sourceVal === "object" &&
-      !Array.isArray(sourceVal) &&
-      typeof targetVal === "object" &&
-      !Array.isArray(targetVal)
-    ) {
-      result[key] = deepMerge(
-        targetVal as Record<string, any>,
-        sourceVal as Record<string, any>
-      ) as T[keyof T];
-    } else if (sourceVal !== undefined) {
-      result[key] = sourceVal as T[keyof T];
-    }
-  }
-
-  return result;
-}
+import { RawBranding, sanitiseBranding } from "./SanitiseBranding";
 
 async function fetchConfigFile(): Promise<Record<string, any>> {
   let response: Response;
@@ -78,12 +47,38 @@ function describeIssues(issues: ConfigIssues): string {
   const parts: string[] = [];
   if (issues.missing.length > 0) parts.push(`missing: ${issues.missing.join(", ")}`);
   if (issues.invalid.length > 0) parts.push(`invalid: ${issues.invalid.join(", ")}`);
+  if (issues.retired && issues.retired.length > 0) {
+    parts.push(`no longer used: ${issues.retired.join(", ")}`);
+  }
   return parts.join("; ");
+}
+
+// Google Analytics is optional. The section, and each id in it, may be left
+// out. An id that does not look like a Google tag id (for example "G-ABC123XYZ")
+// is dropped, because the id is written into a script tag.
+const GOOGLE_TAG_ID = /^[A-Za-z]{1,3}-[A-Za-z0-9-]+$/;
+
+function googleTagId(value: unknown): string | undefined {
+  return typeof value === "string" && GOOGLE_TAG_ID.test(value) ? value : undefined;
+}
+
+function readGoogleAnalytics(value: unknown): RuntimeConfig["googleAnalytics"] {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return {};
+  const { measurementId, measurementIdDemo } = value as Record<string, unknown>;
+  return {
+    measurementId: googleTagId(measurementId),
+    measurementIdDemo: googleTagId(measurementIdDemo),
+  };
 }
 
 export async function loadConfig(): Promise<{
   runtime: RuntimeConfig;
-  app: AppConfig;
+  /**
+   * The theme, header and footer sections from the top level of the file, with
+   * unusable values removed. Pass this to resolveBranding() with the realm's
+   * login theme (RAID-1065).
+   */
+  branding: RawBranding;
   issues: ConfigIssues;
 }> {
   const raw = await fetchConfigFile();
@@ -108,19 +103,16 @@ export async function loadConfig(): Promise<{
     apiBaseUrl: raw.apiBaseUrl,
     environment: raw.environment,
     supportEmail: raw.supportEmail,
-    googleAnalytics: raw.googleAnalytics ?? {},
+    // Optional. Anything that is not a non-blank text is ignored (and named in
+    // the issues by validateConfig).
+    contactEmail:
+      typeof raw.contactEmail === "string" && raw.contactEmail.trim() !== ""
+        ? raw.contactEmail
+        : undefined,
+    googleAnalytics: readGoogleAnalytics(raw.googleAnalytics),
     services: raw.services ?? {},
     app: { ...raw.app, orcid: { ...raw.app?.orcid } },
   };
 
-  const branding = raw.branding ?? {};
-  const app: AppConfig = deepMerge(defaultConfig, {
-    default: branding.default,
-    header: branding.header,
-    footer: branding.footer,
-    content: branding.content,
-    theme: branding.theme,
-  });
-
-  return { runtime, app, issues: warning };
+  return { runtime, branding: sanitiseBranding(raw), issues: warning };
 }

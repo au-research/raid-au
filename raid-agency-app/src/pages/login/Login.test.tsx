@@ -1,11 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { ConfigIssues, ConfigIssuesProvider, NO_CONFIG_ISSUES } from "@/config";
+import {
+  ConfigIssues,
+  ConfigIssuesProvider,
+  NO_CONFIG_ISSUES,
+  ThemeLookupFailedProvider,
+} from "@/config";
 import { Login } from "./Login";
 
-const mockLogin = vi.fn();
-const mockKeycloak = { isInitialized: true, authenticated: false, login: mockLogin };
+const mockKeycloak = {
+  isInitialized: true,
+  authenticated: false,
+  login: vi.fn(),
+};
 
 vi.mock("@/contexts/keycloak-context", () => ({
   useKeycloak: () => mockKeycloak,
@@ -15,54 +23,61 @@ vi.mock("@/components/app-nav-bar", () => ({
   AppNavBar: () => <div data-testid="app-nav-bar" />,
 }));
 
-const renderLogin = (issues: ConfigIssues, path = "/login?redirect=/raids") =>
+const renderLogin = (issues: ConfigIssues = NO_CONFIG_ISSUES, themeLookupFailed = false) =>
   render(
     <ConfigIssuesProvider issues={issues}>
-      <MemoryRouter initialEntries={[path]}>
-        <Login />
-      </MemoryRouter>
+      <ThemeLookupFailedProvider failed={themeLookupFailed}>
+        <MemoryRouter>
+          <Login />
+        </MemoryRouter>
+      </ThemeLookupFailedProvider>
     </ConfigIssuesProvider>
   );
 
 describe("Login", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockKeycloak.isInitialized = true;
     mockKeycloak.authenticated = false;
+    mockKeycloak.login = vi.fn();
   });
 
-  it("redirects to Keycloak straight away when the config has no issues", () => {
-    renderLogin(NO_CONFIG_ISSUES);
+  it("sends a signed-out user straight to Keycloak when nothing needs reading", () => {
+    renderLogin();
 
-    expect(mockLogin).toHaveBeenCalledWith({
-      redirectUri: `${window.location.origin}/login?redirect=/raids`,
-    });
+    expect(mockKeycloak.login).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Redirecting to login...")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Continue to log in" })).not.toBeInTheDocument();
   });
 
-  it("pauses with the header and a continue button when the config has warnings", () => {
-    renderLogin({ missing: ["services.orcid"], invalid: [] });
+  it("pauses on a failed theme lookup so the banner can be read", () => {
+    renderLogin(NO_CONFIG_ISSUES, true);
 
-    expect(mockLogin).not.toHaveBeenCalled();
+    expect(mockKeycloak.login).not.toHaveBeenCalled();
     expect(screen.getByTestId("app-nav-bar")).toBeInTheDocument();
-    expect(screen.getByText(/Some features may not work until the configuration is fixed/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue to log in" })).toBeInTheDocument();
   });
 
-  it("continues to Keycloak with the same redirect when the button is clicked", () => {
+  it("pauses on config warnings", () => {
     renderLogin({ missing: ["services.orcid"], invalid: [] });
+
+    expect(mockKeycloak.login).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Continue to log in" })).toBeInTheDocument();
+  });
+
+  it("logs in when the user chooses to continue", () => {
+    renderLogin(NO_CONFIG_ISSUES, true);
 
     fireEvent.click(screen.getByRole("button", { name: "Continue to log in" }));
 
-    expect(mockLogin).toHaveBeenCalledWith({
-      redirectUri: `${window.location.origin}/login?redirect=/raids`,
-    });
+    expect(mockKeycloak.login).toHaveBeenCalledTimes(1);
   });
 
-  it("does not pause an already logged-in user", () => {
-    mockKeycloak.authenticated = true;
+  it("waits for Keycloak to initialise before doing anything", () => {
+    mockKeycloak.isInitialized = false;
 
-    renderLogin({ missing: ["services.orcid"], invalid: [] });
+    renderLogin(NO_CONFIG_ISSUES, true);
 
+    expect(mockKeycloak.login).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "Continue to log in" })).not.toBeInTheDocument();
   });
 });

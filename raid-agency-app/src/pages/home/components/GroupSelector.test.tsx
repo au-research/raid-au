@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RuntimeConfig, RuntimeConfigProvider } from "@/config";
 import { GroupSelector } from "./GroupSelector";
 
 vi.mock("@/contexts/keycloak-context", () => ({
@@ -19,14 +20,26 @@ vi.mock("@/services/keycloak-groups", () => ({
   setKeycloakUserAttribute: (...args: unknown[]) => mockSetKeycloakUserAttribute(...args),
 }));
 
+const runtime: RuntimeConfig = {
+  keycloak: { url: "https://iam.example.org", realm: "raid", clientId: "raid-api" },
+  apiBaseUrl: "https://api.example.org",
+  environment: "demo",
+  supportEmail: "support@example.org",
+  googleAnalytics: {},
+  services: {},
+  app: { orcid: {} },
+};
+
 const renderComponent = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   return render(
-    <QueryClientProvider client={queryClient}>
-      <GroupSelector />
-    </QueryClientProvider>
+    <RuntimeConfigProvider config={runtime}>
+      <QueryClientProvider client={queryClient}>
+        <GroupSelector />
+      </QueryClientProvider>
+    </RuntimeConfigProvider>
   );
 };
 

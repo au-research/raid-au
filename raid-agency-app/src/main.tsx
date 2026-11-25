@@ -13,15 +13,18 @@ import { otherRoutes, raidPageRoutes, servicePointRoutes } from "./routes";
 import { ErrorAlertComponent } from "./components/error-alert-component";
 import {
   loadConfig,
-  AppConfigProvider,
   buildMuiTheme,
   ConfigIssuesProvider,
-  defaultConfig,
+  defaultTheme,
   setRuntimeConfig,
   RuntimeConfigProvider,
+  ThemeLookupFailedProvider,
+  BrandingProvider,
+  resolveStartupBranding,
 } from "./config";
 import { initKeycloakInstance } from "./auth/keycloak";
 import { ConfigErrorScreen } from "./components/config-issue-banner";
+import { StartupSpinner } from "./components/startup-spinner/StartupSpinner";
 
 const router = createBrowserRouter([
   {
@@ -45,22 +48,38 @@ const root = ReactDOM.createRoot(
 );
 
 async function bootstrap() {
-  const { runtime, app, issues } = await loadConfig();
+  // RAID-1065: nothing branded is shown until the config and the realm's login
+  // theme are both known. There is no timeout.
+  root.render(
+    <ThemeProvider theme={buildMuiTheme(defaultTheme)}>
+      <CssBaseline />
+      <StartupSpinner />
+    </ThemeProvider>
+  );
+
+  const { runtime, branding: rawBranding, issues } = await loadConfig();
 
   setRuntimeConfig(runtime);
   initKeycloakInstance(runtime.keycloak);
 
-  const theme = buildMuiTheme(app.theme);
+  const { branding, themeLookupFailed } = await resolveStartupBranding(
+    rawBranding,
+    runtime.keycloak
+  );
+
+  const theme = buildMuiTheme(branding.theme);
 
   root.render(
     <RuntimeConfigProvider config={runtime}>
       <ConfigIssuesProvider issues={issues}>
-        <AppConfigProvider config={app}>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <RouterProvider router={router} />
-          </ThemeProvider>
-        </AppConfigProvider>
+        <ThemeLookupFailedProvider failed={themeLookupFailed}>
+          <BrandingProvider branding={branding}>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <RouterProvider router={router} />
+            </ThemeProvider>
+          </BrandingProvider>
+        </ThemeLookupFailedProvider>
       </ConfigIssuesProvider>
     </RuntimeConfigProvider>
   );
@@ -71,7 +90,7 @@ async function bootstrap() {
 function renderStartupError(error: unknown) {
   console.error(error);
   root.render(
-    <ThemeProvider theme={buildMuiTheme(defaultConfig.theme)}>
+    <ThemeProvider theme={buildMuiTheme(defaultTheme)}>
       <CssBaseline />
       <ConfigErrorScreen error={error} />
     </ThemeProvider>

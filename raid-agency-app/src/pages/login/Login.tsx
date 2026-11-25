@@ -3,15 +3,18 @@ import { useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Button, Card, CardContent, CircularProgress, Typography } from '@mui/material';
 import { AppNavBar } from '@/components/app-nav-bar';
-import { hasConfigIssues, useConfigIssues } from '@/config';
+import { hasConfigIssues, useConfigIssues, useThemeLookupFailed } from '@/config';
 
 export function Login() {
   const { isInitialized, authenticated, login } = useKeycloak();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // RAID-941: with config warnings, pause here so the banner can be read
-  // before the user leaves for Keycloak.
-  const pauseForConfigIssues = hasConfigIssues(useConfigIssues());
+  // before the user leaves for Keycloak. A failed branding lookup (RAID-1065)
+  // pauses too, for the same reason.
+  const configIssues = useConfigIssues();
+  const themeLookupFailed = useThemeLookupFailed();
+  const pauseForConfigIssues = hasConfigIssues(configIssues) || themeLookupFailed;
 
   const redirectToKeycloak = useCallback(() => {
     const redirectUri = searchParams.get('redirect')

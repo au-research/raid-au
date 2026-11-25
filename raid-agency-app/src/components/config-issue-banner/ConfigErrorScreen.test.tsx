@@ -14,7 +14,8 @@ describe("ConfigErrorScreen", () => {
 
     const header = screen.getByTestId("config-error-header");
     const banner = screen.getByRole("alert");
-    expect(header).toHaveTextContent("ARDC Research Activity Identifier");
+    expect(header).toHaveTextContent("RAiD");
+    expect(header).not.toHaveTextContent("ARDC Research Activity Identifier");
     expect(banner).toHaveTextContent("Missing: keycloak.url, apiBaseUrl.");
     // The banner sits directly under the header.
     expect(header.nextElementSibling).toBe(banner);

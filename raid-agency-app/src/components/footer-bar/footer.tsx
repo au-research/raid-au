@@ -1,6 +1,6 @@
-import { useContext, useEffect } from 'react';
-import { AppConfigContext } from '../../config/Appconfigcontext';
-import { AppConfig } from '@/config/Appconfig';
+import { Fragment, ReactNode, useEffect } from 'react';
+import { Box, Link, Typography, useTheme } from '@mui/material';
+import { NavLink, useBranding, useRuntimeConfig } from '@/config';
 import { useExternalScript } from '@/hooks/useExternalScript';
 import { EXTERNAL_LINKS } from '@/constants/external-links';
 
@@ -22,7 +22,7 @@ const FOOTER_SCRIPT_SRC =
 const ARDC_ACN_URL =
     'https://www.acnc.gov.au/charity/charities/eca273f3-f5be-e911-a98a-000d3ad02a61/profile';
 
-const ArdcFooter = ({ config }: { config: AppConfig }) => {
+const ArdcFooter = ({ links }: { links: NavLink[] }) => {
     useExternalScript(FOOTER_SCRIPT_SRC, () => {
         const el = document.querySelector<HTMLElement>('ardc-footer');
         if (el) el.style.display = 'none';
@@ -56,8 +56,6 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
         return () => clearInterval(interval);
     }, []);
 
-    const legalLinks = config.footer.links.filter((link) => !link.contact);
-
     return (
         <ardc-footer
             className="ardc-footer ardc-custom-component"
@@ -71,7 +69,7 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
                 ))}
             </ul>
             <ul id="legal-links">
-                {legalLinks.map((link, index) => (
+                {links.map((link, index) => (
                     <li key={index}><a href={link.path}>{link.label}</a></li>
                 ))}
             </ul>
@@ -80,14 +78,111 @@ const ArdcFooter = ({ config }: { config: AppConfig }) => {
     );
 };
 
-export const Footer = () => {
-    const config = useContext(AppConfigContext);
+// Contact entries (mailto addresses flagged with contact: true) are shown by
+// the ARDC footer's own contact area, not in the legal links.
+const withoutContactEntries = (links: NavLink[]) => links.filter((link) => !link.contact);
 
-    if (!config || config.default) {
-        return null;
+const textColor = { light: 'text.secondary', dark: 'grey.400' } as const;
+
+const Separator = () => (
+    <Box
+        component="li"
+        aria-hidden="true"
+        data-testid="footer-separator"
+        sx={{ width: '1px', height: 14, bgcolor: 'currentColor', opacity: 0.35, listStyle: 'none' }}
+    />
+);
+
+// Simple footer for agencies without ARDC branding: the configured links, the
+// helpdesk address and, when set, the contact address, on one centred line with
+// a separator between each. It has the header's background, names no agency and
+// loads no external script.
+const GenericFooter = ({ links }: { links: NavLink[] }) => {
+    const theme = useTheme();
+    const { supportEmail, contactEmail } = useRuntimeConfig();
+    const isDark = theme.palette.mode === 'dark';
+
+    const items: ReactNode[] = [
+        ...links.map((link) => (
+            <Link
+                key={`${link.label}|${link.path}`}
+                href={link.path}
+                color="inherit"
+                underline="hover"
+                {...(link.path.startsWith('https:')
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+            >
+                {link.label}
+            </Link>
+        )),
+        <span key="support">
+            Support:{' '}
+            <Link href={`mailto:${supportEmail}`} color="inherit" underline="always">
+                {supportEmail}
+            </Link>
+        </span>,
+    ];
+    if (contactEmail) {
+        items.push(
+            <span key="contact">
+                Contact:{' '}
+                <Link href={`mailto:${contactEmail}`} color="inherit" underline="always">
+                    {contactEmail}
+                </Link>
+            </span>
+        );
     }
 
-    return <ArdcFooter config={config} />;
+    return (
+        <Box
+            component="footer"
+            sx={{
+                // The same background as the header (see AppNavBar).
+                bgcolor: isDark ? 'black' : 'white',
+                color: isDark ? textColor.dark : textColor.light,
+                borderTop: 1,
+                borderColor: isDark ? 'grey.800' : 'divider',
+                py: 2,
+                px: 2,
+            }}
+        >
+            <Typography
+                variant="body2"
+                component="ul"
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    columnGap: 2,
+                    rowGap: 1,
+                    listStyle: 'none',
+                    m: 0,
+                    p: 0,
+                }}
+            >
+                {items.map((item, index) => (
+                    <Fragment key={index}>
+                        {index > 0 && <Separator />}
+                        <li>{item}</li>
+                    </Fragment>
+                ))}
+            </Typography>
+        </Box>
+    );
+};
+
+export const Footer = () => {
+    const { variant, links } = useBranding().footer;
+    const shown = withoutContactEntries(links);
+
+    // The ARDC variant is the only one that loads an ARDC script.
+    if (variant === 'ardc') {
+        return <ArdcFooter links={shown} />;
+    }
+
+    return <GenericFooter links={shown} />;
 };
 
 export default Footer;

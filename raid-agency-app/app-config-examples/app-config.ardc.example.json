@@ -1,0 +1,112 @@
+{
+  "_info": {
+    "description": "Example app-config.json for an agency that uses the ardc-branding Keycloak login theme. The theme, header and footer sections apply only when the realm login theme is not raid-custom. See doc/UI/raid-agency-app/DEPLOYMENT.md.",
+    "required": "keycloak, apiBaseUrl, environment and supportEmail. The app does not start without them.",
+    "branding": "theme, header and footer are optional. A field left out keeps its neutral value. header.menu is none or ardc. footer.variant is generic or ardc. Link addresses must be https or mailto.",
+    "optional": "googleAnalytics (measurementId, measurementIdDemo), services.invite and contactEmail can be left out. See doc/UI/raid-agency-app/DEPLOYMENT.md."
+  },
+  "keycloak": {
+    "url": "https://iam.{env}.example.org",
+    "realm": "raid",
+    "clientId": "your-client-id"
+  },
+  "apiBaseUrl": "https://api.{env}.example.org",
+  "environment": "{env}",
+  "supportEmail": "support@example.org",
+  "services": {
+    "orcid": "https://orcid.{env}.example.org",
+    "staticProd": "https://static.prod.example.org",
+    "staticBase": "https://static.{env}.example.org"
+  },
+  "app": {
+    "orcid": {
+      "placeholder": "Enter ORCID iD or ISNI",
+      "helpText": "Enter a valid ORCID iD e.g. 0000-0002-1825-0097"
+    }
+  },
+  "theme": {
+    "palette": {
+      "primary": {
+        "main": "#8E489B"
+      },
+      "secondary": {
+        "main": "#808080"
+      },
+      "background": {
+        "default": "#f5f5f5",
+        "dark": "#4A4A4A",
+        "paper": "#ffffff"
+      },
+      "error": {
+        "main": "#e51875"
+      },
+      "warning": {
+        "main": "#f6861f"
+      },
+      "info": {
+        "main": "#00A2C4"
+      },
+      "success": {
+        "main": "#39833e"
+      },
+      "text": {
+        "primary": "#000000",
+        "secondary": "#f5f5f5"
+      }
+    },
+    "typography": {
+      "fontFamily": "Figtree, sans-serif",
+      "fontSize": 14
+    },
+    "shape": {
+      "borderRadius": 1
+    },
+    "mode": "light"
+  },
+  "header": {
+    "title": "ARDC Research Activity Identifier",
+    "logo": {
+      "light": "/raid-logo-light.svg",
+      "dark": "/raid-logo-dark.svg",
+      "alt": "RAiD logo",
+      "height": 34
+    },
+    "navLinks": [
+      {
+        "label": "About",
+        "path": "https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/"
+      },
+      {
+        "label": "Documentation",
+        "path": "https://documentation.ardc.edu.au/raid"
+      },
+      {
+        "label": "raid.org",
+        "path": "https://raid.org"
+      }
+    ],
+    "menu": "ardc"
+  },
+  "footer": {
+    "variant": "ardc",
+    "links": [
+      {
+        "label": "services@ardc.edu.au",
+        "path": "mailto:services@ardc.edu.au",
+        "contact": true
+      },
+      {
+        "label": "Terms of use",
+        "path": "https://ardc.edu.au/terms-and-conditions/"
+      },
+      {
+        "label": "Accessibility",
+        "path": "https://ardc.edu.au/accessibility-statement-for-ardc/"
+      },
+      {
+        "label": "Privacy policy",
+        "path": "https://ardc.edu.au/privacy-policy/"
+      }
+    ]
+  }
+}
