@@ -16,6 +16,7 @@ raid:
   orcid-integration:
     enabled: true
     host: http://localhost:1080
+    api-key: dev-orcid-updater-api-key
   db:
     user: postgres
     password: supersecret

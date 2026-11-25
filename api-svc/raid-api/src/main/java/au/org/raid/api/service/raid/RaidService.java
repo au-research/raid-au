@@ -76,9 +76,10 @@ public class RaidService {
                 servicePointRepository.findById(servicePointId).orElseThrow(() ->
                         new UnknownServicePointException(servicePointId));
 
-        mintHandle(raid, servicePointRecord, 0);
+        // Before DataCite is called, so the DOI lists only the contributors whose stored status allows it.
+        contributorService.setStatus(raid.getContributor());
 
-        orcidIntegrationService.setContributorStatus(raid.getContributor());
+        mintHandle(raid, servicePointRecord, 0);
 
         final var raidDto = raidHistoryService.save(raid);
         raidIngestService.create(raidDto);
@@ -88,7 +89,7 @@ public class RaidService {
         final var handle = new Handle(raidDto.getIdentifier().getId()).toString();
         updateMaterialisedMetadata(handle, raidDto);
 
-        orcidIntegrationService.updateOrcidRecord(raidDto);
+        orcidIntegrationService.notifyRaidChanged(raidDto);
         return raidDto;
     }
 
@@ -144,8 +145,6 @@ public class RaidService {
 
         contributorService.setStatus(raid.getContributor());
 
-        orcidIntegrationService.setContributorStatus(raid.getContributor());
-
         final var raidDto = raidHistoryService.save(raid);
 
         dataciteSvc.update(raid, handle, servicePointRecord.getRepositoryId(), servicePointRecord.getPassword());
@@ -153,7 +152,7 @@ public class RaidService {
 
         final var saved = raidIngestService.update(raidDto);
         updateMaterialisedMetadata(handle, saved);
-        orcidIntegrationService.updateOrcidRecord(saved);
+        orcidIntegrationService.notifyRaidChanged(saved);
         return saved;
     }
 
@@ -167,7 +166,7 @@ public class RaidService {
 
         final var servicePointRecord = resolveServicePoint(servicePointId);
 
-        orcidIntegrationService.setContributorStatus(contributors);
+        contributorService.setStatus(contributors);
         raid.setContributor(contributors);
 
         raidHistoryService.save(raid);
@@ -177,8 +176,39 @@ public class RaidService {
         final var saved = raidIngestService.update(raid);
         updateMaterialisedMetadata(handle, saved);
 
-        orcidIntegrationService.updateOrcidRecord(saved);
+        orcidIntegrationService.notifyRaidChanged(saved);
         return saved;
+    }
+
+    /**
+     * Brings the RAiD's contributors up to date with their stored status, after the ORCID updater has
+     * changed one. When any status differs, the RAiD gets a new version. DataCite isn't called: a
+     * contributor's status isn't part of what the DOI records, so the DOI already matches. The ORCID
+     * updater isn't told, since the change came from it.
+     *
+     * @return true when a new version was saved, false when every status was already current
+     */
+    @Transactional
+    public boolean refreshContributorStatus(final String handle) {
+        final var raid = raidHistoryService.findByHandle(handle)
+                .orElseThrow(() -> new ResourceNotFoundException(handle));
+
+        final var contributors = raid.getContributor();
+        if (contributors == null || contributors.isEmpty()) {
+            return false;
+        }
+
+        final var saved = contributors.stream().map(Contributor::getStatus).toList();
+        contributorService.setStatus(contributors);
+        if (saved.equals(contributors.stream().map(Contributor::getStatus).toList())) {
+            return false;
+        }
+
+        raidHistoryService.save(raid);
+
+        final var updated = raidIngestService.update(raid);
+        updateMaterialisedMetadata(handle, updated);
+        return true;
     }
 
     @Transactional(readOnly = true)

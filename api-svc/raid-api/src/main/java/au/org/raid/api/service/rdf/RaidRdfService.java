@@ -73,7 +73,6 @@ public class RaidRdfService {
         Property hasRole = model.createProperty(RAID_NS, "hasRole");
         Property isLeader = model.createProperty(RAID_NS, "isLeader");
         Property isContact = model.createProperty(RAID_NS, "isContact");
-        Property hasEmail = model.createProperty(VCARD_NS, "email");
         Property hasUuid = model.createProperty(RAID_NS, "uuid");
         Property hasStatus = model.createProperty(RAID_NS, "status");
         
@@ -227,10 +226,6 @@ public class RaidRdfService {
                 // Add contributor status
                 Optional.ofNullable(contributor.getStatus())
                         .ifPresent(status -> contributorResource.addProperty(hasStatus, status));
-                
-                // Add contributor email
-                Optional.ofNullable(contributor.getEmail())
-                        .ifPresent(email -> contributorResource.addProperty(hasEmail, email));
                 
                 // Add contributor UUID
                 Optional.ofNullable(contributor.getUuid())

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static au.org.raid.db.jooq.tables.Contributor.CONTRIBUTOR;
 import static au.org.raid.db.jooq.tables.RaidContributor.RAID_CONTRIBUTOR;
 
 @Repository
@@ -27,6 +28,16 @@ public class RaidContributorRepository {
         return dslContext.selectFrom(RAID_CONTRIBUTOR)
                 .where(RAID_CONTRIBUTOR.HANDLE.eq(handle))
                 .fetch();
+    }
+
+    /** The handles of every RAiD whose current version names the contributor with this PID. */
+    public List<String> findHandlesByContributorPid(final String pid) {
+        return dslContext.selectDistinct(RAID_CONTRIBUTOR.HANDLE)
+                .from(RAID_CONTRIBUTOR)
+                .join(CONTRIBUTOR).on(CONTRIBUTOR.ID.eq(RAID_CONTRIBUTOR.CONTRIBUTOR_ID))
+                .where(CONTRIBUTOR.PID.eq(pid))
+                .orderBy(RAID_CONTRIBUTOR.HANDLE)
+                .fetch(RAID_CONTRIBUTOR.HANDLE);
     }
 
     public void deleteAllByHandle(final String handle) {

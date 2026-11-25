@@ -179,7 +179,6 @@ class RaidRdfServiceTest {
         var contributor = new Contributor();
         contributor.setId("https://orcid.org/0000-0002-1825-0097");
         contributor.setSchemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_);
-        contributor.setEmail("researcher@example.org");
         contributor.setUuid("12345678-abcd-1234-efgh-1234567890ab");
         contributor.setLeader(true);
         contributor.setContact(true);

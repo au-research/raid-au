@@ -23,15 +23,15 @@ public class ContributorRepository {
     }
 
     public ContributorRecord updateOrCreate(final ContributorRecord contributor) {
-        // Look for existing UNAUTHENTICATED contributor
         final var result = dslContext.selectFrom(CONTRIBUTOR)
                 .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
                 .fetchOptional();
 
         if (result.isPresent()) {
+            // Status is left alone: only updateStatus changes it, so saving a RAiD can never overwrite
+            // a status the ORCID updater set in the meantime.
             return dslContext.update(CONTRIBUTOR)
                     .set(CONTRIBUTOR.SCHEMA_ID, contributor.getSchemaId())
-                    .set(CONTRIBUTOR.STATUS, contributor.getStatus())
                     .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
                     .returning()
                     .fetchOne();
@@ -52,10 +52,11 @@ public class ContributorRepository {
                 .fetchOptional();
     }
 
-    public void update(final ContributorRecord contributor) {
-        dslContext.update(CONTRIBUTOR)
-                .set(CONTRIBUTOR.STATUS, contributor.getStatus())
-                .where(CONTRIBUTOR.PID.eq(contributor.getPid()))
+    /** @return the number of rows updated: 0 when no contributor has this PID */
+    public int updateStatus(final String pid, final String status) {
+        return dslContext.update(CONTRIBUTOR)
+                .set(CONTRIBUTOR.STATUS, status)
+                .where(CONTRIBUTOR.PID.eq(pid))
                 .execute();
     }
 }

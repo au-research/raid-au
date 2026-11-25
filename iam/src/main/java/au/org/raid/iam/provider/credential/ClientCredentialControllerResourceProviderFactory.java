@@ -1,6 +1,7 @@
 package au.org.raid.iam.provider.credential;
 
 import au.org.raid.iam.provider.federation.FederationHarvestClientBootstrapper;
+import au.org.raid.iam.provider.orcidupdater.OrcidUpdaterClientBootstrapper;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -29,6 +30,7 @@ public class ClientCredentialControllerResourceProviderFactory implements RealmR
     public void postInit(final KeycloakSessionFactory factory) {
         // Create the federation harvest client at every boot.
         FederationHarvestClientBootstrapper.register(factory);
+        OrcidUpdaterClientBootstrapper.register(factory);
     }
 
     @Override

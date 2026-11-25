@@ -398,10 +398,6 @@ classes:
       contact:
         description: flag indicating that the contributor as a project contact
         range: boolean
-      email:
-        range: string
-        exact_mappings:
-          - schema:email
   AlternateUrl:
     description: a metadata schema block containing alternative URLs for the project
     attributes:

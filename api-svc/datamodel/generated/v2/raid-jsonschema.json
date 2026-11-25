@@ -164,12 +164,6 @@
                         "null"
                     ]
                 },
-                "email": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
                 "id": {
                     "description": "the contributor (person) associated with a project or activity identified by a persistent identifier (PID)",
                     "type": [

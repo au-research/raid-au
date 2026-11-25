@@ -2,6 +2,7 @@ package au.org.raid.api.service.raid;
 
 import au.org.raid.api.client.ror.RorClient;
 import au.org.raid.api.dto.legacy.RaidDtoFactory;
+import au.org.raid.api.exception.ResourceNotFoundException;
 import au.org.raid.api.exception.ServicePointNotFoundException;
 import au.org.raid.api.exception.ValidationFailureException;
 import au.org.raid.api.factory.HandleFactory;
@@ -28,6 +29,7 @@ import org.hamcrest.Matchers;
 import org.jooq.JSONB;
 import org.jooq.Record4;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -135,10 +137,13 @@ class RaidServiceTest {
 
             raidService.mint(createRaidRequest, servicePointId);
             verify(raidIngestService).create(raidDto);
-            verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle.toString()), anyString());
-            verify(orcidIntegrationService).setContributorStatus(createRaidRequest.getContributor());
-            verify(orcidIntegrationService).updateOrcidRecord(raidDto);
+            verify(orcidIntegrationService).notifyRaidChanged(raidDto);
+
+            // the stored status is applied before anything is saved or sent
+            final var inOrder = inOrder(contributorService, dataciteService);
+            inOrder.verify(contributorService).setStatus(createRaidRequest.getContributor());
+            inOrder.verify(dataciteService).mint(createRaidRequest, handle.toString(), repositoryId, password);
         }
     }
 
@@ -203,8 +208,8 @@ class RaidServiceTest {
 
         verify(dataciteService).update(expected, handle, repositoryId, password);
         verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
-        verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
-        verify(orcidIntegrationService).updateOrcidRecord(expected);
+        verify(contributorService).setStatus(expected.getContributor());
+        verify(orcidIntegrationService).notifyRaidChanged(expected);
     }
 
     @Test
@@ -251,8 +256,10 @@ class RaidServiceTest {
 
             verify(dataciteService).update(updateRequest, handle, repositoryId, password);
             verify(raidRepository).updateMetadata(eq(handle), eq(raidJson));
-            verify(orcidIntegrationService).setContributorStatus(expected.getContributor());
-            verify(orcidIntegrationService).updateOrcidRecord(expected);
+            final var inOrder = inOrder(contributorService, dataciteService);
+            inOrder.verify(contributorService).setStatus(updateRequest.getContributor());
+            inOrder.verify(dataciteService).update(updateRequest, handle, repositoryId, password);
+            verify(orcidIntegrationService).notifyRaidChanged(expected);
         }
     }
 
@@ -939,5 +946,80 @@ class RaidServiceTest {
     private RaidCreateRequest createRaidRequest() throws IOException {
         final String json = FileUtil.resourceContent("/fixtures/create-raid.json");
         return objectMapper.readValue(json, RaidCreateRequest.class);
+    }
+
+    @Nested
+    @DisplayName("Refreshing contributor status")
+    class RefreshContributorStatus {
+        private static final String HANDLE = "10378.1/1696639";
+        private static final String ORCID = "https://orcid.org/0009-0002-5128-5184";
+
+        private RaidDto raidWithContributorStatus(final String status) throws JsonProcessingException {
+            final var raid = objectMapper.readValue(raidJson(), RaidDto.class);
+            raid.contributor(List.of(new Contributor()
+                    .id(ORCID)
+                    .schemaUri(ContributorSchemaUriEnum.HTTPS_ORCID_ORG_)
+                    .status(status)));
+            return raid;
+        }
+
+        private void storedStatusIs(final String status) {
+            doAnswer(invocation -> {
+                final List<Contributor> contributors = invocation.getArgument(0);
+                contributors.forEach(contributor -> contributor.setStatus(status));
+                return null;
+            }).when(contributorService).setStatus(anyList());
+        }
+
+        @Test
+        @DisplayName("A RAiD that already holds the stored status is left alone")
+        void noNewVersionWhenStatusUnchanged() throws JsonProcessingException {
+            final var raid = raidWithContributorStatus("AUTHENTICATED");
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+            storedStatusIs("AUTHENTICATED");
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(false));
+
+            verify(raidHistoryService, never()).save(any(RaidDto.class));
+            verifyNoInteractions(dataciteService, raidIngestService, orcidIntegrationService);
+        }
+
+        @Test
+        @DisplayName("A RAiD without contributors is left alone")
+        void noNewVersionWithoutContributors() throws JsonProcessingException {
+            final var raid = objectMapper.readValue(raidJson(), RaidDto.class).contributor(List.of());
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(false));
+
+            verifyNoInteractions(contributorService, dataciteService, raidIngestService);
+        }
+
+        @Test
+        @DisplayName("A changed status gives the RAiD a new version, without calling DataCite or telling the updater")
+        void newVersionWhenStatusChanged() throws JsonProcessingException {
+            final var raid = raidWithContributorStatus("AWAITING_AUTHENTICATION");
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.of(raid));
+            when(raidIngestService.update(raid)).thenReturn(raid);
+            when(mapper.writeValueAsString(raid)).thenReturn("{}");
+            storedStatusIs("AUTHENTICATED");
+
+            assertThat(raidService.refreshContributorStatus(HANDLE), Matchers.is(true));
+
+            assertThat(raid.getContributor().get(0).getStatus(), Matchers.is("AUTHENTICATED"));
+            final var inOrder = inOrder(raidHistoryService, raidIngestService, raidRepository);
+            inOrder.verify(raidHistoryService).save(raid);
+            inOrder.verify(raidIngestService).update(raid);
+            inOrder.verify(raidRepository).updateMetadata(HANDLE, "{}");
+            verifyNoInteractions(dataciteService, dataciteResyncRepository, servicePointRepository, orcidIntegrationService);
+        }
+
+        @Test
+        @DisplayName("An unknown handle is a not-found error")
+        void unknownHandle() {
+            when(raidHistoryService.findByHandle(HANDLE)).thenReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class, () -> raidService.refreshContributorStatus(HANDLE));
+        }
     }
 }

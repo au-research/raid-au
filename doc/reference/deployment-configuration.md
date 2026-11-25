@@ -297,8 +297,8 @@ their own ORCID member credentials for it.
 | Property | Description |
 | --- | --- |
 | `raid.orcid-integration.enabled` | `true` to use the integration. From 2.20.0 it defaults to `false`. Not present on 2.19.0 and earlier, where the integration is always on. |
-| `raid.orcid-integration.host` | The raid.org ORCID integration host for the relevant environment. Required when `enabled` is `true`. |
-| `raid.orcid-integration.api-key` | The API key issued by raid.org for this deployment. Set it once raid.org has issued one. |
+| `raid.orcid-integration.host` | The base URL of the agency's ORCID updater, with no trailing slash. Required when `enabled` is `true`. |
+| `raid.orcid-integration.api-key` | The API key the agency's ORCID updater expects in the `X-Api-Key` header. Required when `enabled` is `true`; it has no default. |
 | `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/`, or `https://sandbox.orcid.org/` for sandbox. |
 | `raid.contributor-validation.orcid.schema-uri` | Must match the url-prefix above. |
 
@@ -310,8 +310,11 @@ checks every contributor's ORCID iD against ORCID's own API, using
 `raid.orcid-client.*`. See [ORCID iD lookups](#orcid-id-lookups).
 
 **With the integration enabled**, the API looks up each contributor's status
-from the integration host and sends each saved RAiD to it. If the host is
-unreachable, the mint or update fails.
+from the integration host. After every mint, update and patch commits, it sends
+the RAiD's handle to the agency's ORCID updater (`POST {host}/raid-changes`) in
+the background. If the updater is unreachable or rejects the call, the API logs
+`Could not tell the ORCID updater that RAiD {handle} changed` at `ERROR` and the
+save still succeeds. The next save of that RAiD tells the updater again.
 
 **With the integration disabled**, the API makes no request to any integration
 host. Mints and updates work without it. Each contributor keeps the status
@@ -323,11 +326,12 @@ authenticated through an earlier integration keeps that status.
 
 ```
 ORCID integration is enabled: host https://orcid.demo.raid.org
-ORCID integration is disabled: contributor statuses are not looked up and RAiDs are not sent to an ORCID integration host
+ORCID integration is disabled: contributor statuses are not looked up and the ORCID updater is not told about saved RAiDs
 ```
 
-If `enabled` is `true` and `host` is blank, the API refuses to start with
-`raid.orcid-integration.enabled is true but raid.orcid-integration.host is not set`.
+If `enabled` is `true` and `host` or `api-key` is blank, the API refuses to
+start and names the missing property, for example
+`raid.orcid-integration.enabled is true but raid.orcid-integration.api-key is not set`.
 
 A new agency can launch with the integration disabled and enable it later.
 Contributor status flows back into RAiD records only once the deployment is
@@ -407,6 +411,7 @@ These all have workable defaults. Override them only where noted.
 | Property | Default | Description |
 | --- | --- | --- |
 | `raid.datacite.resync.enabled` | `false` | Background re-push of records flagged for DataCite re-sync. |
+| `raid.contributor-status-reset.enabled` | `true` | One-off background reset: sets contributors authenticated through the central ORCID integration to UNAUTHENTICATED and gives every RAiD that names them a new version. Leave on. |
 | `raid.history.baseline-interval` | `50` | How often a full history baseline is written. |
 | `logging.level.root` | `info` | Root log level. `logging.level.<package>` can raise or lower individual loggers. |
 | `raid.stub.<resolver>.enabled` | `false` | In-memory stub for one external resolver. Leave off in a deployed environment. |
@@ -604,16 +609,19 @@ describes them in full; the description here says how the RAiD API uses them.
 | `raid.datacite.resync.batch-size` | `50` | Leave | Number of flagged RAiDs the worker takes in each pass. |
 | `raid.datacite.resync.throttle-millis` | `1000` | Leave | Pause between RAiDs within a pass, in milliseconds, so the worker stays well inside DataCite's rate limits. |
 | `raid.datacite.resync.poll-delay-millis` | `60000` | Leave | Pause between passes, in milliseconds. |
+| `raid.contributor-status-reset.enabled` | `true` | Leave | Turns on a one-off background reset. It sets each contributor authenticated through the central ORCID integration to UNAUTHENTICATED, through the same path as a status change from the ORCID updater, so every RAiD that names them gets a new version. A contributor the updater has since given another status keeps it. Once done, it does nothing. Turning it off leaves those contributors authenticated. |
+| `raid.contributor-status-reset.batch-size` | `50` | Leave | Number of contributors the worker takes in each pass. |
+| `raid.contributor-status-reset.throttle-millis` | `1000` | Leave | Pause between contributors within a pass, in milliseconds. Each reset saves a new version of every RAiD naming that contributor. |
+| `raid.contributor-status-reset.poll-delay-millis` | `60000` | Leave | Pause between passes, in milliseconds. |
 
 ### ORCID
 
 | Property | Default | Set it? | What it does |
 | --- | --- | --- | --- |
-| `raid.orcid-integration.enabled` | `false` (from 2.20.0) | Check | Whether the API uses raid.org's ORCID integration. When on, the API looks up each contributor's status there, and sends each saved RAiD so it can be written to contributors' ORCID records. When off, neither happens and stored statuses are kept. See trap 1. |
+| `raid.orcid-integration.enabled` | `false` (from 2.20.0) | Check | Whether the API tells the registration agency's ORCID updater about each saved RAiD, so it can be written to contributors' ORCID records. Contributor statuses come from the API's database either way; only the updater changes them, through `PUT /contributor/status`. See trap 1. |
 | `raid.orcid-integration.host` | empty | Check | Base URL of the ORCID integration for the environment, issued by raid.org. Required when the integration is enabled. |
 | `raid.orcid-integration.api-key` | `not-set` | Secret | Key sent as the `X-API-Key` header on every call to the ORCID integration. Issued by raid.org. |
 | `raid.orcid-integration.raid-listener.uri` | `${raid.orcid-integration.host}/raid-update` | Leave | Endpoint each saved RAiD is posted to. |
-| `raid.orcid-integration.contributor-id-lookup.uri` | `${raid.orcid-integration.host}/find-contributor-by-orcid` | Leave | Endpoint used to look up a contributor's status by ORCID iD. |
 | `raid.orcid-client.base-url` | `https://api.sandbox.orcid.org/v3.0/` | Required | ORCID API used to check that a contributor's ORCID iD exists and to read the person's public name for DataCite. Used whether or not the ORCID integration is enabled. The default is the ORCID sandbox member API. Production uses the public API, `https://pub.orcid.org/v3.0/`, or with ORCID member credentials the member API, `https://api.orcid.org/v3.0/`. Must match the ORCID system in `raid.contributor-validation.orcid.url-prefix`. See [ORCID iD lookups](#orcid-id-lookups). |
 | `raid.orcid-client.access-token` | `not-set` | Check | `/read-public` token for the ORCID API above, sent as a bearer token. Required for the member API. Optional for the public API, which accepts anonymous reads. When unset, empty or `not-set`, no `Authorization` header is sent; up to 2.20.1 the header is always sent, so set it to empty for anonymous access. Supply a real token from a secret store. |
 | `raid.contributor-validation.orcid.url-prefix` | `https://orcid.org/` | Check | Prefix every contributor's ORCID iD must start with. A RAiD whose contributor iD has a different prefix fails validation. Set `https://sandbox.orcid.org/` for an environment that uses the ORCID sandbox. |
