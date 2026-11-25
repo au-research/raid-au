@@ -78,8 +78,7 @@ public class SignInService {
         final var now = clock.instant();
         oauthStateRepository.insert(sha256(stateValue), invitation.id(), emailHash, now, now.plus(SIGN_IN_TIMEOUT));
 
-        log.info("Invitation {} for {} sent to ORCID sign-in, remember me {}",
-                invitation.id(), invitation.orcidId(), rememberMe);
+        log.info("Invitation {} sent to ORCID sign-in, remember me {}", invitation.id(), rememberMe);
         return orcidOAuthClient.authorisationUri(stateValue);
     }
 
@@ -106,7 +105,7 @@ public class SignInService {
 
         if (error != null) {
             // the researcher declined, or ORCID refused; nothing is stored and the link still works
-            log.info("Invitation {} for {}: ORCID sign-in ended with {}", invitation.id(), invitation.orcidId(),
+            log.info("Invitation {}: ORCID sign-in ended with {}", invitation.id(),
                     OAUTH_ERROR_CODE.matcher(error).matches() ? error : "an unrecognised error");
             return SignInResult.declined(invitation);
         }
@@ -145,8 +144,8 @@ public class SignInService {
             workQueue.requestRaidSync(invitation.raidHandle());
         });
 
-        log.info("Invitation {}: authenticated as {} (typed {}), remember me {}",
-                invitation.id(), orcidId, invitation.orcidId(), remembered);
+        log.info("Invitation {}: authenticated, iD as typed {}, remember me {}",
+                invitation.id(), orcidId.equals(invitation.orcidId()), remembered);
         return SignInResult.authenticated(invitation, orcidId, remembered);
     }
 

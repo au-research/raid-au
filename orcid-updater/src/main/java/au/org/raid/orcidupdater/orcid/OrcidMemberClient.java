@@ -82,7 +82,7 @@ public class OrcidMemberClient {
         try {
             return Long.parseLong(path.substring(path.lastIndexOf('/') + 1));
         } catch (final NumberFormatException e) {
-            throw new OrcidWriteException(Kind.REJECTED, "ORCID's Location header has no put code: " + location);
+            throw new OrcidWriteException(Kind.REJECTED, "ORCID's Location header has no put code: " + OrcidIdRedactor.redact(String.valueOf(location)));
         }
     }
 
@@ -91,7 +91,8 @@ public class OrcidMemberClient {
             return request.get();
         } catch (final HttpStatusCodeException e) {
             final var status = e.getStatusCode();
-            final var message = "ORCID returned " + status.value() + developerMessage(e.getResponseBodyAsString());
+            final var message = "ORCID returned " + status.value()
+                    + OrcidIdRedactor.redact(developerMessage(e.getResponseBodyAsString()));
             if (status.isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
                 throw new OrcidWriteException(Kind.TOKEN_REJECTED, message);
             }
@@ -103,7 +104,7 @@ public class OrcidMemberClient {
             }
             throw new OrcidWriteException(Kind.REJECTED, message);
         } catch (final ResourceAccessException e) {
-            throw new OrcidWriteException(Kind.RETRYABLE, "ORCID could not be reached: " + e.getMessage());
+            throw new OrcidWriteException(Kind.RETRYABLE, "ORCID could not be reached: " + OrcidIdRedactor.redact(e.getMessage()));
         }
     }
 

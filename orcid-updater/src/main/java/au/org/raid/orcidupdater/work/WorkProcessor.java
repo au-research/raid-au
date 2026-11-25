@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Works through the queue (RAID-1005): pushes statuses to the RAiD API and brings RAiDs' ORCID
@@ -63,7 +67,7 @@ public class WorkProcessor {
             retryLater(item, e.getMessage());
         } catch (final RuntimeException e) {
             // unexpected: the message could hold anything, so only the type is stored
-            log.error("{} {}: unexpected failure", item.kind(), item.key(), e);
+            log.error("{}: unexpected failure", describe(item), e);
             retryLater(item, "Unexpected " + e.getClass().getSimpleName() + "; see the updater's log");
         }
     }
@@ -71,15 +75,15 @@ public class WorkProcessor {
     private void pushStatus(final String orcidId) {
         final var status = statusService.statusOf(orcidId);
         if (!raidServiceClient.updateContributorStatus(orcidId, status)) {
-            log.info("Status {} for {} not set: the RAiD API has no contributor with this iD", status, orcidId);
+            log.info("Status {} not set: the RAiD API has no contributor with this iD", status);
         } else {
-            log.info("Status {} set for {}", status, orcidId);
+            log.info("Status {} set for a contributor", status);
         }
         if (status == ContributorStatus.AUTHENTICATED) {
             // newly authenticated: write every RAiD that already names them
             final var handles = raidServiceClient.findHandlesByContributor(orcidId);
             handles.forEach(workQueue::requestRaidSync);
-            log.info("{} is authenticated; {} RAiD(s) queued for ORCID", orcidId, handles.size());
+            log.info("Contributor authenticated; {} RAiD(s) queued for ORCID", handles.size());
         }
     }
 
@@ -96,7 +100,24 @@ public class WorkProcessor {
             return;
         }
         final var outcomes = orcidWriter.sync(OrcidRaid.fromApi(handle, raid.get()));
-        log.info("RAiD {} synced to ORCID: {}", handle, outcomes);
+        log.info("RAiD {} synced to ORCID: {}", handle, outcomeCounts(outcomes));
+    }
+
+    /**
+     * The item as it appears in the log. A STATUS item's key is the contributor's ORCID iD, which
+     * is kept out of the log; a RAID_SYNC item's key is the RAiD handle.
+     */
+    static String describe(final WorkItem item) {
+        return switch (item.kind()) {
+            case STATUS -> "STATUS for a contributor";
+            case RAID_SYNC -> "RAID_SYNC " + item.key();
+        };
+    }
+
+    /** How many contributors had each outcome, in outcome order, without their ORCID iDs. */
+    static Map<OrcidWriter.Outcome, Long> outcomeCounts(final List<OrcidWriter.EntryOutcome> outcomes) {
+        return outcomes.stream().collect(Collectors.groupingBy(OrcidWriter.EntryOutcome::outcome,
+                () -> new EnumMap<>(OrcidWriter.Outcome.class), Collectors.counting()));
     }
 
     private static boolean isOpen(final JsonNode raid) {
@@ -109,12 +130,12 @@ public class WorkProcessor {
         final Instant nextAttemptAt;
         if (item.attempts() + 1 >= work.getMaxAttempts()) {
             nextAttemptAt = null;
-            log.error("{} {}: gave up after {} attempts: {}", item.kind(), item.key(), item.attempts() + 1, failure);
+            log.error("{}: gave up after {} attempts: {}", describe(item), item.attempts() + 1, failure);
         } else {
             nextAttemptAt = now.plus(work.getInitialBackoff()
                     .multipliedBy(1L << Math.min(item.attempts(), MAX_BACKOFF_DOUBLINGS)));
-            log.warn("{} {}: attempt {} failed, trying again at {}: {}",
-                    item.kind(), item.key(), item.attempts() + 1, nextAttemptAt, failure);
+            log.warn("{}: attempt {} failed, trying again at {}: {}",
+                    describe(item), item.attempts() + 1, nextAttemptAt, failure);
         }
         workRepository.recordFailure(item, failure, now, nextAttemptAt);
     }

@@ -4,6 +4,7 @@ import au.org.raid.orcidupdater.config.OrcidUpdaterProperties;
 import au.org.raid.orcidupdater.crypto.EmailHasher;
 import au.org.raid.orcidupdater.crypto.InvitationLinkToken;
 import au.org.raid.orcidupdater.crypto.LinkCipher;
+import au.org.raid.orcidupdater.orcid.OrcidMemberClient;
 import au.org.raid.orcidupdater.raidapi.MinterNotPermittedException;
 import au.org.raid.orcidupdater.raidapi.RaidApiClient;
 import au.org.raid.orcidupdater.raidapi.RaidSummary;
@@ -181,11 +182,12 @@ class InvitationServiceTest {
     }
 
     @Test
-    @DisplayName("The email address never appears in the logs on success either")
-    void successDoesNotLogEmail(final CapturedOutput output) {
+    @DisplayName("Neither the email address nor the ORCID iD appears in the logs on success")
+    void successDoesNotLogEmailOrId(final CapturedOutput output) {
         register(TYPED_ID);
 
-        assertThat(output.getAll()).contains(TYPED_ID).doesNotContainIgnoringCase(NORMALISED_EMAIL);
+        assertThat(output.getAll()).contains("sent on " + HANDLE)
+                .doesNotContain(OrcidMemberClient.bareId(TYPED_ID)).doesNotContainIgnoringCase(NORMALISED_EMAIL);
     }
 
     @Test

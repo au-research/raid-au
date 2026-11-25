@@ -118,14 +118,14 @@ public class OrcidWriter {
                         throw e;
                     }
                     // the entry was deleted at ORCID; the RAiD still names the researcher, so it is written again
-                    log.info("RAiD {}: put code {} for {} no longer exists at ORCID, creating the entry again",
-                            raid.handle(), putCode, orcidId);
+                    log.info("RAiD {}: put code {} no longer exists at ORCID, creating the entry again",
+                            raid.handle(), putCode);
                     written = withRetries(() -> orcidMemberClient.create(orcidId, token,
                             membershipFactory.create(raid, contributor, null, organisation)));
                 }
             }
             entryRepository.recordSuccess(orcidId, raid.handle(), written, clock.instant());
-            log.info("RAiD {}: wrote membership {} for {}", raid.handle(), written, orcidId);
+            log.info("RAiD {}: wrote membership {}", raid.handle(), written);
             return Outcome.WRITTEN;
         } catch (final OrcidWriteException e) {
             return failed(orcidId, raid.handle(), "write", e);
@@ -163,7 +163,7 @@ public class OrcidWriter {
             // already gone at ORCID
         }
         entryRepository.delete(orcidId, entry.raidHandle());
-        log.info("RAiD {}: removed membership {} for {}, no longer a contributor", entry.raidHandle(), entry.putCode(), orcidId);
+        log.info("RAiD {}: removed membership {}, no longer a contributor", entry.raidHandle(), entry.putCode());
         return Outcome.REMOVED;
     }
 
@@ -174,7 +174,7 @@ public class OrcidWriter {
         } catch (final IllegalStateException e) {
             entryRepository.recordFailure(orcidId, raidHandle,
                     "The stored ORCID token can't be decrypted; was the token encryption key changed?", clock.instant());
-            log.warn("RAiD {}: the stored ORCID token for {} can't be decrypted", raidHandle, orcidId);
+            log.warn("RAiD {}: a contributor's stored ORCID token can't be decrypted", raidHandle);
             return null;
         }
     }
@@ -186,11 +186,11 @@ public class OrcidWriter {
             workQueue.requestStatus(orcidId);
             entryRepository.recordFailure(orcidId, raidHandle,
                     "ORCID rejected the researcher's token (access revoked): " + e.getMessage(), now);
-            log.warn("RAiD {}: ORCID rejected the token for {}; marked revoked", raidHandle, orcidId);
+            log.warn("RAiD {}: ORCID rejected a contributor's token; marked revoked", raidHandle);
             return Outcome.TOKEN_REJECTED;
         }
         entryRepository.recordFailure(orcidId, raidHandle, e.getMessage(), now);
-        log.warn("RAiD {}: ORCID {} failed for {}: {}", raidHandle, action, orcidId, e.getMessage());
+        log.warn("RAiD {}: ORCID {} failed for a contributor: {}", raidHandle, action, e.getMessage());
         return Outcome.FAILED;
     }
 

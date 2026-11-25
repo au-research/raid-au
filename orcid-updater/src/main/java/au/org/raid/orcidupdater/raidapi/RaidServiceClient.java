@@ -54,7 +54,7 @@ public class RaidServiceClient {
     /** Handles of every RAiD naming this iD as a contributor. */
     public List<String> findHandlesByContributor(final String orcidId) {
         // the API matches the bare iD after adding its own ORCID URL prefix
-        final var raids = call("listing RAiDs for " + orcidId, token -> restClient.get()
+        final var raids = call("listing a contributor's RAiDs", token -> restClient.get()
                 .uri(uri -> uri.path("/raid/")
                         .queryParam("contributor.id", OrcidMemberClient.bareId(orcidId))
                         .queryParam("includeFields", "identifier")
@@ -73,7 +73,7 @@ public class RaidServiceClient {
      * @return false when the API has no contributor with this iD
      */
     public boolean updateContributorStatus(final String orcidId, final ContributorStatus status) {
-        return call("setting the status of " + orcidId, token -> {
+        return call("setting a contributor's status", token -> {
             restClient.put()
                     .uri("/contributor/status")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)

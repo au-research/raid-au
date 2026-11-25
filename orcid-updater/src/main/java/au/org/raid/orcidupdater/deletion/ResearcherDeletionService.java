@@ -102,12 +102,12 @@ public class ResearcherDeletionService {
                         left++;
                     }
                     case REJECTED -> {
-                        log.warn("Researcher deletion: ORCID refused to remove membership {} for {}: {}",
-                                entry.putCode(), orcidId, e.getMessage());
+                        log.warn("Researcher deletion: ORCID refused to remove membership {}: {}",
+                                entry.putCode(), e.getMessage());
                         left++;
                     }
                     case RETRYABLE -> throw new OrcidUnavailableException(
-                            "Removing membership %d for %s: %s".formatted(entry.putCode(), orcidId, e.getMessage()));
+                            "Removing membership %d: %s".formatted(entry.putCode(), e.getMessage()));
                 }
             }
         }
@@ -116,7 +116,7 @@ public class ResearcherDeletionService {
             try {
                 orcidOAuthClient.revoke(token);
             } catch (final OrcidWriteException e) {
-                throw new OrcidUnavailableException("Revoking the token for %s: %s".formatted(orcidId, e.getMessage()));
+                throw new OrcidUnavailableException("Revoking the researcher's token: %s".formatted(e.getMessage()));
             }
         }
 
@@ -126,7 +126,7 @@ public class ResearcherDeletionService {
 
         final var found = hadResearcher || !entries.isEmpty() || !invitedIds.isEmpty() || droppedSignIns;
         if (!found) {
-            log.info("Researcher deletion: nothing held for {}", orcidId);
+            log.info("Researcher deletion: nothing held for the iD given");
             return ResearcherDeletionResponse.NOTHING_HELD;
         }
 
@@ -138,8 +138,8 @@ public class ResearcherDeletionService {
         statusIds.forEach(workQueue::requestStatus);
 
         final var revoked = token != null;
-        log.info("Researcher deletion: deleted the data held for {}; {} ORCID entries removed, {} left, token revoked: {}",
-                orcidId, deleted, left, revoked);
+        log.info("Researcher deletion: deleted the data held for a researcher; {} ORCID entries removed, {} left, token revoked: {}",
+                deleted, left, revoked);
         return new ResearcherDeletionResponse(true, deleted, left, revoked);
     }
 
@@ -148,7 +148,7 @@ public class ResearcherDeletionService {
         try {
             return tokenCipher.decrypt(encrypted, orcidId);
         } catch (final IllegalStateException e) {
-            log.warn("Researcher deletion: the stored ORCID token for {} can't be decrypted", orcidId);
+            log.warn("Researcher deletion: the researcher's stored ORCID token can't be decrypted");
             return null;
         }
     }
