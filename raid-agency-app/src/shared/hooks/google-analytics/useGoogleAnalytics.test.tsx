@@ -10,6 +10,7 @@ const baseConfig: RuntimeConfig = {
   environment: "demo",
   supportEmail: "support@example.org",
   googleAnalytics: {},
+  organisation: {},
   services: {},
   app: { orcid: {} },
 };

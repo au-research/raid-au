@@ -1,4 +1,4 @@
-import { useContactEmail } from "@/config";
+import { useRuntimeConfig } from "@/config";
 import {
   Button,
   Card,
@@ -11,42 +11,35 @@ import {
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 
+const linkButton = (href: string, label: string) => (
+  <Button
+    href={href}
+    target="_blank"
+    variant="text"
+    size="small"
+    sx={{ minWidth: 0 }}
+  >
+    {label}
+  </Button>
+);
+
 export function Privacy() {
-  const contactEmail = useContactEmail();
-  const privacyPolicyLinkButton = (
-    <Button
-      href="https://ardc.edu.au/privacy-policy/"
-      target="_blank"
-      variant="text"
-      size="small"
-      sx={{ minWidth: 0 }}
-    >
-      privacy policy
-    </Button>
-  );
+  const { supportEmail, organisation } = useRuntimeConfig();
+  const { name, url, privacyPolicyUrl, dataDeletionDays } = organisation;
 
-  const ardcLinkButton = (
-    <Button
-      href="https://ardc.edu.au/"
-      target="_blank"
-      variant="text"
-      size="small"
-      sx={{ minWidth: 0 }}
-    >
-      ARDC
-    </Button>
-  );
+  const policy = privacyPolicyUrl
+    ? linkButton(privacyPolicyUrl, "privacy policy")
+    : "privacy policy";
+  const owner = name ? (url ? linkButton(url, name) : name) : null;
 
-  const supportMailLink = (
-    <Button
-      href={`mailto:${contactEmail}`}
-      variant="text"
-      size="small"
-      sx={{ minWidth: 0 }}
-    >
-      {contactEmail}
-    </Button>
-  );
+  // With no name and no policy address there is nothing to say about a policy,
+  // so the sentence is left out.
+  const showPolicy = Boolean(name || privacyPolicyUrl);
+
+  const deletionPeriod =
+    dataDeletionDays === undefined
+      ? "."
+      : ` within ${dataDeletionDays} ${dataDeletionDays === 1 ? "day" : "days"}.`;
 
   return (
     <Container maxWidth="sm">
@@ -55,16 +48,18 @@ export function Privacy() {
 
         <CardContent>
           <Stack gap={2}>
-            <Typography variant="body2" color="text.secondary">
-              The RAiD Service fully conforms to the {privacyPolicyLinkButton}{" "}
-              of the Australian Research Data Commons {ardcLinkButton}.
-            </Typography>
+            {showPolicy && (
+              <Typography variant="body2" color="text.secondary">
+                The RAiD Service fully conforms to the {policy}
+                {owner && <> of {owner}</>}.
+              </Typography>
+            )}
 
             <Typography variant="body2" color="text.secondary">
               You can request that your own data be deleted by submitting a
-              request to {supportMailLink}. All data associated with your
-              account (especially anything from Identity Providers like Google,
-              etc.) will be deleted within 7 days.
+              request to {linkButton(`mailto:${supportEmail}`, supportEmail)}. All data
+              associated with your account (especially anything from Identity
+              Providers like Google, etc.) will be deleted{deletionPeriod}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Data from Identity Providers (e.g. AAF, Google) is only used to

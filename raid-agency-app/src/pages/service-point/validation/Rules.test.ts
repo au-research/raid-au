@@ -9,7 +9,7 @@ import { createServicePointRequestValidationSchema } from "./Rules";
 
 const validServicePoint = {
   name: "Test Service Point",
-  identifierOwner: "https://ror.org/038sjwq14",
+  identifierOwner: "https://ror.org/052gg0110",
   adminEmail: "admin@example.com",
   techEmail: "tech@example.com",
   enabled: true,
@@ -23,7 +23,7 @@ const parse = (identifierOwner: string) =>
 
 describe("createServicePointRequestValidationSchema: identifierOwner (ROR)", () => {
   it("accepts a well-formed ROR URL", () => {
-    const result = parse("https://ror.org/038sjwq14");
+    const result = parse("https://ror.org/052gg0110");
 
     expect(result.success).toBe(true);
   });
@@ -45,7 +45,7 @@ describe("createServicePointRequestValidationSchema: identifierOwner (ROR)", () 
     if (!result.success) {
       const messages = result.error.issues.map((issue) => issue.message);
       expect(messages).toContain(
-        "Must be a valid ROR URL (e.g. https://ror.org/038sjwq14)"
+        "Must be a valid ROR URL (e.g. https://ror.org/052gg0110)"
       );
     }
   });
@@ -57,7 +57,7 @@ describe("createServicePointRequestValidationSchema: identifierOwner (ROR)", () 
     if (!result.success) {
       const messages = result.error.issues.map((issue) => issue.message);
       expect(messages).toContain(
-        "Must be a valid ROR URL (e.g. https://ror.org/038sjwq14)"
+        "Must be a valid ROR URL (e.g. https://ror.org/052gg0110)"
       );
     }
   });

@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
+import { useRuntimeConfig } from "@/config";
 
 const externalLinkButton = ({
   link,
@@ -29,12 +30,12 @@ const externalLinkButton = ({
 };
 
 export function AboutRaid() {
+  const { organisation } = useRuntimeConfig();
   return (
     <Container maxWidth="sm">
       <Stack spacing={2}>
         <Typography paragraph>
-          This RAiD Service is the Oceania region implementation of the RAiD ISO
-          standard.
+          This RAiD Service is an implementation of the RAiD ISO standard.
         </Typography>
         <Typography paragraph>
           RAiD is a unique and persistent identifier for research projects.
@@ -69,18 +70,14 @@ export function AboutRaid() {
                 link: "https://www.iso.org/standard/75931.html",
               })}
             </ListItem>
-            <ListItem>
-              {externalLinkButton({
-                label: "RAiD GitHub",
-                link: "https://github.com/au-research/raid-au",
-              })}
-            </ListItem>
-            <ListItem>
-              {externalLinkButton({
-                label: "Australian Research Data Commons",
-                link: "https://ardc.edu.au/",
-              })}
-            </ListItem>
+            {organisation.name && organisation.url && (
+              <ListItem>
+                {externalLinkButton({
+                  label: organisation.name,
+                  link: organisation.url,
+                })}
+              </ListItem>
+            )}
           </List>
         </Typography>
         <NavLink to="/home">

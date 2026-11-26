@@ -42,6 +42,7 @@ URL fields must be absolute `http` or `https` URLs. See [Troubleshooting configu
 - `services.invite` — omit if the invite feature is disabled
 - `googleAnalytics` — omit it, or either id in it, if you do not use Google Analytics. Nothing is loaded and no banner is shown. See [Google Analytics](#google-analytics-optional).
 - `contactEmail` — a second contact address, if the agency has one besides `supportEmail`
+- `organisation` — the organisation that runs the service, used by the About, Privacy and Usage Terms pages. See [Organisation](#organisation).
 - `theme`, `header`, `footer` — see [Branding](#branding). Omit them for the neutral look.
 
 ---
@@ -62,6 +63,30 @@ Google Analytics is off unless you add this block:
 - Every other host, including local development, never loads Google Analytics.
 - Either id, or the whole block, can be left out. A missing id switches tracking off for that environment and raises no banner.
 - An id must look like a Google tag id, for example `G-ABC123XYZ`. Anything else is ignored.
+
+---
+
+## Organisation
+
+The `organisation` section names the organisation that runs the service. It is always read, whatever login theme the realm uses, so an agency on the neutral look can set it. Every field is optional.
+
+| Field | Used for |
+|---|---|
+| `name` | The Privacy page ("the privacy policy of {name}") and the Usage Terms page. |
+| `url` | The About page adds a link labelled with `name`. It needs both `name` and `url`. |
+| `privacyPolicyUrl` | The "privacy policy" link on the Privacy page. |
+| `termsUrl` | The "Terms & conditions" link on the Usage Terms page. |
+| `dataDeletionDays` | The Privacy page says deletion happens "within N days". Without it, the page promises no timeframe. Set it only to a period the organisation commits to. |
+
+Links must be `https` addresses. A wrong value is ignored and named in the amber warning banner.
+
+What the pages say when a field is left out:
+
+- **Privacy:** with neither `name` nor `privacyPolicyUrl`, the sentence about a privacy policy is left out. With only one, it names the organisation or links the policy without the other.
+- **Usage Terms:** without `termsUrl`, the page asks people to contact the `supportEmail` address.
+- **About:** shows the RAiD project and ISO standard links only.
+
+The helpdesk address on every page is `supportEmail`. The footer `contact` flag is no longer used for it.
 
 ---
 
@@ -97,7 +122,7 @@ These sit at the top level of `app-config.json`, after the services and `app` se
 | `header.navLinks` | list of `{ "label", "path" }` | Shown after Home and Your RAiDs. There are no default links. |
 | `header.menu` | `none` or `ardc` | `ardc` mounts the ARDC mega menu and loads its script. `none` loads no script. |
 | `footer.variant` | `generic` or `ardc` | `ardc` uses the ARDC footer component and loads its script. `generic` is a simple footer that shows the links below, the `supportEmail` address and, if set, the `contactEmail` address. It loads no script. |
-| `footer.links` | list of `{ "label", "path" }` | Optional. A link flagged `"contact": true` is not listed in the footer. |
+| `footer.links` | list of `{ "label", "path" }` | Optional. A link flagged `"contact": true` is not listed in the footer, and it no longer sets the helpdesk address. Remove such links and use `supportEmail`. |
 
 Every link needs a `label`, and its `path` must be an `https` or `mailto` address. A link that fails this is dropped and named in the warning banner. Web links open in a new tab.
 
@@ -114,7 +139,8 @@ Earlier releases read branding from a `branding` wrapper (`branding.header`, `br
 3. Rewrite the footer: use `footer.variant` and `footer.links`. The old `footer.main`, `copyright`, `showSocialLinks` and `socialLinks` are no longer used.
 4. Delete the `branding` key, including `branding.content` and `branding.default`.
 5. Add `supportEmail` if it is missing. The app does not start without it.
-6. Check that the realm's login theme is the one you expect, then deploy the file and reload the page.
+6. Add an `organisation` section if the agency wants its name and policy links on the About, Privacy and Usage Terms pages, and remove any footer link flagged `"contact": true`.
+7. Check that the realm's login theme is the one you expect, then deploy the file and reload the page.
 
 ---
 

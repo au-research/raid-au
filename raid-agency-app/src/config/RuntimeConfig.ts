@@ -1,3 +1,5 @@
+import { Organisation } from "./Organisation";
+
 // keycloak, apiBaseUrl, environment and supportEmail are guaranteed by
 // loadConfig() (the app does not start without them). The optional fields may
 // be missing from a stale app-config.json; the app shows a warning banner when
@@ -16,6 +18,7 @@ export interface RuntimeConfig {
     measurementId?: string;
     measurementIdDemo?: string;
   };
+  organisation: Organisation;
   services: {
     orcid?: string;
     invite?: string;

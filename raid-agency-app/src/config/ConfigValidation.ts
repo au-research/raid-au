@@ -7,10 +7,11 @@
 // Issues only ever carry field paths, never the values found in the file.
 
 import { FOOTER_VARIANTS, HEADER_MENUS } from "./Appconfig";
+import { isHttpsUrl, isPositiveWholeNumber } from "./Organisation";
 
 export type ConfigIssueLevel = "blocking" | "warning";
 
-type FieldCheck = "text" | "url" | "enum" | "links" | "object";
+type FieldCheck = "text" | "url" | "https" | "whole-number" | "enum" | "links" | "object";
 
 export interface FieldRule {
   path: string;
@@ -50,6 +51,14 @@ export const CONFIG_FIELD_RULES: readonly FieldRule[] = [
   { path: "footer", level: "warning", check: "object", optional: true },
   { path: "footer.variant", level: "warning", check: "enum", values: FOOTER_VARIANTS, optional: true },
   { path: "footer.links", level: "warning", check: "links", optional: true },
+
+  // Organisation (RAID-1066). All optional and always read, whatever the login theme.
+  { path: "organisation", level: "warning", check: "object", optional: true },
+  { path: "organisation.name", level: "warning", check: "text", optional: true },
+  { path: "organisation.url", level: "warning", check: "https", optional: true },
+  { path: "organisation.privacyPolicyUrl", level: "warning", check: "https", optional: true },
+  { path: "organisation.termsUrl", level: "warning", check: "https", optional: true },
+  { path: "organisation.dataDeletionDays", level: "warning", check: "whole-number", optional: true },
 ];
 
 /**
@@ -78,7 +87,7 @@ export function hasConfigIssues(issues: ConfigIssues): boolean {
 }
 
 export function isUrlField(path: string): boolean {
-  return CONFIG_FIELD_RULES.some((rule) => rule.path === path && rule.check === "url");
+  return CONFIG_FIELD_RULES.some((rule) => rule.path === path && (rule.check === "url" || rule.check === "https"));
 }
 
 type PlainObject = Record<string, unknown>;
@@ -131,9 +140,11 @@ export function checkField(value: unknown, rule: FieldRule): FieldState {
     return Array.isArray(value) && value.every(isSafeLink) ? "ok" : "invalid";
   }
   if (rule.check === "object") return isPlainObject(value) ? "ok" : "invalid";
+  if (rule.check === "whole-number") return isPositiveWholeNumber(value) ? "ok" : "invalid";
   if (typeof value !== "string") return "invalid";
   if (value.trim() === "") return rule.optional ? "ok" : "missing";
   if (rule.check === "url" && !isHttpUrl(value)) return "invalid";
+  if (rule.check === "https" && !isHttpsUrl(value.trim())) return "invalid";
   if (rule.check === "enum" && !rule.values?.includes(value)) return "invalid";
   return "ok";
 }

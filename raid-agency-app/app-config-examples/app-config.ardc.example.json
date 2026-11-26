@@ -3,7 +3,7 @@
     "description": "Example app-config.json for an agency that uses the ardc-branding Keycloak login theme. The theme, header and footer sections apply only when the realm login theme is not raid-custom. See doc/UI/raid-agency-app/DEPLOYMENT.md.",
     "required": "keycloak, apiBaseUrl, environment and supportEmail. The app does not start without them.",
     "branding": "theme, header and footer are optional. A field left out keeps its neutral value. header.menu is none or ardc. footer.variant is generic or ardc. Link addresses must be https or mailto.",
-    "optional": "googleAnalytics (measurementId, measurementIdDemo), services.invite and contactEmail can be left out. See doc/UI/raid-agency-app/DEPLOYMENT.md."
+    "optional": "googleAnalytics (measurementId, measurementIdDemo), services.invite, contactEmail and organisation can be left out. See doc/UI/raid-agency-app/DEPLOYMENT.md."
   },
   "keycloak": {
     "url": "https://iam.{env}.example.org",
@@ -13,6 +13,13 @@
   "apiBaseUrl": "https://api.{env}.example.org",
   "environment": "{env}",
   "supportEmail": "support@example.org",
+  "organisation": {
+    "name": "Australian Research Data Commons",
+    "url": "https://ardc.edu.au/",
+    "privacyPolicyUrl": "https://ardc.edu.au/privacy-policy/",
+    "termsUrl": "https://ardc.edu.au/terms-conditions/",
+    "dataDeletionDays": 7
+  },
   "services": {
     "orcid": "https://orcid.{env}.example.org",
     "staticProd": "https://static.prod.example.org",
@@ -90,11 +97,6 @@
   "footer": {
     "variant": "ardc",
     "links": [
-      {
-        "label": "services@ardc.edu.au",
-        "path": "mailto:services@ardc.edu.au",
-        "contact": true
-      },
       {
         "label": "Terms of use",
         "path": "https://ardc.edu.au/terms-and-conditions/"

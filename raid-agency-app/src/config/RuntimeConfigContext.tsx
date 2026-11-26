@@ -100,13 +100,3 @@ export const BrandingProvider: React.FC<{
 export function useBranding(): Branding {
   return useContext(BrandingContext);
 }
-
-/**
- * The address to show people who need help: the footer link flagged
- * "contact" when the branding has one, otherwise the required supportEmail.
- */
-export function useContactEmail(): string {
-  const { footer } = useBranding();
-  const { supportEmail } = useRuntimeConfig();
-  return footer.links.find((link) => link.contact)?.label ?? supportEmail;
-}

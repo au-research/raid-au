@@ -26,6 +26,7 @@ const runtime: RuntimeConfig = {
   environment: "demo",
   supportEmail: "help@example.org",
   googleAnalytics: {},
+  organisation: {},
   services: {},
   app: { orcid: {} },
 };

@@ -29,7 +29,7 @@ import {
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { memo, useState } from "react";
-import { useContactEmail } from "@/config";
+import { useRuntimeConfig } from "@/config";
 
 type KeycloakGroupSPI = {
   name: string;
@@ -41,7 +41,7 @@ type KeycloakGroupSPI = {
 
 
 export const GroupSelector = memo(() => {
-  const contactEmail = useContactEmail();
+  const { supportEmail: contactEmail } = useRuntimeConfig();
   const { token, isInitialized } = useKeycloak();
   const [open, setOpen] = useState(false);
   const handleClose = () => {

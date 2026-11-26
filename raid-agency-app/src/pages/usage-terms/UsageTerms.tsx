@@ -1,3 +1,4 @@
+import { useRuntimeConfig } from "@/config";
 import {
   Button,
   Card,
@@ -11,9 +12,12 @@ import {
 import { NavLink } from "react-router-dom";
 
 export function UsageTerms() {
-  const ardcTermsButton = (
+  const { supportEmail, organisation } = useRuntimeConfig();
+  const { name, termsUrl } = organisation;
+
+  const termsButton = termsUrl && (
     <Button
-      href="https://ardc.edu.au/terms-conditions/"
+      href={termsUrl}
       target="_blank"
       variant="text"
       size="small"
@@ -22,6 +26,7 @@ export function UsageTerms() {
       Terms & conditions
     </Button>
   );
+
   return (
     <Container maxWidth="sm">
       <Card>
@@ -29,9 +34,27 @@ export function UsageTerms() {
         <CardContent>
           <Stack gap={2}>
             <Typography variant="body2" color="text.secondary">
-              Please refer to the ARDC {ardcTermsButton} reference page for the
-              list of relevant Terms and Conditions for usage of the RAiD
-              Service.
+              {termsButton ? (
+                <>
+                  Please refer to the {name ? `${name} ` : ""}
+                  {termsButton} page for the list of relevant Terms and
+                  Conditions for usage of the RAiD Service.
+                </>
+              ) : (
+                <>
+                  For the terms and conditions that apply to your use of the
+                  RAiD Service, please contact{" "}
+                  <Button
+                    href={`mailto:${supportEmail}`}
+                    variant="text"
+                    size="small"
+                    sx={{ minWidth: 0 }}
+                  >
+                    {supportEmail}
+                  </Button>
+                  .
+                </>
+              )}
             </Typography>
           </Stack>
         </CardContent>

@@ -3,7 +3,7 @@
     "description": "Template for the RAiD web app's app-config.json. Copy it, replace every {env} and example value, and deploy it outside the build (S3, a volume mount or APP_CONFIG_URL). See doc/UI/raid-agency-app/DEPLOYMENT.md.",
     "required": "keycloak, apiBaseUrl, environment and supportEmail. The app does not start without them.",
     "branding": "This template has no theme, header or footer section, so the app shows its neutral RAiD look. To brand the app for an agency, use the Keycloak login theme and add the sections shown in app-config.ardc.example.json.",
-    "optional": "googleAnalytics (measurementId, measurementIdDemo), services.invite and contactEmail can be left out. See doc/UI/raid-agency-app/DEPLOYMENT.md."
+    "optional": "googleAnalytics (measurementId, measurementIdDemo), services.invite, contactEmail and organisation can be left out. See doc/UI/raid-agency-app/DEPLOYMENT.md."
   },
   "keycloak": {
     "url": "https://iam.{env}.example.org",
@@ -13,6 +13,13 @@
   "apiBaseUrl": "https://api.{env}.example.org",
   "environment": "{env}",
   "supportEmail": "support@example.org",
+  "organisation": {
+    "name": "Example Agency",
+    "url": "https://agency.example.org/",
+    "privacyPolicyUrl": "https://agency.example.org/privacy",
+    "termsUrl": "https://agency.example.org/terms",
+    "dataDeletionDays": 14
+  },
   "services": {
     "orcid": "https://orcid.{env}.example.org",
     "staticProd": "https://static.prod.example.org",
