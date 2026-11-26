@@ -9,7 +9,7 @@ const servicePointBaseSchema = z.object({
     .min(1, "Identifier owner is required")
     .regex(
       /^https:\/\/ror\.org\/[a-z0-9]{9}$/,
-      "Must be a valid ROR URL (e.g. https://ror.org/038sjwq14)"
+      "Must be a valid ROR URL (e.g. https://ror.org/052gg0110)"
     ),
   adminEmail: z.string()
     .min(1, "Admin email is required")

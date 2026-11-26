@@ -195,7 +195,7 @@ export function OrganisationLookupDialog({
                 Examples:
               </Typography>
               <Stack direction="row" gap={1} flexWrap="wrap">
-                {["ARDC", "Sydney", "Imperial"].map((example) => (
+                {["Oxford", "Utrecht", "Cape Town"].map((example) => (
                   <Button
                     key={example}
                     size="small"

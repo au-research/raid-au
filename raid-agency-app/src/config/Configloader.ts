@@ -5,6 +5,7 @@ import {
   hasConfigIssues,
   validateConfig,
 } from "./ConfigValidation";
+import { readOrganisation } from "./Organisation";
 import { RawBranding, sanitiseBranding } from "./SanitiseBranding";
 
 async function fetchConfigFile(): Promise<Record<string, any>> {
@@ -110,6 +111,7 @@ export async function loadConfig(): Promise<{
         ? raw.contactEmail
         : undefined,
     googleAnalytics: readGoogleAnalytics(raw.googleAnalytics),
+    organisation: readOrganisation(raw.organisation),
     services: raw.services ?? {},
     app: { ...raw.app, orcid: { ...raw.app?.orcid } },
   };

@@ -1,3 +1,5 @@
+import { getRuntimeConfig } from "@/config/RuntimeConfigContext";
+
 export const messages = {
     // General messages
     required: "This field is required",
@@ -74,5 +76,15 @@ export const messages = {
 
     //Generic messages
     requestFailedTitle: "Error while processing your request",
-    requestFailedContent: "Please try again or email: services@ardc.edu.au"
+    // A getter, so the address is read from app-config.json when the message is
+    // shown. Used outside React (form error helpers), so it cannot be a hook.
+    // If the config is somehow not loaded, it still gives a usable message
+    // rather than throwing from inside an error handler.
+    get requestFailedContent() {
+        try {
+            return `Please try again or email: ${getRuntimeConfig().supportEmail}`;
+        } catch {
+            return "Please try again.";
+        }
+    }
 }

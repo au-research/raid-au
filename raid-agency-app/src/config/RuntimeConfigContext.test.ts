@@ -7,6 +7,7 @@ const mockConfig: RuntimeConfig = {
   environment: "dev",
   supportEmail: "contact@raid.org",
   googleAnalytics: {},
+  organisation: {},
   services: {
     orcid: "https://orcid.test.raid.org.au",
     invite: "https://invite.test.raid.org.au",

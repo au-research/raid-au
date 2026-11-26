@@ -11,6 +11,8 @@ export type {
 } from "./Appconfig";
 
 export type { RuntimeConfig } from "./RuntimeConfig";
+export type { Organisation } from "./Organisation";
+export { readOrganisation } from "./Organisation";
 
 export { defaultTheme, neutralBranding } from "./DefaultConfig";
 export {
@@ -33,7 +35,6 @@ export {
   useThemeLookupFailed,
   BrandingProvider,
   useBranding,
-  useContactEmail,
 } from "./RuntimeConfigContext";
 export { fetchLoginTheme, resolveStartupBranding } from "./KeycloakTheme";
 export type { ThemeLookup } from "./KeycloakTheme";
