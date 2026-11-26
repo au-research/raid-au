@@ -1,9 +1,10 @@
 {
   "_info": {
-    "description": "RAiD application configuration file for local development. The app fetches it at runtime, so no rebuild is needed when values change.",
-    "usage": "Deploy or mount this file outside the build for each environment. See doc/UI/raid-agency-app/DEPLOYMENT.md.",
+    "description": "RAiD application configuration file for local development. The app fetches it at runtime, so no rebuild is needed when values change. The CI end-to-end tests also use it.",
+    "usage": "Do not deploy this file. For an environment, copy app-config-examples/app-config.template.json and deploy it outside the build. See doc/UI/raid-agency-app/DEPLOYMENT.md.",
     "sections": {
       "required": "keycloak, apiBaseUrl, environment and supportEmail are required. The app does not start without them.",
+      "local": "Keycloak and the API point at the local stack (see CLAUDE.md). The services values are placeholders. To try the static-site lookups against a real environment, edit services.staticProd and services.staticBase on your machine and do not commit them.",
       "branding": "This file has no theme, header or footer section, so the app shows its neutral RAiD look. Examples of agency branding are in app-config-examples/."
     }
   },
@@ -14,16 +15,12 @@
   },
   "apiBaseUrl": "http://localhost:8080",
   "environment": "dev",
-  "supportEmail": "contact@raid.org",
-  "googleAnalytics": {
-    "measurementId": "G-286MNGELG2",
-    "measurementIdDemo": "G-RKPFHJG7Y7"
-  },
+  "supportEmail": "support@example.org",
   "services": {
-    "orcid": "https://orcid.test.raid.org.au",
-    "invite": "https://invite.test.raid.org.au",
-    "staticProd": "https://static.prod.raid.org.au",
-    "staticBase": "https://static.{env}.raid.org.au"
+    "orcid": "https://orcid.example.org",
+    "invite": "https://invite.example.org",
+    "staticProd": "https://static.example.org",
+    "staticBase": "https://static.{env}.example.org"
   },
   "app": {
     "orcid": {

@@ -103,7 +103,7 @@ Every link needs a `label`, and its `path` must be an `https` or `mailto` addres
 
 ### Where the branding lives
 
-Branding belongs only in the external `app-config.json` for each environment (S3, a volume mount or `APP_CONFIG_URL`). Do not add it to `public/app-config.json`, which is only the local development default.
+Branding belongs only in the external `app-config.json` for each environment (S3, a volume mount or `APP_CONFIG_URL`). Do not add it to `public/app-config.json`, which is only the local development default. It holds no ARDC addresses or analytics IDs, and a test keeps it that way. The CI end-to-end tests also read it, so keep `keycloak` and `apiBaseUrl` pointing at the local stack.
 
 ### Moving from the old layout
 
@@ -199,7 +199,7 @@ For registration agencies deploying the app in a Docker container.
 ### Prerequisites
 
 - Docker installed
-- `app-config.json` prepared with your environment's values (use `public/app-config.json` as a template)
+- `app-config.json` prepared with your environment's values (copy `app-config-examples/app-config.template.json`)
 
 ### Build the Image
 
