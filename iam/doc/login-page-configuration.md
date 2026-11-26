@@ -33,7 +33,7 @@ This guide explains how to configure the RAiD login page via the Keycloak admin 
 | `signinTitle` | `RAiD Sign-in` |
 | `federatedIdentityConfirmReauthenticateMessage` | `A user with the same details already exists. Authenticate using your original login button. This will link your account with your {0} login.` |
 | `groupSelectorAccessMessage` | `To use RAiD you must belong to a 'Service Point'; please request access to the appropriate Service Point in the list below.` |
-| `contact` | `services@ardc.edu.au` |
+| `contact` | `contact@ardc.edu.au` |
 | `termsOfUse` | `https://ardc.edu.au/terms-and-conditions/` |
 | `privacyPolicy` | `https://ardc.edu.au/privacy-policy/` |
 | `accessibility` | `https://ardc.edu.au/accessibility-statement-for-ardc/` |

@@ -191,8 +191,8 @@
             <li><a href="https://raid.org" target="_blank" rel="noopener noreferrer">Visit raid.org</a></li>
             <li><a href="https://documentation.ardc.edu.au/raid" target="_blank" rel="noopener noreferrer">RAiD User Guides</a></li>
             <li><a href="https://metadata.raid.org/" target="_blank" rel="noopener noreferrer">RAiD Schema Documentation</a></li>
-            <li><a href="mailto:contact@raid.org">Request Support</a></li>
-            <li><a href="mailto:services@ardc.edu.au">Contact the ARDC</a></li>
+            <li><a href="mailto:services@ardc.edu.au">Request Support</a></li>
+            <li><a href="mailto:contact@ardc.edu.au">Contact the ARDC</a></li>
         </ul>
         <ul id="legal-links">
             <!-- Not msg()-driven: "termsOfUse"/"accessibility" aren't

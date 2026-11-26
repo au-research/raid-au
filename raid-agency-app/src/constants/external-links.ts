@@ -6,6 +6,7 @@ export const EXTERNAL_LINKS = {
     DOCUMENTATION: "https://documentation.ardc.edu.au/raid",
     RAID_ORG: "https://raid.org",
     SCHEMA_DOCUMENTATION: "https://metadata.raid.org/",
-    REQUEST_SUPPORT: "mailto:contact@raid.org",
-    CONTACT_ARDC: "mailto:services@ardc.edu.au",
+    // ARDC's helpdesk and its general contact address (RAID-1068).
+    REQUEST_SUPPORT: "mailto:services@ardc.edu.au",
+    CONTACT_ARDC: "mailto:contact@ardc.edu.au",
 }
