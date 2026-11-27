@@ -7,7 +7,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>${msg("loginTitle")} - ${msg("org.name")}</title>
+    <title>${msg("pageTitle")}</title>
 
     <link rel="icon" href="${url.resourcesPath}/img/favicon.ico" />
 
@@ -29,7 +29,11 @@
     <nav class="top-navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="${url.resourcesPath}/img/raid-logo-light.svg" class="logo-text" alt="logo"></img>
+                <img src="${url.resourcesPath}/img/raid-logo-light.svg" class="logo-text" alt="${msg('logoAlt')}">
+                <#assign welcomeTitle = msg("welcomeTitle")>
+                <#if welcomeTitle?has_content>
+                    <span class="nav-title">${welcomeTitle}</span>
+                </#if>
             </div>
         </div>
     </nav>
@@ -45,6 +49,12 @@
             </#if>
 
             <#nested "form">
+
+            <#-- Text under the card, set by the realm (HTML links allowed). -->
+            <#assign welcomeText = msg("welcomeText")>
+            <#if welcomeText?has_content>
+                <p class="welcome-text">${welcomeText?no_esc}</p>
+            </#if>
         </div>
     </div>
 </body>

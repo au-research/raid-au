@@ -17,38 +17,59 @@ This guide explains how to configure the RAiD login page via the Keycloak admin 
    - `ardc-branding` — ARDC's own branding (purple accent, ARDC/NCRIS footer), a thin child theme of `raid-custom` that inherits its structure and overrides only colours and the header/footer
 3. Click **Save**
 
-### 3. Add Localization Overrides
+### 3. Localization overrides: all the login page text and links
 
-1. Click on the **Localization** tab
-2. Add the following key-value pairs under **Realm overrides**:
+Every piece of text and every link on the login page comes from a message key, so a realm can change it in the admin console with no change to the theme:
 
-| Key | Value |
-|-----|-------|
-| `welcomeTitle` | `ARDC Research Activity Identifier (RAiD) Service` |
-| `privacyPolicy` | `<a href="https://ardc.edu.au/privacy-policy/">ARDC privacy policy</a>` |
-| `servicePolicy` | `<a href="https://documentation.ardc.edu.au/raid/raid-service-policy">RAiD Service Policy</a>` |
-| `badge` | `dev` |
-| `welcomeText` | `To learn more, access the <a href="https://documentation.ardc.edu.au/raid/">RAiD documentation</a> <br/> Maintained by the <a href="https://ardc.edu.au/">ARDC</a>` |
-| `signinText` | `Please select your preferred sign-in method` |
-| `signinTitle` | `RAiD Sign-in` |
-| `federatedIdentityConfirmReauthenticateMessage` | `A user with the same details already exists. Authenticate using your original login button. This will link your account with your {0} login.` |
-| `groupSelectorAccessMessage` | `To use RAiD you must belong to a 'Service Point'; please request access to the appropriate Service Point in the list below.` |
-| `contact` | `contact@ardc.edu.au` |
-| `termsOfUse` | `https://ardc.edu.au/terms-and-conditions/` |
-| `privacyPolicy` | `https://ardc.edu.au/privacy-policy/` |
-| `accessibility` | `https://ardc.edu.au/accessibility-statement-for-ardc/` |
+1. Click the **Localization** tab, then **Realm overrides**.
+2. Add a key and a value. A realm override beats the default shipped in the theme. Anything left empty is not shown.
 
-> The `badge` value should reflect the environment — e.g. `dev`, `test`, `stage`, `prod`.
-> **Deprecated**: the sign-in page redesign (RAID-843) removed the badge from the rendered page in both themes. This key is no longer displayed anywhere; any existing override is now a harmless no-op and can be removed.
+Both themes ship defaults in `login/messages/messages_en.properties`. `raid-custom` has neutral defaults that name no agency and show no links. `ardc-branding` supplies ARDC's values for the header, footer and policy links, so the ARDC theme works with no overrides at all. A test (`ThemeMessagesTest`) fails if a template uses a key that no bundle defines, or holds text or a link of its own.
 
-### 3a. Optional overrides — provider helper text and loading-state copy
+Values go through Keycloak's `MessageFormat` processing. A literal apostrophe in a value must be written as `''` (doubled), otherwise it, and anything MessageFormat treats as quoted after it, is silently dropped from the rendered text. HTML links are allowed where the table says so.
 
-Unlike the keys above, the following ship with sensible English defaults (in `raid-custom`'s `messages_en.properties`, inherited by `ardc-branding`), so the page works without any configuration here. Add a realm override only to change the shipped wording for a specific realm:
+**Page and sign-in card**
 
-| Key | Shipped default |
-|-----|-----------------|
+| Key | What it sets | `raid-custom` default |
+|-----|--------------|-----------------------|
+| `pageTitle` | The browser tab title | `RAiD Sign-in` |
+| `signinTitle` | The heading on the sign-in card | `RAiD Sign-in` |
+| `signinText` | The line under the heading | `Please select your preferred sign-in method` |
+| `welcomeTitle` | The title beside the logo in the header. Not shown when empty. | empty |
+| `welcomeText` | Small text under the card. HTML links allowed. Not shown when empty. | empty |
+| `servicePolicy`, `privacyPolicy` | HTML links in the footnote "By signing in you agree to the … and …". The footnote is left out when both are empty. | empty |
+| `signinFootnotePrefix`, `signinFootnoteJoin`, `signinFootnoteSuffix` | The words around those two links | `By signing in you agree to the`, `and`, `.` |
+
+**Header and footer (`ardc-branding`)**
+
+| Key | What it sets |
+|-----|--------------|
+| `headerLinkAboutText` and `headerLinkAboutUrl`, `headerLinkDocsText` and `headerLinkDocsUrl`, `headerLinkRaidText` and `headerLinkRaidUrl` | The three header links. A link with no text or no address is not shown. |
+| `megaMenuHost` | The name the ARDC mega-menu shows for this app |
+| `footerQuickLinks` | HTML list items (`<li><a href="…">…</a></li>`) for the footer's quick links |
+| `supportEmail`, `footerSupportText` | The Request Support link: the helpdesk address and its label |
+| `contact`, `footerContactText` | The contact link: the contact address and its label |
+| `termsOfUse`, `accessibility`, `privacy_Policy` | The addresses of the legal links. Note the spelling `privacy_Policy`, with an underscore. |
+| `footerTermsText`, `footerAccessibilityText`, `footerPrivacyText` | The labels of those legal links |
+| `footerAcnText`, `footerAcnUrl` | The registration number and its link |
+
+ARDC's values: `supportEmail` is `services@ardc.edu.au` (the helpdesk) and `contact` is `contact@ardc.edu.au`.
+
+**Accessibility text**
+
+| Key | What it sets | Default |
+|-----|--------------|---------|
+| `logoAlt` | Alt text of the header logo | `RAiD logo` |
+| `strapLineAlt` | Alt text of the logo on the sign-in card | `RAiD - Research Activity Identifier` |
+| `loadingLogoAlt` | Alt text of the logo on the redirecting screen | `RAiD` |
+| `navToggleLabel` | Label of the mobile menu button | `Toggle navigation menu` |
+
+**Sign-in providers, loading and help text**
+
+| Key | Default |
+|-----|---------|
 | `idp.aaf.helperText` | `Australian universities and research organisations.` |
-| `idp.orcid.helperText` | `Recommended for international researchers.` |
+| `idp.orcid.helperText` | `Recommended for international users.` |
 | `idp.google.helperText` | `For users without an institutional or ORCID account.` |
 | `idp.aaf.loadingTitle` | `Redirecting to your institution…` |
 | `idp.aaf.loadingText` | `You'll sign in through the Australian Access Federation, then return to RAiD.` |
@@ -58,9 +79,16 @@ Unlike the keys above, the following ship with sensible English defaults (in `ra
 | `idp.google.loadingText` | `You'll sign in through Google, then return to RAiD.` |
 | `loadingCancelLink` | `Taking too long? Cancel and choose another option` |
 | `signinHelpToggle` | `Which sign-in option is right for me?` |
-| `signinHelpText` | `If you have an account with an Australian university or research organisation, choose Institution. If you're an international researcher, choose ORCID. Otherwise, choose Google.` |
+| `signinHelpText` | `If you have an account with an Australian university or research organisation, choose Australian Access Federation. If you're an international researcher, choose ORCID. Otherwise, choose Google.` |
 
-> Realm override values go through Keycloak's `MessageFormat` processing. A literal apostrophe in an override value must be written as `''` (doubled), otherwise it — and anything MessageFormat treats as quoted after it — will be silently dropped from the rendered text.
+**Read by other parts of the system, not by the theme**
+
+| Key | Read by |
+|-----|---------|
+| `groupSelectorAccessMessage` | The web app's group selector, which fetches it from the realm's localization |
+| `federatedIdentityConfirmReauthenticateMessage` | Keycloak's own sign-in flow |
+
+**Retired:** `badge` is no longer displayed (the sign-in page redesign, RAID-843, removed it). The old `org.*` keys, `loginTitle`, `loginInstruction` and `help.tooltip` are gone, and any existing override of them is a harmless no-op that can be removed.
 
 ### 4. Configure Identity Providers
 
@@ -88,5 +116,4 @@ Unlike the keys above, the following ship with sensible English defaults (in `ra
 ## Notes
 
 - HTML anchor tags in localization values are rendered as clickable links on the login page
-- The `badge` localization key can be updated per environment without redeploying the theme
 - These configurations allow agencies to customize the login page without code changes
