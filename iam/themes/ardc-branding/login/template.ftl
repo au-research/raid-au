@@ -7,7 +7,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>${msg("loginTitle")} - ${msg("org.name")}</title>
+    <title>${msg("pageTitle")}</title>
 
     <link rel="icon" href="${url.resourcesPath}/img/favicon.ico" />
 
@@ -36,7 +36,7 @@
     <div class="ardc-megamenu-wrap">
         <ardc-megamenu
             id="ardc-menu"
-            data-host="RAiD App"
+            data-host="${msg('megaMenuHost')}"
             data-content-width="full"
             style="display: block; opacity: 0; min-height: 20px;"
         ></ardc-megamenu>
@@ -108,13 +108,17 @@
         })();
     </script>
 
-    <!-- Top Navigation Bar. About/Documentation/raid.org are real,
-         external destinations per ARDC's RAiD domain/service guide. -->
+    <!-- Top Navigation Bar. The title and the links come from message keys
+         (welcomeTitle, headerLink*), so a realm can change them. A link with
+         no text or no address is not shown. -->
     <nav class="top-navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="${url.resourcesPath}/img/raid-logo-mark.svg" class="logo-text" alt="logo">
-                <span class="nav-title">${msg("org.header.title")}</span>
+                <img src="${url.resourcesPath}/img/raid-logo-mark.svg" class="logo-text" alt="${msg('logoAlt')}">
+                <#assign welcomeTitle = msg("welcomeTitle")>
+                <#if welcomeTitle?has_content>
+                    <span class="nav-title">${welcomeTitle}</span>
+                </#if>
             </div>
             <div class="nav-links" id="nav-links">
                 <#assign externalLinkIcon>
@@ -124,9 +128,21 @@
                         <path d="M10 14 21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </#assign>
-                <a href="https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/" target="_blank" rel="noopener noreferrer">About ${externalLinkIcon?no_esc}</a>
-                <a href="https://documentation.ardc.edu.au/raid" target="_blank" rel="noopener noreferrer">Documentation ${externalLinkIcon?no_esc}</a>
-                <a href="https://raid.org" target="_blank" rel="noopener noreferrer">raid.org ${externalLinkIcon?no_esc}</a>
+                <#assign aboutText = msg("headerLinkAboutText")>
+                <#assign aboutUrl = msg("headerLinkAboutUrl")>
+                <#if aboutText?has_content && aboutUrl?has_content>
+                    <a href="${aboutUrl}" target="_blank" rel="noopener noreferrer">${aboutText} ${externalLinkIcon?no_esc}</a>
+                </#if>
+                <#assign docsText = msg("headerLinkDocsText")>
+                <#assign docsUrl = msg("headerLinkDocsUrl")>
+                <#if docsText?has_content && docsUrl?has_content>
+                    <a href="${docsUrl}" target="_blank" rel="noopener noreferrer">${docsText} ${externalLinkIcon?no_esc}</a>
+                </#if>
+                <#assign raidText = msg("headerLinkRaidText")>
+                <#assign raidUrl = msg("headerLinkRaidUrl")>
+                <#if raidText?has_content && raidUrl?has_content>
+                    <a href="${raidUrl}" target="_blank" rel="noopener noreferrer">${raidText} ${externalLinkIcon?no_esc}</a>
+                </#if>
             </div>
             <!-- Mobile-only equivalent of React's MobileNavMenu: .nav-links
                  has nowhere to go below 899px (see login-ardc.css), so this
@@ -136,7 +152,7 @@
                 type="button"
                 class="mobile-nav-toggle"
                 id="mobile-nav-toggle"
-                aria-label="Toggle navigation menu"
+                aria-label="${msg('navToggleLabel')}"
                 aria-expanded="false"
                 aria-controls="nav-links"
             >
@@ -169,6 +185,12 @@
             </#if>
 
             <#nested "form">
+
+            <#-- Text under the card, set by the realm (HTML links allowed). -->
+            <#assign welcomeText = msg("welcomeText")>
+            <#if welcomeText?has_content>
+                <p class="welcome-text">${welcomeText?no_esc}</p>
+            </#if>
         </div>
     </div>
 
@@ -182,31 +204,41 @@
         data-show-ardc-logo
         style="opacity: 0;"
     >
-        <!-- Real, external destinations per ARDC's RAiD domain/service
-             guide - same URLs as the React app's footer quick-links
-             (src/constants/external-links.ts), kept in sync manually
-             since this theme has no shared build step with that app. -->
+        <!-- Every link and label below comes from a message key, so a realm can
+             change it (Realm settings > Localization > Realm overrides).
+             footerQuickLinks holds HTML list items. Request Support and
+             Contact the ARDC read supportEmail and contact. The legal links
+             read termsOfUse, accessibility and privacy_Policy (addresses) and
+             the footer*Text keys (labels). Anything left empty is not shown. -->
         <ul id="quick-links">
-            <li><a href="https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/" target="_blank" rel="noopener noreferrer">About RAiD</a></li>
-            <li><a href="https://raid.org" target="_blank" rel="noopener noreferrer">Visit raid.org</a></li>
-            <li><a href="https://documentation.ardc.edu.au/raid" target="_blank" rel="noopener noreferrer">RAiD User Guides</a></li>
-            <li><a href="https://metadata.raid.org/" target="_blank" rel="noopener noreferrer">RAiD Schema Documentation</a></li>
-            <li><a href="mailto:contact@raid.org">Request Support</a></li>
-            <li><a href="mailto:services@ardc.edu.au">Contact the ARDC</a></li>
+            ${msg("footerQuickLinks")?no_esc}
+            <#assign supportEmail = msg("supportEmail")>
+            <#if supportEmail?has_content>
+                <li><a href="mailto:${supportEmail}">${msg("footerSupportText")}</a></li>
+            </#if>
+            <#assign contactEmail = msg("contact")>
+            <#if contactEmail?has_content>
+                <li><a href="mailto:${contactEmail}">${msg("footerContactText")}</a></li>
+            </#if>
         </ul>
         <ul id="legal-links">
-            <!-- Not msg()-driven: "termsOfUse"/"accessibility" aren't
-                 defined anywhere in this theme (render as the literal key
-                 name), and "privacyPolicy" is a realm-level localization
-                 override that's a full HTML link snippet meant to be
-                 dropped inline, not a bare URL - wrapping it in another
-                 <a href> put raw HTML inside an href attribute. Same real
-                 URLs as React's app-config.json footer.links. -->
-            <li><a href="https://ardc.edu.au/terms-and-conditions/" target="_blank" rel="noopener noreferrer">Terms of use</a></li>
-            <li><a href="https://ardc.edu.au/accessibility-statement-for-ardc/" target="_blank" rel="noopener noreferrer">Accessibility</a></li>
-            <li><a href="https://ardc.edu.au/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy policy</a></li>
+            <#assign termsUrl = msg("termsOfUse")>
+            <#if termsUrl?has_content>
+                <li><a href="${termsUrl}" target="_blank" rel="noopener noreferrer">${msg("footerTermsText")}</a></li>
+            </#if>
+            <#assign accessibilityUrl = msg("accessibility")>
+            <#if accessibilityUrl?has_content>
+                <li><a href="${accessibilityUrl}" target="_blank" rel="noopener noreferrer">${msg("footerAccessibilityText")}</a></li>
+            </#if>
+            <#assign privacyUrl = msg("privacy_Policy")>
+            <#if privacyUrl?has_content>
+                <li><a href="${privacyUrl}" target="_blank" rel="noopener noreferrer">${msg("footerPrivacyText")}</a></li>
+            </#if>
         </ul>
-        <a id="ardc-footer-acn" href="https://www.acnc.gov.au/charity/charities/eca273f3-f5be-e911-a98a-000d3ad02a61/profile">ACN 633 798 857</a>
+        <#assign acnUrl = msg("footerAcnUrl")>
+        <#if acnUrl?has_content>
+            <a id="ardc-footer-acn" href="${acnUrl}">${msg("footerAcnText")}</a>
+        </#if>
     </ardc-footer>
     <script
         src="https://ardc.edu.au/wp-content/plugins/ardc-custom-web-components/dist/loaders/footer.min.js"

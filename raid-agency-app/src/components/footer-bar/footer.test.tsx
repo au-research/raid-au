@@ -186,6 +186,26 @@ describe("Footer", () => {
       expect(el!.querySelector("#quick-links")).not.toBeNull();
     });
 
+    it("sends Request Support to the ARDC helpdesk and Contact the ARDC to its contact address (RAID-1068)", () => {
+      const { container } = renderFooter(withFooter({ variant: "ardc", links }));
+
+      const quick = within(container.querySelector("#quick-links") as HTMLElement);
+      expect(quick.getByRole("link", { name: "Request Support" })).toHaveAttribute(
+        "href",
+        "mailto:services@ardc.edu.au"
+      );
+      expect(quick.getByRole("link", { name: "Contact the ARDC" })).toHaveAttribute(
+        "href",
+        "mailto:contact@ardc.edu.au"
+      );
+    });
+
+    it("has no link to contact@raid.org (RAID-1068)", () => {
+      const { container } = renderFooter(withFooter({ variant: "ardc", links }));
+
+      expect(container.innerHTML).not.toContain("contact@raid.org");
+    });
+
     it("loads the ARDC footer script", () => {
       renderFooter(withFooter({ variant: "ardc", links }));
 

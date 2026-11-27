@@ -85,7 +85,7 @@ Edit `themes/my-new-theme/theme.properties` and set `parent=keycloak` instead of
 - **CSS, `.ftl` templates, and other `resources/` files (images, JS) resolve as a whole file**: if your theme has its own copy, the parent's version isn't used at all — even for the parts you didn't change. There's no partial/fragment override.
 - **Message bundles (`messages_en.properties`) merge per key** across the parent chain: your theme only needs to define the keys that genuinely differ from the parent's default; everything else falls through automatically.
 
-This is why `ardc-branding`'s `messages_en.properties` is nearly empty (everything currently matches `raid-custom`'s defaults) while its `login.ftl` is a near-complete copy of `raid-custom`'s (plus its own footer markup) — CSS/FTL changes to `raid-custom` must be manually re-applied to any child theme that has its own copy of that same file.
+This is why `ardc-branding`'s `messages_en.properties` holds only ARDC's own values (its header and footer links, policy links and addresses, over `raid-custom`'s neutral defaults) while its `login.ftl` is a near-complete copy of `raid-custom`'s (plus its own footer markup) — CSS/FTL changes to `raid-custom` must be manually re-applied to any child theme that has its own copy of that same file.
 
 ### Customise the theme
 

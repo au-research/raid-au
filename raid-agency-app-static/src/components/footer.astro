@@ -5,19 +5,9 @@
 // integration used in raid-agency-app.
 // Only shown when footer.show=true in app-config.json
 import { getSiteConfig } from "@/config";
+import { QUICK_LINKS } from "@/constants/ardc-footer-links";
 
-// Fixed, external destinations per ARDC's RAiD domain/service guide -
-// same list and URLs as raid-agency-app's src/constants/external-links.ts
-// and the Keycloak login theme's template.ftl (kept in sync manually,
-// since these are three separate deploy targets with no shared build).
-const QUICK_LINKS = [
-  { label: "About RAiD", path: "https://ardc.edu.au/services/ardc-identifier-services/raid-research-activity-identifier-service/" },
-  { label: "Visit raid.org", path: "https://raid.org" },
-  { label: "RAiD User Guides", path: "https://documentation.ardc.edu.au/raid" },
-  { label: "RAiD Schema Documentation", path: "https://metadata.raid.org/" },
-  { label: "Request Support", path: "mailto:contact@raid.org" },
-  { label: "Contact the ARDC", path: "mailto:services@ardc.edu.au" },
-];
+// The quick links are in src/constants/ardc-footer-links.ts so a test can check them.
 
 const { show, links } = getSiteConfig().footer;
 const legalLinks = links.filter((link) => !link.path.startsWith("mailto:"));

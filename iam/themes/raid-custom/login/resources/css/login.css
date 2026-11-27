@@ -80,6 +80,26 @@ body {
 .nav-logo {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-logo .nav-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-heading);
+}
+
+/* Text under the sign-in card, set by the realm's welcomeText override. */
+.welcome-text {
+    margin: 1rem auto 0;
+    max-width: 480px;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.welcome-text a {
+    color: var(--text-link);
 }
 
 .logo-text {

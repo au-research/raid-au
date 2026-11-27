@@ -7,7 +7,7 @@
 
         <!-- ==================== SIGN-IN CARD ==================== -->
         <div class="signin-card">
-            <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="signin-card__logo" alt="RAiD - Research Activity Identifier">
+            <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="signin-card__logo" alt="${msg('strapLineAlt')}">
             <h1 class="signin-card__title">${msg("signinTitle")}</h1>
             <p class="signin-card__text">${msg("signinText")}</p>
 
@@ -96,14 +96,20 @@
                 ${msg('signinHelpText')?no_esc}
             </div>
 
-            <div class="signin-footnote">
-                <p>By signing in you agree to the ${msg("servicePolicy")?no_esc} and ${msg("privacyPolicy")?no_esc}.</p>
-            </div>
+            <#-- The footnote names the realm's service policy and privacy policy
+                 (HTML links). It is left out when neither is set. -->
+            <#assign servicePolicy = msg("servicePolicy")>
+            <#assign privacyPolicy = msg("privacyPolicy")>
+            <#if servicePolicy?has_content || privacyPolicy?has_content>
+                <div class="signin-footnote">
+                    <p>${msg("signinFootnotePrefix")} <#if servicePolicy?has_content>${servicePolicy?no_esc}</#if><#if servicePolicy?has_content && privacyPolicy?has_content> ${msg("signinFootnoteJoin")} </#if><#if privacyPolicy?has_content>${privacyPolicy?no_esc}</#if>${msg("signinFootnoteSuffix")}</p>
+                </div>
+            </#if>
         </div>
 
         <!-- ==================== LOADING / REDIRECTING STATE ==================== -->
         <div id="kc-loading-card" class="loading-card" hidden aria-live="polite">
-            <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="loading-card__logo" alt="RAiD">
+            <img src="${url.resourcesPath}/img/RAiD-Strapline.svg" class="loading-card__logo" alt="${msg('loadingLogoAlt')}">
             <span class="loading-card__spinner" aria-hidden="true"></span>
             <h2 id="kc-loading-title" class="loading-card__title"></h2>
             <p id="kc-loading-text" class="loading-card__text"></p>
